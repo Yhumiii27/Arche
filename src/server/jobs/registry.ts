@@ -1,9 +1,12 @@
 import 'server-only';
 // Arche's scheduled jobs: the schema backup (when ARCHE_BACKUP_DIR is set) and the daily schema declaration to Matrix (when
-// MATRIX_URL or MATRIX_DECLARATIONS_DIR is set). Business jobs (reminders, late reviews, snapshots) come with their deliveries.
+// MATRIX_URL or MATRIX_DECLARATIONS_DIR is set), the Keystone mirror (every ARCHE_KEYSTONE_SYNC_MIN minutes unless
+// ARCHE_KEYSTONE=off). Business jobs (reminders, late reviews, snapshots) come with their deliveries.
 import path from 'node:path';
 import { backupSchema } from '@/server/backup';
 import { getConfig } from '@/server/config';
+import { businessNow } from '@/server/clock';
+import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import { declareArcheSchema } from '@/server/integrations/matrix';
 import { matrixDeclarationEnabled } from '@/server/integrations/matrix/declare-schema';
 import type { PostgresHandle } from '@/server/db/postgres';
@@ -27,6 +30,16 @@ export function archeJobs(h: PostgresHandle): Job[] {
       enabled: matrixDeclarationEnabled(process.env),
       async run() {
         await declareArcheSchema((q) => h.pool.query(q).then((r) => r.rows as Record<string, unknown>[]));
+      },
+    },
+    {
+      name: 'keystone-sync',
+      everyMin: cfg.keystone.syncEveryMin,
+      enabled: cfg.keystone.mode !== 'off' && !!cfg.database,
+      async run() {
+        const r = await syncKeystone(h.db, { now: await businessNow() });
+        const failed = r.filter((x) => x.error);
+        return `${r.reduce((a, x) => a + x.rows, 0)} rows${failed.length ? `, ${failed.length} view(s) not read` : ''}`;
       },
     },
   ];

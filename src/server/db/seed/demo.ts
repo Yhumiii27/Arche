@@ -11,7 +11,9 @@ import { createHash } from 'node:crypto';
 import { circuitTemplate } from '@/domain/circuits';
 import { canonicalJson, emptyContent, SECTIONS, type DossierKind } from '@/domain/dossiers';
 import { computedSnapshot } from '@/server/dal/dossiers';
-import { businessPlans, changes, circuitSteps, dossiers, dossierVersions, signatures } from '../schema';
+import { businessPlans, changes, circuitSteps, dossiers, dossierVersions, machineNeeds, signatures } from '../schema';
+import { and } from 'drizzle-orm';
+import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import type { Tx } from '../types';
 
 export const DEMO_ZONES = [
@@ -252,4 +254,16 @@ async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: s
     { capexId: sai, number: 1, title: 'Additional drainage of the plot', kind: 'cost', amountKeur: 150, requiredDecider: 'copil_projet', status: 'approved', createdByName: nameOf('sai_lead'), decidedByName: nameOf('sai_sponsor'), decidedByUserId: idOf('sai_sponsor'), decidedAt: at('2026-09-10') },
     { capexId: sai, number: 2, title: 'Second evaporator for the concentrate line', kind: 'cost', amountKeur: 600, delayDays: 20, requiredDecider: 'dir_ig', createdByName: nameOf('sai_lead') },
   ]);
+  // Machine needs (delivery 4): APM in phase 2 — a quote, a firm offer, a draft —; SAI ordered at its G2 with two EPC2i
+  // projects. The answers and the projects come from the simulation of Keystone (src/server/integrations/keystone).
+  const lot = async (capexId: string) => (await tx.select({ id: capexLots.id }).from(capexLots).where(and(eq(capexLots.capexId, capexId), eq(capexLots.kind, 'machines'))))[0]?.id ?? null;
+  const [apmLot, saiLot] = [await lot(apm), await lot(sai)];
+  await tx.insert(machineNeeds).values([
+    { capexId: apm, number: 1, catalogueCode: 'EXT-9MN', catalogueVersion: 3, quantity: 1, options: ['PULLER'], targetCapacity: 1.8, capacityUnit: 't/h', needDate: '2027-09-01', status: 'submitted', submittedAt: at('2026-09-10'), lotId: apmLot, createdByName: nameOf('project_lead') },
+    { capexId: apm, number: 2, catalogueCode: 'EXT-AGE', catalogueVersion: 1, quantity: 1, needDate: '2027-09-01', status: 'submitted', submittedAt: at('2026-08-10'), lotId: apmLot, createdByName: nameOf('project_lead') },
+    { capexId: apm, number: 3, freeLabel: 'Billet saw with automatic loader', quantity: 1, needDate: '2027-10-01', status: 'draft', lotId: apmLot, comment: 'To size with the process team', createdByName: nameOf('project_lead') },
+    { capexId: sai, number: 1, catalogueCode: 'PRC-TOM', catalogueVersion: 2, quantity: 1, options: ['EVAP3'], targetCapacity: 40, capacityUnit: 't/h', needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-03-02'), orderedOn: '2026-07-08', lotId: saiLot, createdByName: nameOf('sai_lead') },
+    { capexId: sai, number: 2, catalogueCode: 'PRC-CAN', catalogueVersion: 1, quantity: 1, needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-03-02'), orderedOn: '2026-07-08', lotId: saiLot, createdByName: nameOf('sai_lead') },
+  ]);
+  await syncKeystone(tx, { now: at('2026-10-22'), mode: 'simulation' });
 }
