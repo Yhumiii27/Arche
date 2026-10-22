@@ -6,7 +6,7 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-22 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 22 faits, 3 en cours, 13 à faire, sur 38 points.
+**Avancement** : 22 faits, 4 en cours, 12 à faire, sur 38 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
@@ -43,7 +43,7 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 
 Les points « Bloquant production » restants, par domaine. Sans eux, Arche reste une démonstration.
 
-- **Plateforme et mise en production** : AR-014 Arche sur le serveur PostgreSQL commun (Matrix) ; AR-015 Hébergement en France et choix du serveur de production.
+- **Plateforme et mise en production** : AR-014 Arche sur le serveur PostgreSQL commun (Matrix) *(en cours, Livraison 3)* ; AR-015 Hébergement en France et choix du serveur de production.
 - **Tableaux de bord et gouvernance** : AR-034 Pilote sur 1 à 2 CAPEX.
 
 ### 1.2 Ce qui attend le responsable produit
@@ -67,9 +67,9 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 
 ### 2.1 Plateforme et mise en production (3 restants, 5 faits)
 
-**AR-014 · Arche sur le serveur PostgreSQL commun (Matrix)** — *Bloquant production · attend un système externe · effort S*  
+**AR-014 · Arche sur le serveur PostgreSQL commun (Matrix)** — *Bloquant production · attend un système externe · effort S* · **en cours (Livraison 3)**  
 Rôle, schéma, droits, partage, journal unifié, sauvegarde, déclaration des tables.  
-*Attend : Matrix (M-1 à M-8) · Sources : docs/DEMANDES-MATRIX.md*
+*Avancement : Kit Coolify du serveur commun (deploy/compose.shared.yaml, EXPLOITATION.md § 4.1) essayé en local contre le socle de Matrix : migrations, jeu de démonstration, santé, sauvegarde, partage 70/90/95. Reste : mise en service dans Coolify. · Attend : Matrix (M-1 à M-8) · Sources : docs/DEMANDES-MATRIX.md*
 
 **AR-015 · Hébergement en France et choix du serveur de production** — *Bloquant production · attend le responsable produit · effort S*  
 D-11 / C-13 ; même décision que Keystone (I-1a).  
@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-22 — Kit Coolify du serveur commun : deploy/compose.shared.yaml (migrate, app, worker sur le réseau coolify, base epc2i-postgres), authentification HTTP de la bêta par un middleware Traefik dans les étiquettes, runbook EXPLOITATION.md § 4 (ressource, variables, contrôles, partage 70/90/95).
 - 2026-10-22 — Livraison 4 : besoins machines (catalogue, soumission, retrait, commande au Go G2), vue pub_besoins_machines, connecteur Keystone (miroir, simulation, mode mixte, synchronisation), suivi des projets EPC2i, critères G2 / K3 / G3 ; kit Coolify testé de bout en bout en CI.
 - 2026-10-22 — Livraison 3 : dossiers vivants (versions, figement, empreinte, impression), circuits des jalons G1 / G2 / K3 / G3 avec avis, visas et signature simple, Mes validations, matrice de délégation et MoC, BP (VAN, TRI, retour), connecteur Codex (références vérifiées).
 - 2026-10-22 — Décisions D21, D22 et P-01 de Matrix reportées dans la spécification : référentiels du groupe tenus par Matrix (zones, subsidiaries, sites d'Arche deviennent des miroirs de matrix.pub_*), REX publié (pub_rex), PostgreSQL 16.
