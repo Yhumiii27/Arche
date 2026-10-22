@@ -23,5 +23,5 @@ export async function entraViewer(): Promise<Viewer | null> {
   const a = await getUserAccount(s.uid, await businessToday());
   if (!a || !a.active || a.entraObjectId !== s.oid) return null;
   const role = activeRoleOf(a.roles, s.role);
-  return role ? viewerOfAccount(a, role, false) : null;
+  return role ? { ...viewerOfAccount(a, role, false), authenticatedAt: new Date(s.iat * 1000) } : null;
 }

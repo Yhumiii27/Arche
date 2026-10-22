@@ -5,9 +5,10 @@ import auth from './auth.json';
 import capex from './capex.json';
 import cycle from './cycle.json';
 import demo from './demo.json';
+import dossiers from './dossiers.json';
 import shell from './shell.json';
 
-const FILES: Record<string, Record<string, string>> = { admin, auth, capex, cycle, demo, shell };
+const FILES: Record<string, Record<string, string>> = { admin, auth, capex, cycle, demo, dossiers, shell };
 
 export const FR_FILES = FILES;
 export const FR_DICT: Record<string, string> = Object.assign({}, ...Object.values(FILES));

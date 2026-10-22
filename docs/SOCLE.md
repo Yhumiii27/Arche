@@ -30,7 +30,7 @@
 | Conteneur et Coolify | `Dockerfile`, `deploy/` | port 3400, PostgreSQL du kit créé comme le serveur commun | repris et adapté (L1) |
 | CI | `.github/workflows/ci.yml` | service PostgreSQL 16, test de fumée HTTP au lieu de Playwright | repris et adapté (L1) |
 | Page « reste à développer » | `scripts/remaining-work/` | domaines d’Arche | repris (L1) |
-| Moteur « Mes validations » | `src/domain/approvals.ts`, `src/server/approvals/index.ts`, `types.ts` (le moteur seulement) | types d’Arche (spec 05 §6) | à reprendre (L3) |
+| Moteur « Mes validations » | `src/domain/approvals.ts`, `src/server/approvals/index.ts`, `types.ts` (le moteur seulement) | types d’Arche (spec 05 §6) | **non copié (L3)** : le moteur de Keystone est lié à ses modules métier ; Arche a son propre modèle, plus simple (`src/domain/approvals.ts`, `src/server/dal/approvals.ts`) sur la même forme d’élément et les mêmes indicateurs |
 | Tâches planifiées et worker | `src/server/jobs/`, `scripts/worker.ts` | moteur simplifié : bail par tâche dans `job_runs`, sauvegarde et déclaration Matrix | repris et adapté (L1b) |
 | Sauvegardes et restauration | `src/server/backup/`, `scripts/backup.ts`, `scripts/restore.ts` | `pg_dump` / `pg_restore` du seul schéma `arche`, sans recréer le schéma | repris et adapté (L1b) |
 | Connecteurs (cadre) | `src/server/integrations/outbox.ts`, `connector-enabled.ts` | connecteurs `keystone`, `codex` | à reprendre (L3, L4) |

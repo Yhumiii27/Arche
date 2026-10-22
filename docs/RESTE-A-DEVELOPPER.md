@@ -6,21 +6,21 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-22 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 16 faits, 1 en cours, 21 à faire, sur 38 points.
+**Avancement** : 20 faits, 2 en cours, 16 à faire, sur 38 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
 | Bloquant production | 3 | ≈ 7 |
-| Prochaine étape | 12 | ≈ 80 |
+| Prochaine étape | 8 | ≈ 48 |
 | À décider | 3 | ≈ 15 |
 | Plus tard | 4 | ≈ 16 |
-| **Total** | **22** | **≈ 118** |
+| **Total** | **18** | **≈ 86** |
 
 L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il ne compte ni l'attente des décisions et des données, ni les développements à faire côté Keystone, Codex, Vigie, Cursus ou Matrix, ni la recette.
 
 | Statut (points restants) | Points |
 |---|---:|
-| Non commencé | 14 |
+| Non commencé | 10 |
 | Partiel | 0 |
 | Attend le responsable produit | 3 |
 | Attend un système externe | 5 |
@@ -30,7 +30,7 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 | Plateforme et mise en production | 2 | 0 | 0 | 1 | 3 | 5 |
 | Connexion, profils et isolation par filiale | 0 | 0 | 0 | 0 | 0 | 4 |
 | CAPEX et cycle DIG-PRODI | 0 | 0 | 0 | 0 | 0 | 4 |
-| Dossiers vivants et circuits de décision | 0 | 4 | 0 | 0 | 4 | 0 |
+| Dossiers vivants et circuits de décision | 0 | 0 | 0 | 0 | 0 | 4 |
 | Besoins machines et Keystone | 0 | 3 | 0 | 0 | 3 | 1 |
 | Documents (Codex) | 0 | 2 | 0 | 0 | 2 | 0 |
 | Jalons de sécurité (Vigie) | 0 | 1 | 1 | 0 | 2 | 0 |
@@ -135,23 +135,23 @@ Calcul sur le CA de référence, forçage, confirmation (C-5).
 Livraison 2 (C-1).  
 *Avancement : Modèle 4.0, moteur des critères et des transitions, décision directe du décideur en attendant les circuits (N-27) ; valeurs réglables. · Sources : docs/spec/03*
 
-### 2.4 Dossiers vivants et circuits de décision (4 restants)
+### 2.4 Dossiers vivants et circuits de décision (0 restants, 4 faits)
 
-**AR-021 · Dossiers vivants : sections, complétude, versions, figement, empreinte** — *Prochaine étape · non commencé · effort L*  
+**~~AR-021 · Dossiers vivants : sections, complétude, versions, figement, empreinte~~** — *Prochaine étape · non commencé · effort L* · **fait (Livraison 3)**  
 Livraison 3.  
-*Sources : docs/spec/04*
+*Avancement : Sections, complétude, versions, figement, empreinte SHA-256 vérifiée, vue imprimable (docs/DELIVERY-3.md). · Sources : docs/spec/04*
 
-**AR-022 · Consultations d’experts, circuits G1 / K3 / G2 / G3, signature simple, Mes validations** — *Prochaine étape · non commencé · effort L*  
+**~~AR-022 · Consultations d’experts, circuits G1 / K3 / G2 / G3, signature simple, Mes validations~~** — *Prochaine étape · non commencé · effort L* · **fait (Livraison 3)**  
 Livraison 3 (C-7, N-6 à N-10).  
-*Sources : docs/spec/05*
+*Avancement : Circuits G1 / G2 / K3 / G3, avis d’experts, visas, signature simple (authentification récente, empreinte, append-only), Mes validations. Relances par e-mail : N-35. · Sources : docs/spec/05*
 
-**AR-023 · Matrice de délégation et MoC** — *Prochaine étape · non commencé · effort M*  
+**~~AR-023 · Matrice de délégation et MoC~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 3)**  
 Livraison 3 (C-4).  
-*Sources : docs/spec/05 §5*
+*Avancement : Matrice datée réglable par l’administrateur, MoC routées et décidées. · Sources : docs/spec/05 §5*
 
-**AR-024 · BP : VAN, TRI, délai de retour** — *Prochaine étape · non commencé · effort M*  
+**~~AR-024 · BP : VAN, TRI, délai de retour~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 3)**  
 Livraison 3 (N-11).  
-*Sources : docs/spec/06 §4*
+*Avancement : Saisie du BP sur 10 ans, VAN, TRI, délai de retour, validation par la DAF groupe. · Sources : docs/spec/06 §4*
 
 ### 2.5 Besoins machines et Keystone (3 restants, 1 faits)
 
@@ -173,9 +173,9 @@ Contrat publié pour Keystone et Matrix.
 
 ### 2.6 Documents (Codex) (2 restants)
 
-**AR-025 · Connecteur codex : références de documents, vérification, dépôt des dossiers figés** — *Prochaine étape · non commencé · effort M*  
+**AR-025 · Connecteur codex : références de documents, vérification, dépôt des dossiers figés** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 3)**  
 Tous les documents d’Arche dans Codex (N-17) ; simulation tant que l’API manque.  
-*Sources : docs/DEMANDES-CODEX.md*
+*Avancement : Références Codex vérifiées dans codex.pub_documents (ou la simulation de démo), liens profonds ; dépôt des dossiers figés en attente de CX-03 / CX-07. · Sources : docs/DEMANDES-CODEX.md*
 
 **AR-026 · API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants** — *Prochaine étape · attend un système externe · effort M*  
 CX-01 à CX-07.  
@@ -228,8 +228,8 @@ Livraison 7 (C-7, C-13).
 ### 2.11 Cadrage, décisions et données attendues (2 restants, 1 faits)
 
 **AR-002 · Réponses du responsable produit aux questions de DECISIONS.md** — *À décider · attend le responsable produit · effort S* · **en cours**  
-Restent ouvertes : N-26 à N-29 (livraison 2) ; données à fournir D-1 à D-8.  
-*Avancement : 22 oct. 2026 : réponse par défaut confirmée pour 51 questions (A, C, AC, N-1 à N-25, ajouts X-1 à X-7). Restent N-26 à N-29 et les données D-1 à D-8. · Attend : Responsable produit · Sources : docs/DECISIONS.md*
+Restent ouvertes : N-26 à N-35 ; données à fournir D-1 à D-8.  
+*Avancement : 22 oct. 2026 : réponse par défaut confirmée pour 51 questions. Restent N-26 à N-35 et les données D-1 à D-8. · Attend : Responsable produit · Sources : docs/DECISIONS.md*
 
 **AR-003 · Données de référence des filiales** — *À décider · attend le responsable produit · effort S*  
 Liste des filiales (code, pays, zone, devise), sites, CA de référence par exercice (C-5).  
@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-22 — Livraison 3 : dossiers vivants (versions, figement, empreinte, impression), circuits des jalons G1 / G2 / K3 / G3 avec avis, visas et signature simple, Mes validations, matrice de délégation et MoC, BP (VAN, TRI, retour), connecteur Codex (références vérifiées).
 - 2026-10-22 — Décisions D21, D22 et P-01 de Matrix reportées dans la spécification : référentiels du groupe tenus par Matrix (zones, subsidiaries, sites d'Arche deviennent des miroirs de matrix.pub_*), REX publié (pub_rex), PostgreSQL 16.
 - 2026-10-22 — Questionnaire : réponse par défaut confirmée pour 51 questions, reportée dans DECISIONS.md ; restent N-26 à N-29 et les données D-1 à D-8.
 - 2026-10-22 — Livraison 2 : CAPEX et cycle DIG-PRODI — brouillon et ouverture, lots, versions de budget E50 / E30 / E10, typologie, équipe et gabarit, critères des jalons et décisions G1 / G2 / K3 / G3, risques, décisions, journal, modèle DIG-PRODI réglable, vue pub_capex.

@@ -14,7 +14,12 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `src/domain/lifecycle.ts` (criteria without data are "not evaluated yet" until their delivery), budget and typology
   `src/domain/budget.ts`, CAPEX rules and write rights `src/domain/capex.ts` (`canDo`), Server Functions
   `src/features/capex/actions.ts` (each re-reads the CAPEX through the visibility filter inside its transaction), reads
-  `src/server/dal/cycle.ts`, view `pub_capex`. Next: L3 (living dossiers, circuits, MoC) — see `docs/PLAN.md`.
+  `src/server/dal/cycle.ts`, view `pub_capex`.
+- **Delivery 3 (living dossiers, circuits, MoC) is done** (`docs/DELIVERY-3.md`): dossiers `src/domain/dossiers.ts` (frozen
+  version = immutable, SHA-256 of the canonical content), circuits `src/domain/circuits.ts` (gate decisions only through the
+  deciding step; `src/server/cycle/gate-decision.ts`), signatures append-only (trigger), delegation `src/domain/delegation.ts`,
+  BP `src/domain/bp.ts`, "My approvals" `src/server/dal/approvals.ts`, Codex connector `src/server/integrations/codex/`
+  (simulated catalogue in the demo data set). Next: L4 (Keystone connector, machine needs) — see `docs/PLAN.md`.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

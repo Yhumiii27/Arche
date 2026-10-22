@@ -38,7 +38,7 @@ function config(req: Request): EntraConfig | NextResponse {
   }
 }
 
-/** GET /api/auth/sign-in?returnTo=/path — starts the Microsoft sign-in (state, nonce, PKCE in a sealed cookie). */
+/** GET /api/auth/sign-in?returnTo=/path[&reauth=1] — starts the Microsoft sign-in (state, nonce, PKCE in a sealed cookie); `reauth` asks for the credentials again before a signature. */
 export async function handleSignIn(req: NextRequest): Promise<Response> {
   if (authMode() !== 'entra') return notFound();
   const cfg = config(req);
@@ -49,7 +49,7 @@ export async function handleSignIn(req: NextRequest): Promise<Response> {
   const nonce = randomToken();
   const verifier = randomToken(32);
   try {
-    target = authorizationUrl(await discover(cfg), cfg, { state, nonce, codeChallenge: await pkceChallenge(verifier) });
+    target = authorizationUrl(await discover(cfg), cfg, { state, nonce, codeChallenge: await pkceChallenge(verifier), reauth: req.nextUrl.searchParams.get('reauth') === '1' });
   } catch (e) {
     console.error('[auth] sign-in:', e instanceof Error ? e.message : e);
     return redirect(signInPage(originOf(cfg), 'provider'));
