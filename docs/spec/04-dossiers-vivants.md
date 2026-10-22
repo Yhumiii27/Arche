@@ -18,8 +18,11 @@ brouillon ──figer & soumettre──▶ figé ──circuit──▶ approuv�
 - Une modification après figement crée la version suivante (brouillon) et **annule** le circuit en cours (étapes non
   encore faites), avec trace dans l’audit.
 - **Complétude** : % des champs obligatoires renseignés, par section et global ; affiché en permanence.
-- **Vue imprimable** de chaque version (page « dossier » au format A4) ; l’export PDF vers Codex vient avec le connecteur
-  Codex (hors v1, N-17).
+- **Vue imprimable** de chaque version (page « dossier » au format A4). La version figée et signée est **déposée dans Codex**
+  (dossier de jalon, PDF + empreinte) dès que Codex offre une API de dépôt (CX-03, CX-07) ; en attendant, l’utilisateur la
+  dépose et Arche garde la référence.
+- **Pièces** : toujours des **documents Codex** (N-17) — Arche garde l’identifiant, la révision figée avec la version et le
+  lien profond ; le type Codex attendu par pièce est dans la colonne « Type Codex » (types manquants : CX-02).
 
 ## 2. Dossier 1 — Business Case Cadrage (Phase 1, G1)
 
@@ -42,8 +45,8 @@ Circuit : avis d’experts → visa Sponsor → décision COPIL GPI (05 §2).
 | Section | Contenu | Obligatoire |
 |---|---|---|
 | 1. Baseline technique | variantes étudiées, variante retenue, date de gel | oui |
-| 2. Pack ingénierie | % pondéré (filiale + EPC2i), pièces par famille : P&ID, BOM, layout et plan de masse, schémas électriques (TGBT, puissance), analyses fonctionnelles — références Codex | oui (> 80 %) |
-| 3. Dossier réglementaire | registre des autorisations : ICPE, permis de construire, PLU, zonage ATEX | oui |
+| 2. Pack ingénierie | % pondéré (filiale + EPC2i), pièces par famille : P&ID (`PID`), BOM (`BOM`), layout (`GA`) et plan de masse (à créer), schémas électriques (`SCH`), analyses fonctionnelles (`FDS`) — références Codex | oui (> 80 %) |
+| 3. Dossier réglementaire | registre des autorisations : ICPE, permis de construire, PLU, zonage ATEX — pièces Codex de type `AUT` (sous-types à créer, CX-02) | oui |
 | 4. Sécurité | HS 3 HazOp / AMDEC (preuve), actions ouvertes | oui |
 | 5. AFE | montant demandé (budget E10), phasage des décaissements, lots, provision pour aléas | oui |
 | 6. BP consolidé DAF | flux, VAN, TRI, retour, sensibilités ; validé par la DAF groupe | oui |

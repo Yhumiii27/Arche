@@ -1,0 +1,81 @@
+# Arche on Coolify — a "Docker Compose" resource (derived from Keystone's kit). Runbook in French: docs/EXPLOITATION.md.
+#
+#   db       PostgreSQL 16 (named volume arche-db); postgres-init/ creates the database epc2i, the role arche_app and the
+#            schema `arche` on an empty volume. To use the shared EPC2I server instead (decision M-01), drop this service and
+#            set DATABASE_URL to postgres://arche_app:…@<host>:5432/epc2i (Matrix creates the role and the schema).
+#   migrate  one-shot `npm run db:migrate` before every start (migrations, then the seed of an EMPTY schema: ARCHE_SEED must
+#            be set — demo for the beta, production for reference data only); left out of Coolify's health status
+#   app      the web server (port 3400, behind Coolify's proxy and TLS); starts once the migration has succeeded
+#
+# The demo beta (ARCHE_AUTH=demo: "View as" any profile, the CEO included) ONLY behind Coolify's basic authentication —
+# nothing in Arche enforces it. The key `exclude_from_hc` is Coolify's: remove it to run this file with plain `docker compose`.
+
+x-arche-env: &arche-env
+  NODE_ENV: production
+  DATABASE_URL: postgresql://arche_app:${ARCHE_APP_PASSWORD:?ARCHE_APP_PASSWORD is required}@db:5432/epc2i
+  DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-}
+  ARCHE_SEED: ${ARCHE_SEED:?ARCHE_SEED is required (demo or production)}
+  ARCHE_AUTH: ${ARCHE_AUTH:-}
+  ARCHE_SESSION_SECRET: ${ARCHE_SESSION_SECRET:-}
+  ARCHE_SESSION_HOURS: ${ARCHE_SESSION_HOURS:-}
+  ARCHE_ADMIN_EMAILS: ${ARCHE_ADMIN_EMAILS:-}
+  ARCHE_CLOCK: ${ARCHE_CLOCK:-}
+  ENTRA_TENANT_ID: ${ENTRA_TENANT_ID:-}
+  ENTRA_ISSUER: ${ENTRA_ISSUER:-}
+  ENTRA_CLIENT_ID: ${ENTRA_CLIENT_ID:-}
+  ENTRA_CLIENT_SECRET: ${ENTRA_CLIENT_SECRET:-}
+  ENTRA_REDIRECT_URI: ${ENTRA_REDIRECT_URI:-}
+  ENTRA_POST_LOGOUT_REDIRECT_URI: ${ENTRA_POST_LOGOUT_REDIRECT_URI:-}
+  NEXT_PUBLIC_KEYSTONE_URL: ${NEXT_PUBLIC_KEYSTONE_URL:-}
+  NEXT_PUBLIC_CODEX_URL: ${NEXT_PUBLIC_CODEX_URL:-}
+  NEXT_PUBLIC_VIGIE_URL: ${NEXT_PUBLIC_VIGIE_URL:-}
+  LOG_LEVEL: ${LOG_LEVEL:-}
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      ARCHE_APP_PASSWORD: ${ARCHE_APP_PASSWORD:?ARCHE_APP_PASSWORD is required}
+    volumes:
+      - arche-db:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d epc2i"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  migrate:
+    image: arche:local
+    pull_policy: never
+    command: ["npm", "run", "db:migrate"]
+    environment: *arche-env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    exclude_from_hc: true
+
+  app:
+    image: arche:local
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_KEYSTONE_URL: ${NEXT_PUBLIC_KEYSTONE_URL:-}
+        NEXT_PUBLIC_CODEX_URL: ${NEXT_PUBLIC_CODEX_URL:-}
+        NEXT_PUBLIC_VIGIE_URL: ${NEXT_PUBLIC_VIGIE_URL:-}
+    restart: unless-stopped
+    environment: *arche-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    expose:
+      - "3400"
+
+volumes:
+  arche-db:

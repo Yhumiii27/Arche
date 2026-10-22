@@ -1,0 +1,14 @@
+{
+  "Subsidiaries": "Filiales",
+  "Name": "Nom",
+  "Country": "Pays",
+  "Currency": "Devise",
+  "City": "Ville",
+  "Reference revenue": "CA de référence",
+  "Entered by the group CFO; used for the typology (20 % threshold).": "Saisi par la DAF groupe ; sert à la typologie (seuil de 20 %).",
+  "No reference revenue entered yet.": "Aucun CA de référence saisi pour l’instant.",
+  "Accounts": "Comptes",
+  "E-mail": "Adresse e-mail",
+  "Roles and scopes": "Rôles et périmètres",
+  "Deactivated": "Désactivé"
+}

@@ -24,13 +24,13 @@ le budget par classe d’estimation et le BP, la typologie, la gouvernance (staf
 | Propriétaire | Ce qu’il possède | Ce qu’Arche en fait |
 |---|---|---|
 | **Keystone** | catalogue machines, réponses aux besoins (qualification, devis, offre), projets EPC2i et tout leur contenu (jalons, avancement, avenants, réserves, livrables, pack ingénierie machine, parc installé) | lit les vues `pub_` (connecteur `keystone` : miroir, simulation tant que les vues manquent), affiche, ouvre Keystone par lien profond |
-| **Vigie** (à confirmer, AC-3) | HazID, HazOp, AMDEC, PSSR, RSPDI, ASPD et actions de sécurité | affiche l’état (miroir), bloque les jalons, alerte sur les retards, ouvre Vigie par lien profond |
-| **Codex** | documents (P&ID, layout, AFE signée, permis, PV…) | garde des **références** de documents dans les dossiers vivants ; ouvre Codex par lien profond |
-| **Cursus** | personnes, habilitations | rien en v1 (les utilisateurs d’Arche viennent d’Entra ID) |
+| **Codex** | **tous les documents d’Arche** (décision du responsable produit, 22 oct. 2026) : P&ID, plan de masse, schémas, AFE, permis, études de sécurité, PV, dossiers de jalon figés… | Arche ne stocke **aucun fichier** : il garde des références Codex (identifiant `TYPE-CONTEXTE-SEQ`, révision, lien `/documents/{id}`), lit leur état dans `codex.pub_documents` ; dépôt et lecture par API à obtenir de Codex ([`../DEMANDES-CODEX.md`](../DEMANDES-CODEX.md)) |
+| **Vigie** (à décider, AC-3) | QHSE ; HazID, HazOp, AMDEC, PSSR, RSPDI, ASPD **ne sont pas modélisés dans Vigie aujourd’hui** | jalons HS déclaratifs dans Arche en attendant ; miroir et liens profonds quand Vigie les porte ([`../DEMANDES-VIGIE.md`](../DEMANDES-VIGIE.md)) |
+| **Cursus** | salariés (matricule), formations, habilitations | rien en v1 : les utilisateurs d’Arche viennent d’Entra ID ([`../DEMANDES-CURSUS.md`](../DEMANDES-CURSUS.md)) |
 | **Sage** | comptabilité, immobilisations | rien en v1 ; la clôture comptable du G3 est une attestation du CDG (N-15) |
-| **Matrix** | socle du serveur PostgreSQL commun, droits, registre des tables, journal unifié | Arche s’y déclare ; les scripts Matrix sont **proposés** dans [`../DEMANDES-MATRIX.md`](../DEMANDES-MATRIX.md) |
+| **Matrix** | socle du serveur PostgreSQL commun, droits, registre des tables, journal unifié ; référentiels pays, sites, organigramme (D14, D15, D17) | Arche s’y déclare, lit ses référentiels ; les changements sont **demandés** dans [`../DEMANDES-MATRIX.md`](../DEMANDES-MATRIX.md) (dont les filiales, N-22) |
 
-Arche **n’écrit que dans son schéma** (`arche`, N-1) et ne lit les autres outils que par leurs vues `pub_`. Arche ne crée rien
+Arche tourne **sur PostgreSQL uniquement** (décision du 22 oct. 2026, N-23), dans son schéma `arche` — en production, en recette, en CI et sur un poste de développement. Arche **n’écrit que dans son schéma** (`arche`, N-1) et ne lit les autres outils que par leurs vues `pub_`. Arche ne crée rien
 chez les autres : un besoin machine passe à « commandé » chez Arche, c’est Keystone qui crée le projet EPC2i.
 
 ## 3. Glossaire (propositions, à valider — C-6)
@@ -71,7 +71,7 @@ chez les autres : un besoin machine passe à « commandé » chez Arche, c’est
 | [`08-ecrans.md`](08-ecrans.md) | registre des écrans et accès par profil |
 | [`../DECISIONS.md`](../DECISIONS.md) | questions ouvertes et réponses par défaut |
 | [`../CONTRATS.md`](../CONTRATS.md) | vues `pub_` lues et publiées, colonne par colonne |
-| [`../DEMANDES-KEYSTONE.md`](../DEMANDES-KEYSTONE.md), [`../DEMANDES-MATRIX.md`](../DEMANDES-MATRIX.md) | ce qu’Arche demande aux autres dépôts |
+| [`../DEMANDES-KEYSTONE.md`](../DEMANDES-KEYSTONE.md), [`../DEMANDES-CODEX.md`](../DEMANDES-CODEX.md), [`../DEMANDES-VIGIE.md`](../DEMANDES-VIGIE.md), [`../DEMANDES-CURSUS.md`](../DEMANDES-CURSUS.md), [`../DEMANDES-MATRIX.md`](../DEMANDES-MATRIX.md) | ce qu’Arche demande aux autres dépôts |
 | [`../PLAN.md`](../PLAN.md) | plan de livraisons aligné sur le §5 du CDC |
 | [`../SOCLE.md`](../SOCLE.md) | socle repris de Keystone et commit d’origine |
 
