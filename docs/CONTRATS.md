@@ -131,9 +131,27 @@ les PV d’acceptation. **Colonnes à ajouter** (K-06) : `type` (`client_accepta
 | `pct_pondere` | numeric | % pondéré du projet (même valeur sur chaque ligne du projet) |
 | `maj_le` | timestamptz | |
 
-### 2.3 Vigie — à définir (AC-3)
+### 2.3 Codex — existent (lecture à accorder, CX-05)
 
-Proposition à porter auprès de Vigie (Arche ne modifie pas Vigie) : `pub_etudes_securite` (`capex_code`, `projet_code`,
+Tous les documents d’Arche sont dans Codex (N-17). Arche lit, pour vérifier et afficher une référence :
+
+| Vue | Colonnes lues |
+|---|---|
+| `codex.pub_documents` | `id` (identifiant `TYPE-CONTEXTE-SEQ`), `aliases`, `title`, `type_code`, `subtype`, `attachment`, `project_code`, `conf`, `state`, `status`, `rev_in_force`, `rev_working`, `modified_at` |
+| `codex.pub_revisions_document` | `doc_id`, `letter`, `status`, `approved_at`, `in_force_at`, `file_name` |
+| `codex.pub_validations` | `doc_id`, `revision`, `current_step`, `outcome`, `step_label`, `assignee_name`, `done_on` (circuit d’une pièce du pack) |
+| `codex.pub_types_document` | `code`, libellés, `family`, `attachments`, `subtypes` (choix du type attendu par pièce) |
+
+Les documents de niveau `tres_confidentiel` ne sont pas publiés par Codex : Arche n’en verra que la référence saisie.
+
+### 2.4 Matrix — existent (référentiels, N-22)
+
+`matrix.pub_pays`, `matrix.pub_sites`, `matrix.pub_organigramme` : pays (ISO 2), sites (code, pays), organisation ; à lire
+quand Matrix portera les filiales (M-9).
+
+### 2.5 Vigie — à définir (AC-3)
+
+Vigie ne modélise pas ces études aujourd’hui ([`DEMANDES-VIGIE.md`](DEMANDES-VIGIE.md)). Proposition à porter auprès de Vigie (Arche ne modifie pas Vigie) : `pub_etudes_securite` (`capex_code`, `projet_code`,
 `etude_code` HS2…HS6 / PSSR, `type` HazID / HazOp / AMDEC / PSSR / ASPD, `statut`, `conclue_le`, `actions_ouvertes`,
 `actions_en_retard`, `lien`, `maj_le`). En attendant : statut déclaratif (N-13).
 

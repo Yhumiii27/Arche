@@ -14,6 +14,11 @@
 Données de référence attendues : la liste des filiales, de leurs zones et de leurs CA (C-5), la matrice de délégation
 (C-4), la table des jalons HS (C-3), la liste type du pack (C-9).
 
+**Décisions reçues le 22 oct. 2026** (appliquées dès la livraison 1) : le système s’appelle **Arche** (AC-1) ; **PostgreSQL
+uniquement**, pas de PGlite (N-23) ; **Codex héberge tous les documents** d’Arche (N-17) ; tenir compte des environnements
+de Codex, Vigie, Cursus et Matrix (demandes `DEMANDES-*.md`). Le responsable produit a demandé de lancer la livraison 1
+avec les réponses par défaut ci-dessous, qui restent révisables.
+
 ## 1. Décisions d’architecture déjà prises (à confirmer pour Arche)
 
 | # | Décision (architecture §1) | Application dans Arche | ★ |
@@ -47,7 +52,7 @@ Données de référence attendues : la liste des filiales, de leurs zones et de 
 |---|---|---|---|
 | AC-1 | Nom et dépôt de l’application | **Arche**, `Yhumiii27/Arche` (réponse du 22 oct. 2026) | — |
 | AC-2 | P-05 : données financières d’un projet EPC2i visibles par la filiale | prix de vente, avenants, facturé, % physique, SPI : **oui** ; coûts, taux, marge : **non** | L4 |
-| AC-3 | Vigie porte-t-il HazID / HazOp / AMDEC / PSSR ? | oui à terme ; **en attendant**, statut déclaratif dans Arche (N-13) | L5 |
+| AC-3 | Vigie porte-t-il HazID / HazOp / AMDEC / PSSR ? | **constat du 22 oct. : non**, Vigie ne modélise aucune de ces études (seulement « HAZOP » comme source libre d’action QSE). Proposition : les demander à Vigie ([`DEMANDES-VIGIE.md`](DEMANDES-VIGIE.md)) ; **en attendant**, statut déclaratif dans Arche (N-13) | L5 |
 | AC-4 | Catalogue : module Keystone (R-186) puis configurateur à part si besoin | **module Keystone** ; Arche lit `pub_catalogue_machines` | L4 |
 | AC-5 | Multi-équipements (R-185) | un besoin de plusieurs machines = **un projet EPC2i à plusieurs équipements** | L4 |
 
@@ -55,7 +60,7 @@ Données de référence attendues : la liste des filiales, de leurs zones et de 
 
 | # | Question | ★ Réponse par défaut | Bloque |
 |---|---|---|---|
-| N-1 | Nom du schéma et du rôle (le prompt dit « `capex`, nom à confirmer ») | schéma **`arche`**, rôle **`arche_app`** (le nom de l’outil, comme `keystone`) | L1 |
+| N-1 | Nom du schéma et du rôle (le prompt dit « `capex`, nom à confirmer ») | schéma **`arche`**, rôle **`arche_app`** (le nom de l’outil, comme `keystone`) — appliqué en livraison 1 | L1 |
 | N-2 | Devise des filiales hors zone euro | v1 en **k€** seulement ; le montant en devise locale et le taux de référence groupe viennent plus tard | L2 |
 | N-3 | Comptes des filiales | même locataire Entra si les filiales y sont, sinon **invités B2B** ; rôles et portées attribués dans Arche par l’admin | L1 |
 | N-4 | Administrateur *(hors CDC)* | profil `admin` (PMO groupe ou DSI) : référentiels, utilisateurs, paramètres ; aucune donnée métier | L1 |
@@ -71,11 +76,15 @@ Données de référence attendues : la liste des filiales, de leurs zones et de 
 | N-14 | Engagé et réalisé des lots hors EPC2i | saisie mensuelle ou import CSV par le CDG ; import Sage plus tard | L5 |
 | N-15 | Clôture comptable du G3 | **attestation** du CDG (coût final par lot, solde de l’AFE), sans lien Sage en v1 | L6 |
 | N-16 | Ramp-up : saisie et seuils (analyse §6.8) | saisie journalière par le CPF ou l’expert Exploitation de la filiale, import CSV ; jour conforme = production ≥ 100 % du nominal et rebuts ≤ objectif ; arrêts planifiés neutres | L6 |
-| N-17 | Documents | Arche ne stocke **aucun fichier** en v1 : références Codex (ou lien) ; export PDF des dossiers vers Codex avec le connecteur Codex | L3 |
+| N-17 | Documents | **Décidé (22 oct.) : Codex héberge tous les documents d’Arche.** Arche ne stocke aucun fichier : références Codex (identifiant, révision, lien) ; dépôt des dossiers figés et lecture d’état par API Codex à obtenir ([`DEMANDES-CODEX.md`](DEMANDES-CODEX.md) CX-03, CX-04) ; en attendant, dépôt dans Codex par l’utilisateur et référence collée dans Arche | L3 |
 | N-18 | Langues | français (par défaut) et anglais, comme Keystone | L1 |
 | N-19 | « Audits transversaux » des projets Stratégiques | un audit par phase, tenu par le Dir.IG ou le PMO, consigné comme revue de type « audit » | L5 |
 | N-20 | Reprise des CAPEX en cours | saisie manuelle des CAPEX pilotes (phase courante, jalons passés datés, budget validé) ; pas d’import en masse en v1 | pilote |
 | N-21 | Jeu de démonstration | deux filiales fictives (APM Maroc, SAI Sahel), trois CAPEX ; aucune donnée réelle | L1 |
+| N-22 | Qui possède les filiales, leurs zones et leurs sites ? Matrix possède les sites (D14) et l’organigramme (D15) mais sans niveau « société » | Matrix (nouveau niveau « société », [`DEMANDES-MATRIX.md`](DEMANDES-MATRIX.md) M-9) ; Arche garde ses tables `zones`, `subsidiaries`, `sites` en attendant, tenues par son administrateur | L2 |
+| N-23 | Base de données | **Décidé (22 oct.) : PostgreSQL uniquement**, pas de PGlite : développement, tests, CI et production sur PostgreSQL, schéma `arche` partout (`npm run db:local` sur un poste) | — |
+| N-24 | Rattachement Codex d’un document de CAPEX : nouveau rattachement `capex` dans Codex, ou CAPEX traité comme un « projet » Codex | nouveau rattachement **`capex`** (contexte = code CAPEX), qui évite de mélanger CAPEX et projets EPC2i ([`DEMANDES-CODEX.md`](DEMANDES-CODEX.md) CX-01) | L3 |
+| N-25 | Identité des personnes entre outils (Cursus : matricule ; Arche : e-mail Entra) | Arche identifie par l’objet Entra et l’e-mail ; le matricule est ajouté aux comptes du groupe quand Cursus l’expose à Arche (CU-03) ; les salariés des filiales n’ont pas de matricule Cursus (CU-01) | L2 |
 
 ## 5. Ajouts au-delà du CDC (à valider, règle « rien hors du CDC sans accord »)
 

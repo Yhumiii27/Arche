@@ -1,58 +1,93 @@
 # Demandes d’Arche à Matrix (socle du serveur PostgreSQL commun)
 
 > 22 oct. 2026. Décision M-01 du dépôt Matrix : base `epc2i`, un schéma par outil, partage par vues `pub_`. Arche **n’écrit
-> pas** dans le dépôt Matrix : les scripts ci-dessous sont des **propositions**, à intégrer par le responsable produit (ou le
-> chat Matrix) à `infra/postgres/`. Les noms de fichiers suivent ceux que cite Keystone (`docs/EXPLOITATION.md` §4.1) ; ils
-> sont à vérifier dans Matrix. Le nom `arche` attend la réponse à N-1.
+> pas** dans le dépôt Matrix : ces demandes sont à transmettre au chat Matrix par le responsable produit (règle M-05 : une
+> branche et une PR par outil). Relevé du dépôt `Yhumiii27/Matrix` au commit `403ff37`.
+>
+> **Arche tourne sur PostgreSQL uniquement** (décision du responsable produit du 22 oct. 2026), schéma `arche`, rôle
+> `arche_app` (N-1) — sur le serveur commun comme sur un poste de développement (`npm run db:local` y crée la même
+> disposition). Ses tables sont déclarées dans le schéma (`arche.table(…)`, disposition de Codex) : ses migrations nomment
+> `"arche".` elles-mêmes, sans `CREATE SCHEMA` ni réécriture de `"public".`. Verrous : `hashtext('arche.migrations')`
+> (session, migration) et `hashtext('arche.ecritures')` (transaction, écritures). Journal : `arche.__drizzle_migrations`.
 
-## M-1 · Rôle et schéma (`init/01-base-et-roles.sql`, `init/02-schemas.sql`)
+Aujourd’hui chaque outil est écrit en dur dans les scripts de Matrix ; ajouter Arche touche les fichiers suivants.
+
+## M-1 · Rôle `arche_app` (`init/01-base-et-roles.sql`)
+
+- `\getenv mdp_arche_app ARCHE_APP_PASSWORD` et les mêmes contrôles que pour les autres mots de passe (vide : arrêt ; moins
+  de 16 caractères : avertissement) ; génération : `openssl rand -base64 30 | tr -d '/+=' | cut -c1-32`.
+- `arche_app` dans la liste des rôles créés, puis `ALTER ROLE arche_app LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE
+  NOREPLICATION NOBYPASSRLS INHERIT PASSWORD …` (SCRAM).
+- `GRANT arche_app TO matrix_admin WITH INHERIT FALSE, SET TRUE;`, `GRANT CONNECT ON DATABASE epc2i TO arche_app;`
+- `COMMENT ON ROLE arche_app IS 'Connexion d''Arche (CAPEX des filiales) : propriétaire du schéma arche ; ailleurs, seulement SELECT sur les vues pub_ accordées.';`
+- `COMMENT ON DATABASE epc2i` : ajouter `arche` à la liste des schémas.
+
+## M-2 · Schéma `arche` (`init/02-schemas.sql`)
 
 ```sql
--- 01 : rôle de connexion d'Arche (mot de passe fourni par la DSI, jamais dans le dépôt)
-CREATE ROLE arche_app LOGIN PASSWORD :'ARCHE_APP_PASSWORD' NOSUPERUSER NOCREATEDB NOCREATEROLE;
--- 02 : schéma d'Arche, dont arche_app est propriétaire
 CREATE SCHEMA IF NOT EXISTS arche AUTHORIZATION arche_app;
-ALTER ROLE arche_app IN DATABASE epc2i SET search_path = arche;
+ALTER SCHEMA arche OWNER TO arche_app;
+REVOKE ALL ON SCHEMA arche FROM PUBLIC;
+COMMENT ON SCHEMA arche IS 'Arche (CAPEX des filiales, DIG-PRODI) : tables, vues pub_ et journal des migrations (__drizzle_migrations). Propriétaire arche_app.';
+ALTER ROLE arche_app IN DATABASE epc2i SET search_path TO arche;
+ALTER ROLE arche_app IN DATABASE epc2i SET idle_in_transaction_session_timeout TO '5min';
 ```
 
-## M-2 · Droits de base (`init/03-droits.sql`)
+## M-3 · Droits de base (`init/03-droits.sql`)
 
-```sql
-REVOKE CREATE ON DATABASE epc2i FROM arche_app;
-GRANT CONNECT ON DATABASE epc2i TO arche_app;
-REVOKE ALL ON SCHEMA public FROM arche_app;
--- aucun droit sur les autres schémas (keystone, codex, vigie, cursus, matrix) hors vues pub_ (M-4)
-```
+Ajouter `arche` / `arche_app` partout où les quatre outils sont énumérés : `GRANT USAGE ON SCHEMA arche TO matrix_lecture,
+matrix_admin` ; `ALTER DEFAULT PRIVILEGES FOR ROLE arche_app IN SCHEMA arche …` (SELECT à `matrix_lecture`, tout à
+`matrix_admin`, `REVOKE EXECUTE ON ROUTINES FROM PUBLIC`) ; les contraintes `colonnes_sensibles_schema_ck`,
+`partage_lecteurs_vue_check` (`^(keystone|codex|cursus|vigie|matrix|arche)\.pub_…`) et `partage_lecteurs_lecteur_check` ;
+les listes `nspname IN (…)` et `VALUES ('keystone_app','keystone') …` de `droits_ddl`, `appliquer_droits()` et
+`droits.verifier()`.
 
-## M-3 · Partage (`partage/40-arche.sql`, exécuté en `arche_app`)
+Colonnes sensibles d’Arche (à ne pas montrer à `matrix_lecture`) : `arche.users.email`, `arche.users.entra_object_id`,
+`arche.signatures.ip_hash` (livraison 3).
 
-Recrée à l’identique les vues créées par les migrations d’Arche : `arche.pub_capex`, `arche.pub_besoins_machines`,
-`arche.pub_rampup`, `arche.pub_journal` (définitions : [`CONTRATS.md`](CONTRATS.md) §3, fichier fourni par Arche à la
-livraison 2). Comme `30-keystone.sql`, le rejouer ne change rien.
+## M-4 · Partage (`partage/70-arche.sql`, nouveau, exécuté en `arche_app`)
 
-## M-4 · Droits des lecteurs (`partage/90-droits.sql`)
+Copie qualifiée des vues créées par les migrations d’Arche : `arche.pub_capex`, `arche.pub_besoins_machines`,
+`arche.pub_rampup`, `arche.pub_journal` (définitions : [`CONTRATS.md`](CONTRATS.md) §3 ; le fichier sera fourni avec la
+livraison qui crée chaque vue). Le rejouer ne change rien. Numéro 70 : premier emplacement libre après `60-vigie-ecr-eco.sql`.
 
-```sql
--- Arche lit Keystone
-GRANT USAGE ON SCHEMA keystone TO arche_app;
-GRANT SELECT ON keystone.pub_projets, keystone.pub_livrables, keystone.pub_parc_machines TO arche_app;
--- à ajouter à mesure que Keystone les publie (R-186 à R-191)
-GRANT SELECT ON keystone.pub_catalogue_machines, keystone.pub_reponses_besoins, keystone.pub_jalons_projets,
-                keystone.pub_avancement_projets, keystone.pub_avenants, keystone.pub_reserves,
-                keystone.pub_pack_ingenierie TO arche_app;
--- Keystone et Matrix lisent Arche
-GRANT USAGE ON SCHEMA arche TO keystone_app, matrix_app;
-GRANT SELECT ON arche.pub_capex, arche.pub_besoins_machines, arche.pub_rampup TO keystone_app;
-GRANT SELECT ON arche.pub_capex, arche.pub_besoins_machines, arche.pub_rampup, arche.pub_journal TO matrix_app;
-```
+## M-5 · Droits des lecteurs (`partage/90-droits.sql`)
 
-Le contrôle `droits.verifier()` doit rester sans erreur (aucun droit d’Arche sur une table d’un autre outil).
+Ajouter `arche_app` au tableau de contrôle des rôles, puis à la liste (vue, lecteurs) :
 
-## M-5 · Registre des tables et journal unifié
+| Vue | Lecteurs à ajouter |
+|---|---|
+| `keystone.pub_projets`, `keystone.pub_livrables`, `keystone.pub_parc_machines` | `arche_app` |
+| `keystone.pub_catalogue_machines`, `pub_reponses_besoins`, `pub_jalons_projets`, `pub_avancement_projets`, `pub_avenants`, `pub_reserves`, `pub_pack_ingenierie` (à mesure que Keystone les publie) | `arche_app` |
+| `codex.pub_documents`, `codex.pub_revisions_document`, `codex.pub_validations`, `codex.pub_types_document` | `arche_app` |
+| `matrix.pub_pays`, `matrix.pub_sites`, `matrix.pub_organigramme` | `arche_app` |
+| `arche.pub_capex`, `arche.pub_besoins_machines`, `arche.pub_rampup` (nouvelles) | `keystone_app`, `matrix_app` (et `codex_app` pour `pub_capex` si CX-01 retient un CAPEX comme contexte Codex) |
+| `arche.pub_journal` (nouvelle) | `matrix_app` |
 
-- Arche déclare ses tables à Matrix au démarrage (`MATRIX_URL`), comme Keystone (`src/server/integrations/matrix/`).
-- `matrix.journal_unifie` ajoute `arche.pub_journal` (mêmes colonnes que `keystone.pub_journal`, contrat D18).
+`droits.verifier()` doit rester sans ligne de gravité `erreur`.
 
-## M-6 · Plus tard
+## M-6 · Journal unifié (`partage/95-matrix-journal-unifie.sql`)
 
-Droits de lecture d’Arche sur la vue de Vigie des études de sécurité (AC-3), quand Vigie la publie.
+Ajouter `'arche'` au tableau `FOREACH v_outil IN ARRAY ARRAY['keystone','codex','cursus','vigie']`. `arche.pub_journal`
+respecte le contrat exact (ordre et types) : `ref_source text, nature text, quand timestamptz, qui text, qui_ref text,
+qui_role text, action text, objet text, detail text, projet text, qui_matricule text`.
+
+## M-7 · Sauvegardes et vérifications
+
+- `sauvegarde/sauvegarder.sh` : ajouter `arche` à la boucle des schémas.
+- `verifier-droits.sql` : cas d’essai d’`arche_app` (aucun droit sur les tables d’un autre outil, lecture des seules vues
+  accordées).
+
+## M-8 · Déclaration des tables (application Matrix)
+
+`serveur.mjs` : ajouter `'arche'` à `APPS` (aujourd’hui `['keystone','codex','cursus','vigie']` : une déclaration
+`app: 'arche'` est refusée « outil inconnu »). Arche déclarera ses tables (`POST {MATRIX_URL}/api/declarations`, format
+`matrix.schema/1`, comme Keystone) avec la livraison qui ajoute le connecteur Matrix.
+
+## M-9 · Filiales dans le référentiel d’organisation (à décider, N-22)
+
+`matrix.organigramme` ne connaît que les niveaux `departement | service | equipe` d’une seule société, et `matrix.sites`
+(D14) ne porte pas de filiale. Arche a besoin des **filiales** (code à 3 lettres, pays, zone, devise) et de leurs **sites**.
+Proposition : Matrix ajoute un niveau « société » (ou une table `matrix.societes`) et rattache chaque site à sa société ;
+Arche lit alors `matrix.pub_sites` / `pub_organigramme` au lieu de tenir ses propres tables `zones`, `subsidiaries`, `sites`
+(gardées en attendant, alimentées par l’administrateur d’Arche).

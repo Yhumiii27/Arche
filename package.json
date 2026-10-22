@@ -1,0 +1,44 @@
+{
+  "name": "arche",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3400",
+    "build": "NODE_OPTIONS=\"--max-old-space-size=4096 ${NODE_OPTIONS:-}\" next build",
+    "start": "next start --port ${PORT:-3400}",
+    "lint": "eslint",
+    "typecheck": "NODE_OPTIONS=\"--max-old-space-size=4096 ${NODE_OPTIONS:-}\" tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx --conditions=react-server scripts/db-migrate.ts",
+    "test": "vitest run",
+    "remaining:page": "tsx scripts/remaining-work/build.ts",
+    "db:local": "tsx scripts/db-local.ts",
+    "test:smoke": "tsx tests/smoke/run.ts"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "drizzle-orm": "^0.45.3",
+    "next": "16.4.0",
+    "pg": "8.23.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@types/node": "^24.19.1",
+    "@types/pg": "8.23.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.11",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^5.0.3"
+  },
+  "overrides": {
+    "uuid": "11.1.1"
+  }
+}

@@ -1,37 +1,41 @@
 # Arche — socle repris de Keystone
 
-> Décision A-3 : le **socle** de Keystone est copié **une fois** dans Arche à la livraison 1 ; aucun module métier n’est
-> copié. Le socle sera ensuite extrait en paquet partagé `@epc2i/socle` (lot R-194 de Keystone) et ces copies seront
-> remplacées. Ce fichier note, pour chaque élément, son chemin dans Keystone et le **commit d’origine** de la copie.
+> Décision A-3 : le **socle** de Keystone est copié **une fois** dans Arche ; aucun module métier n’est copié. Le socle sera
+> ensuite extrait en paquet partagé `@epc2i/socle` (lot R-194 de Keystone) et ces copies seront remplacées. Ce fichier note,
+> pour chaque élément, son chemin dans Keystone, son adaptation et le **commit d’origine** de la copie.
 >
-> État au 22 oct. 2026 (livraison 0) : **rien n’est encore copié**. Commit de référence prévu : la pointe de `origin/main` de
-> Keystone au moment de la reprise (aujourd’hui `63f43ad`) ; la colonne « Commit » sera remplie à la livraison 1.
+> **Commit d’origine de toutes les copies de la livraison 1 : Keystone `63f43ad`** (pointe de `origin/main` le 22 oct. 2026,
+> « Merge pull request #15 from Yhumiii27/claude/shared-postgres »). Les fichiers copiés le disent dans leur en-tête
+> (« copied from Keystone »).
+>
+> Écart principal : **Arche tourne sur PostgreSQL uniquement** (décision du 22 oct. 2026) — la voie PGlite de Keystone
+> (`open.ts`, transactions SERIALIZABLE, réécriture `"public".` → `"keystone".`) n’est pas reprise ; les tables sont déclarées
+> dans le schéma `arche` (disposition de Codex).
 
-| Élément | Chemin dans Keystone | Adaptation prévue dans Arche | Commit |
+| Élément | Chemin dans Keystone | Adaptation dans Arche | État |
 |---|---|---|---|
-| Configuration validée | `src/server/config/`, `.env.example` | préfixe `ARCHE_` ; variables Keystone métier retirées | — |
-| Journaux | `src/server/log/` | — | — |
-| Santé et démarrage | `src/app/api/health/`, `src/instrumentation.ts`, `src/server/startup*` | — | — |
-| Horloge métier | `src/domain/clock.ts`, `src/server/clock.ts`, `src/components/app/clock.tsx` | `ARCHE_CLOCK` | — |
-| Connexion Entra ID et session | `src/server/auth/`, `src/server/session.ts`, `src/proxy.ts` | rôles et portées d’Arche (spec 01) | — |
-| Profils et « Voir en tant que » | `src/config/personas.ts` (mécanisme seulement) | 13 profils d’Arche | — |
-| Coquille et registre d’écrans | `src/config/screens.ts`, `src/config/role-screens.ts`, `src/config/screen-icons.ts`, `src/app/(app)/layout.tsx` (mécanisme) | registre de la spec 08 | — |
-| Design Nocturne | `src/styles/nocturne.css`, `src/components/ds/`, `src/components/app/` (composants génériques) | sans les composants propres aux écrans Keystone | — |
-| i18n et complétude du français | `src/i18n/` (moteur, `data-text.ts`, `completeness.test.ts`, `same-in-french.json`) | dictionnaires vidés, repartent des chaînes d’Arche | — |
-| Base de données | `src/server/db/client.ts`, `types.ts`, `transactions.ts`, `migrations.ts`, `server-schema.ts`, `helpers.ts` | schéma `arche`, verrou `hashtext('arche.ecritures')` et `hashtext('arche.migrations')` | — |
-| Piste d’audit append-only | `writeAudit` (`src/server/db/helpers.ts`), table `audit_entries` (`src/server/db/schema/platform.ts`), déclencheur `drizzle/0017_audit_append_only.sql` | migration initiale d’Arche (pas de copie de migration) | — |
-| Moteur « Mes validations » | `src/domain/approvals.ts`, `src/server/approvals/index.ts`, `types.ts` (le moteur, pas les fournisseurs) | types d’Arche (spec 05 §6) | — |
-| Tâches planifiées et worker | `src/server/jobs/`, `scripts/worker.ts` | tâches d’Arche (relances, revues, sync Keystone, instantanés) | — |
-| Connecteurs (cadre) | `src/server/integrations/outbox.ts`, `connector-enabled.ts`, `connectors-file.ts` | connecteur `keystone` (spec 07) | — |
-| Déclaration à Matrix | `src/server/integrations/matrix/` | schéma `arche` | — |
-| Durcissement HTTP | `src/server/http/`, `next.config.ts` (en-têtes) | — | — |
-| Conteneur et Coolify | `Dockerfile`, `deploy/` | port 3400 (Mac) ; volumes `arche-*` | — |
-| Sauvegardes et restauration | `src/server/backup/`, `scripts/backup.ts`, `scripts/restore.ts` | — | — |
-| Migrations et contrôle de base | `scripts/db-migrate.ts`, `scripts/db-check.ts` | — | — |
-| CI | `.github/workflows/ci.yml`, `audit.yml` | — | — |
-| Tests de bout en bout | `tests/e2e/` (outillage : `run.ts`, port libre) | port 3410 sur le Mac | — |
-| Page « reste à développer » | `scripts/remaining-work/` | identifiants `AR-xxx`, page d’Arche | — |
+| Configuration validée | `src/server/config/` | variables `ARCHE_*`, `DATABASE_URL` obligatoire, variables métier de Keystone retirées ; `ARCHE_ADMIN_EMAILS` (N-4) | repris (L1) |
+| Journaux | `src/server/log/` | — | repris (L1) |
+| Santé et démarrage | `src/app/api/health/`, `src/instrumentation.ts`, `src/server/startup.ts`, `src/server/health.ts` | sans antivirus | repris (L1) |
+| Horloge métier | `src/domain/clock.ts`, `src/server/clock.ts`, `src/components/app/clock.tsx` | `ARCHE_CLOCK`, date de démo 22 oct. 2026, jours ouvrés ; sans l’axe du prototype | repris (L1) |
+| Connexion Entra ID et session | `src/server/auth/` (crypto, oidc, session-cookie, config, routes), `src/proxy.ts`, routes `src/app/api/auth/*`, page `src/app/sign-in` | rôles et portées lus dans Arche (pas dans le jeton) ; compte administrateur créé à la première connexion (`ARCHE_ADMIN_EMAILS`) | repris (L1) |
+| Règles de connexion | `src/domain/auth.ts` | `decideSignIn` d’Arche (compte par objet Entra, sinon par e-mail) | repris et adapté (L1) |
+| Session et « Voir en tant que » | `src/server/session.ts`, `src/config/personas.ts` (mécanisme) | personnes de démonstration lues en base, une par profil | repris et adapté (L1) |
+| Coquille et registre d’écrans | `src/config/screens.ts`, `src/components/app/shell/` | registre de la spec 08, barre latérale et en-tête simplifiés (sans recherche ⌘K ni tiroir tablette) | repris et adapté (L1) |
+| Design Nocturne | `src/styles/nocturne.css`, `src/components/ds/`, composants génériques de `src/components/app/` | sans les composants des écrans Keystone ; police Inter locale de Codex | repris (L1) |
+| i18n et complétude du français | `src/i18n/` | moteur simplifié (dictionnaires par domaine dans `src/i18n/fr/`, règles, segments) ; contrôle de complétude | repris et adapté (L1) |
+| Base de données | `src/server/db/{client,types,transactions,migrations,server-schema,postgres,migrate-command}.ts` | PostgreSQL seul ; verrous `arche.migrations` / `arche.ecritures` ; `npm run db:local` | repris et adapté (L1) |
+| Piste d’audit append-only | `writeAudit` (`src/server/db/helpers.ts`), `audit_entries`, déclencheur de `drizzle/0017_audit_append_only.sql` | migration `0001_audit_append_only` d’Arche | repris (L1) |
+| Durcissement HTTP | `src/server/http/security-headers.ts`, `proxy-security.ts`, `next.config.ts` | caméra fermée | repris (L1) |
+| Conteneur et Coolify | `Dockerfile`, `deploy/` | port 3400, PostgreSQL du kit créé comme le serveur commun | repris et adapté (L1) |
+| CI | `.github/workflows/ci.yml` | service PostgreSQL 16, test de fumée HTTP au lieu de Playwright | repris et adapté (L1) |
+| Page « reste à développer » | `scripts/remaining-work/` | domaines d’Arche | repris (L1) |
+| Moteur « Mes validations » | `src/domain/approvals.ts`, `src/server/approvals/index.ts`, `types.ts` (le moteur seulement) | types d’Arche (spec 05 §6) | à reprendre (L3) |
+| Tâches planifiées et worker | `src/server/jobs/`, `scripts/worker.ts` | tâches d’Arche | à reprendre (L1b) |
+| Sauvegardes et restauration | `src/server/backup/`, `scripts/backup.ts`, `scripts/restore.ts` | `pg_dump` du schéma `arche` | à reprendre (L1b) |
+| Connecteurs (cadre) | `src/server/integrations/outbox.ts`, `connector-enabled.ts` | connecteurs `keystone`, `codex` | à reprendre (L3, L4) |
+| Déclaration à Matrix | `src/server/integrations/matrix/` | schéma `arche` (après M-8) | à reprendre (L1b) |
 
-**Jamais copiés** : `src/domain/*` métier (EVM, cycle à 13 étapes, ITP…), `src/features/*`, `src/server/dal/*` métier,
-`src/server/prototype/`, les fournisseurs de validations Keystone, les connecteurs Codex / Vigie / Cursus / X3, les migrations
-de Keystone.
+**Jamais copiés** : la voie PGlite, `src/domain/*` métier (EVM, cycle à 13 étapes, ITP…), `src/features/*`, `src/server/dal/*`
+métier, `src/server/prototype/`, les fournisseurs de validations Keystone, les connecteurs Codex / Vigie / Cursus / X3, les
+migrations de Keystone.

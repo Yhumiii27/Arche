@@ -1,6 +1,8 @@
 # 02 — Objets et modèle de données
 
-> Proposition. Schéma PostgreSQL `arche` (N-1) sur le serveur commun ; PGlite (`public`) en développement et en tests.
+> Proposition. Schéma PostgreSQL `arche` (N-1), partout : serveur commun, recette, CI, poste de développement (PostgreSQL
+> uniquement, N-23). La livraison 1 crée les référentiels, les utilisateurs et leurs rôles, l’identité des CAPEX et leur équipe,
+> et les tables du socle ; les autres arrivent avec leur livraison (nouvelles migrations).
 > Montants en **k€** sauf colonne `_eur` (convention Keystone ; devise : N-2). Dates en `date` ISO ; instants en
 > `timestamptz`. Codes stockés, jamais de libellés traduits. Chaque table porte `created_at`, `updated_at`.
 
@@ -54,7 +56,7 @@
 | `gate_criteria_results` | `gate_id`, `criterion_code`, `met`, `value`, `forced_reason` | instantané des critères au moment de la soumission |
 | `dossiers` | `id`, `capex_id`, `kind` (`business_case` / `investment` / `transfer`) | un par type et par CAPEX |
 | `dossier_versions` | `id`, `dossier_id`, `number`, `state` (`draft` / `frozen` / `approved` / `rejected` / `superseded`), `content` (jsonb par section), `frozen_at`, `frozen_by`, `content_hash` (SHA-256), `completeness_pct` | figé = immuable ; toute modification crée une version |
-| `dossier_attachments` | `dossier_version_id`, `section`, `codex_ref`, `title`, `revision` | références Codex, figées avec la version |
+| `dossier_attachments` | `dossier_version_id`, `section`, `codex_ref`, `codex_type`, `title`, `revision`, `verified` | références de documents **Codex** (identifiant `TYPE-CONTEXTE-SEQ`), figées avec la version ; `verified` = trouvé dans `codex.pub_documents` |
 | `circuit_steps` | `id`, `gate_id`, `position`, `parallel_group`, `kind` (`visa` / `signature` / `decision` / `countersign` / `quitus` / `attestation`), `role`, `user_id`, `due_at`, `status`, `acted_at`, `outcome`, `comment` | circuit instancié depuis le modèle (05) |
 | `signatures` | `circuit_step_id`, `user_id`, `signed_at`, `level` (`simple` / `advanced`), `content_hash`, `auth_time`, `ip_hash`, `provider_ref` | preuve de signature ; append-only |
 | `consultations` | `id`, `dossier_version_id`, `opened_by`, `opened_at`, `due_on`, `status` (`open` / `closed`) | consultation d’experts |
@@ -81,7 +83,7 @@
 ## 7. Socle
 
 `audit_entries` (append-only, déclencheur), `activity_events`, `notifications`, `approvals` (moteur « Mes validations »),
-`job_runs`, `connector_outbox`, `connector_settings` — repris de Keystone (voir [`../SOCLE.md`](../SOCLE.md)).
+`job_runs`, `connector_outbox`, `connector_settings` — repris de Keystone. Aucune table de fichiers : les documents sont dans Codex (voir [`../SOCLE.md`](../SOCLE.md)).
 
 ## 8. Vues publiées
 
