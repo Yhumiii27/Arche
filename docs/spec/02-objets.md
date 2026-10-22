@@ -5,14 +5,18 @@
 > et les tables du socle ; les autres arrivent avec leur livraison (nouvelles migrations).
 > Montants en **k€** sauf colonne `_eur` (convention Keystone ; devise : N-2). Dates en `date` ISO ; instants en
 > `timestamptz`. Codes stockés, jamais de libellés traduits. Chaque table porte `created_at`, `updated_at`.
+> Référentiels du groupe (décision D21 de Matrix, 22 oct. 2026) : zones, filiales, sites et pays sont tenus et publiés par
+> Matrix. Les tables `zones`, `subsidiaries` et `sites` d’Arche restent (clés étrangères locales) mais deviennent des
+> **miroirs** alimentés par les vues `matrix.pub_*` (`synced_at`, comme les miroirs `keystone_*`) : plus de saisie dans
+> Arche. Pays : codes ISO contrôlés dans `matrix.pub_pays` (D17).
 
 ## 1. Référentiels
 
 | Table | Colonnes principales | Notes |
 |---|---|---|
-| `zones` | `code`, `name` | Directeurs de Zone |
-| `subsidiaries` | `code` (3 lettres), `name`, `country_iso2`, `zone_code`, `currency` | filiale |
-| `sites` | `id`, `subsidiary_code`, `name`, `city`, `country_iso2` | usine ou terrain |
+| `zones` | `code`, `name` | Directeurs de Zone. **Miroir** de `matrix.pub_zones` (décision D21 de Matrix, 22 oct. 2026) |
+| `subsidiaries` | `code` (3 lettres), `name`, `country_iso2`, `zone_code`, `currency` | filiale. **Miroir** de `matrix.pub_filiales` (D21) ; le code est le `<FIL>` des codes CAPEX et la clé de `keystone.clients.code3` |
+| `sites` | `id`, `subsidiary_code`, `name`, `city`, `country_iso2` | usine ou terrain. **Miroir** des lignes de `matrix.pub_sites` dont `filiale_code` est renseignée (D21, D14) ; garder le code Matrix du site |
 | `reference_revenues` | `subsidiary_code`, `fiscal_year`, `revenue_keur`, `entered_by`, `entered_at`, `source_note` | CA de référence (C-5), saisi par la DAF groupe ; une ligne par exercice |
 | `lifecycle_models` | `code` (`dig-prodi`), `version` (`4.0`), `definition` (jsonb), `active` | cycle paramétré (03) ; une version par révision de la méthode |
 | `delegation_rules` | `id`, `typology`, `object_kind`, `max_pct_of_g2`, `max_keur`, `max_delay_days`, `decider_role`, `valid_from` | matrice de délégation (C-4) ; datée |
@@ -78,7 +82,7 @@
 | `keystone_*` (miroir) | `keystone_catalogue`, `keystone_responses`, `keystone_projects`, `keystone_milestones`, `keystone_progress`, `keystone_amendments`, `keystone_punch`, `keystone_deliverables`, `keystone_pack`, `keystone_machines` | copies en lecture des vues `pub_` Keystone (ou de la simulation), avec `synced_at` |
 | `production_lines` | `id`, `capex_id`, `name`, `nominal_capacity_per_day`, `unit`, `machine_numbers` (Keystone MCH-…) | ligne de production à monter en puissance |
 | `rampup_days` | `line_id`, `day`, `output`, `availability_pct`, `performance_pct`, `quality_pct`, `oee_pct`, `scrap_pct`, `entered_by`, `source` | une ligne par jour ; TRS = D × P × Q si non saisi |
-| `rex_entries` | `id`, `capex_id`, `category`, `title`, `text`, `phase`, `shared_with` (fonctions centrales), `published_at` | REX capitalisé |
+| `rex_entries` | `id`, `capex_id`, `category`, `title`, `text`, `phase`, `shared_with` (fonctions centrales), `published_at` | décision D22 de Matrix : Arche garde le REX des CAPEX et le publie dans `pub_rex` (Keystone garde celui des projets) ; REX capitalisé |
 
 ## 7. Socle
 
@@ -87,4 +91,4 @@
 
 ## 8. Vues publiées
 
-`pub_capex`, `pub_besoins_machines`, `pub_rampup`, `pub_journal` : [`../CONTRATS.md`](../CONTRATS.md) §3.
+`pub_capex`, `pub_besoins_machines`, `pub_rampup`, `pub_journal`, `pub_rex` (D22) : [`../CONTRATS.md`](../CONTRATS.md) §3.

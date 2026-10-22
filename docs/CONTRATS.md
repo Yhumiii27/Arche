@@ -155,10 +155,24 @@ Vigie ne modélise pas ces études aujourd’hui ([`DEMANDES-VIGIE.md`](DEMANDES
 `etude_code` HS2…HS6 / PSSR, `type` HazID / HazOp / AMDEC / PSSR / ASPD, `statut`, `conclue_le`, `actions_ouvertes`,
 `actions_en_retard`, `lien`, `maj_le`). En attendant : statut déclaratif (N-13).
 
+### 2.4 Matrix — existent (référentiels du groupe)
+
+Décisions de Matrix : D14 (sites), D17 (pays), D21 (zones et filiales, 22 oct. 2026, option A : « Matrix fait foi »).
+Les tables `zones`, `subsidiaries` et `sites` d’Arche deviennent des miroirs de ces vues (plus de saisie dans Arche). Droits posés
+par Matrix (`partage/90-droits.sql`, PR Yhumiii27/Matrix#10).
+
+| Vue | Colonnes | Usage dans Arche |
+|---|---|---|
+| `matrix.pub_filiales` | `code`, `nom`, `pays_iso2`, `zone_code`, `devise`, `ordre`, `actif` | filiale d’un CAPEX ; `<FIL>` des codes CAPEX ; portées des rôles |
+| `matrix.pub_zones` | `code`, `libelle`, `responsable`, `ordre`, `actif` | portée du Directeur de Zone |
+| `matrix.pub_sites` | `code`, `libelle`, `ville`, `pays_iso2`, `ordre`, `actif`, `filiale_code` | site d’un CAPEX (sites où `filiale_code` est renseignée) |
+| `matrix.pub_pays` | `iso2`, noms, `actif` | pays |
+| `matrix.pub_organigramme`, `pub_correspondances` | voir Matrix | `pub_organigramme` accordée à Arche (M-5) ; non utilisées en v1 |
+
 ## 3. Vues publiées par Arche
 
-Créées par les migrations d’Arche (comme `0035_share` de Keystone) ; recréées à l’identique par
-`partage/40-arche.sql` de Matrix ([`DEMANDES-MATRIX.md`](DEMANDES-MATRIX.md)).
+Créées par les migrations d’Arche (comme `0035_share` de Keystone, règle P-02 de Matrix) ; Matrix n’en garde pas de copie
+tant qu’elles n’existent pas. Lecteurs accordés par Matrix (`partage/90-droits.sql`, déjà prêts).
 
 **`pub_capex`** — lecteurs : `keystone_app`, `matrix_app`. Les brouillons ne sont pas publiés.
 
@@ -223,3 +237,9 @@ Créées par les migrations d’Arche (comme `0035_share` de Keystone) ; recré�
 **`pub_journal`** — lecteur : `matrix_app` (journal unifié, mêmes colonnes que `keystone.pub_journal`, contrat D18) :
 `ref_source`, `nature`, `quand`, `qui`, `qui_ref`, `qui_role`, `action`, `objet`, `detail`, `projet` (= code CAPEX),
 `qui_matricule` (toujours null en v1).
+
+**`pub_rex`** — lecteur : `matrix_app`. Décision D22 de Matrix (22 oct. 2026, option A) : Arche garde le REX des CAPEX,
+Keystone celui des projets (`keystone.pub_rex`) ; Matrix réunit les deux. Contrat commun **à fixer avec Matrix et
+Keystone** avant la livraison 6 ; proposition, sur le modèle du journal unifié : `ref_source` (`rex_entries.id`),
+`capex_code`, `projet_code` (null), `categorie`, `titre`, `texte`, `phase`, `publie_le`, `auteur`. Seules les entrées
+publiées (`published_at` renseignée) y figurent.

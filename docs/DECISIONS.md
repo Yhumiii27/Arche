@@ -36,6 +36,14 @@ type du pack, définitions RSPDI / ASPD, relevé de l’existant).
 | A-3 | Socle repris de Keystone une fois, puis paquet `@epc2i/socle` (R-194) | inventaire et commit d’origine dans [`SOCLE.md`](SOCLE.md) ; aucun module métier copié | **confirmé** |
 | A-4 | Propriétés : Arche = CAPEX, phases, jalons, dossiers, lots hors EPC2i, BP, typologie, ramp-up, besoins (demande) ; Keystone = catalogue, réponses, projets EPC2i ; Vigie = études et actions de sécurité | spec 00 §2 ; ajout proposé : le **registre des autorisations** (ICPE, PC, PLU, ATEX) appartient à Arche | **confirmé** (ajout compris) |
 
+### Décisions de Matrix qui s’appliquent à Arche (22 oct. 2026)
+
+| # | Décision (journal `docs/decisions.md` de Matrix) | Effet dans Arche |
+|---|---|---|
+| D21 | Filiales et zones du groupe : « A · Matrix » (répond à N-22 / M-9) | `zones`, `subsidiaries`, `sites` deviennent des miroirs de `matrix.pub_zones`, `pub_filiales`, `pub_sites` (spec 02 §1, CONTRATS §2.4) ; l’écran `admin-org` les consulte et ne garde que la saisie du CA de référence ; à faire dans une prochaine livraison |
+| D22 | REX : « A · Deux registres » | `rex_entries` reste dans Arche et se publie dans `pub_rex` (CONTRATS §3), réunie par Matrix avec le REX de Keystone |
+| P-01 | Version du serveur : « Rester en 16 » | PostgreSQL 16 en production ; tests sur 16 (PGlite est en 18 : aucune fonction propre à 17 ou 18) |
+
 ## 2. Compléments au CDC (analyse §1.3)
 
 | # | Question | ★ Réponse par défaut | Bloque |
@@ -89,7 +97,7 @@ type du pack, définitions RSPDI / ASPD, relevé de l’existant).
 | N-19 | « Audits transversaux » des projets Stratégiques | un audit par phase, tenu par le Dir.IG ou le PMO, consigné comme revue de type « audit » — **confirmé** | L5 |
 | N-20 | Reprise des CAPEX en cours | saisie manuelle des CAPEX pilotes (phase courante, jalons passés datés, budget validé) ; pas d’import en masse en v1 — **confirmé** | pilote |
 | N-21 | Jeu de démonstration | deux filiales fictives (APM Maroc, SAI Sahel), trois CAPEX ; aucune donnée réelle — **confirmé** | L1 |
-| N-22 | Qui possède les filiales, leurs zones et leurs sites ? Matrix possède les sites (D14) et l’organigramme (D15) mais sans niveau « société » | Matrix (nouveau niveau « société », [`DEMANDES-MATRIX.md`](DEMANDES-MATRIX.md) M-9) ; Arche garde ses tables `zones`, `subsidiaries`, `sites` en attendant, tenues par son administrateur — **confirmé** | L2 |
+| N-22 | Qui possède les filiales, leurs zones et leurs sites ? | **Répondu le 22 oct. 2026 (D21 de Matrix) : Matrix**, vues `matrix.pub_zones`, `pub_filiales`, `pub_sites` ; les tables d’Arche deviennent des miroirs (plus de saisie dans Arche) | L2 |
 | N-23 | Base de données | **Décidé (22 oct.) : PostgreSQL uniquement**, pas de PGlite : développement, tests, CI et production sur PostgreSQL, schéma `arche` partout (`npm run db:local` sur un poste) | — |
 | N-24 | Rattachement Codex d’un document de CAPEX : nouveau rattachement `capex` dans Codex, ou CAPEX traité comme un « projet » Codex | nouveau rattachement **`capex`** (contexte = code CAPEX), qui évite de mélanger CAPEX et projets EPC2i ([`DEMANDES-CODEX.md`](DEMANDES-CODEX.md) CX-01) — **confirmé** | L3 |
 | N-26 | Qui valide une version de budget E50 ou E30 ? (le CDC ne parle que de l’E10, validé par la DAF groupe) | le **CDG de la filiale** ou la DAF groupe ; l’E10 reste réservé à la DAF groupe | L2 |

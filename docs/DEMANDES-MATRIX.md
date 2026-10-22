@@ -10,6 +10,18 @@
 > `"arche".` elles-mêmes, sans `CREATE SCHEMA` ni réécriture de `"public".`. Verrous : `hashtext('arche.migrations')`
 > (session, migration) et `hashtext('arche.ecritures')` (transaction, écritures). Journal : `arche.__drizzle_migrations`.
 
+> **État côté Matrix (22 oct. 2026, PR Yhumiii27/Matrix#10)** :
+> - **faites** : M-1, M-2, M-3, M-4 (`partage/70-arche.sql` : `pub_journal`, `pub_capex`), M-5, M-6, M-7, M-8 ;
+> - **M-3, écart** : `users.entra_object_id` et `signatures.ip_hash` sont sensibles ; `users.email` **ne l’est pas** :
+>   `pub_capex` publie `sponsor_email` et `chef_projet_email`, et le contrôle du partage refuse une vue `pub_` qui lit une
+>   colonne sensible (aucun autre outil ne protège l’adresse professionnelle). Si l’adresse doit être protégée, retirer
+>   ces deux colonnes de `pub_capex` passe par une `pub_capex_v2` ;
+> - **M-9 tranchée** : décision **D21** de Matrix, « A · Matrix fait foi » ; Matrix publie `matrix.pub_zones`,
+>   `pub_filiales` et `pub_sites` (colonne `filiale_code`). Les tables `zones`, `subsidiaries`, `sites` d’Arche deviennent
+>   des **miroirs** de ces vues (plus de saisie dans Arche) : à faire dans une prochaine livraison d’Arche ;
+> - **D22** : `arche.pub_rex` (REX des CAPEX, à créer) est déjà accordée à `matrix_app` ;
+> - **P-01** : le serveur reste en PostgreSQL 16.
+
 Aujourd’hui chaque outil est écrit en dur dans les scripts de Matrix ; ajouter Arche touche les fichiers suivants.
 
 ## M-1 · Rôle `arche_app` (`init/01-base-et-roles.sql`)
