@@ -172,6 +172,7 @@ export type CapexAction =
   | 'edit' // identity sheet, lots, risks, decisions, team
   | 'open'
   | 'budget' // budget versions: create, edit, submit
+  | 'needs' // machine needs to EPC2i: enter, submit, withdraw (spec 07 §1)
   | 'force_typology'
   | 'confirm_typology'
   | 'decide_gate'
@@ -203,6 +204,8 @@ export function canDo(action: CapexAction, role: RoleKey, assignments: readonly 
       return c.status === 'draft' && on('sponsor');
     case 'budget':
       return open && (on('project_lead') || on('controller'));
+    case 'needs':
+      return c.status === 'active' && on('project_lead');
     case 'force_typology':
     case 'confirm_typology':
       return open && on('dir_ig');

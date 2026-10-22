@@ -11,7 +11,7 @@
 **Pour répondre : questionnaire « Décisions Arche »**, https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe (toutes les questions
 ci-dessous et les données à fournir ; réponses enregistrées dans la page et relues par Claude).
 
-Toutes les questions posées jusqu’à la livraison 1 sont tranchées (voir ci-dessous). À trancher : **N-26 à N-29** (livraison 2) et **N-30 à N-35** (livraison 3).
+Toutes les questions posées jusqu’à la livraison 1 sont tranchées (voir ci-dessous). À trancher : **N-26 à N-29** (livraison 2), **N-30 à N-35** (livraison 3) et **N-36 à N-38** (livraison 4).
 Données de référence attendues : la liste des filiales, de leurs zones et de leurs CA (C-5), la matrice de délégation
 (C-4), la table des jalons HS (C-3), la liste type du pack (C-9).
 
@@ -110,6 +110,9 @@ type du pack, définitions RSPDI / ASPD, relevé de l’existant).
 | N-33 | Provision pour aléas d’un CAPEX | pas encore saisie dans Arche : un tirage de provision va au **Dir.IG** tant que la provision n’est pas connue | L5 |
 | N-34 | Jours ouvrés des échéances | lundi au vendredi, **sans jours fériés** en v1 (calendrier des filiales à fournir) | L3 |
 | N-35 | Relances par e-mail des étapes dues (spec 05 §1) | pas d’e-mail en v1 : les étapes dues et en retard apparaissent dans « Mes validations » et sur la page du jalon ; l’envoi attend le choix du transport (SMTP ou Microsoft Graph) | L5 |
+| N-36 | Qui saisit et soumet les besoins machines (spec 07 §1) | le **chef de projet** du CAPEX seul ; un besoin soumis ne se modifie plus (retrait avec motif, puis nouvelle saisie) ; un besoin commandé ne se retire pas (MoC) | L4 |
+| N-37 | Simulation de Keystone tant que ses vues manquent (spec 07 §2) | **jeu de démonstration seulement** : qualification à 10 min, indicatif E50 à J+1, devis E30 à J+30, offre ferme E10 à J+60, projet EPC2i ouvert à la commande ; en production une vue non partagée reste vide (signalé dans *Connecteurs*) | L4 |
+| N-38 | Fréquence de lecture de Keystone | toutes les **15 minutes** par le worker (`ARCHE_KEYSTONE_SYNC_MIN`), copie complète de chaque vue dans un miroir générique (`keystone_mirror`) ; « Synchroniser maintenant » pour l’administrateur | L4 |
 | N-25 | Identité des personnes entre outils (Cursus : matricule ; Arche : e-mail Entra) | Arche identifie par l’objet Entra et l’e-mail ; le matricule est ajouté aux comptes du groupe quand Cursus l’expose à Arche (CU-03) ; les salariés des filiales n’ont pas de matricule Cursus (CU-01) — **confirmé** | L2 |
 
 ## 5. Ajouts au-delà du CDC (retenus le 22 oct. 2026, X-1 à X-7 du questionnaire)

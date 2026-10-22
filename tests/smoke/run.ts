@@ -58,8 +58,13 @@ async function main(): Promise<void> {
   check(inbox.status === 200 && inbox.body.includes('MOC-02'), 'my approvals of the group industrial director: the change to decide');
   check((await get('/capex/CPX-SAI-2026-01/changes', 'dir_ig')).status === 200, 'management of change page');
   check((await get('/admin/delegation', 'admin')).status === 200, 'delegation matrix page for the administrator');
-  const soon = await get('/capex/CPX-APM-2026-01/machines', 'project_lead');
-  check(soon.status === 200 && soon.body.includes('Prévu pour la livraison 4'), 'a screen of a later delivery says when it comes');
+  const machines = await get('/capex/CPX-APM-2026-01/machines', 'project_lead');
+  check(machines.status === 200 && machines.body.includes('CPX-APM-2026-01/B02') && machines.body.includes('Offre ferme'), 'machine needs: the latest answer of EPC2i (simulation)');
+  const epc2i = await get('/capex/CPX-SAI-2026-01/machines', 'epc2i_pmo');
+  check(epc2i.status === 200 && epc2i.body.includes('SAI-26011') && epc2i.body.includes('Fin des études'), 'machine needs: the EPC2i projects and their milestones');
+  check((await get('/admin/connectors', 'admin')).status === 200, 'connectors page for the administrator');
+  const soon = await get('/capex/CPX-SAI-2026-01/execution', 'epc2i_pmo');
+  check(soon.status === 200 && soon.body.includes('Prévu pour la livraison 5'), 'a screen of a later delivery says when it comes');
   check((await get('/capex/CPX-SAI-2026-01/budget', 'sponsor')).status === 404, 'every page of another subsidiary’s CAPEX is not found');
   check((await get('/nowhere', 'dir_ig')).status === 404, 'an unknown path is not found');
 

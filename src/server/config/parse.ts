@@ -51,6 +51,8 @@ export interface ArcheConfig {
   backup: { dir: string | null; everyMin: number; retentionDays: number };
   /** E-mails granted the administrator role at their first Entra sign-in (bootstrap of a new database, N-4). */
   adminEmails: string[];
+  /** Keystone connector: mode and minutes between two synchronisations of its mirror (docs/spec/07 §2). */
+  keystone: { mode: 'off' | 'simulation' | 'views'; syncEveryMin: number };
   /** Secret values present in the environment: the logger masks them wherever they appear. */
   secrets: string[];
 }
@@ -126,6 +128,10 @@ const VARS = {
   ARCHE_BACKUP_RETENTION_DAYS: z.coerce.number().int().min(1, 'must be at least 1').max(3650, 'must be at most 3650').optional(),
   MATRIX_TOKEN: z.string().optional(),
   MATRIX_DECLARATIONS_DIR: z.string().optional(),
+  // Keystone connector (docs/spec/07 §2): off, simulation (default) or views (keystone.pub_*; a view not shared yet is simulated on the demonstration data set only).
+  ARCHE_KEYSTONE: z.enum(['off', 'simulation', 'views'], { message: 'must be "off", "simulation" or "views"' }).optional(),
+  // Minutes between two synchronisations of the Keystone mirror by the worker (default 15).
+  ARCHE_KEYSTONE_SYNC_MIN: z.coerce.number().int().min(1, 'must be at least 1').max(1440, 'must be at most 1440').optional(),
 } as const;
 
 export type ConfigVariable = keyof typeof VARS;
@@ -233,6 +239,7 @@ export function parseConfig(env: Record<string, string | undefined>, opts: { cwd
       clock: v.ARCHE_CLOCK ?? null,
       log: { level: v.LOG_LEVEL ?? 'info', format: v.LOG_FORMAT ?? (production ? 'json' : 'pretty') },
       adminEmails: v.ARCHE_AUTH === 'entra' ? (v.ARCHE_ADMIN_EMAILS ?? []) : [],
+      keystone: { mode: v.ARCHE_KEYSTONE ?? 'simulation', syncEveryMin: v.ARCHE_KEYSTONE_SYNC_MIN ?? 15 },
       secrets: [...new Set(secrets)],
     },
   };

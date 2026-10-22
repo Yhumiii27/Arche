@@ -9,10 +9,11 @@ import type { RoleKey } from '@/config/roles';
 import { checkMatrix } from '@/domain/delegation';
 import { checkModelValues, MODEL_CODE, MODEL_VERSION } from '@/domain/lifecycle';
 import { checkAssignment, checkRevenue, checkSite, checkSubsidiary, checkUser, checkZone, selfLockout } from '@/domain/admin';
-import { businessToday } from '@/server/clock';
+import { businessNow, businessToday } from '@/server/clock';
 import { getDb } from '@/server/db/client';
 import { writeAudit } from '@/server/db/helpers';
 import { capex, delegationMatrices, lifecycleModels, referenceRevenues, roleAssignments, sites, subsidiaries, users, zones } from '@/server/db/schema';
+import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import { getViewer, type Viewer } from '@/server/session';
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -210,4 +211,16 @@ export async function updateMatrixAction(_prev: ActionResult | null, fd: FormDat
   });
   if (r.ok) revalidatePath('/admin/delegation');
   return r;
+}
+
+/** Synchronises the Keystone mirror now (docs/spec/07 §2): the administrator only; the worker does it on its schedule. */
+export async function syncKeystoneAction(): Promise<ActionResult> {
+  const v = await asRole(['admin']);
+  if (!v) return REFUSED;
+  const db = await getDb();
+  const reports = await syncKeystone(db, { now: await businessNow() });
+  await writeAudit(db, audit(v, 'Keystone connector', 'mirror synchronised', { after: { views: reports.map((r) => `${r.view}: ${r.source} ${r.rows}${r.error ? ' (error)' : ''}`) } }));
+  revalidatePath('/admin/connectors');
+  revalidatePath('/capex', 'layout');
+  return { ok: true };
 }

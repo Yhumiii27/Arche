@@ -19,7 +19,12 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   version = immutable, SHA-256 of the canonical content), circuits `src/domain/circuits.ts` (gate decisions only through the
   deciding step; `src/server/cycle/gate-decision.ts`), signatures append-only (trigger), delegation `src/domain/delegation.ts`,
   BP `src/domain/bp.ts`, "My approvals" `src/server/dal/approvals.ts`, Codex connector `src/server/integrations/codex/`
-  (simulated catalogue in the demo data set). Next: L4 (Keystone connector, machine needs) — see `docs/PLAN.md`.
+  (simulated catalogue in the demo data set).
+- **Delivery 4 (machine needs, Keystone connector) is done** (`docs/DELIVERY-4.md`): needs `src/domain/needs.ts`,
+  `src/features/needs/`, view `pub_besoins_machines`; Keystone connector `src/server/integrations/keystone/` — the mirror
+  (`keystone_mirror`, written only by `mirror.ts`), modes `ARCHE_KEYSTONE` off / simulation / views (a missing view is
+  simulated on the demo data set only), job `keystone-sync`; G2 Go orders the needs covered by a valid firm offer. The CI runs
+  the Coolify kit end to end (`docs/EXPLOITATION.md` §4). Next: L5 — see `docs/PLAN.md`.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

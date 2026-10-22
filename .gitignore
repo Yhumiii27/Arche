@@ -81,3 +81,4 @@ next-env.d.ts
 
 # verification and CI builds (ARCHE_DIST_DIR=.next-ci)
 /.next-ci/
+deploy/compose.ci.yaml

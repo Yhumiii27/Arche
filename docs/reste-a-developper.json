@@ -30,6 +30,10 @@
     {
       "date": "2026-10-22",
       "text": "Livraison 3 : dossiers vivants (versions, figement, empreinte, impression), circuits des jalons G1 / G2 / K3 / G3 avec avis, visas et signature simple, Mes validations, matrice de délégation et MoC, BP (VAN, TRI, retour), connecteur Codex (références vérifiées)."
+    },
+    {
+      "date": "2026-10-22",
+      "text": "Livraison 4 : besoins machines (catalogue, soumission, retrait, commande au Go G2), vue pub_besoins_machines, connecteur Keystone (miroir, simulation, mode mixte, synchronisation), suivi des projets EPC2i, critères G2 / K3 / G3 ; kit Coolify testé de bout en bout en CI."
     }
   ],
   "items": [
@@ -208,7 +212,8 @@
       "evidence": [],
       "progress": {
         "state": "fait",
-        "delivery": "Livraison 1"
+        "delivery": "Livraison 1",
+        "note": "Kit Coolify testé de bout en bout en CI depuis la livraison 4 (docs/EXPLOITATION.md §4)."
       }
     },
     {
@@ -581,7 +586,9 @@
       ],
       "evidence": [],
       "progress": {
-        "state": "a_faire"
+        "state": "fait",
+        "delivery": "Livraison 4",
+        "note": "src/server/integrations/keystone/ : miroir, simulation (jeu de démo), modes off / simulation / views, tâche keystone-sync, liens profonds."
       }
     },
     {
@@ -599,7 +606,9 @@
       ],
       "evidence": [],
       "progress": {
-        "state": "a_faire"
+        "state": "fait",
+        "delivery": "Livraison 4",
+        "note": "docs/DELIVERY-4.md ; drizzle/0009_share_needs.sql ; commande au Go G2 testée."
       }
     },
     {
@@ -617,7 +626,9 @@
       ],
       "evidence": [],
       "progress": {
-        "state": "a_faire"
+        "state": "en_cours",
+        "delivery": "Livraison 4",
+        "note": "Côté Arche prêt (mode views, mixte) ; vues à publier par Keystone (R-186 à R-191)."
       }
     },
     {
