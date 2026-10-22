@@ -6,21 +6,21 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-22 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 11 faits, 1 en cours, 26 à faire, sur 38 points.
+**Avancement** : 16 faits, 1 en cours, 21 à faire, sur 38 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
 | Bloquant production | 3 | ≈ 7 |
-| Prochaine étape | 17 | ≈ 103 |
+| Prochaine étape | 12 | ≈ 80 |
 | À décider | 3 | ≈ 15 |
 | Plus tard | 4 | ≈ 16 |
-| **Total** | **27** | **≈ 141** |
+| **Total** | **22** | **≈ 118** |
 
 L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il ne compte ni l'attente des décisions et des données, ni les développements à faire côté Keystone, Codex, Vigie, Cursus ou Matrix, ni la recette.
 
 | Statut (points restants) | Points |
 |---|---:|
-| Non commencé | 19 |
+| Non commencé | 14 |
 | Partiel | 0 |
 | Attend le responsable produit | 3 |
 | Attend un système externe | 5 |
@@ -29,9 +29,9 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 |---|---:|---:|---:|---:|---:|---:|
 | Plateforme et mise en production | 2 | 0 | 0 | 1 | 3 | 5 |
 | Connexion, profils et isolation par filiale | 0 | 0 | 0 | 0 | 0 | 4 |
-| CAPEX et cycle DIG-PRODI | 0 | 4 | 0 | 0 | 4 | 0 |
+| CAPEX et cycle DIG-PRODI | 0 | 0 | 0 | 0 | 0 | 4 |
 | Dossiers vivants et circuits de décision | 0 | 4 | 0 | 0 | 4 | 0 |
-| Besoins machines et Keystone | 0 | 4 | 0 | 0 | 4 | 0 |
+| Besoins machines et Keystone | 0 | 3 | 0 | 0 | 3 | 1 |
 | Documents (Codex) | 0 | 2 | 0 | 0 | 2 | 0 |
 | Jalons de sécurité (Vigie) | 0 | 1 | 1 | 0 | 2 | 0 |
 | Tableaux de bord et gouvernance | 1 | 2 | 0 | 0 | 3 | 1 |
@@ -117,23 +117,23 @@ Routes de connexion, cookie de session scellé, rôles et portées lus dans Arch
 Fournisseur OpenID simulé (src/test/mock-entra.ts) : connexion, refus, compte administrateur créé, déconnexion.  
 *Avancement : docs/DELIVERY-1b.md · Sources : src/server/auth/*
 
-### 2.3 CAPEX et cycle DIG-PRODI (4 restants)
+### 2.3 CAPEX et cycle DIG-PRODI (0 restants, 4 faits)
 
-**AR-016 · CAPEX : création, lots, équipe et gabarit de staffing** — *Prochaine étape · non commencé · effort L*  
+**~~AR-016 · CAPEX : création, lots, équipe et gabarit de staffing~~** — *Prochaine étape · non commencé · effort L* · **fait (Livraison 2)**  
 Livraison 2.  
-*Sources : docs/PLAN.md*
+*Avancement : Création du brouillon, ouverture, fiche, lots, équipe et gabarit de staffing (docs/DELIVERY-2.md). · Sources : docs/PLAN.md*
 
-**AR-017 · Budget par versions et classes d’estimation E50 / E30 / E10** — *Prochaine étape · non commencé · effort M*  
+**~~AR-017 · Budget par versions et classes d’estimation E50 / E30 / E10~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 2)**  
 Livraison 2 (C-8).  
-*Sources : docs/spec/03 §5*
+*Avancement : Versions E50 / E30 / E10, fourchettes, soumission, validation (E10 par la DAF groupe), baseline G2. · Sources : docs/spec/03 §5*
 
-**AR-018 · Typologie Light / Stratégique** — *Prochaine étape · non commencé · effort S*  
+**~~AR-018 · Typologie Light / Stratégique~~** — *Prochaine étape · non commencé · effort S* · **fait (Livraison 2)**  
 Calcul sur le CA de référence, forçage, confirmation (C-5).  
-*Sources : docs/spec/06 §1*
+*Avancement : Calcul (ratio ≥ 20 %, nouvelle usine), confirmation et forçage par le Dir.IG. · Sources : docs/spec/06 §1*
 
-**AR-019 · Cycle DIG-PRODI paramétré : phases, K3, critères des jalons** — *Prochaine étape · non commencé · effort M*  
+**~~AR-019 · Cycle DIG-PRODI paramétré : phases, K3, critères des jalons~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 2)**  
 Livraison 2 (C-1).  
-*Sources : docs/spec/03*
+*Avancement : Modèle 4.0, moteur des critères et des transitions, décision directe du décideur en attendant les circuits (N-27) ; valeurs réglables. · Sources : docs/spec/03*
 
 ### 2.4 Dossiers vivants et circuits de décision (4 restants)
 
@@ -153,11 +153,7 @@ Livraison 3 (C-4).
 Livraison 3 (N-11).  
 *Sources : docs/spec/06 §4*
 
-### 2.5 Besoins machines et Keystone (4 restants)
-
-**AR-020 · Vue pub_capex** — *Prochaine étape · non commencé · effort S*  
-Contrat publié pour Keystone et Matrix.  
-*Sources : docs/CONTRATS.md §3*
+### 2.5 Besoins machines et Keystone (3 restants, 1 faits)
 
 **AR-027 · Connecteur keystone : simulation, miroir, liens profonds** — *Prochaine étape · non commencé · effort M*  
 Livraison 4.  
@@ -170,6 +166,10 @@ Livraison 4.
 **AR-029 · Vues Keystone pour Arche (catalogue, réponses, jalons, avancement, avenants, réserves, pack)** — *Prochaine étape · attend un système externe · effort L*  
 K-01 à K-11.  
 *Attend : Keystone (R-185 à R-193) · Sources : docs/DEMANDES-KEYSTONE.md*
+
+**~~AR-020 · Vue pub_capex~~** — *Prochaine étape · non commencé · effort S* · **fait (Livraison 2)**  
+Contrat publié pour Keystone et Matrix.  
+*Avancement : drizzle/0005_share_capex.sql, contrat testé. · Sources : docs/CONTRATS.md §3*
 
 ### 2.6 Documents (Codex) (2 restants)
 
@@ -229,7 +229,7 @@ Livraison 7 (C-7, C-13).
 
 **AR-002 · Réponses du responsable produit aux questions de DECISIONS.md** — *À décider · attend le responsable produit · effort S* · **en cours**  
 Les réponses par défaut s’appliquent tant qu’il n’y a pas d’autre réponse ; à confirmer en priorité : N-3, N-4, C-6, C-13, N-22, N-24.  
-*Avancement : Reçu le 22 oct. 2026 : nom Arche, PostgreSQL uniquement, Codex pour tous les documents. Questionnaire « Décisions Arche » publié le 22 oct. pour les autres réponses. · Attend : Responsable produit · Sources : docs/DECISIONS.md*
+*Avancement : Reçu le 22 oct. 2026 : nom Arche, PostgreSQL uniquement, Codex pour tous les documents ; questionnaire : C-6, N-3, N-4, N-22, N-24 confirmées (défaut). N-26 à N-29 ajoutées au questionnaire par la livraison 2. · Attend : Responsable produit · Sources : docs/DECISIONS.md*
 
 **AR-003 · Données de référence des filiales** — *À décider · attend le responsable produit · effort S*  
 Liste des filiales (code, pays, zone, devise), sites, CA de référence par exercice (C-5).  
@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-22 — Livraison 2 : CAPEX et cycle DIG-PRODI — brouillon et ouverture, lots, versions de budget E50 / E30 / E10, typologie, équipe et gabarit, critères des jalons et décisions G1 / G2 / K3 / G3, risques, décisions, journal, modèle DIG-PRODI réglable, vue pub_capex.
 - 2026-10-22 — Livraison 1b : administration en écriture, connexion Entra testée de bout en bout, déclaration à Matrix, pub_journal, worker et sauvegardes ; questionnaire « Décisions Arche » publié.
 - 2026-10-22 — Livraison 1 (socle) : socle repris de Keystone (63f43ad) sur PostgreSQL seul, connexion Entra et démo, 13 profils et isolation par filiale, coquille, CI. Demandes à Codex, Vigie, Cursus et Matrix ajoutées.
 - 2026-10-22 — Livraison 0 (cadrage) : inventaire initial aligné sur docs/PLAN.md.

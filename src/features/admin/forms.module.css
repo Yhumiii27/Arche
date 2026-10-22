@@ -1,11 +1,4 @@
-/* Administration forms: a wrapping grid of fields, the submit button on the last row, the result line under it. */
-.form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 10px 12px;
-  align-items: end;
-}
-
+/* .error and .actions are used by the inline role controls; the form layout is in components/app/ActionForm.module.css. */
 .actions {
   display: flex;
   gap: 10px;
@@ -15,11 +8,6 @@
 .error {
   font-size: 12px;
   color: var(--color-accent-300);
-}
-
-.done {
-  font-size: 12px;
-  color: var(--color-neutral-400);
 }
 
 .roles {

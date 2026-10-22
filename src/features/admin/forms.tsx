@@ -2,40 +2,17 @@
 // Administration forms (client islands of the server pages): each submits to its Server Function and shows the translated
 // result. The Server Functions do every check again.
 import { useActionState, useState, useTransition } from 'react';
+import { ActionForm, Result } from '@/components/app/ActionForm';
 import { Button } from '@/components/ds/Button';
 import { Field, Input, Select } from '@/components/ds/Field';
 import { EXPERT_SPECIALITIES, ROLE_KEYS, ROLE_LABEL, ROLE_SCOPE, SPECIALITY_LABEL, type RoleKey } from '@/config/roles';
+import { GATES, VALUE_BOUNDS, type ModelValues } from '@/domain/lifecycle';
 import { useI18n } from '@/i18n/client';
 import {
-  addRoleAction, createSiteAction, createSubsidiaryAction, createUserAction, createZoneAction, removeRoleAction, setRevenueAction, setUserActiveAction,
-  type ActionResult,
+  addRoleAction, createSiteAction, createSubsidiaryAction, createUserAction, createZoneAction, removeRoleAction, setRevenueAction, setUserActiveAction, updateModelValuesAction,
 } from './actions';
 import s from './forms.module.css';
 
-function Result({ state, done }: { state: ActionResult | null; done: string }) {
-  const { t } = useI18n();
-  if (!state) return null;
-  return state.ok ? <span className={s.done} role="status">{t(done)}</span> : <span className={s.error} role="alert">{t(state.error)}</span>;
-}
-
-type Action = (prev: ActionResult | null, fd: FormData) => Promise<ActionResult>;
-
-/** A form whose fields are reset after a successful submit (React resets uncontrolled fields of a form action). */
-function ActionForm({ action, submit, done, children }: { action: Action; submit: string; done: string; children: React.ReactNode }) {
-  const { t } = useI18n();
-  const [state, run, pending] = useActionState(action, null);
-  return (
-    <form action={run} className={s.form}>
-      {children}
-      <div className={s.actions}>
-        <Button type="submit" variant="primary" disabled={pending}>
-          {t(submit)}
-        </Button>
-        <Result state={state} done={done} />
-      </div>
-    </form>
-  );
-}
 
 export function NewUserForm({ subsidiaries }: { subsidiaries: { code: string; name: string }[] }) {
   const { t } = useI18n();
@@ -188,6 +165,25 @@ export function RevenueForm({ subsidiaries, year }: { subsidiaries: { code: stri
       <Field label={t('Source')} htmlFor="rv-src">
         <Input id="rv-src" name="sourceNote" />
       </Field>
+    </ActionForm>
+  );
+}
+
+export function ModelValuesForm({ values }: { values: ModelValues }) {
+  const { t } = useI18n();
+  const n = (name: string, label: string, value: number, [lo, hi]: readonly [number, number]) => (
+    <Field key={name} label={t(label)} htmlFor={`mv-${name}`} hint={`${lo}–${hi}`}>
+      <Input id={`mv-${name}`} name={name} type="number" min={lo} max={hi} step={1} defaultValue={value} required />
+    </Field>
+  );
+  return (
+    <ActionForm action={updateModelValuesAction} submit="Save the values" done="Values saved">
+      {GATES.map((g) => n(`delay:${g}`, `${g} target delay (working days)`, values.gateDelayDays[g], VALUE_BOUNDS.gateDelayDays))}
+      {n('strategicRatioPct', 'Strategic from (% of revenue)', values.strategicRatioPct, VALUE_BOUNDS.strategicRatioPct)}
+      {n('packThresholdPct', 'Engineering pack at G2 (%)', values.packThresholdPct, VALUE_BOUNDS.packThresholdPct)}
+      {n('worksThresholdPct', 'Works lots at K3 (%)', values.worksThresholdPct, VALUE_BOUNDS.worksThresholdPct)}
+      {n('rampupDays', 'Days at nominal capacity for G3', values.rampupDays, VALUE_BOUNDS.rampupDays)}
+      {n('mesMaxMonths', 'Months after commissioning for G3', values.mesMaxMonths, VALUE_BOUNDS.mesMaxMonths)}
     </ActionForm>
   );
 }

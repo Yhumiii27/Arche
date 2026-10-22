@@ -6,11 +6,12 @@
 import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import type { RoleKey } from '@/config/roles';
+import { checkModelValues, MODEL_CODE, MODEL_VERSION } from '@/domain/lifecycle';
 import { checkAssignment, checkRevenue, checkSite, checkSubsidiary, checkUser, checkZone, selfLockout } from '@/domain/admin';
 import { businessToday } from '@/server/clock';
 import { getDb } from '@/server/db/client';
 import { writeAudit } from '@/server/db/helpers';
-import { capex, referenceRevenues, roleAssignments, sites, subsidiaries, users, zones } from '@/server/db/schema';
+import { capex, lifecycleModels, referenceRevenues, roleAssignments, sites, subsidiaries, users, zones } from '@/server/db/schema';
 import { getViewer, type Viewer } from '@/server/session';
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -169,5 +170,24 @@ export async function setRevenueAction(_prev: ActionResult | null, fd: FormData)
     return { ok: true };
   });
   if (r.ok) revalidatePath('/admin/organisation');
+  return r;
+}
+
+/** Values of the DIG-PRODI 4.0 model (spec 03 header): delays and thresholds, the administrator only; the structure is code. */
+export async function updateModelValuesAction(_prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  const v = await asRole(['admin']);
+  if (!v) return REFUSED;
+  const c = checkModelValues(fieldsOf(fd));
+  if (!c.ok) return c;
+  const db = await getDb();
+  const r = await db.transaction(async (tx): Promise<ActionResult> => {
+    const [before] = await tx.select().from(lifecycleModels).where(and(eq(lifecycleModels.code, MODEL_CODE), eq(lifecycleModels.version, MODEL_VERSION)));
+    const definition = { ...(before?.definition ?? {}), ...c.value };
+    await tx.insert(lifecycleModels).values({ code: MODEL_CODE, version: MODEL_VERSION, definition, updatedByName: v.name })
+      .onConflictDoUpdate({ target: [lifecycleModels.code, lifecycleModels.version], set: { definition, updatedByName: v.name, updatedAt: new Date() } });
+    await writeAudit(tx, audit(v, `Model ${MODEL_CODE} ${MODEL_VERSION}`, 'model values updated', { before: before?.definition, after: { ...c.value } }));
+    return { ok: true };
+  });
+  if (r.ok) revalidatePath('/admin/model');
   return r;
 }

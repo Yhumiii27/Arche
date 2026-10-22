@@ -69,3 +69,10 @@ export function visibleCapex(viewer: Viewer): Promise<CapexRow[]> {
 export async function capexForViewer(viewer: Viewer, code: string): Promise<CapexRow | null> {
   return (await selectCapex(viewer, eq(capex.code, code)))[0] ?? null;
 }
+
+/** Sites of a subsidiary, for the identity sheet. */
+export async function siteOptions(subsidiaryCode: string): Promise<{ value: string; label: string }[]> {
+  const db = await getDb();
+  const rows = await db.select({ id: sites.id, name: sites.name }).from(sites).where(eq(sites.subsidiaryCode, subsidiaryCode)).orderBy(asc(sites.name));
+  return rows.map((s) => ({ value: s.id, label: s.name }));
+}

@@ -10,7 +10,11 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
 - **Delivery 0 (framing) is done** (`docs/spec/00`–`08`, `docs/DECISIONS.md`, `docs/CONTRATS.md`, `docs/DEMANDES-*.md`,
   `docs/PLAN.md`, `docs/SOCLE.md`). The owner started delivery 1 with the default answers of `DECISIONS.md`.
 - **Delivery 1 (platform) and 1b (operations, administration) are done** (`docs/DELIVERY-1.md`, `docs/DELIVERY-1b.md`).
-  Next: L2 (CAPEX and the DIG-PRODI cycle) — see `docs/PLAN.md` and `docs/RESTE-A-DEVELOPPER.md`.
+- **Delivery 2 (CAPEX and the DIG-PRODI cycle) is done** (`docs/DELIVERY-2.md`): pure model and engine
+  `src/domain/lifecycle.ts` (criteria without data are "not evaluated yet" until their delivery), budget and typology
+  `src/domain/budget.ts`, CAPEX rules and write rights `src/domain/capex.ts` (`canDo`), Server Functions
+  `src/features/capex/actions.ts` (each re-reads the CAPEX through the visibility filter inside its transaction), reads
+  `src/server/dal/cycle.ts`, view `pub_capex`. Next: L3 (living dossiers, circuits, MoC) — see `docs/PLAN.md`.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.
