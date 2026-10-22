@@ -1,0 +1,207 @@
+# Arche — contrats d’échange (vues `pub_`)
+
+> 22 oct. 2026. Règles (architecture A-2, Keystone `drizzle/0035_share.sql`) : une vue `pub_` est un **contrat**. On ne
+> supprime ni ne renomme jamais une colonne (une rupture → nouvelle vue `pub_<nom>_v2`) ; les nouvelles colonnes vont **en
+> fin de vue** ; chaque vue a un `COMMENT ON VIEW` qui nomme ses lecteurs ; `WITH (security_barrier)`. Les lecteurs lisent
+> par date (`maj_le` indexée). Noms de colonnes en français, comme les vues existantes de Keystone. Montants en k€
+> (`_keur`). Les droits de lecture sont accordés par Matrix (`partage/90-droits.sql`), jamais par l’outil lui-même.
+>
+> État : **existe** = déjà publiée par Keystone (migration 0035) ; **à créer** = demandée à Keystone (lots R-186 à R-191,
+> [`DEMANDES-KEYSTONE.md`](DEMANDES-KEYSTONE.md)) ; tant qu’elle manque, Arche la **simule** (spec 07 §2).
+
+## 1. Clés communes
+
+| Clé | Format | Propriétaire |
+|---|---|---|
+| code CAPEX | `CPX-APM-2026-01` | Arche |
+| référence de besoin | `CPX-APM-2026-01/B01` | Arche |
+| code de projet EPC2i | `HLT-026` (`pub_projets.code`) | Keystone |
+| numéro de machine | `MCH-041` (`pub_parc_machines.number`) | Keystone |
+| code catalogue | `EMP-40T` + `version` | Keystone |
+
+## 2. Vues lues par Arche
+
+### 2.1 Keystone — existent
+
+**`pub_projets`** (contrat D02 v1) — utilisée pour l’étape courante et le chef de projet des projets EPC2i liés.
+
+| Colonne | Type | Usage dans Arche |
+|---|---|---|
+| `code` | text | clé |
+| `numero` | text | affichage |
+| `code_analytique`, `nature` | text | non utilisées |
+| `nom` | text | affichage |
+| `client_id`, `client`, `client_code3` | uuid, text, text | contrôle : le client est la filiale (R-190) |
+| `phase_code`, `phase` | text | étape Keystone (spec 03 §6) |
+| `imputable` | bool | non utilisée |
+| `chef_projet_matricule`, `chef_projet_nom` | text | affichage |
+| `ville`, `pays`, `fournisseurs` | text | non utilisées |
+| `maj_le` | timestamptz | lecture incrémentale |
+| *`capex_code`* | text | **à ajouter en fin de vue** (K-05) : rattachement au CAPEX |
+| *`besoin_ref`* | text | **à ajouter** (K-05) : premier besoin à l’origine du projet |
+
+**`pub_livrables`** (D13 v1) : `project_code`, `number`, `title`, `status` (`planned` … `accepted` / `rejected`). Arche y lit
+les PV d’acceptation. **Colonnes à ajouter** (K-06) : `type` (`client_acceptance` = PV), `accepte_le` (date), `maj_le`.
+
+**`pub_parc_machines`** (D12 v1, une ligne par machine et par article monté) : `number`, `name`, `client_name`, `site_text`,
+`project_code`, `warranty_status`, `part_ref`, `fitted_revision`. Arche lit `DISTINCT number, name, project_code, site_text`.
+**Colonnes à ajouter** (K-07) : `type_machine_code`, `livree_le`, `maj_le`.
+
+### 2.2 Keystone — à créer
+
+**`pub_catalogue_machines`** (R-186) — une ligne par fiche publiée et version.
+
+| Colonne | Type | Contenu |
+|---|---|---|
+| `code` | text | code de la fiche (`EMP-40T`) |
+| `version` | int | version de la fiche ; un besoin garde la version choisie |
+| `type_code` | text | type de machine Keystone (`EMP`, `MEMU`…) |
+| `type_libelle` | text | libellé du type |
+| `variante` | text | variante |
+| `libelle` | text | nom commercial |
+| `description` | text | description courte |
+| `options` | jsonb | `[{code, libelle, prix_indicatif_keur}]` |
+| `capacite_nominale` | numeric | capacité nominale |
+| `unite_capacite` | text | `t/h`, `pièces/j`… |
+| `prix_indicatif_keur` | numeric | prix catalogue (classe E50) |
+| `delai_type_semaines` | int | délai type de livraison |
+| `statut` | text | `publie` / `retire` |
+| `maj_le` | timestamptz | |
+
+**`pub_reponses_besoins`** (R-187) — une ligne par réponse (la dernière fait foi).
+
+| Colonne | Type | Contenu |
+|---|---|---|
+| `besoin_ref` | text | référence du besoin Arche |
+| `capex_code` | text | |
+| `numero` | text | numéro de la réponse côté Keystone |
+| `nature` | text | `qualification` / `indicatif` / `devis` / `offre_ferme` |
+| `qualification` | text | `faisable` / `a_etudier` / `refuse` |
+| `motif` | text | motif d’un refus ou d’une étude |
+| `classe_estimation` | text | `E50` / `E30` / `E10` |
+| `montant_central_keur`, `montant_bas_keur`, `montant_haut_keur` | numeric | fourchette |
+| `delai_semaines` | int | délai proposé |
+| `valide_jusqu_au` | date | validité de l’offre |
+| `document_ref` | text | référence Codex du devis ou de l’offre |
+| `projet_code` | text | projet EPC2i créé à la commande (sinon null) |
+| `statut` | text | `en_cours` / `remise` / `acceptee` / `caduque` |
+| `repondu_le` | timestamptz | |
+| `maj_le` | timestamptz | |
+
+**`pub_jalons_projets`** (R-189) — une ligne par projet et jalon.
+
+| Colonne | Type | Contenu |
+|---|---|---|
+| `projet_code` | text | |
+| `jalon_code` | text | `commande`, `fin_etudes`, `fat`, `expedition`, `arrivee_site`, `sat`, `pv_reception`, `fin_garantie` |
+| `prevu_le` | date | date prévue courante |
+| `reference_le` | date | date de la baseline (BL1) |
+| `reel_le` | date | date réelle (null si à venir) |
+| `maj_le` | timestamptz | |
+
+**`pub_avancement_projets`** (R-189) — une ligne par projet (situation courante). **Aucun coût interne, taux ni marge** (AC-2).
+
+| Colonne | Type | Contenu |
+|---|---|---|
+| `projet_code` | text | |
+| `date_situation` | date | |
+| `avancement_physique_pct` | numeric | |
+| `spi` | numeric | |
+| `fin_prevue_le` | date | |
+| `montant_contrat_keur` | numeric | prix de vente initial |
+| `montant_avenants_keur` | numeric | avenants signés |
+| `facture_keur` | numeric | facturé à la filiale |
+| `maj_le` | timestamptz | |
+
+**`pub_avenants`** (R-189) : `projet_code`, `numero`, `objet`, `montant_keur`, `delai_jours`, `statut` (`propose` / `signe` /
+`refuse`), `signe_le`, `maj_le`.
+
+**`pub_reserves`** (R-189) : `projet_code`, `numero`, `categorie` (`A` / `B` / `C`), `origine` (`itp` / `site`), `statut`
+(`open` / `in_progress` / `closed`), `responsable` (`client` / `keystone`), `ouverte_le`, `levee_le`, `maj_le`.
+
+**`pub_pack_ingenierie`** (R-191) — une ligne par projet et famille.
+
+| Colonne | Type | Contenu |
+|---|---|---|
+| `projet_code` | text | |
+| `famille` | text | `pid`, `bom`, `layout`, `electrique`, `analyse_fonctionnelle` |
+| `attendues` | int | pièces attendues |
+| `validees` | int | pièces validées |
+| `poids` | numeric | poids de la famille dans la liste type |
+| `pct_pondere` | numeric | % pondéré du projet (même valeur sur chaque ligne du projet) |
+| `maj_le` | timestamptz | |
+
+### 2.3 Vigie — à définir (AC-3)
+
+Proposition à porter auprès de Vigie (Arche ne modifie pas Vigie) : `pub_etudes_securite` (`capex_code`, `projet_code`,
+`etude_code` HS2…HS6 / PSSR, `type` HazID / HazOp / AMDEC / PSSR / ASPD, `statut`, `conclue_le`, `actions_ouvertes`,
+`actions_en_retard`, `lien`, `maj_le`). En attendant : statut déclaratif (N-13).
+
+## 3. Vues publiées par Arche
+
+Créées par les migrations d’Arche (comme `0035_share` de Keystone) ; recréées à l’identique par
+`partage/40-arche.sql` de Matrix ([`DEMANDES-MATRIX.md`](DEMANDES-MATRIX.md)).
+
+**`pub_capex`** — lecteurs : `keystone_app`, `matrix_app`. Les brouillons ne sont pas publiés.
+
+| Colonne | Type | Contenu |
+|---|---|---|
+| `code` | text | `CPX-APM-2026-01` |
+| `filiale_code` | text | code à 3 lettres |
+| `filiale` | text | nom |
+| `zone` | text | |
+| `site` | text | nom du site |
+| `pays_iso2` | text | |
+| `intitule` | text | |
+| `type_investissement` | text | `new_plant` / `new_line` / `extension` / `other` |
+| `statut` | text | `active` / `on_hold` / `closed` / `abandoned` |
+| `phase_code` | text | `cadrage` / `avant_projet` / `execution` / `demarrage` |
+| `typologie` | text | `light` / `strategic` |
+| `sponsor_nom`, `sponsor_email` | text | |
+| `chef_projet_nom`, `chef_projet_email` | text | |
+| `g1_le`, `g2_le`, `g3_le` | date | dates des décisions Go (null si non passées) |
+| `debut_mes_le` | date | début de la MES |
+| `maj_le` | timestamptz | |
+
+**`pub_besoins_machines`** — lecteurs : `keystone_app`, `matrix_app`. Les brouillons ne sont pas publiés.
+
+| Colonne | Type | Contenu |
+|---|---|---|
+| `besoin_ref` | text | `CPX-APM-2026-01/B01` |
+| `capex_code` | text | |
+| `ligne` | text | `B01` |
+| `catalogue_code` | text | null pour un besoin libre |
+| `catalogue_version` | int | |
+| `libelle_libre` | text | besoin libre |
+| `quantite` | int | |
+| `options` | jsonb | codes d’options choisies |
+| `capacite_visee` | numeric | |
+| `unite_capacite` | text | |
+| `date_besoin` | date | |
+| `site` | text | |
+| `statut` | text | `submitted` / `withdrawn` / `ordered` |
+| `commentaire` | text | |
+| `soumis_le` | timestamptz | |
+| `commande_le` | date | date du G2 |
+| `maj_le` | timestamptz | |
+
+**`pub_rampup`** — lecteurs : `keystone_app` (R-193), `matrix_app`. Une ligne par machine du parc mise en service.
+
+| Colonne | Type | Contenu |
+|---|---|---|
+| `machine_numero` | text | `MCH-041` |
+| `capex_code` | text | |
+| `ligne_production` | text | |
+| `debut_mes_le` | date | |
+| `capacite_nominale` | numeric | par jour |
+| `unite_capacite` | text | |
+| `capacite_atteinte_pct` | numeric | moyenne des 30 derniers jours saisis |
+| `trs_reception_pct` | numeric | TRS moyen de la série des 30 jours (ou des 30 derniers jours) |
+| `rebuts_reception_pct` | numeric | idem |
+| `trente_jours_le` | date | fin de la série de 30 jours conformes ; null si non atteinte |
+| `statut` | text | `en_cours` / `atteint` / `hors_delai` |
+| `maj_le` | timestamptz | |
+
+**`pub_journal`** — lecteur : `matrix_app` (journal unifié, mêmes colonnes que `keystone.pub_journal`, contrat D18) :
+`ref_source`, `nature`, `quand`, `qui`, `qui_ref`, `qui_role`, `action`, `objet`, `detail`, `projet` (= code CAPEX),
+`qui_matricule` (toujours null en v1).
