@@ -1,5 +1,6 @@
 // CAPEX overview (docs/spec/08): identity sheet, the DIG-PRODI cycle — phases, the gate the CAPEX faces with its criteria
-// evaluated now (the circuit runs on the Gates page) — and the cycle history.
+// evaluated now (the circuit runs on the Gates page) —, the dashboard of the CAPEX (spec 06 §5: execution figures, uncertainty
+// gap, pack, HS, changes, risks, next review, rule-based alerts) and the cycle history.
 // A CAPEX outside the viewer's scope does not exist (404).
 import Link from 'next/link';
 import { KeyValueList } from '@/components/app/KeyValueList';
@@ -19,8 +20,12 @@ import { screenHref } from '@/config/screens';
 import { OpenCapexButton, SheetForm, SuspendForm } from '@/features/capex/forms';
 import { currentEvaluation } from '@/server/cycle/evaluation';
 import { loadCapexPage } from '@/features/capex/page-data';
+import { alertDetail } from '@/features/governance/alert-detail';
 import { dataText } from '@/i18n/data-text';
-import { fmtDate, fmtKeur } from '@/lib/format';
+import { fmtDate, fmtKeur, fmtNum, fmtRatio } from '@/lib/format';
+import { HS_LABEL } from '@/domain/safety';
+import { businessToday } from '@/server/clock';
+import { capexDashboard } from '@/server/dal/governance';
 import { gatesOf, latestValidated, transitionsOf, versionsOf } from '@/server/dal/cycle';
 import { siteOptions } from '@/server/dal/capex';
 
@@ -29,7 +34,9 @@ const STATE_TONE: Record<CriterionState, 'neutral' | 'accent' | 'outline'> = { m
 
 export default async function CapexOverviewPage({ params }: PageProps<'/capex/[code]'>) {
   const { t, lang, db, c, can } = await loadCapexPage(params);
-  const [versions, history, gateRows, ev, sites] = await Promise.all([versionsOf(db, c.id), transitionsOf(db, c.id), gatesOf(db, c.id), currentEvaluation(db, c), siteOptions(c.subsidiaryCode)]);
+  const [versions, history, gateRows, ev, sites, d] = await Promise.all([
+    versionsOf(db, c.id), transitionsOf(db, c.id), gatesOf(db, c.id), currentEvaluation(db, c), siteOptions(c.subsidiaryCode), capexDashboard(db, c, await businessToday(db)),
+  ]);
   const validated = latestValidated(versions);
   const gate = currentGate(c);
   const phaseNo = PHASES.indexOf(c.phase) + 1;
@@ -78,6 +85,36 @@ export default async function CapexOverviewPage({ params }: PageProps<'/capex/[c
           sub={validated ? `${validated.estimateClass} · ${fmtKeur(rangeOf(validated.centralKeur, validated.estimateClass).low, lang)} – ${fmtKeur(rangeOf(validated.centralKeur, validated.estimateClass).high, lang)}` : t('No validated version')}
         />
       </KpiGrid>
+      {c.status !== 'draft' && (
+        <KpiGrid>
+          <KpiTile label={t('Earned value')} value={fmtKeur(d.indicators.evKeur, lang)} sub={`${t('Actual cost')} ${fmtKeur(d.indicators.acKeur, lang)}`} />
+          <KpiTile label="SPI / CPI" value={`${fmtRatio(d.indicators.spi, lang)} / ${fmtRatio(d.indicators.cpi, lang)}`} tone={(d.indicators.spi ?? 1) < 0.9 || (d.indicators.cpi ?? 1) < 0.9 ? 'alert' : 'default'} sub={`${t('EAC')} ${fmtKeur(d.indicators.eacKeur, lang)}`} />
+          <KpiTile
+            label={t('Uncertainty gap')}
+            value={!d.gap ? '—' : d.gap.kind === 'range' ? `${d.gap.gapPts} pts` : `${d.gap.deviationPct > 0 ? '+' : ''}${fmtNum(d.gap.deviationPct, lang)} %`}
+            sub={!d.gap ? undefined : d.gap.kind === 'range' ? `${d.gap.widthPct} % → ${d.gap.targetClass} ${d.gap.targetWidthPct} %` : t(d.gap.within ? 'EAC within the E10 range' : 'EAC outside the E10 range')}
+          />
+          <KpiTile label={t('Weighted pack')} value={d.pack.pct == null ? '—' : `${fmtNum(d.pack.pct, lang)} %`} sub={`${t('EPC2i part')} ${d.pack.epc2i.pct == null ? '—' : `${fmtNum(d.pack.epc2i.pct, lang)} %`}`} />
+          <KpiTile label={t('Safety milestones')} value={`${d.hs.passed} / ${d.hs.total}`} sub={d.hs.next ? `${t('next')} ${t(HS_LABEL[d.hs.next.code])}` : undefined} />
+          <KpiTile label={t('Changes waiting')} value={d.openChanges} sub={`${d.majorRisks} ${t('major risk(s)')}`} />
+          <KpiTile label={t('Next project review')} value={d.review.dueOn ? fmtDate(d.review.dueOn, lang) : '—'} tone={d.review.state === 'late' || d.review.state === 'escalated' ? 'alert' : 'default'} sub={d.review.state === 'ok' || d.review.state === 'none' ? undefined : `${d.review.daysLate} ${t('day(s) late')}`} />
+        </KpiGrid>
+      )}
+      {d.alerts.length > 0 && (
+        <SectionCard title={t('Alerts')} hint={t('Rule-based alerts, always on')}>
+          <Table>
+            <tbody>
+              {d.alerts.map((a, n) => (
+                <tr key={n}>
+                  <Td nowrap><Tag tone={a.level === 'alert' ? 'accent' : 'outline'} size="xs">{t(a.level === 'alert' ? 'Alert' : 'To watch')}</Tag></Td>
+                  <Td><Link href={screenHref(a.screen, { code: c.code })}>{t(a.text)}</Link></Td>
+                  <Td tone="secondary">{alertDetail(a.detail, t, lang)}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </SectionCard>
+      )}
 
       <SectionCard title={t('Identity')}>
         <KeyValueList

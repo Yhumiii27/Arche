@@ -40,3 +40,42 @@ Migration `0011_delivery_safety` (tables `authorizations`, `pack_items`, `hs_sta
 - Build de production, `npm run test:smoke` : contrôles des quatre écrans (courbe en S, jalons HS, autorisation à échéance,
   pack pondéré).
 - Navigateur (build de production) : écrans Exécution, Jalons HS, Autorisations, Pack sur le jeu de démo.
+
+## Lot 5b — Revues, Copil, COPIL GPI, portefeuilles, alertes, instantanés
+
+### 1. Ce qui est livré
+
+| Domaine | Contenu | Où |
+|---|---|---|
+| Revues projet (CDC §3) | cadence par typologie (Light : trimestrielle, Stratégique : mensuelle) ; prochaine revue = dernière revue tenue (sinon l'ouverture) + période ; **en retard** à l'échéance, **signalée au Dir.IG** 15 jours après ; une revue tenue enregistre présents, synthèse et décisions (au registre des décisions, `decisions.review_id`) ; saisie par le chef de projet ou le Sponsor | `src/domain/governance.ts`, `src/features/governance/`, écran Gouvernance, table `reviews` |
+| Audits transversaux (N-19) | CAPEX Stratégiques : un audit par phase, tenu par le Dir.IG ou le PMO EPC2i (droit `audit`), consigné comme revue de type « audit » ; une phase quittée sans audit est signalée | `missingAudits` |
+| Rapport Copil | page imprimable : synthèse (prochain jalon, budget, valeur acquise, SPI / CPI / EAC, pack, HS, dernière revue), jalons, courbe en S des six derniers mois, risques principaux, MoC, décisions à prendre (MoC soumises, alertes) ; imprimée ou enregistrée en PDF puis déposée dans Codex | `/print/capex/[code]/report` |
+| Alertes à règles (spec 06 §7) | toujours actives, sans IA : décision de jalon au-delà de son délai cible, étape de circuit échue / avis d'expert manquant, revue en retard (signalée au Dir.IG), audit de phase manquant, décision d'autorisation sous 30 jours, SPI ou CPI < 0,9, EAC > budget G2 + 5 %, typologie à confirmer, équipe incomplète, réserve de jalon échue | `src/domain/alerts.ts` |
+| Synthèse du CAPEX | second rang d'indicateurs (valeur acquise, SPI / CPI et EAC, écart d'incertitude, pack, HS, MoC et risques majeurs, prochaine revue) et les alertes du CAPEX | `/capex/[code]`, `capexDashboard` (`src/server/dal/governance.ts`) |
+| Portefeuille (spec 06 §5) | groupe pour les fonctions centrales, zone du Directeur de Zone, filiale du Sponsor ou du CDG (filtre de visibilité), sur la zone choisie : CAPEX en cours, budget, EAC après G2, jalons en cours et en retard, MoC en attente, revues en retard, alertes ; tableau par CAPEX ; **maturité des études** (pack pondéré, parts filiale et EPC2i, tendance sur 12 semaines, écart d'incertitude) ; répartition par filiale et par phase | `/portfolio` |
+| COPIL GPI (N-6, N-7) | ordre du jour : les G1 dont le circuit tourne, étapes, échéance de la décision et jours ouvrés restants sur les 2 ; décisions G1 des 90 derniers jours | `/copil`, `copilAgenda` |
+| Accueil | mes validations, alertes et prochains jalons des CAPEX que je suis (tout mon périmètre pour les fonctions centrales et les Directeurs de Zone) | `/` |
+| Instantanés hebdomadaires | tâche `weekly-snapshot` (quotidienne, une ligne par CAPEX actif et par semaine) : phase, pack, valeur acquise, coût réel, EAC, SPI, CPI, alertes ; tendances du portefeuille | `takeSnapshots`, table `capex_snapshots`, `src/server/jobs/registry.ts` |
+| Jeu de démo | revues d'APM (la dernière date de juin : revue en retard signalée) et de SAI (audit de la phase 1, celui de la phase 2 manque), 12 semaines d'instantanés | `src/server/db/seed/demo.ts` |
+
+Migration `0012_governance` (tables `reviews`, `capex_snapshots` ; colonne `review_id` de `decisions`, en fin de table).
+
+### 2. Écarts avec la spécification
+
+- **Séances du COPIL GPI** : la spec 02 prévoit une table `copil_sessions`. L'ordre du jour est ici calculé à partir des G1 en
+  cours (la décision reste celle du circuit, N-6) ; une table de séances s'ajoutera si le comité veut planifier ses dates.
+- **`review_series`** : la cadence se calcule de la typologie et de la dernière revue (rien à stocker).
+- **Alerte ramp-up M+6** : avec la livraison 6.
+- **Notifications** : les alertes s'affichent dans Arche (accueil, synthèse, portefeuille) ; l'envoi par courriel n'est pas
+  prévu en L5.
+
+### 3. Vérifications
+
+- `npm run typecheck`, `npm run lint` : sans erreur. `npm test` : 219 tests sur PostgreSQL 16, dont les règles de revue,
+  d'audit et d'alerte (`src/domain/l5.test.ts`) et le parcours du lot (`src/features/governance/actions.test.ts` : droits des
+  saisies, import CSV refusé sur une ligne EPC2i, revue et décisions, audit sur un CAPEX Stratégique seulement, portefeuille du
+  Directeur de Zone limité à sa zone, instantanés idempotents).
+- Build de production, `npm run test:smoke` : portefeuille, COPIL GPI, rapport Copil, alertes de l'accueil.
+- Navigateur (build de production) : portefeuille, synthèse avec alertes, gouvernance et revues, rapport Copil, COPIL GPI.
+
+**Terminé quand** (PLAN.md) : tableaux de bord validés par le responsable produit sur le jeu de démo — à valider.

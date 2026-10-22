@@ -4,7 +4,7 @@
 import { eq } from 'drizzle-orm';
 import type { RoleKey, ScopeKind, ExpertSpeciality } from '@/config/roles';
 import {
-  authorizations, budgetLines, budgetVersions, capex, capexLots, hsStatuses, lotActuals, packItems, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
+  authorizations, budgetLines, budgetVersions, capex, capexLots, capexSnapshots, hsStatuses, lotActuals, packItems, reviews, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
   roleAssignments, sites, subsidiaries, users, zones, type CapexRole, type EstimateClass, type GateCode,
 } from '../schema';
 import { createHash } from 'node:crypto';
@@ -15,6 +15,7 @@ import { businessPlans, changes, circuitSteps, dossiers, dossierVersions, machin
 import { and } from 'drizzle-orm';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import { PACK_TEMPLATE } from '@/domain/pack';
+import { takeSnapshots, weekOf } from '@/server/dal/governance';
 import type { Tx } from '../types';
 
 export const DEMO_ZONES = [
@@ -268,6 +269,29 @@ async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: s
   ]);
   await seedDelivery(tx, apm, sai, nameOf);
   await syncKeystone(tx, { now: at('2026-10-22'), mode: 'simulation' });
+  await seedGovernance(tx, apm, sai, nameOf);
+}
+
+/**
+ * Lot 5b demonstration: project reviews (APM, Light, quarterly: its last review is more than 15 days late; SAI, Strategic,
+ * monthly, with the audit of phase 1 — the audit of phase 2 is missing), and twelve weeks of snapshots for the trends.
+ */
+async function seedGovernance(tx: Tx, apm: string, sai: string, nameOf: (k: string) => string) {
+  const r = (capexId: string, number: number, kind: 'copil_projet' | 'audit', heldOn: string, phase: string, attendees: string, summary: string, by: string) =>
+    ({ capexId, number, kind, heldOn, phase, attendees, summary, recordedByName: nameOf(by) });
+  await tx.insert(reviews).values([
+    r(apm, 1, 'copil_projet', '2026-03-20', 'cadrage', 'Sponsor, project lead, controller, Co-DIG', 'Scope and E50 estimate reviewed; G1 dossier on track.', 'project_lead'),
+    r(apm, 2, 'copil_projet', '2026-06-20', 'avant_projet', 'Sponsor, project lead, controller, Co-DIG', 'Variants A and B compared; soil survey ordered.', 'project_lead'),
+    r(sai, 1, 'audit', '2026-01-14', 'cadrage', 'Group industrial director, project lead, EPC2i PMO', 'Phase 1 audit: dossier complete, staffing template met.', 'dir_ig'),
+    r(sai, 2, 'copil_projet', '2026-08-27', 'execution', 'Sponsor, project lead, controller, EPC2i PMO', 'Earthworks started; grid connection risk escalated.', 'sai_lead'),
+    r(sai, 3, 'copil_projet', '2026-09-24', 'execution', 'Sponsor, project lead, controller, EPC2i PMO', 'Civil works at 25 %; second evaporator change submitted.', 'sai_lead'),
+  ]);
+  const weeks = Array.from({ length: 12 }, (_, i) => weekOf(new Date(Date.parse('2026-10-22T12:00:00Z') - (12 - i) * 7 * 86_400_000).toISOString().slice(0, 10)));
+  await tx.insert(capexSnapshots).values(weeks.flatMap((week, i) => [
+    { capexId: apm, week, status: 'active', phase: 'avant_projet', packPct: Math.round(20 + i * 3.5), subsidiaryPackPct: Math.round(20 + i * 3.5), alerts: 1, takenAt: at(week) },
+    { capexId: sai, week, status: 'active', phase: 'execution', packPct: 100, subsidiaryPackPct: 100, epc2iPackPct: Math.min(100, 70 + i * 3), alerts: 1, takenAt: at(week) },
+  ]));
+  await takeSnapshots(tx, '2026-10-22');
 }
 
 /**

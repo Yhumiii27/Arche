@@ -177,7 +177,8 @@ export type CapexAction =
   | 'confirm_typology'
   | 'decide_gate'
   | 'suspend'
-  | 'safety'; // safety milestones declared by the group HSE, PSSR discharge (N-13)
+  | 'safety' // safety milestones declared by the group HSE (N-13)
+  | 'audit'; // cross-functional audit of a Strategic CAPEX (N-19)
 
 export interface CapexWriteFacts {
   code: string;
@@ -216,6 +217,8 @@ export function canDo(action: CapexAction, role: RoleKey, assignments: readonly 
       return (c.status === 'active' || c.status === 'on_hold') && on('dir_ig');
     case 'safety':
       return open && on('group_hse');
+    case 'audit':
+      return c.status === 'active' && (on('dir_ig') || on('epc2i_pmo'));
   }
 }
 

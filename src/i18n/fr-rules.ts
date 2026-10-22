@@ -20,5 +20,6 @@ export const FR_RULES: [RegExp, string][] = [
   [/^Edit version (\d+)$/, 'Modifier la version $1'],
   [/^(G1|G2|K3|G3) target delay \(working days\)$/, 'Délai cible du $1 (jours ouvrés)'],
   [/^Line (\d+)$/, 'Ligne $1'],
+  [/^(audit|project steering committee) (REV-\d+) recorded \((\S+), (\d+) decision\(s\)\)$/, '$1 $2 enregistré(e) ($3, $4 décision(s))'],
   [/^actuals imported: (\d+) line\(s\)$/, 'engagé et réalisé importés : $1 ligne(s)'],
 ];

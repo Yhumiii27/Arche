@@ -128,6 +128,8 @@ export const decisions = arche.table('decisions', {
   gateId: uuid('gate_id'),
   recordedByName: text('recorded_by_name').notNull(),
   ...timestamps,
+  /** The review that took the decision (delivery 5). */
+  reviewId: uuid('review_id'),
 }, (t) => [unique('decisions_number_uq').on(t.capexId, t.number)]);
 
 /** One row per session of a gate; a "deferred" decision opens a new session (spec 02 §4). */
