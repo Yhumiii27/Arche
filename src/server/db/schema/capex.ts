@@ -71,6 +71,9 @@ export const capexLots = arche.table('capex_lots', {
   kind: text('kind').notNull(),
   title: text('title').notNull(),
   epc2i: boolean('epc2i').notNull().default(false),
+  /** Planned window of the lot ("2026-10"), over which its budget is spread evenly (S-curve, delivery 5). */
+  plannedStart: text('planned_start'),
+  plannedEnd: text('planned_end'),
   ...timestamps,
 }, (t) => [unique('capex_lots_number_uq').on(t.capexId, t.number)]);
 

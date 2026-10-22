@@ -5,6 +5,7 @@ import 'server-only';
 import { circuitFacts, type StepActor, type StepKind } from '@/domain/circuits';
 import { DOSSIER_OF_GATE } from '@/domain/dossiers';
 import { epc2iReservationsFact, firmOffersFact, satPlannedFact } from '@/domain/needs';
+import { withPssrDischarge } from '@/domain/safety';
 import { currentGate, evaluateGate, type CycleState, type GateEvaluation } from '@/domain/lifecycle';
 import type { DB, Tx } from '@/server/db/types';
 import { gateFacts } from '@/server/dal/cycle';
@@ -34,5 +35,5 @@ export async function currentEvaluation(q: DB | Tx, c: CycleState & { id: string
     if (gate === 'K3') facts.k3_sat_planned = satPlannedFact(projects.map((p) => p.code), projects.flatMap((p) => p.milestones.map((m) => ({ projectCode: p.code, ...m }))));
     else facts.g3_reserves = epc2iReservationsFact(projects.flatMap((p) => p.reserves), projects.flatMap((p) => p.deliverables.filter((d) => d.type === 'client_acceptance')));
   }
-  return evaluateGate(gate, facts);
+  return evaluateGate(gate, withPssrDischarge(facts));
 }

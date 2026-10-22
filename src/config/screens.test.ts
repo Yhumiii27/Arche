@@ -23,6 +23,6 @@ describe('screen registry', () => {
     expect(canSee('admin', 'admin-users')).toBe(true);
     expect(canSee('admin', 'capex-list')).toBe(false);
     expect(canSee('ceo', 'admin-users')).toBe(false);
-    expect([...BUILT].sort()).toEqual(['admin-connectors', 'admin-delegation', 'admin-model', 'admin-org', 'admin-users', 'approvals', 'capex-budget', 'capex-changes', 'capex-dossiers', 'capex-gates', 'capex-governance', 'capex-journal', 'capex-list', 'capex-machines', 'capex-overview', 'capex-risks', 'home', 'map']);
+    expect([...BUILT].sort()).toEqual(['admin-connectors', 'admin-delegation', 'admin-model', 'admin-org', 'admin-users', 'approvals', 'capex-budget', 'capex-changes', 'capex-dossiers', 'capex-execution', 'capex-gates', 'capex-governance', 'capex-journal', 'capex-list', 'capex-machines', 'capex-overview', 'capex-pack', 'capex-permits', 'capex-risks', 'capex-safety', 'home', 'map']);
   });
 });

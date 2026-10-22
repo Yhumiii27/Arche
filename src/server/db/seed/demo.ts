@@ -4,7 +4,7 @@
 import { eq } from 'drizzle-orm';
 import type { RoleKey, ScopeKind, ExpertSpeciality } from '@/config/roles';
 import {
-  budgetLines, budgetVersions, capex, capexLots, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
+  authorizations, budgetLines, budgetVersions, capex, capexLots, hsStatuses, lotActuals, packItems, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
   roleAssignments, sites, subsidiaries, users, zones, type CapexRole, type EstimateClass, type GateCode,
 } from '../schema';
 import { createHash } from 'node:crypto';
@@ -14,6 +14,7 @@ import { computedSnapshot } from '@/server/dal/dossiers';
 import { businessPlans, changes, circuitSteps, dossiers, dossierVersions, machineNeeds, signatures } from '../schema';
 import { and } from 'drizzle-orm';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
+import { PACK_TEMPLATE } from '@/domain/pack';
 import type { Tx } from '../types';
 
 export const DEMO_ZONES = [
@@ -265,5 +266,54 @@ async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: s
     { capexId: sai, number: 1, catalogueCode: 'PRC-TOM', catalogueVersion: 2, quantity: 1, options: ['EVAP3'], targetCapacity: 40, capacityUnit: 't/h', needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-03-02'), orderedOn: '2026-07-08', lotId: saiLot, createdByName: nameOf('sai_lead') },
     { capexId: sai, number: 2, catalogueCode: 'PRC-CAN', catalogueVersion: 1, quantity: 1, needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-03-02'), orderedOn: '2026-07-08', lotId: saiLot, createdByName: nameOf('sai_lead') },
   ]);
+  await seedDelivery(tx, apm, sai, nameOf);
   await syncKeystone(tx, { now: at('2026-10-22'), mode: 'simulation' });
+}
+
+/**
+ * Delivery 5 demonstration: safety milestones declared by the group HSE, permits, the subsidiary's part of the engineering
+ * pack, the lots' planned windows and the monthly actuals of SAI's lots outside EPC2i (cumulative to the end of each month).
+ */
+async function seedDelivery(tx: Tx, apm: string, sai: string, nameOf: (k: string) => string) {
+  const hse = nameOf('group_hse');
+  await tx.insert(hsStatuses).values([
+    { capexId: apm, hsCode: 'HS2', status: 'passed', passedOn: '2026-05-05', evidenceRef: 'NOT-CPX-APM-2026-01-002', updatedByName: hse },
+    { capexId: apm, hsCode: 'HS3', status: 'in_progress', note: 'HazOp sessions planned in November', updatedByName: hse },
+    { capexId: sai, hsCode: 'HS2', status: 'passed', passedOn: '2026-01-12', evidenceRef: 'NOT-CPX-SAI-2026-01-004', updatedByName: hse },
+    { capexId: sai, hsCode: 'HS3', status: 'passed', passedOn: '2026-06-20', evidenceRef: 'NOT-CPX-SAI-2026-01-009', updatedByName: hse },
+    { capexId: sai, hsCode: 'HS4', status: 'in_progress', note: 'Monthly site inspections since September', updatedByName: hse },
+  ]);
+  const lead = nameOf('project_lead');
+  const saiLead = nameOf('sai_lead');
+  await tx.insert(authorizations).values([
+    { capexId: apm, number: 1, kind: 'icpe', title: 'ICPE declaration — extrusion and ageing', authority: 'Prefecture of Kénitra', status: 'filed', filedOn: '2026-09-15', dueOn: '2026-11-10', codexRef: 'REG-CPX-APM-2026-01-001', updatedByName: lead },
+    { capexId: apm, number: 2, kind: 'building_permit', title: 'Building permit — hall extension', authority: 'Municipality of Kénitra', status: 'to_file', updatedByName: lead },
+    { capexId: sai, number: 1, kind: 'icpe', title: 'ICPE authorisation — processing plant', authority: 'Regional environment directorate', status: 'obtained', filedOn: '2026-02-10', obtainedOn: '2026-06-02', codexRef: 'REG-CPX-SAI-2026-01-001', updatedByName: saiLead },
+    { capexId: sai, number: 2, kind: 'building_permit', title: 'Building permit — process hall and offices', authority: 'Municipality of Thiès', status: 'obtained', filedOn: '2026-02-24', obtainedOn: '2026-05-18', codexRef: 'REG-CPX-SAI-2026-01-002', updatedByName: saiLead },
+    { capexId: sai, number: 3, kind: 'atex', title: 'ATEX zoning of the boiler room', status: 'filed', filedOn: '2026-09-30', dueOn: '2027-01-15', updatedByName: saiLead },
+  ]);
+  const pack = (capexId: string, validated: string[], inProgress: string[], by: string) => [
+    ...validated.map((itemCode) => ({ capexId, itemCode, status: 'validated' as const, codexRef: `PLN-${itemCode.replace('.', '-').toUpperCase()}`, validatedOn: '2026-09-30', updatedByName: by })),
+    ...inProgress.map((itemCode) => ({ capexId, itemCode, status: 'in_progress' as const, updatedByName: by })),
+  ];
+  await tx.insert(packItems).values([
+    ...pack(apm, ['site.survey', 'site.plan', 'bld.apd', 'utl.balance', 'prc.flow', 'prc.layout'], ['bld.structure', 'hse.fire'], lead),
+    ...pack(sai, PACK_TEMPLATE.map((i) => i.code), [], saiLead),
+  ]);
+  const windows: Record<string, Record<number, [string, string]>> = {
+    [apm]: { 1: ['2027-01', '2027-06'], 2: ['2027-03', '2027-08'], 3: ['2026-12', '2027-09'] },
+    [sai]: { 1: ['2026-07', '2026-08'], 2: ['2026-08', '2027-01'], 3: ['2026-10', '2027-04'], 4: ['2026-11', '2027-04'], 5: ['2026-07', '2027-05'], 6: ['2027-01', '2027-05'] },
+  };
+  for (const [capexId, ws] of Object.entries(windows)) {
+    for (const [n, [plannedStart, plannedEnd]] of Object.entries(ws)) await tx.update(capexLots).set({ plannedStart, plannedEnd }).where(and(eq(capexLots.capexId, capexId), eq(capexLots.number, Number(n))));
+  }
+  const lots = new Map((await tx.select({ id: capexLots.id, number: capexLots.number }).from(capexLots).where(eq(capexLots.capexId, sai))).map((l) => [l.number, l.id]));
+  const ctl = nameOf('sai_controller');
+  const row = (n: number, month: string, committedKeur: number | null, spentKeur: number | null, physicalPct: number | null) => ({ lotId: lots.get(n)!, month, committedKeur, spentKeur, physicalPct, source: 'import' as const, enteredByName: ctl, enteredAt: at(`${month}-28`) });
+  await tx.insert(lotActuals).values([
+    row(1, '2026-07', 980, 490, 50), row(1, '2026-08', 980, 980, 100),
+    row(2, '2026-08', 2400, 240, 10), row(2, '2026-09', 2450, 620, 25), row(2, '2026-10', 2450, 1000, 40),
+    row(3, '2026-09', 3200, 0, 0), row(3, '2026-10', 3250, 150, 5),
+    row(4, '2026-10', 900, 0, 0),
+  ]);
 }

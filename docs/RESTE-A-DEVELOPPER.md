@@ -6,21 +6,21 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-22 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 22 faits, 4 en cours, 12 à faire, sur 38 points.
+**Avancement** : 23 faits, 5 en cours, 10 à faire, sur 38 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
 | Bloquant production | 3 | ≈ 7 |
-| Prochaine étape | 6 | ≈ 40 |
+| Prochaine étape | 5 | ≈ 36 |
 | À décider | 3 | ≈ 15 |
 | Plus tard | 4 | ≈ 16 |
-| **Total** | **16** | **≈ 78** |
+| **Total** | **15** | **≈ 74** |
 
 L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il ne compte ni l'attente des décisions et des données, ni les développements à faire côté Keystone, Codex, Vigie, Cursus ou Matrix, ni la recette.
 
 | Statut (points restants) | Points |
 |---|---:|
-| Non commencé | 8 |
+| Non commencé | 7 |
 | Partiel | 0 |
 | Attend le responsable produit | 3 |
 | Attend un système externe | 5 |
@@ -33,7 +33,7 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 | Dossiers vivants et circuits de décision | 0 | 0 | 0 | 0 | 0 | 4 |
 | Besoins machines et Keystone | 0 | 1 | 0 | 0 | 1 | 3 |
 | Documents (Codex) | 0 | 2 | 0 | 0 | 2 | 0 |
-| Jalons de sécurité (Vigie) | 0 | 1 | 1 | 0 | 2 | 0 |
+| Jalons de sécurité (Vigie) | 0 | 0 | 1 | 0 | 1 | 1 |
 | Tableaux de bord et gouvernance | 1 | 2 | 0 | 0 | 3 | 1 |
 | Démarrage, montée en puissance et transfert | 0 | 0 | 0 | 2 | 2 | 0 |
 | Aide à la décision et signature avancée | 0 | 0 | 0 | 1 | 1 | 0 |
@@ -181,15 +181,15 @@ Tous les documents d’Arche dans Codex (N-17) ; simulation tant que l’API man
 CX-01 à CX-07.  
 *Attend : Codex · Sources : docs/DEMANDES-CODEX.md*
 
-### 2.7 Jalons de sécurité (Vigie) (2 restants)
-
-**AR-032 · Jalons HS (déclaratifs) et registre des autorisations** — *Prochaine étape · non commencé · effort M*  
-Livraison 5 (C-3, N-13).  
-*Sources : docs/spec/03 §4*
+### 2.7 Jalons de sécurité (Vigie) (1 restants, 1 faits)
 
 **AR-033 · Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite** — *À décider · attend un système externe · effort L*  
 VG-01 à VG-05 ; Vigie ne les modélise pas aujourd’hui.  
 *Attend : Responsable produit (AC-3) puis Vigie · Sources : docs/DEMANDES-VIGIE.md*
+
+**~~AR-032 · Jalons HS (déclaratifs) et registre des autorisations~~** — *Prochaine étape · non commencé · effort M* · **fait (L5)**  
+Livraison 5 (C-3, N-13).  
+*Avancement : Lot 5a : jalons HS déclarés par le SSE groupe (N-13) avec preuve, quitus PSSR par le circuit du G3, registre des autorisations, critères g1_hs2, g2_hs3, g2_permits, k3_hs4, g3_pssr, g3_hs6. · Sources : docs/spec/03 §4*
 
 ### 2.8 Tableaux de bord et gouvernance (3 restants, 1 faits)
 
@@ -197,9 +197,9 @@ VG-01 à VG-05 ; Vigie ne les modélise pas aujourd’hui.
 Jeu production, utilisateurs réels, guides par rôle, mesure de référence (C-10).  
 *Sources : docs/PLAN.md*
 
-**AR-030 · Tableaux de bord : synthèse, maturité des études, écart d’incertitude, S-curve, portefeuilles** — *Prochaine étape · non commencé · effort L*  
+**AR-030 · Tableaux de bord : synthèse, maturité des études, écart d’incertitude, S-curve, portefeuilles** — *Prochaine étape · non commencé · effort L* · **en cours (L5)**  
 Livraison 5.  
-*Sources : docs/spec/06 §3, §5*
+*Avancement : Lot 5a : pack ingénierie (C-9), engagé / réalisé et import CSV (N-14), courbe en S, SPI / CPI / EAC, écart d’incertitude, critères g2_pack et k3_works. Lot 5b : synthèse, maturité, portefeuilles. · Sources : docs/spec/06 §3, §5*
 
 **AR-031 · Revues, rapport Copil, audits ; écran COPIL GPI ; alertes à règles** — *Prochaine étape · non commencé · effort M*  
 Livraison 5 (N-19).  
@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-22 — Livraison 5, lot 5a : jalons HS déclarés par le SSE groupe, registre des autorisations, pack ingénierie (part filiale et part EPC2i lue dans Keystone), engagé / réalisé mensuel et import CSV, courbe en S avec SPI, CPI, EAC et écart d’incertitude ; critères HS, autorisations, pack et travaux des jalons évalués.
 - 2026-10-22 — Livraison 4b (interface, maquettes validées) : menu par thèmes, section CAPEX toujours visible avec sélecteur de CAPEX, recherche ⌘K, actions en boutons et panneaux, « Nouveau CAPEX », prochaine étape sur la synthèse, carte des CAPEX reprise de Keystone et sélecteur de zone ; demandes déposées chez Keystone, Matrix (M-10 à M-12) et Codex.
 - 2026-10-22 — Kit Coolify du serveur commun : deploy/compose.shared.yaml (migrate, app, worker sur le réseau coolify, base epc2i-postgres), authentification HTTP de la bêta par un middleware Traefik dans les étiquettes, runbook EXPLOITATION.md § 4 (ressource, variables, contrôles, partage 70/90/95).
 - 2026-10-22 — Livraison 4 : besoins machines (catalogue, soumission, retrait, commande au Go G2), vue pub_besoins_machines, connecteur Keystone (miroir, simulation, mode mixte, synchronisation), suivi des projets EPC2i, critères G2 / K3 / G3 ; kit Coolify testé de bout en bout en CI.

@@ -176,7 +176,8 @@ export type CapexAction =
   | 'force_typology'
   | 'confirm_typology'
   | 'decide_gate'
-  | 'suspend';
+  | 'suspend'
+  | 'safety'; // safety milestones declared by the group HSE, PSSR discharge (N-13)
 
 export interface CapexWriteFacts {
   code: string;
@@ -213,6 +214,8 @@ export function canDo(action: CapexAction, role: RoleKey, assignments: readonly 
       return c.status === 'active' && (on('dir_ig') || on('ceo'));
     case 'suspend':
       return (c.status === 'active' || c.status === 'on_hold') && on('dir_ig');
+    case 'safety':
+      return open && on('group_hse');
   }
 }
 

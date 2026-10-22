@@ -71,8 +71,16 @@ async function main(): Promise<void> {
   check((await get('/map', 'admin')).status === 404, 'the CAPEX map is not in the administrator\u2019s workspace');
   const overview2 = await get('/capex/CPX-APM-2026-01', 'project_lead');
   check(overview2.status === 200 && overview2.body.includes('Prochaine étape') && overview2.body.includes('Soumettre au jalon G2'), 'CAPEX overview: next step and gate action');
-  const soon = await get('/capex/CPX-SAI-2026-01/execution', 'epc2i_pmo');
-  check(soon.status === 200 && soon.body.includes('Prévu pour la livraison 5'), 'a screen of a later delivery says when it comes');
+  const exec = await get('/capex/CPX-SAI-2026-01/execution', 'dir_ig');
+  check(exec.status === 200 && exec.body.includes('Courbe en S') && exec.body.includes('Valeur acquise'), 'execution: S-curve and earned value');
+  const safety = await get('/capex/CPX-SAI-2026-01/safety', 'group_hse');
+  check(safety.status === 200 && safety.body.includes('HS 4 contrôle chantier') && safety.body.includes('Déclarer'), 'safety milestones declared by the group HSE');
+  const permits = await get('/capex/CPX-APM-2026-01/permits', 'project_lead');
+  check(permits.status === 200 && permits.body.includes('Échéance proche') && permits.body.includes('Ajouter une autorisation'), 'permits register: a decision due soon, the add action');
+  const pack = await get('/capex/CPX-APM-2026-01/pack', 'project_lead');
+  check(pack.status === 200 && pack.body.includes('Pack pondéré') && pack.body.includes('60'), 'engineering pack: weighted %');
+  const soon = await get('/capex/CPX-SAI-2026-01/rampup', 'epc2i_pmo');
+  check(soon.status === 200 && soon.body.includes('Prévu pour la livraison 6'), 'a screen of a later delivery says when it comes');
   check((await get('/capex/CPX-SAI-2026-01/budget', 'sponsor')).status === 404, 'every page of another subsidiary’s CAPEX is not found');
   check((await get('/nowhere', 'dir_ig')).status === 404, 'an unknown path is not found');
 

@@ -10,6 +10,8 @@ import {
   lifecycleModels, phaseTransitions, referenceRevenues, risks, users,
 } from '@/server/db/schema';
 import type { DB, Tx } from '@/server/db/types';
+import { businessToday } from '@/server/clock';
+import { deliveryFacts } from './execution';
 
 type Q = DB | Tx;
 
@@ -114,11 +116,14 @@ export async function transitionsOf(q: Q, capexId: string) {
 }
 
 /**
- * The facts of the criteria Arche can evaluate in delivery 2 (budget class, typology, staffing). The other criteria have no
- * fact yet: their data comes with later deliveries and they are "not evaluated" (src/domain/lifecycle.ts).
+ * The facts of the criteria Arche evaluates itself: budget class, typology and staffing (delivery 2); safety milestones,
+ * permits, engineering pack and works lots (delivery 5, ./execution.ts). The circuit's, the dossier's and Keystone's facts are
+ * added by the callers; criteria of later deliveries have no fact and are "not evaluated" (src/domain/lifecycle.ts).
  */
-export async function gateFacts(q: Q, c: { id: string; typology: string | null }): Promise<Record<string, CriterionFact>> {
-  const [vs, team] = await Promise.all([versionsOf(q, c.id), teamOf(q, c.id)]);
+export async function gateFacts(q: Q, c: { id: string; code: string; typology: string | null }): Promise<Record<string, CriterionFact>> {
+  const today = await businessToday(q);
+  const [vs, team, values] = await Promise.all([versionsOf(q, c.id), teamOf(q, c.id), modelValues(q)]);
+  const delivery = await deliveryFacts(q, c, values, today);
   const validated = latestValidated(vs);
   const typology = (c.typology as 'light' | 'strategic' | null) ?? null;
   const missing = missingStaff(typology, team.map((m) => m.capexRole));
@@ -130,6 +135,7 @@ export async function gateFacts(q: Q, c: { id: string; typology: string | null }
     g1_staffing: staffing,
     g2_budget_e10: { met: !!e10, value: validated?.estimateClass ?? '—' },
     g2_staffing: staffing,
+    ...delivery,
   };
 }
 
