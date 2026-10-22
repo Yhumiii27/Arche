@@ -64,7 +64,7 @@ export const SECTION_LABEL: Record<Exclude<Section, 'fixed'>, string> = {
 };
 
 /** Screens built by deliveries 1 to 3 (the others open the "coming soon" page). */
-export const BUILT: ReadonlySet<ScreenId> = new Set(SCREENS.filter((s) => s.delivery === 'L1' || s.delivery === 'L2' || s.delivery === 'L3').map((s) => s.id));
+export const BUILT: ReadonlySet<ScreenId> = new Set(SCREENS.filter((s) => s.delivery === 'L1' || s.delivery === 'L2' || s.delivery === 'L3' || s.delivery === 'L4').map((s) => s.id));
 
 /** True when the profile has the screen in its workspace. */
 export function canSee(role: RoleKey, id: ScreenId): boolean {

@@ -18,3 +18,5 @@ export const fmtInstant = (d: Date, lang: Lang) => `${fmtDate(d, lang)} ${d.toLo
 
 /** A number in the viewer's language ("15,3" / "15.3"), one decimal at most. */
 export const fmtNum = (n: number | null | undefined, lang: Lang) => (n == null ? '—' : n.toLocaleString(locale(lang), { maximumFractionDigits: 1 }));
+/** A ratio with two decimals (SPI). */
+export const fmtRatio = (n: number | null | undefined, lang: Lang) => (n == null ? '—' : n.toLocaleString(locale(lang), { minimumFractionDigits: 2, maximumFractionDigits: 2 }));

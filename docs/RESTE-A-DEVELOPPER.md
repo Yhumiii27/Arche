@@ -6,21 +6,21 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-22 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 20 faits, 3 en cours, 15 à faire, sur 38 points.
+**Avancement** : 22 faits, 4 en cours, 12 à faire, sur 38 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
 | Bloquant production | 3 | ≈ 7 |
-| Prochaine étape | 8 | ≈ 48 |
+| Prochaine étape | 6 | ≈ 40 |
 | À décider | 3 | ≈ 15 |
 | Plus tard | 4 | ≈ 16 |
-| **Total** | **18** | **≈ 86** |
+| **Total** | **16** | **≈ 78** |
 
 L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il ne compte ni l'attente des décisions et des données, ni les développements à faire côté Keystone, Codex, Vigie, Cursus ou Matrix, ni la recette.
 
 | Statut (points restants) | Points |
 |---|---:|
-| Non commencé | 10 |
+| Non commencé | 8 |
 | Partiel | 0 |
 | Attend le responsable produit | 3 |
 | Attend un système externe | 5 |
@@ -31,7 +31,7 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 | Connexion, profils et isolation par filiale | 0 | 0 | 0 | 0 | 0 | 4 |
 | CAPEX et cycle DIG-PRODI | 0 | 0 | 0 | 0 | 0 | 4 |
 | Dossiers vivants et circuits de décision | 0 | 0 | 0 | 0 | 0 | 4 |
-| Besoins machines et Keystone | 0 | 3 | 0 | 0 | 3 | 1 |
+| Besoins machines et Keystone | 0 | 1 | 0 | 0 | 1 | 3 |
 | Documents (Codex) | 0 | 2 | 0 | 0 | 2 | 0 |
 | Jalons de sécurité (Vigie) | 0 | 1 | 1 | 0 | 2 | 0 |
 | Tableaux de bord et gouvernance | 1 | 2 | 0 | 0 | 3 | 1 |
@@ -93,7 +93,7 @@ Pas de PGlite (décision du 22 oct.) : développement, tests, CI et production s
 
 **~~AR-009 · Conteneur, kit Coolify et CI~~** — *Prochaine étape · non commencé · effort S* · **fait (Livraison 1)**  
 Image (port 3400), compose (PostgreSQL créé comme le serveur commun, migration, application), CI avec service PostgreSQL 16 et test de fumée.  
-*Sources : Dockerfile, deploy/, .github/workflows/ci.yml*
+*Avancement : Kit Coolify testé de bout en bout en CI depuis la livraison 4 (docs/EXPLOITATION.md §4). · Sources : Dockerfile, deploy/, .github/workflows/ci.yml*
 
 **~~AR-010 · Tâches planifiées et worker~~** — *Prochaine étape · non commencé · effort S* · **fait (Livraison 1b)**  
 Relances, revues en retard, synchronisations, instantanés hebdomadaires (moteur de Keystone).  
@@ -153,23 +153,23 @@ Livraison 3 (C-4).
 Livraison 3 (N-11).  
 *Avancement : Saisie du BP sur 10 ans, VAN, TRI, délai de retour, validation par la DAF groupe. · Sources : docs/spec/06 §4*
 
-### 2.5 Besoins machines et Keystone (3 restants, 1 faits)
+### 2.5 Besoins machines et Keystone (1 restants, 3 faits)
 
-**AR-027 · Connecteur keystone : simulation, miroir, liens profonds** — *Prochaine étape · non commencé · effort M*  
-Livraison 4.  
-*Sources : docs/spec/07*
-
-**AR-028 · Besoins machines, réponses EPC2i, passage à « commandé » au G2 ; vue pub_besoins_machines** — *Prochaine étape · non commencé · effort M*  
-Livraison 4.  
-*Sources : docs/spec/07*
-
-**AR-029 · Vues Keystone pour Arche (catalogue, réponses, jalons, avancement, avenants, réserves, pack)** — *Prochaine étape · attend un système externe · effort L*  
+**AR-029 · Vues Keystone pour Arche (catalogue, réponses, jalons, avancement, avenants, réserves, pack)** — *Prochaine étape · attend un système externe · effort L* · **en cours (Livraison 4)**  
 K-01 à K-11.  
-*Attend : Keystone (R-185 à R-193) · Sources : docs/DEMANDES-KEYSTONE.md*
+*Avancement : Côté Arche prêt (mode views, mixte) ; vues à publier par Keystone (R-186 à R-191). · Attend : Keystone (R-185 à R-193) · Sources : docs/DEMANDES-KEYSTONE.md*
 
 **~~AR-020 · Vue pub_capex~~** — *Prochaine étape · non commencé · effort S* · **fait (Livraison 2)**  
 Contrat publié pour Keystone et Matrix.  
 *Avancement : drizzle/0005_share_capex.sql, contrat testé. · Sources : docs/CONTRATS.md §3*
+
+**~~AR-027 · Connecteur keystone : simulation, miroir, liens profonds~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 4)**  
+Livraison 4.  
+*Avancement : src/server/integrations/keystone/ : miroir, simulation (jeu de démo), modes off / simulation / views, tâche keystone-sync, liens profonds. · Sources : docs/spec/07*
+
+**~~AR-028 · Besoins machines, réponses EPC2i, passage à « commandé » au G2 ; vue pub_besoins_machines~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 4)**  
+Livraison 4.  
+*Avancement : docs/DELIVERY-4.md ; drizzle/0009_share_needs.sql ; commande au Go G2 testée. · Sources : docs/spec/07*
 
 ### 2.6 Documents (Codex) (2 restants)
 
@@ -242,6 +242,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 ## 3. Mises à jour
 
 - 2026-10-22 — Kit Coolify du serveur commun : deploy/compose.shared.yaml (migrate, app, worker sur le réseau coolify, base epc2i-postgres), authentification HTTP de la bêta par un middleware Traefik dans les étiquettes, runbook EXPLOITATION.md § 4 (ressource, variables, contrôles, partage 70/90/95).
+- 2026-10-22 — Livraison 4 : besoins machines (catalogue, soumission, retrait, commande au Go G2), vue pub_besoins_machines, connecteur Keystone (miroir, simulation, mode mixte, synchronisation), suivi des projets EPC2i, critères G2 / K3 / G3 ; kit Coolify testé de bout en bout en CI.
 - 2026-10-22 — Livraison 3 : dossiers vivants (versions, figement, empreinte, impression), circuits des jalons G1 / G2 / K3 / G3 avec avis, visas et signature simple, Mes validations, matrice de délégation et MoC, BP (VAN, TRI, retour), connecteur Codex (références vérifiées).
 - 2026-10-22 — Décisions D21, D22 et P-01 de Matrix reportées dans la spécification : référentiels du groupe tenus par Matrix (zones, subsidiaries, sites d'Arche deviennent des miroirs de matrix.pub_*), REX publié (pub_rex), PostgreSQL 16.
 - 2026-10-22 — Questionnaire : réponse par défaut confirmée pour 51 questions, reportée dans DECISIONS.md ; restent N-26 à N-29 et les données D-1 à D-8.

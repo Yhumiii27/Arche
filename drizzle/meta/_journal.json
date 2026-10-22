@@ -57,6 +57,20 @@
       "when": 1792676550041,
       "tag": "0007_signatures_append_only",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792680999166,
+      "tag": "0008_machine_needs",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792681000372,
+      "tag": "0009_share_needs",
+      "breakpoints": true
     }
   ]
 }

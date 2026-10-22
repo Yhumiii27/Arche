@@ -1,7 +1,7 @@
 # Continuous integration (derived from Keystone's, R-016): on every pull request and every push to main — install, route
 # types, typecheck, lint, unit tests on a real PostgreSQL 16 (Arche runs on PostgreSQL only: each test file creates its own
 # database), the migration and the demo seed of a schema shaped like the shared EPC2I server (`npm run db:local`), the
-# production build, then the smoke test against `next start`. A second job builds the deployment image.
+# production build, then the smoke test against `next start`. A second job runs the Coolify kit (deploy/compose.yaml) end to end.
 name: CI
 
 on:
@@ -86,11 +86,42 @@ jobs:
         if: failure()
         run: cat next-start.log || true
 
-  image:
-    name: Container image (build)
+  compose:
+    # The Coolify kit end to end (deploy/compose.yaml, without Coolify's own key exclude_from_hc): the image is built, the
+    # compose file's PostgreSQL 16 is created like the shared server, the one-shot migration seeds the demo data set, the web
+    # server becomes healthy, the smoke test runs inside it, a second deployment's migration is a no-op, and the worker
+    # writes its first backup and synchronises the Keystone mirror.
+    name: Coolify kit (docker compose, end to end)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
+    env:
+      POSTGRES_PASSWORD: ci-postgres
+      ARCHE_APP_PASSWORD: ci-arche
+      ARCHE_SEED: demo
+      ARCHE_CLOCK: '2026-10-22'
+      COMPOSE: docker compose -p arche -f deploy/compose.ci.yaml
     steps:
       - uses: actions/checkout@v4
-      - name: Build the image
-        run: docker build -t arche:ci .
+      - name: Compose file without Coolify's own keys
+        run: sed '/exclude_from_hc/d' deploy/compose.yaml > deploy/compose.ci.yaml
+      - name: Build the image, migrate, start the web server
+        run: $COMPOSE up -d --build --wait --wait-timeout 300 app
+      - name: The migration succeeded
+        run: test "$($COMPOSE ps -a --format '{{.ExitCode}}' migrate)" = "0"
+      - name: Smoke test inside the web server
+        run: $COMPOSE exec -T -e ARCHE_SMOKE_URL=http://127.0.0.1:3400 app npm run test:smoke
+      - name: A redeployment's migration changes nothing
+        run: $COMPOSE run --rm migrate
+      - name: The worker backs up the schema and synchronises Keystone
+        run: |
+          $COMPOSE up -d worker
+          for i in $(seq 1 60); do $COMPOSE exec -T worker sh -c 'ls /backups/*.dump' > /dev/null 2>&1 && break; sleep 2; done
+          $COMPOSE exec -T worker sh -c 'ls -l /backups/*.dump'
+          for i in $(seq 1 30); do $COMPOSE logs worker | grep -q 'Job keystone-sync done' && break; sleep 2; done
+          $COMPOSE logs worker | grep 'Job keystone-sync done'
+      - name: Logs
+        if: failure()
+        run: $COMPOSE logs --no-color
+      - name: Stop
+        if: always()
+        run: $COMPOSE down -v

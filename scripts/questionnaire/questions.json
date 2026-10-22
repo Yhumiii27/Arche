@@ -601,6 +601,42 @@
     "blocks": "L5"
   },
   {
+    "id": "N-36",
+    "group": "arche",
+    "title": "Qui saisit et soumet les besoins machines",
+    "context": "Spec 07 §1 : les besoins machines d’un CAPEX sont soumis à EPC2i en phases 1 et 2, puis commandés au Go du G2.",
+    "proposal": "Le chef de projet du CAPEX seul ; un besoin soumis ne se modifie plus (il se retire avec un motif et se ressaisit) ; un besoin commandé ne se retire pas (une modification après G2 passe par une MoC).",
+    "alts": [
+      "Le chef de projet et le Sponsor",
+      "Le chef de projet, et le PMO EPC2i en lecture et commentaire"
+    ],
+    "blocks": "L4"
+  },
+  {
+    "id": "N-37",
+    "group": "arche",
+    "title": "Simulation de Keystone tant que ses vues manquent",
+    "context": "Keystone ne publie pas encore le catalogue, les réponses ni le suivi des projets (R-186 à R-191). Arche les simule (spec 07 §2).",
+    "proposal": "Simulation sur le jeu de démonstration seulement : qualification 10 min après la soumission, réponse indicative E50 le lendemain, devis E30 à 30 jours, offre ferme E10 à 60 jours ; projet EPC2i ouvert à la commande. En production, une vue non partagée reste vide et la page Connecteurs le signale.",
+    "alts": [
+      "Pas de simulation du tout : attendre les vues de Keystone",
+      "Saisie manuelle des réponses d’EPC2i par le PMO EPC2i en attendant"
+    ],
+    "blocks": "L4"
+  },
+  {
+    "id": "N-38",
+    "group": "arche",
+    "title": "Fréquence de lecture de Keystone",
+    "context": "Arche copie les vues partagées de Keystone dans un miroir en lecture seule.",
+    "proposal": "Toutes les 15 minutes par le worker (ARCHE_KEYSTONE_SYNC_MIN), copie complète de chaque vue ; bouton « Synchroniser maintenant » pour l’administrateur.",
+    "alts": [
+      "Toutes les heures",
+      "À chaque ouverture de page (lecture directe des vues, sans miroir)"
+    ],
+    "blocks": "L4"
+  },
+  {
     "id": "X-1",
     "group": "extra",
     "title": "Profil Administrateur et écrans d’administration",
