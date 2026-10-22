@@ -2,13 +2,21 @@
 # docs/EXPLOITATION.md (French).
 #   web server : the default command (next start on port 3400)
 #   migration  : npm run db:migrate   (before the new version starts; ARCHE_SEED explicit on an empty schema)
+#   job worker : npm run worker       (backups when ARCHE_BACKUP_DIR is set, daily declaration to Matrix)
+#   backups    : npm run backup / npm run restore -- <file> --yes (pg_dump / pg_restore 16 are installed below)
 # Arche runs on PostgreSQL only: DATABASE_URL is a runtime variable (the shared EPC2I server, schema `arche`, role arche_app).
 # Coolify: deploy/compose.yaml.
 FROM node:22-bookworm-slim
 
-# curl stays: Coolify's own health check (enabled in its UI) needs curl or wget in the image.
+# PostgreSQL 16 client tools for the backups (Debian bookworm ships 15, which cannot dump a 16 server); curl stays: Coolify's
+# own health check (enabled in its UI) needs curl or wget in the image.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates curl tzdata \
+ && install -d /usr/share/postgresql-common/pgdg \
+ && curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+ && echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends postgresql-client-16 \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -17,7 +25,7 @@ ENV NEXT_TELEMETRY_DISABLED=1 \
     NPM_CONFIG_FUND=false
 
 COPY package.json package-lock.json ./
-# Development dependencies are kept on purpose: tsx runs db:migrate.
+# Development dependencies are kept on purpose: tsx runs db:migrate, the worker, backup and restore.
 RUN npm ci --no-audit
 
 COPY . .
@@ -39,7 +47,7 @@ ENV NODE_ENV=production \
     PORT=3400 \
     HOSTNAME=0.0.0.0
 
-RUN mkdir -p /data && chown node:node /data && chown -R node:node /app/.next
+RUN mkdir -p /data /backups && chown node:node /data /backups && chown -R node:node /app/.next
 USER node
 
 EXPOSE 3400

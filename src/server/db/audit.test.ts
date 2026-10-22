@@ -21,3 +21,17 @@ describe('audit_entries', () => {
     expect(await t.db.$count(auditEntries)).toBe(1);
   });
 });
+
+describe('pub_journal (contract D18)', () => {
+  it('has the exact columns and types of the unified journal, and lists the audit rows', async () => {
+    const cols = await t.handle.pool.query(
+      `select column_name, data_type from information_schema.columns where table_schema = 'arche' and table_name = 'pub_journal' order by ordinal_position`,
+    );
+    expect(cols.rows.map((r) => `${r.column_name}:${r.data_type}`)).toEqual([
+      'ref_source:text', 'nature:text', 'quand:timestamp with time zone', 'qui:text', 'qui_ref:text', 'qui_role:text', 'action:text',
+      'objet:text', 'detail:text', 'projet:text', 'qui_matricule:text',
+    ]);
+    const rows = await t.handle.pool.query(`select nature, qui, detail from arche.pub_journal`);
+    expect(rows.rows).toContainEqual({ nature: 'audit', qui: 'System', detail: 'created' });
+  });
+});

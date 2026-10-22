@@ -8,6 +8,9 @@
 
 ## À traiter en priorité
 
+**Pour répondre : questionnaire « Décisions Arche »**, https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe (toutes les questions
+ci-dessous et les données à fournir ; réponses enregistrées dans la page et relues par Claude).
+
 À trancher avant la livraison 1 : **N-1** (nom du schéma), **N-3** (comptes des filiales), **N-4** (administrateur),
 **AC-1** (nom et dépôt : réponse « Arche », `Yhumiii27/Arche`, à confirmer), **C-6** (glossaire et rôles), **C-13 / D-11**
 (hébergement).

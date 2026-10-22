@@ -50,3 +50,13 @@ export const activityEvents = arche.table('activity_events', {
   text: text('text').notNull(),
   capexId: uuid('capex_id').references(() => capex.id),
 }, (t) => [index('activity_events_occurred_at_idx').on(t.occurredAt)]);
+
+/** Scheduled jobs (src/server/jobs): last run and a lease, so that several runners never run the same job at once. */
+export const jobRuns = arche.table('job_runs', {
+  name: text('name').primaryKey(),
+  leaseUntil: timestamp('lease_until', { withTimezone: true }),
+  lastStartedAt: timestamp('last_started_at', { withTimezone: true }),
+  lastFinishedAt: timestamp('last_finished_at', { withTimezone: true }),
+  lastStatus: text('last_status').$type<'ok' | 'error'>(),
+  lastError: text('last_error'),
+});

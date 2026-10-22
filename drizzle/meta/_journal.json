@@ -15,6 +15,20 @@
       "when": 1792664274181,
       "tag": "0001_audit_append_only",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792666318351,
+      "tag": "0002_share_journal",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792666392903,
+      "tag": "0003_job_runs",
+      "breakpoints": true
     }
   ]
 }

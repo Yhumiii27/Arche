@@ -3,7 +3,7 @@ import 'server-only';
 // check the screen access first (administrator; group CFO for the organisation).
 import { asc, eq } from 'drizzle-orm';
 import { getDb } from '@/server/db/client';
-import { referenceRevenues, roleAssignments, sites, subsidiaries, users, zones } from '@/server/db/schema';
+import { capex, referenceRevenues, roleAssignments, sites, subsidiaries, users, zones } from '@/server/db/schema';
 
 export async function organisation() {
   const db = await getDb();
@@ -20,8 +20,19 @@ export async function usersWithAssignments() {
   const db = await getDb();
   const [u, a] = await Promise.all([
     db.select().from(users).orderBy(asc(users.displayName)),
-    db.select({ userId: roleAssignments.userId, role: roleAssignments.role, scopeKind: roleAssignments.scopeKind, scopeRef: roleAssignments.scopeRef, speciality: roleAssignments.speciality })
+    db.select({ id: roleAssignments.id, userId: roleAssignments.userId, role: roleAssignments.role, scopeKind: roleAssignments.scopeKind, scopeRef: roleAssignments.scopeRef, speciality: roleAssignments.speciality })
       .from(roleAssignments).innerJoin(users, eq(users.id, roleAssignments.userId)).orderBy(asc(roleAssignments.role)),
   ]);
   return u.map((x) => ({ ...x, assignments: a.filter((y) => y.userId === x.id) }));
+}
+
+/** The lists the role and organisation forms choose from. */
+export async function referenceLists() {
+  const db = await getDb();
+  const [z, s, c] = await Promise.all([
+    db.select({ code: zones.code, name: zones.name }).from(zones).orderBy(asc(zones.code)),
+    db.select({ code: subsidiaries.code, name: subsidiaries.name }).from(subsidiaries).orderBy(asc(subsidiaries.code)),
+    db.select({ code: capex.code }).from(capex).orderBy(asc(capex.code)),
+  ]);
+  return { zones: z, subsidiaries: s, capex: c.map((x) => x.code) };
 }

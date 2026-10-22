@@ -31,10 +31,10 @@
 | CI | `.github/workflows/ci.yml` | service PostgreSQL 16, test de fumée HTTP au lieu de Playwright | repris et adapté (L1) |
 | Page « reste à développer » | `scripts/remaining-work/` | domaines d’Arche | repris (L1) |
 | Moteur « Mes validations » | `src/domain/approvals.ts`, `src/server/approvals/index.ts`, `types.ts` (le moteur seulement) | types d’Arche (spec 05 §6) | à reprendre (L3) |
-| Tâches planifiées et worker | `src/server/jobs/`, `scripts/worker.ts` | tâches d’Arche | à reprendre (L1b) |
-| Sauvegardes et restauration | `src/server/backup/`, `scripts/backup.ts`, `scripts/restore.ts` | `pg_dump` du schéma `arche` | à reprendre (L1b) |
+| Tâches planifiées et worker | `src/server/jobs/`, `scripts/worker.ts` | moteur simplifié : bail par tâche dans `job_runs`, sauvegarde et déclaration Matrix | repris et adapté (L1b) |
+| Sauvegardes et restauration | `src/server/backup/`, `scripts/backup.ts`, `scripts/restore.ts` | `pg_dump` / `pg_restore` du seul schéma `arche`, sans recréer le schéma | repris et adapté (L1b) |
 | Connecteurs (cadre) | `src/server/integrations/outbox.ts`, `connector-enabled.ts` | connecteurs `keystone`, `codex` | à reprendre (L3, L4) |
-| Déclaration à Matrix | `src/server/integrations/matrix/` | schéma `arche` (après M-8) | à reprendre (L1b) |
+| Déclaration à Matrix | `src/server/integrations/matrix/` | application `arche` (Matrix l’acceptera après M-8) | repris (L1b) |
 
 **Jamais copiés** : la voie PGlite, `src/domain/*` métier (EVM, cycle à 13 étapes, ITP…), `src/features/*`, `src/server/dal/*`
 métier, `src/server/prototype/`, les fournisseurs de validations Keystone, les connecteurs Codex / Vigie / Cursus / X3, les

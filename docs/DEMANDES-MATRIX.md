@@ -47,8 +47,8 @@ Colonnes sensibles d’Arche (à ne pas montrer à `matrix_lecture`) : `arche.us
 
 ## M-4 · Partage (`partage/70-arche.sql`, nouveau, exécuté en `arche_app`)
 
-Copie qualifiée des vues créées par les migrations d’Arche : `arche.pub_capex`, `arche.pub_besoins_machines`,
-`arche.pub_rampup`, `arche.pub_journal` (définitions : [`CONTRATS.md`](CONTRATS.md) §3 ; le fichier sera fourni avec la
+Copie qualifiée des vues créées par les migrations d’Arche : `arche.pub_journal` (existe : `drizzle/0002_share_journal.sql`),
+puis `arche.pub_capex`, `arche.pub_besoins_machines`, `arche.pub_rampup` (définitions : [`CONTRATS.md`](CONTRATS.md) §3 ; le fichier sera fourni avec la
 livraison qui crée chaque vue). Le rejouer ne change rien. Numéro 70 : premier emplacement libre après `60-vigie-ecr-eco.sql`.
 
 ## M-5 · Droits des lecteurs (`partage/90-droits.sql`)

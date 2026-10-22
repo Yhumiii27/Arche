@@ -6,29 +6,29 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-22 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 7 faits, 1 en cours, 30 à faire, sur 38 points.
+**Avancement** : 11 faits, 1 en cours, 26 à faire, sur 38 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
-| Bloquant production | 5 | ≈ 13 |
-| Prochaine étape | 19 | ≈ 106 |
+| Bloquant production | 3 | ≈ 7 |
+| Prochaine étape | 17 | ≈ 103 |
 | À décider | 3 | ≈ 15 |
 | Plus tard | 4 | ≈ 16 |
-| **Total** | **31** | **≈ 150** |
+| **Total** | **27** | **≈ 141** |
 
 L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il ne compte ni l'attente des décisions et des données, ni les développements à faire côté Keystone, Codex, Vigie, Cursus ou Matrix, ni la recette.
 
 | Statut (points restants) | Points |
 |---|---:|
-| Non commencé | 23 |
+| Non commencé | 19 |
 | Partiel | 0 |
 | Attend le responsable produit | 3 |
 | Attend un système externe | 5 |
 
 | Domaine | Bloquant production | Prochaine étape | À décider | Plus tard | Restants | Faits |
 |---|---:|---:|---:|---:|---:|---:|
-| Plateforme et mise en production | 3 | 1 | 0 | 1 | 5 | 3 |
-| Connexion, profils et isolation par filiale | 1 | 1 | 0 | 0 | 2 | 2 |
+| Plateforme et mise en production | 2 | 0 | 0 | 1 | 3 | 5 |
+| Connexion, profils et isolation par filiale | 0 | 0 | 0 | 0 | 0 | 4 |
 | CAPEX et cycle DIG-PRODI | 0 | 4 | 0 | 0 | 4 | 0 |
 | Dossiers vivants et circuits de décision | 0 | 4 | 0 | 0 | 4 | 0 |
 | Besoins machines et Keystone | 0 | 4 | 0 | 0 | 4 | 0 |
@@ -43,8 +43,7 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 
 Les points « Bloquant production » restants, par domaine. Sans eux, Arche reste une démonstration.
 
-- **Plateforme et mise en production** : AR-011 Sauvegardes et restauration du schéma arche ; AR-014 Arche sur le serveur PostgreSQL commun (Matrix) ; AR-015 Hébergement en France et choix du serveur de production.
-- **Connexion, profils et isolation par filiale** : AR-013 Administration des comptes et des rôles (écriture).
+- **Plateforme et mise en production** : AR-014 Arche sur le serveur PostgreSQL commun (Matrix) ; AR-015 Hébergement en France et choix du serveur de production.
 - **Tableaux de bord et gouvernance** : AR-034 Pilote sur 1 à 2 CAPEX.
 
 ### 1.2 Ce qui attend le responsable produit
@@ -66,11 +65,7 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 
 ## 2. Liste détaillée par domaine
 
-### 2.1 Plateforme et mise en production (5 restants, 3 faits)
-
-**AR-011 · Sauvegardes et restauration du schéma arche** — *Bloquant production · non commencé · effort S*  
-pg_dump du schéma, rétention, exercice de restauration ; sur le serveur commun, la sauvegarde de Matrix couvre arche après M-7.  
-*Sources : docs/SOCLE.md, docs/DEMANDES-MATRIX.md M-7*
+### 2.1 Plateforme et mise en production (3 restants, 5 faits)
 
 **AR-014 · Arche sur le serveur PostgreSQL commun (Matrix)** — *Bloquant production · attend un système externe · effort S*  
 Rôle, schéma, droits, partage, journal unifié, sauvegarde, déclaration des tables.  
@@ -80,13 +75,13 @@ Rôle, schéma, droits, partage, journal unifié, sauvegarde, déclaration des t
 D-11 / C-13 ; même décision que Keystone (I-1a).  
 *Attend : Responsable produit et DSI · Sources : docs/DECISIONS.md C-13*
 
-**AR-010 · Tâches planifiées et worker** — *Prochaine étape · non commencé · effort S*  
-Relances, revues en retard, synchronisations, instantanés hebdomadaires (moteur de Keystone).  
-*Sources : docs/SOCLE.md*
-
 **AR-038 · Socle partagé @epc2i/socle** — *Plus tard · attend un système externe · effort M*  
 Remplacer les copies du socle par le paquet (R-194 de Keystone).  
 *Attend : Keystone (R-194) · Sources : docs/SOCLE.md*
+
+**~~AR-011 · Sauvegardes et restauration du schéma arche~~** — *Bloquant production · non commencé · effort S* · **fait (Livraison 1b)**  
+pg_dump du schéma, rétention, exercice de restauration ; sur le serveur commun, la sauvegarde de Matrix couvre arche après M-7.  
+*Avancement : docs/DELIVERY-1b.md · Sources : docs/SOCLE.md, docs/DEMANDES-MATRIX.md M-7*
 
 **~~AR-004 · Socle repris de Keystone (configuration, journaux, santé, horloge, base, audit, HTTP, i18n, Nocturne)~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 1)**  
 Copie du socle au commit Keystone 63f43ad, adaptée à PostgreSQL seul (schéma arche).  
@@ -100,15 +95,15 @@ Pas de PGlite (décision du 22 oct.) : développement, tests, CI et production s
 Image (port 3400), compose (PostgreSQL créé comme le serveur commun, migration, application), CI avec service PostgreSQL 16 et test de fumée.  
 *Sources : Dockerfile, deploy/, .github/workflows/ci.yml*
 
-### 2.2 Connexion, profils et isolation par filiale (2 restants, 2 faits)
+**~~AR-010 · Tâches planifiées et worker~~** — *Prochaine étape · non commencé · effort S* · **fait (Livraison 1b)**  
+Relances, revues en retard, synchronisations, instantanés hebdomadaires (moteur de Keystone).  
+*Avancement : docs/DELIVERY-1b.md · Sources : docs/SOCLE.md*
 
-**AR-013 · Administration des comptes et des rôles (écriture)** — *Bloquant production · non commencé · effort M*  
+### 2.2 Connexion, profils et isolation par filiale (0 restants, 4 faits)
+
+**~~AR-013 · Administration des comptes et des rôles (écriture)~~** — *Bloquant production · non commencé · effort M* · **fait (Livraison 1b)**  
 Créer un compte, lui donner des rôles et des portées, le désactiver ; audit.  
-*Sources : docs/spec/01 §3*
-
-**AR-012 · Test de bout en bout de la connexion Entra** — *Prochaine étape · non commencé · effort S*  
-Fournisseur OpenID simulé (src/test/mock-entra.ts) : connexion, refus, compte administrateur créé, déconnexion.  
-*Sources : src/server/auth/*
+*Avancement : docs/DELIVERY-1b.md · Sources : docs/spec/01 §3*
 
 **~~AR-006 · Connexion Entra ID et mode démo~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 1)**  
 Routes de connexion, cookie de session scellé, rôles et portées lus dans Arche, compte administrateur à la première connexion (ARCHE_ADMIN_EMAILS) ; « Voir en tant que » en démo.  
@@ -117,6 +112,10 @@ Routes de connexion, cookie de session scellé, rôles et portées lus dans Arch
 **~~AR-007 · Profils, portées et isolation par filiale dans la couche de données~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 1)**  
 13 profils, affectations à portée groupe / zone / filiale / CAPEX ; filtre SQL sur chaque lecture ; un CAPEX hors portée répond 404.  
 *Avancement : Test par profil (src/server/dal/capex.test.ts) et test de fumée HTTP. · Sources : docs/spec/01 §2*
+
+**~~AR-012 · Test de bout en bout de la connexion Entra~~** — *Prochaine étape · non commencé · effort S* · **fait (Livraison 1b)**  
+Fournisseur OpenID simulé (src/test/mock-entra.ts) : connexion, refus, compte administrateur créé, déconnexion.  
+*Avancement : docs/DELIVERY-1b.md · Sources : src/server/auth/*
 
 ### 2.3 CAPEX et cycle DIG-PRODI (4 restants)
 
@@ -230,7 +229,7 @@ Livraison 7 (C-7, C-13).
 
 **AR-002 · Réponses du responsable produit aux questions de DECISIONS.md** — *À décider · attend le responsable produit · effort S* · **en cours**  
 Les réponses par défaut s’appliquent tant qu’il n’y a pas d’autre réponse ; à confirmer en priorité : N-3, N-4, C-6, C-13, N-22, N-24.  
-*Avancement : Reçu le 22 oct. 2026 : nom Arche, PostgreSQL uniquement, Codex pour tous les documents. · Attend : Responsable produit · Sources : docs/DECISIONS.md*
+*Avancement : Reçu le 22 oct. 2026 : nom Arche, PostgreSQL uniquement, Codex pour tous les documents. Questionnaire « Décisions Arche » publié le 22 oct. pour les autres réponses. · Attend : Responsable produit · Sources : docs/DECISIONS.md*
 
 **AR-003 · Données de référence des filiales** — *À décider · attend le responsable produit · effort S*  
 Liste des filiales (code, pays, zone, devise), sites, CA de référence par exercice (C-5).  
@@ -242,5 +241,6 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-22 — Livraison 1b : administration en écriture, connexion Entra testée de bout en bout, déclaration à Matrix, pub_journal, worker et sauvegardes ; questionnaire « Décisions Arche » publié.
 - 2026-10-22 — Livraison 1 (socle) : socle repris de Keystone (63f43ad) sur PostgreSQL seul, connexion Entra et démo, 13 profils et isolation par filiale, coquille, CI. Demandes à Codex, Vigie, Cursus et Matrix ajoutées.
 - 2026-10-22 — Livraison 0 (cadrage) : inventaire initial aligné sur docs/PLAN.md.
