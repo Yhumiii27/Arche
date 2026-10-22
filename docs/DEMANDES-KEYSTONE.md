@@ -3,6 +3,9 @@
 > 22 oct. 2026. Arche **ne modifie jamais** le dépôt Keystone. Chaque demande ci-dessous est à transmettre au chat Keystone
 > par le responsable produit. Elles détaillent les lots déjà inscrits au reste à développer de Keystone (R-185 à R-194).
 > Les colonnes sont détaillées dans [`CONTRATS.md`](CONTRATS.md). En attendant chaque vue, Arche la simule.
+>
+> **Déposées le 22 oct. 2026** dans le `REQUESTS.md` de Keystone (validées par Guillaume, Yhumiii27/Keystone#24), en 4
+> entrées OUVERTES : K-01 + K-02 + K-03 + K-10 ; K-05 ; K-04 + K-06 + K-08 ; K-07 + K-09 + K-11 + K-12.
 
 | # | Demande | Lot Keystone | Nécessaire pour (Arche) | Priorité |
 |---|---|---|---|---|
