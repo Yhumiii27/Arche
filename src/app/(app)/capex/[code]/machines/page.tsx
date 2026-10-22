@@ -45,7 +45,7 @@ export default async function MachinesPage({ params }: PageProps<'/capex/[code]/
   const sheetOf = (code: string | null, version: number | null) => sheets.find((s) => s.code === code && s.version === version);
   return (
     <>
-      <PageHeader screen="capex-machines" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} />
+      <PageHeader screen="capex-machines" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} primary={edit ? <NeedForm code={c.code} sheets={choices} lots={lotChoices} primary /> : undefined} />
       <KpiGrid>
         <KpiTile label={t('Machine needs')} value={String(needs.filter((n) => n.status !== 'withdrawn').length)} sub={`${needs.filter((n) => n.status === 'draft').length} ${t('draft(s)')}`} />
         <KpiTile label={t('Firm offers')} value={offers.value} sub={t('valid E10 offers / submitted needs')} tone={offers.met ? 'default' : 'alert'} />
@@ -131,7 +131,6 @@ export default async function MachinesPage({ params }: PageProps<'/capex/[code]/
         ) : (
           <EmptyState>{t('No machine need yet.')}</EmptyState>
         )}
-        {edit && <NeedForm code={c.code} sheets={choices} lots={lotChoices} />}
         {!edit && can('needs') && <span className="text-muted">{t('Machine needs are entered and submitted in phases 1 and 2.')}</span>}
       </SectionCard>
 

@@ -39,7 +39,10 @@ describe('administration checks', () => {
     expect(checkSubsidiary({ code: 'kel', name: 'Kenya Ltd', countryIso2: 'ke', zoneCode: 'AFO', currency: 'kes' }, { zones: set('AFO'), taken: set('APM') })).toEqual({ ok: true, value: { code: 'KEL', name: 'Kenya Ltd', countryIso2: 'KE', zoneCode: 'AFO', currency: 'KES' } });
     expect(checkSubsidiary({ code: 'AP', name: 'x', countryIso2: 'MA', zoneCode: 'AFO' }, { zones: set('AFO'), taken: set() }).ok).toBe(false);
     const subs = new Map([['APM', 'MA']]);
-    expect(checkSite({ subsidiaryCode: 'APM', name: 'Usine 2', city: 'Fès' }, { subsidiaries: subs, takenNames: set() })).toEqual({ ok: true, value: { subsidiaryCode: 'APM', name: 'Usine 2', city: 'Fès', countryIso2: 'MA' } });
+    expect(checkSite({ subsidiaryCode: 'APM', name: 'Usine 2', city: 'Fès' }, { subsidiaries: subs, takenNames: set() })).toEqual({ ok: true, value: { subsidiaryCode: 'APM', name: 'Usine 2', city: 'Fès', countryIso2: 'MA', latitude: null, longitude: null } });
+    expect(checkSite({ subsidiaryCode: 'APM', name: 'Usine 3', latitude: '34,03', longitude: '-5.0' }, { subsidiaries: subs, takenNames: set() })).toMatchObject({ ok: true, value: { latitude: 34.03, longitude: -5 } });
+    expect(checkSite({ subsidiaryCode: 'APM', name: 'Usine 3', latitude: '95', longitude: '-5' }, { subsidiaries: subs, takenNames: set() }).ok).toBe(false);
+    expect(checkSite({ subsidiaryCode: 'APM', name: 'Usine 3', latitude: '34' }, { subsidiaries: subs, takenNames: set() }).ok).toBe(false);
     expect(checkSite({ subsidiaryCode: 'APM', name: 'Usine 2' }, { subsidiaries: subs, takenNames: set('APM|usine 2') }).ok).toBe(false);
     expect(checkRevenue({ subsidiaryCode: 'APM', fiscalYear: '2025', revenueKeur: '45 000,5' }, { subsidiaries: set('APM'), today: '2026-10-22' })).toEqual({ ok: true, value: { subsidiaryCode: 'APM', fiscalYear: 2025, revenueKeur: 45000.5, sourceNote: null } });
     expect(checkRevenue({ subsidiaryCode: 'APM', fiscalYear: '2031', revenueKeur: '1' }, { subsidiaries: set('APM'), today: '2026-10-22' }).ok).toBe(false);

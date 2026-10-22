@@ -8,8 +8,9 @@ import demo from './demo.json';
 import dossiers from './dossiers.json';
 import needs from './needs.json';
 import shell from './shell.json';
+import ui from './ui.json';
 
-const FILES: Record<string, Record<string, string>> = { admin, auth, capex, cycle, demo, dossiers, needs, shell };
+const FILES: Record<string, Record<string, string>> = { admin, auth, capex, cycle, demo, dossiers, needs, shell, ui };
 
 export const FR_FILES = FILES;
 export const FR_DICT: Record<string, string> = Object.assign({}, ...Object.values(FILES));

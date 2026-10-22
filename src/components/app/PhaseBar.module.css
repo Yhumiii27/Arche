@@ -1,0 +1,26 @@
+.bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.step {
+  width: 20px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-neutral-800);
+}
+
+.done {
+  background: var(--color-accent-600);
+}
+
+.now {
+  background: var(--color-accent-400);
+}
+
+.label {
+  margin-left: 8px;
+  color: var(--color-neutral-300);
+}

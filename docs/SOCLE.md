@@ -21,7 +21,7 @@
 | Connexion Entra ID et session | `src/server/auth/` (crypto, oidc, session-cookie, config, routes), `src/proxy.ts`, routes `src/app/api/auth/*`, page `src/app/sign-in` | rôles et portées lus dans Arche (pas dans le jeton) ; compte administrateur créé à la première connexion (`ARCHE_ADMIN_EMAILS`) | repris (L1) |
 | Règles de connexion | `src/domain/auth.ts` | `decideSignIn` d’Arche (compte par objet Entra, sinon par e-mail) | repris et adapté (L1) |
 | Session et « Voir en tant que » | `src/server/session.ts`, `src/config/personas.ts` (mécanisme) | personnes de démonstration lues en base, une par profil | repris et adapté (L1) |
-| Coquille et registre d’écrans | `src/config/screens.ts`, `src/components/app/shell/` | registre de la spec 08, barre latérale et en-tête simplifiés (sans recherche ⌘K ni tiroir tablette) | repris et adapté (L1) |
+| Coquille et registre d’écrans | `src/config/screens.ts`, `src/components/app/shell/` | registre de la spec 08, barre latérale et en-tête simplifiés (sans tiroir tablette ; recherche ⌘K ajoutée avec le lot UI) | repris et adapté (L1) |
 | Design Nocturne | `src/styles/nocturne.css`, `src/components/ds/`, composants génériques de `src/components/app/` | sans les composants des écrans Keystone ; police Inter locale de Codex | repris (L1) |
 | i18n et complétude du français | `src/i18n/` | moteur simplifié (dictionnaires par domaine dans `src/i18n/fr/`, règles, segments) ; contrôle de complétude | repris et adapté (L1) |
 | Base de données | `src/server/db/{client,types,transactions,migrations,server-schema,postgres,migrate-command}.ts` | PostgreSQL seul ; verrous `arche.migrations` / `arche.ecritures` ; `npm run db:local` | repris et adapté (L1) |
@@ -35,6 +35,8 @@
 | Sauvegardes et restauration | `src/server/backup/`, `scripts/backup.ts`, `scripts/restore.ts` | `pg_dump` / `pg_restore` du seul schéma `arche`, sans recréer le schéma | repris et adapté (L1b) |
 | Connecteurs (cadre) | `src/server/integrations/outbox.ts`, `connector-enabled.ts` | connecteurs `keystone`, `codex` | à reprendre (L3, L4) |
 | Déclaration à Matrix | `src/server/integrations/matrix/` | application `arche` (Matrix l’acceptera après M-8) | repris (L1b) |
+| Carte des projets (module métier, sur demande du responsable produit, 22 oct. 2026) | `src/components/charts/projects-map.tsx` (+ `.module.css`), `src/domain/worldmap.ts`, `src/features/worldmap/map-panels.tsx` (+ `worldmap.module.css`) au commit `6645cb6` | `src/components/charts/capex-map.tsx`, `src/domain/capex-map.ts` (style d'un marqueur par phase du CAPEX, indicateurs), `src/features/map/` ; mêmes dépendances (`d3-geo`, `d3-selection`, `d3-zoom`, `topojson-client`, `world-atlas` 2.0.2) | repris et adapté (UI) |
+| Barre latérale : recherche ⌘K, groupes, sélecteur de projet | `src/components/app/shell/sidebar.tsx`, `header-islands.tsx` (`ProjectSwitcher`, `ZoneSeg`) au commit `6645cb6` | sélecteur de CAPEX dans la section CAPEX, sélecteur de zone `src/components/app/ZoneSeg.tsx` | repris et adapté (UI) |
 
 **Jamais copiés** : la voie PGlite, `src/domain/*` métier (EVM, cycle à 13 étapes, ITP…), `src/features/*`, `src/server/dal/*`
 métier, `src/server/prototype/`, les fournisseurs de validations Keystone, les connecteurs Codex / Vigie / Cursus / X3, les

@@ -41,13 +41,20 @@ export async function createCapexAction(_prev: ActionResult | null, fd: FormData
     if (!c.ok) return c;
     const taken = (await tx.select({ code: capex.code }).from(capex).where(eq(capex.subsidiaryCode, sub))).map((x) => x.code);
     const code = nextCapexCode(sub, Number(today.slice(0, 4)), taken);
-    const lead = v.role === 'project_lead';
+    // The project lead: the creator when a project lead creates; the person a sponsor names (optional), of the subsidiary
+    // or of the group (isolation: never a person of another subsidiary).
+    let leadId: string | null = v.role === 'project_lead' ? v.userId : null;
+    if (v.role === 'sponsor' && f.leadUserId) {
+      const [u] = await tx.select().from(users).where(eq(users.id, f.leadUserId));
+      if (!u || !u.active || (u.subsidiaryCode && u.subsidiaryCode !== sub)) return { ok: false, error: 'Choose a person of the subsidiary or of the group' };
+      leadId = u.id;
+    }
     const [row] = await tx.insert(capex).values({
-      code, subsidiaryCode: sub, ...c.value, status: 'draft', phase: 'cadrage', sponsorUserId: v.role === 'sponsor' ? v.userId : null, leadUserId: lead ? v.userId : null,
+      code, subsidiaryCode: sub, ...c.value, status: 'draft', phase: 'cadrage', sponsorUserId: v.role === 'sponsor' ? v.userId : null, leadUserId: leadId,
     }).returning();
-    if (lead) {
-      await tx.insert(capexMembers).values({ capexId: row.id, userId: v.userId, capexRole: 'lead' });
-      await tx.insert(roleAssignments).values({ userId: v.userId, role: 'project_lead', scopeKind: 'capex', scopeRef: code, createdByName: v.name });
+    if (leadId) {
+      await tx.insert(capexMembers).values({ capexId: row.id, userId: leadId, capexRole: 'lead' });
+      await tx.insert(roleAssignments).values({ userId: leadId, role: 'project_lead', scopeKind: 'capex', scopeRef: code, createdByName: v.name });
     }
     await writeAudit(tx, auditOf(v, row, 'CAPEX created (draft)', { entityType: 'capex', entityId: row.id, after: { ...c.value, subsidiaryCode: sub } }));
     await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'capex.created', text: `${code} created`, capexId: row.id });

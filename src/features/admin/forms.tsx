@@ -146,6 +146,12 @@ export function NewSiteForm({ subsidiaries }: { subsidiaries: { code: string; na
       <Field label={t('City')} htmlFor="nsi-city">
         <Input id="nsi-city" name="city" />
       </Field>
+      <Field label={t('Latitude')} htmlFor="nsi-lat" hint={t('decimal degrees, for the CAPEX map')}>
+        <Input id="nsi-lat" name="latitude" inputMode="decimal" />
+      </Field>
+      <Field label={t('Longitude')} htmlFor="nsi-lng">
+        <Input id="nsi-lng" name="longitude" inputMode="decimal" />
+      </Field>
     </ActionForm>
   );
 }

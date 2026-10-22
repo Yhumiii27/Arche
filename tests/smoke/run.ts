@@ -14,7 +14,8 @@ async function get(path: string, role?: string): Promise<{ status: number; body:
   return { status: r.status, body: await r.text(), headers: r.headers };
 }
 
-const codes = (html: string) => [...new Set(html.match(/CPX-[A-Z]{3}-\d{4}-\d{2}/g) ?? [])].sort();
+// The CAPEX a page links to (the register's rows and the sidebar's switcher; not the code a creation dialog announces).
+const codes = (html: string) => [...new Set([...html.matchAll(/href="\/capex\/(CPX-[A-Z]{3}-\d{4}-\d{2})"/g)].map((m) => m[1]))].sort();
 
 async function main(): Promise<void> {
   const health = await get('/api/health');
@@ -63,6 +64,13 @@ async function main(): Promise<void> {
   const epc2i = await get('/capex/CPX-SAI-2026-01/machines', 'epc2i_pmo');
   check(epc2i.status === 200 && epc2i.body.includes('SAI-26011') && epc2i.body.includes('Fin des études'), 'machine needs: the EPC2i projects and their milestones');
   check((await get('/admin/connectors', 'admin')).status === 200, 'connectors page for the administrator');
+  const register = await get('/capex', 'sponsor');
+  check(register.status === 200 && register.body.includes('Nouveau CAPEX') && register.body.includes('Toutes les zones'), 'register: "New CAPEX" action and zone selector for a sponsor');
+  const map = await get('/map', 'dir_ig');
+  check(map.status === 200 && map.body.includes('Carte des CAPEX') && map.body.includes('Kénitra'), 'CAPEX map with the sites of the CAPEX');
+  check((await get('/map', 'admin')).status === 404, 'the CAPEX map is not in the administrator\u2019s workspace');
+  const overview2 = await get('/capex/CPX-APM-2026-01', 'project_lead');
+  check(overview2.status === 200 && overview2.body.includes('Prochaine étape') && overview2.body.includes('Soumettre au jalon G2'), 'CAPEX overview: next step and gate action');
   const soon = await get('/capex/CPX-SAI-2026-01/execution', 'epc2i_pmo');
   check(soon.status === 200 && soon.body.includes('Prévu pour la livraison 5'), 'a screen of a later delivery says when it comes');
   check((await get('/capex/CPX-SAI-2026-01/budget', 'sponsor')).status === 404, 'every page of another subsidiary’s CAPEX is not found');

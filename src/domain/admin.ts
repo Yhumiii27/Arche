@@ -99,14 +99,25 @@ export function checkZone(raw: Record<string, unknown>, taken: ReadonlySet<strin
   return { ok: true, value: { code, name } };
 }
 
-export function checkSite(raw: Record<string, unknown>, ctx: { subsidiaries: ReadonlyMap<string, string>; takenNames: ReadonlySet<string> }): Check<{ subsidiaryCode: string; name: string; city: string | null; countryIso2: string }> {
+/** A coordinate in decimal degrees within ±max ("34,261" accepted); '' → null; NaN when invalid. */
+function degrees(raw: unknown, max: number): number | null {
+  const v = text(raw).replace(',', '.');
+  if (!v) return null;
+  const n = Number(v);
+  return Number.isFinite(n) && Math.abs(n) <= max ? n : NaN;
+}
+
+export function checkSite(raw: Record<string, unknown>, ctx: { subsidiaries: ReadonlyMap<string, string>; takenNames: ReadonlySet<string> }): Check<{ subsidiaryCode: string; name: string; city: string | null; countryIso2: string; latitude: number | null; longitude: number | null }> {
   const subsidiaryCode = text(raw.subsidiaryCode).toUpperCase();
   const country = ctx.subsidiaries.get(subsidiaryCode);
   if (!country) return { ok: false, error: 'Choose a subsidiary' };
   const name = text(raw.name);
   if (name.length < 2 || name.length > 120) return { ok: false, error: 'Enter the site’s name' };
   if (ctx.takenNames.has(`${subsidiaryCode}|${name.toLowerCase()}`)) return { ok: false, error: 'This subsidiary already has a site with this name' };
-  return { ok: true, value: { subsidiaryCode, name, city: text(raw.city) || null, countryIso2: country } };
+  const latitude = degrees(raw.latitude, 90);
+  const longitude = degrees(raw.longitude, 180);
+  if (Number.isNaN(latitude) || Number.isNaN(longitude) || (latitude == null) !== (longitude == null)) return { ok: false, error: 'Enter the latitude (−90 to 90) and the longitude (−180 to 180), or neither' };
+  return { ok: true, value: { subsidiaryCode, name, city: text(raw.city) || null, countryIso2: country, latitude, longitude } };
 }
 
 /** Reference revenue (C-5): a whole fiscal year between 2000 and next year, a positive amount in k€. */

@@ -401,7 +401,30 @@
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
+}
+
+/* "Next step" band under the header of a CAPEX page. */
+.nextStep {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-accent-800);
+  background: color-mix(in srgb, var(--color-accent-900) 70%, transparent);
+}
+
+.nextText {
+  flex: 1;
+  font-size: 13.5px;
+  color: var(--color-accent-100);
+}
+
+.nextText strong {
+  font-weight: 600;
 }
 
 /* R-139 "View as client" (secondary): a link styled as a button; icon only on tablets (R-146) to keep the actions on one row. */

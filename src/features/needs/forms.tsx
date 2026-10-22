@@ -27,13 +27,13 @@ export interface NeedDraft {
   comment: string;
 }
 
-export function NeedForm({ code, sheets, lots, draft }: { code: string; sheets: SheetChoice[]; lots: { value: string; label: string }[]; draft?: NeedDraft }) {
+export function NeedForm({ code, sheets, lots, draft, primary }: { code: string; sheets: SheetChoice[]; lots: { value: string; label: string }[]; draft?: NeedDraft; primary?: boolean }) {
   const { t } = useI18n();
   const [sel, setSel] = useState(draft?.catalogue ?? sheets[0]?.value ?? '');
   const sheet = sheets.find((s) => s.value === sel);
   const p = draft?.id ?? 'new';
   return (
-    <Folded summary={draft ? 'Edit' : 'Add a machine need'}>
+    <Folded summary={draft ? 'Edit' : 'Add a machine need'} variant={primary ? 'primary' : 'secondary'} size={primary ? 'md' : 'row'}>
       <ActionForm action={(prev, fd) => saveNeedAction(code, draft?.id ?? null, prev, fd)} submit={draft ? 'Save' : 'Add the need'} done="Saved">
         <Field label={t('Catalogue machine')} htmlFor={`nd-cat-${p}`} span="full">
           <Select id={`nd-cat-${p}`} name="catalogue" value={sel} onChange={(e) => setSel(e.target.value)} options={[...sheets.map((s) => ({ value: s.value, label: s.label })), { value: '', label: t('Free need (not in the catalogue)') }]} />
@@ -89,11 +89,16 @@ export function DeleteNeedButton({ code, needId }: { code: string; needId: strin
   return <ActionButton run={() => deleteNeedAction(code, needId)} label="Delete" done="Deleted" variant="ghost" />;
 }
 
+/** "Withdraw…": a panel asking the reason (the withdrawal is traced, EPC2i sees it). */
 export function WithdrawNeedForm({ code, needId }: { code: string; needId: string }) {
   const { t } = useI18n();
   return (
-    <ActionForm inline variant="secondary" action={(_p, fd) => withdrawNeedAction(code, needId, String(fd.get('reason') ?? ''))} submit="Withdraw" done="Withdrawn">
-      <Input size="inline" name="reason" placeholder={t('Reason')} aria-label={t('Reason')} />
-    </ActionForm>
+    <Folded summary="Withdraw…" title="Withdraw the need" size="row">
+      <ActionForm action={(_p, fd) => withdrawNeedAction(code, needId, String(fd.get('reason') ?? ''))} submit="Withdraw" done="Withdrawn">
+        <Field label={t('Reason')} htmlFor={`wd-${needId}`} required span="full">
+          <Textarea id={`wd-${needId}`} name="reason" rows={3} required />
+        </Field>
+      </ActionForm>
+    </Folded>
   );
 }

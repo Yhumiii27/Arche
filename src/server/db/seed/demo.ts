@@ -17,9 +17,9 @@ import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import type { Tx } from '../types';
 
 export const DEMO_ZONES = [
-  { code: 'AFN', name: 'North Africa' },
-  { code: 'AFO', name: 'West Africa' },
-  { code: 'EUR', name: 'Europe' },
+  { code: 'AFN', name: 'North Africa', boundsWest: -18, boundsNorth: 38, boundsEast: 12, boundsSouth: 18 },
+  { code: 'AFO', name: 'West Africa', boundsWest: -20, boundsNorth: 26, boundsEast: 16, boundsSouth: 2 },
+  { code: 'EUR', name: 'Europe', boundsWest: -12, boundsNorth: 62, boundsEast: 34, boundsSouth: 34 },
 ] as const;
 
 export const DEMO_SUBSIDIARIES = [
@@ -28,8 +28,8 @@ export const DEMO_SUBSIDIARIES = [
 ] as const;
 
 const DEMO_SITES = [
-  { subsidiaryCode: 'APM', name: 'Kénitra plant', city: 'Kénitra', countryIso2: 'MA' },
-  { subsidiaryCode: 'SAI', name: 'Thiès site', city: 'Thiès', countryIso2: 'SN' },
+  { subsidiaryCode: 'APM', name: 'Kénitra plant', city: 'Kénitra', countryIso2: 'MA', latitude: 34.261, longitude: -6.58 },
+  { subsidiaryCode: 'SAI', name: 'Thiès site', city: 'Thiès', countryIso2: 'SN', latitude: 14.791, longitude: -16.926 },
 ] as const;
 
 interface DemoPerson {

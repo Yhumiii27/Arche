@@ -4,7 +4,7 @@
 import type { RoleKey } from './roles';
 
 export type ScreenId =
-  | 'home' | 'approvals' | 'capex-list' | 'portfolio' | 'copil' | 'rex'
+  | 'home' | 'approvals' | 'capex-list' | 'map' | 'portfolio' | 'copil' | 'rex'
   | 'capex-overview' | 'capex-gates' | 'capex-dossiers' | 'capex-budget' | 'capex-execution' | 'capex-changes' | 'capex-machines'
   | 'capex-pack' | 'capex-permits' | 'capex-safety' | 'capex-risks' | 'capex-governance' | 'capex-rampup' | 'capex-journal'
   | 'admin-org' | 'admin-users' | 'admin-model' | 'admin-delegation' | 'admin-connectors';
@@ -17,6 +17,8 @@ export interface ScreenDef {
   path: string;
   title: string;
   section: Section;
+  /** Theme of the entry within its section (EN source string): the sidebar groups the entries by theme. */
+  group?: string;
   /** Profiles that see it; the others get "outside my workspace" (read-only) or nothing (§2 of spec 08). */
   roles: readonly RoleKey[] | 'all';
   /** Delivery that builds it (docs/PLAN.md). */
@@ -29,29 +31,30 @@ const STEERING: readonly RoleKey[] = ['ceo', 'dir_ig', 'group_cfo', 'group_hse',
 export const SCREENS: readonly ScreenDef[] = [
   { id: 'home', path: '/', title: 'Home', section: 'fixed', roles: 'all', delivery: 'L1' },
   { id: 'approvals', path: '/my/approvals', title: 'My approvals', section: 'fixed', roles: BUSINESS, delivery: 'L3' },
-  { id: 'capex-list', path: '/capex', title: 'CAPEX register', section: 'steering', roles: STEERING, delivery: 'L1' },
-  { id: 'portfolio', path: '/portfolio', title: 'Portfolio', section: 'steering', roles: STEERING, delivery: 'L5' },
-  { id: 'copil', path: '/copil', title: 'COPIL GPI', section: 'steering', roles: ['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'sponsor', 'project_lead'], delivery: 'L5' },
-  { id: 'rex', path: '/rex', title: 'Lessons learned library', section: 'steering', roles: BUSINESS, delivery: 'L6' },
-  { id: 'capex-overview', path: '/capex/[code]', title: 'CAPEX overview', section: 'capex', roles: BUSINESS, delivery: 'L1' },
-  { id: 'capex-gates', path: '/capex/[code]/gates', title: 'Gates & circuits', section: 'capex', roles: BUSINESS, delivery: 'L3' },
-  { id: 'capex-dossiers', path: '/capex/[code]/dossiers', title: 'Living dossiers', section: 'capex', roles: BUSINESS, delivery: 'L3' },
-  { id: 'capex-budget', path: '/capex/[code]/budget', title: 'Budget & business plan', section: 'capex', roles: BUSINESS, delivery: 'L2' },
-  { id: 'capex-execution', path: '/capex/[code]/execution', title: 'Execution', section: 'capex', roles: BUSINESS, delivery: 'L5' },
-  { id: 'capex-changes', path: '/capex/[code]/changes', title: 'Management of change', section: 'capex', roles: BUSINESS, delivery: 'L3' },
-  { id: 'capex-machines', path: '/capex/[code]/machines', title: 'Machine needs', section: 'capex', roles: BUSINESS, delivery: 'L4' },
-  { id: 'capex-pack', path: '/capex/[code]/pack', title: 'Engineering pack', section: 'capex', roles: BUSINESS, delivery: 'L5' },
-  { id: 'capex-permits', path: '/capex/[code]/permits', title: 'Permits', section: 'capex', roles: BUSINESS, delivery: 'L5' },
-  { id: 'capex-safety', path: '/capex/[code]/safety', title: 'Safety milestones', section: 'capex', roles: BUSINESS, delivery: 'L5' },
-  { id: 'capex-risks', path: '/capex/[code]/risks', title: 'Risks', section: 'capex', roles: BUSINESS, delivery: 'L2' },
-  { id: 'capex-governance', path: '/capex/[code]/governance', title: 'Governance', section: 'capex', roles: BUSINESS, delivery: 'L2' },
-  { id: 'capex-rampup', path: '/capex/[code]/rampup', title: 'Ramp-up', section: 'capex', roles: BUSINESS, delivery: 'L6' },
-  { id: 'capex-journal', path: '/capex/[code]/journal', title: 'Journal', section: 'capex', roles: BUSINESS, delivery: 'L2' },
-  { id: 'admin-org', path: '/admin/organisation', title: 'Subsidiaries, sites, zones', section: 'admin', roles: ['admin', 'group_cfo'], delivery: 'L1' },
-  { id: 'admin-users', path: '/admin/users', title: 'Users & roles', section: 'admin', roles: ['admin'], delivery: 'L1' },
-  { id: 'admin-model', path: '/admin/model', title: 'DIG-PRODI model', section: 'admin', roles: ['admin', 'group_hse'], delivery: 'L2' },
-  { id: 'admin-delegation', path: '/admin/delegation', title: 'Delegation matrix', section: 'admin', roles: ['admin'], delivery: 'L3' },
-  { id: 'admin-connectors', path: '/admin/connectors', title: 'Connectors', section: 'admin', roles: ['admin'], delivery: 'L4' },
+  { id: 'capex-list', path: '/capex', title: 'CAPEX register', section: 'steering', group: 'Portfolio', roles: STEERING, delivery: 'L1' },
+  { id: 'map', path: '/map', title: 'CAPEX map', section: 'steering', group: 'Portfolio', roles: STEERING, delivery: 'L4' },
+  { id: 'portfolio', path: '/portfolio', title: 'Portfolio', section: 'steering', group: 'Portfolio', roles: STEERING, delivery: 'L5' },
+  { id: 'copil', path: '/copil', title: 'COPIL GPI', section: 'steering', group: 'Bodies and lessons learned', roles: ['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'sponsor', 'project_lead'], delivery: 'L5' },
+  { id: 'rex', path: '/rex', title: 'Lessons learned library', section: 'steering', group: 'Bodies and lessons learned', roles: BUSINESS, delivery: 'L6' },
+  { id: 'capex-overview', path: '/capex/[code]', title: 'CAPEX overview', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'L1' },
+  { id: 'capex-gates', path: '/capex/[code]/gates', title: 'Gates & circuits', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'L3' },
+  { id: 'capex-dossiers', path: '/capex/[code]/dossiers', title: 'Living dossiers', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'L3' },
+  { id: 'capex-budget', path: '/capex/[code]/budget', title: 'Budget & business plan', section: 'capex', group: 'Budget and decisions', roles: BUSINESS, delivery: 'L2' },
+  { id: 'capex-changes', path: '/capex/[code]/changes', title: 'Management of change', section: 'capex', group: 'Budget and decisions', roles: BUSINESS, delivery: 'L3' },
+  { id: 'capex-governance', path: '/capex/[code]/governance', title: 'Governance', section: 'capex', group: 'Budget and decisions', roles: BUSINESS, delivery: 'L2' },
+  { id: 'capex-machines', path: '/capex/[code]/machines', title: 'Machine needs', section: 'capex', group: 'Delivery', roles: BUSINESS, delivery: 'L4' },
+  { id: 'capex-pack', path: '/capex/[code]/pack', title: 'Engineering pack', section: 'capex', group: 'Delivery', roles: BUSINESS, delivery: 'L5' },
+  { id: 'capex-permits', path: '/capex/[code]/permits', title: 'Permits', section: 'capex', group: 'Delivery', roles: BUSINESS, delivery: 'L5' },
+  { id: 'capex-execution', path: '/capex/[code]/execution', title: 'Execution', section: 'capex', group: 'Delivery', roles: BUSINESS, delivery: 'L5' },
+  { id: 'capex-risks', path: '/capex/[code]/risks', title: 'Risks', section: 'capex', group: 'Risks and safety', roles: BUSINESS, delivery: 'L2' },
+  { id: 'capex-safety', path: '/capex/[code]/safety', title: 'Safety milestones', section: 'capex', group: 'Risks and safety', roles: BUSINESS, delivery: 'L5' },
+  { id: 'capex-rampup', path: '/capex/[code]/rampup', title: 'Ramp-up', section: 'capex', group: 'Start-up and traceability', roles: BUSINESS, delivery: 'L6' },
+  { id: 'capex-journal', path: '/capex/[code]/journal', title: 'Journal', section: 'capex', group: 'Start-up and traceability', roles: BUSINESS, delivery: 'L2' },
+  { id: 'admin-org', path: '/admin/organisation', title: 'Subsidiaries, sites, zones', section: 'admin', group: 'Reference data', roles: ['admin', 'group_cfo'], delivery: 'L1' },
+  { id: 'admin-users', path: '/admin/users', title: 'Users & roles', section: 'admin', group: 'Access', roles: ['admin'], delivery: 'L1' },
+  { id: 'admin-model', path: '/admin/model', title: 'DIG-PRODI model', section: 'admin', group: 'Method', roles: ['admin', 'group_hse'], delivery: 'L2' },
+  { id: 'admin-delegation', path: '/admin/delegation', title: 'Delegation matrix', section: 'admin', group: 'Method', roles: ['admin'], delivery: 'L3' },
+  { id: 'admin-connectors', path: '/admin/connectors', title: 'Connectors', section: 'admin', group: 'Integrations', roles: ['admin'], delivery: 'L4' },
 ];
 
 export const SCREEN_BY_ID = Object.fromEntries(SCREENS.map((s) => [s.id, s])) as Record<ScreenId, ScreenDef>;
@@ -63,7 +66,7 @@ export const SECTION_LABEL: Record<Exclude<Section, 'fixed'>, string> = {
   admin: 'Administration',
 };
 
-/** Screens built by deliveries 1 to 3 (the others open the "coming soon" page). */
+/** Screens built by deliveries 1 to 4 (the others open the "coming soon" page). */
 export const BUILT: ReadonlySet<ScreenId> = new Set(SCREENS.filter((s) => s.delivery === 'L1' || s.delivery === 'L2' || s.delivery === 'L3' || s.delivery === 'L4').map((s) => s.id));
 
 /** True when the profile has the screen in its workspace. */

@@ -1,6 +1,7 @@
 // CAPEX overview (docs/spec/08): identity sheet, the DIG-PRODI cycle — phases, the gate the CAPEX faces with its criteria
 // evaluated now (the circuit runs on the Gates page) — and the cycle history.
 // A CAPEX outside the viewer's scope does not exist (404).
+import Link from 'next/link';
 import { KeyValueList } from '@/components/app/KeyValueList';
 import { KpiGrid, KpiTile } from '@/components/app/Kpi';
 import { SectionCard } from '@/components/app/SectionCard';
@@ -11,6 +12,9 @@ import { rangeOf } from '@/domain/budget';
 import { INVESTMENT_TYPE_LABEL, PHASE_LABEL, STATUS_LABEL, TYPOLOGY_LABEL, labelOf } from '@/domain/capex-labels';
 import { DECISION_LABEL, GATE_LABEL, GATE_OF_PHASE, PHASES, currentGate, type CriterionState } from '@/domain/lifecycle';
 import { ButtonLink } from '@/components/ds/Button';
+import { ArrowRight, Flag } from '@phosphor-icons/react/dist/ssr';
+import { CRITERION_ACTION, nextCriterion } from '@/features/capex/next-step';
+import hs from '@/components/app/shell/header.module.css';
 import { screenHref } from '@/config/screens';
 import { OpenCapexButton, SheetForm, SuspendForm } from '@/features/capex/forms';
 import { currentEvaluation } from '@/server/cycle/evaluation';
@@ -29,9 +33,41 @@ export default async function CapexOverviewPage({ params }: PageProps<'/capex/[c
   const validated = latestValidated(versions);
   const gate = currentGate(c);
   const phaseNo = PHASES.indexOf(c.phase) + 1;
+  const next = ev ? nextCriterion(ev.results) : null;
+  const r0Value = next?.value ? `${t('now')} ${next.value}` : t('not met');
   return (
     <>
-      <PageHeader screen="capex-overview" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} primary={can('open') ? <OpenCapexButton code={c.code} /> : undefined} />
+      <PageHeader
+        screen="capex-overview"
+        title={dataText(c.title, lang)}
+        crumbs={['CAPEX register']}
+        crumbData={c.code}
+        primary={
+          <div className={hs.actions}>
+            {can('edit') && <SheetForm code={c.code} sheet={c} sites={sites} />}
+            {can('suspend') && <SuspendForm code={c.code} outcome={c.status === 'on_hold' ? 'resume' : 'suspend'} />}
+            {can('open') && <OpenCapexButton code={c.code} />}
+            {gate && can('edit') && (
+              <ButtonLink href={screenHref('capex-gates', { code: c.code })} variant="primary" icon={Flag}>{t(`Submit to gate ${gate}`)}</ButtonLink>
+            )}
+          </div>
+        }
+      />
+      {next && (
+        <div className={hs.nextStep}>
+          <ArrowRight size={18} className={hs.accentIcon} />
+          <span className={hs.nextText}>
+            <strong>{t('Next step:')}</strong> {`${t(next.label)} — ${r0Value}`}
+          </span>
+          <ButtonLink href={screenHref(CRITERION_ACTION[next.code].screen, { code: c.code })} variant="primary" size="sm">{t(CRITERION_ACTION[next.code].label)}</ButtonLink>
+        </div>
+      )}
+      {ev && !next && gate && ev.results.every((r) => !r.blocking || r.state !== 'unmet') && (
+        <div className={hs.nextStep}>
+          <ArrowRight size={18} className={hs.accentIcon} />
+          <span className={hs.nextText}>{t(`Every blocking criterion of ${gate} is met or not evaluated yet: the gate can be submitted.`)}</span>
+        </div>
+      )}
       <KpiGrid>
         <KpiTile label={t('Status')} value={t(labelOf(STATUS_LABEL, c.status))} />
         <KpiTile label={t('Phase')} value={c.status === 'draft' ? '—' : `${phaseNo} / 4`} sub={t(labelOf(PHASE_LABEL, c.phase))} />
@@ -57,7 +93,6 @@ export default async function CapexOverviewPage({ params }: PageProps<'/capex/[c
             ...(c.description ? [{ k: t('Description'), v: c.description }] : []),
           ]}
         />
-        {can('edit') && <SheetForm code={c.code} sheet={c} sites={sites} />}
       </SectionCard>
 
       <SectionCard title={t('DIG-PRODI cycle')} hint={gate ? `${t(`Next gate: ${gate}`)} · ${t(GATE_LABEL[gate])}` : undefined}>
@@ -78,6 +113,7 @@ export default async function CapexOverviewPage({ params }: PageProps<'/capex/[c
                 <Th>{t('Blocking')}</Th>
                 <Th>{t('State')}</Th>
                 <Th>{t('Value')}</Th>
+                <Th />
               </tr>
             </thead>
             <tbody>
@@ -90,6 +126,11 @@ export default async function CapexOverviewPage({ params }: PageProps<'/capex/[c
                     {r.state === 'not_evaluated' && <span className="text-muted"> {t(`delivery ${r.from.slice(1)}`)}</span>}
                   </Td>
                   <Td tone="secondary">{r.value ?? '—'}</Td>
+                  <Td align="right" nowrap>
+                    {r.state === 'unmet' && CRITERION_ACTION[r.code] && (
+                      <Link href={screenHref(CRITERION_ACTION[r.code].screen, { code: c.code })}>{t(CRITERION_ACTION[r.code].label)}</Link>
+                    )}
+                  </Td>
                 </tr>
               ))}
             </tbody>
@@ -100,7 +141,6 @@ export default async function CapexOverviewPage({ params }: PageProps<'/capex/[c
             <ButtonLink href={screenHref('capex-gates', { code: c.code })} variant="secondary" size="sm">{t('Open the gate circuit')}</ButtonLink>
           </div>
         )}
-        {can('suspend') && <SuspendForm code={c.code} outcome={c.status === 'on_hold' ? 'resume' : 'suspend'} />}
       </SectionCard>
 
       {(history.length > 0 || gateRows.length > 0) && (

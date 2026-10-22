@@ -9,6 +9,8 @@ import { authMode, sessionConfig } from '@/server/auth/config';
 import { cookieOptions, readSession, sealSession } from '@/server/auth/session-cookie';
 import { getDb } from '@/server/db/client';
 import { writeAudit } from '@/server/db/helpers';
+import { zones } from '@/server/db/schema';
+import { eq } from 'drizzle-orm';
 import { COOKIE, getViewer } from '@/server/session';
 
 const YEAR = 60 * 60 * 24 * 365;
@@ -39,5 +41,17 @@ export async function switchRole(role: string): Promise<{ ok: boolean; error?: s
 export async function setLang(lang: string): Promise<void> {
   if (lang !== 'fr' && lang !== 'en') return;
   (await cookies()).set(COOKIE.lang, lang, { path: '/', maxAge: YEAR, sameSite: 'lax' });
+  revalidatePath('/', 'layout');
+}
+
+/** The zone of the portfolio views (register, map); null = every zone. */
+export async function setZone(zone: string | null): Promise<void> {
+  const jar = await cookies();
+  if (zone === null) jar.delete(COOKIE.zone);
+  else {
+    const [z] = await (await getDb()).select({ code: zones.code }).from(zones).where(eq(zones.code, String(zone)));
+    if (!z) return;
+    jar.set(COOKIE.zone, z.code, { path: '/', maxAge: YEAR, sameSite: 'lax' });
+  }
   revalidatePath('/', 'layout');
 }

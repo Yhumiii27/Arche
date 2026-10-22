@@ -21,6 +21,7 @@ export type { Viewer } from '@/server/viewer';
 export const COOKIE = {
   role: 'arche-role',
   lang: 'arche-lang',
+  zone: 'arche-zone',
 } as const;
 
 /** Default "View as" profile of the demo mode. */
@@ -56,4 +57,10 @@ export const getLang = cache(async (): Promise<Lang> => {
 export const getI18n = cache(async (): Promise<{ lang: Lang; t: T }> => {
   const lang = await getLang();
   return { lang, t: makeT(lang) };
+});
+
+/** The zone the viewer filters the portfolio views on (register, map), null = every zone. Checked against the zones list. */
+export const getZone = cache(async (): Promise<string | null> => {
+  const v = (await cookies()).get(COOKIE.zone)?.value;
+  return v && /^[A-Z0-9]{2,8}$/.test(v) ? v : null;
 });
