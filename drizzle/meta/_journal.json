@@ -71,6 +71,13 @@
       "when": 1792681000372,
       "tag": "0009_share_needs",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792704290644,
+      "tag": "0010_site_coordinates",
+      "breakpoints": true
     }
   ]
 }

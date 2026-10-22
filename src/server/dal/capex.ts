@@ -35,10 +35,16 @@ export interface CapexRow {
   zoneCode: string;
   zoneName: string;
   siteName: string | null;
+  siteCity: string | null;
+  siteCountry: string | null;
+  latitude: number | null;
+  longitude: number | null;
   status: string;
   phase: string;
   typology: string | null;
   leadName: string | null;
+  leadUserId: string | null;
+  sponsorUserId: string | null;
 }
 
 async function selectCapex(viewer: Viewer, extra?: SQL): Promise<CapexRow[]> {
@@ -48,8 +54,8 @@ async function selectCapex(viewer: Viewer, extra?: SQL): Promise<CapexRow[]> {
   return db
     .select({
       id: capex.id, code: capex.code, title: capex.title, subsidiaryCode: capex.subsidiaryCode, subsidiaryName: subsidiaries.name,
-      zoneCode: subsidiaries.zoneCode, zoneName: zones.name, siteName: sites.name, status: capex.status, phase: capex.phase,
-      typology: capex.typology, leadName: users.displayName,
+      zoneCode: subsidiaries.zoneCode, zoneName: zones.name, siteName: sites.name, siteCity: sites.city, siteCountry: sites.countryIso2, latitude: sites.latitude, longitude: sites.longitude, status: capex.status, phase: capex.phase,
+      typology: capex.typology, leadName: users.displayName, leadUserId: capex.leadUserId, sponsorUserId: capex.sponsorUserId,
     })
     .from(capex)
     .innerJoin(subsidiaries, eq(subsidiaries.code, capex.subsidiaryCode))
@@ -75,4 +81,9 @@ export async function siteOptions(subsidiaryCode: string): Promise<{ value: stri
   const db = await getDb();
   const rows = await db.select({ id: sites.id, name: sites.name }).from(sites).where(eq(sites.subsidiaryCode, subsidiaryCode)).orderBy(asc(sites.name));
   return rows.map((s) => ({ value: s.id, label: s.name }));
+}
+
+/** True when the CAPEX is one of the viewer's own: named on it, its sponsor or its project lead. */
+export function isMine(viewer: Viewer, c: { code: string; leadUserId: string | null; sponsorUserId: string | null }): boolean {
+  return c.leadUserId === viewer.userId || c.sponsorUserId === viewer.userId || viewer.assignments.some((a) => a.scopeKind === 'capex' && a.scopeRef === c.code);
 }

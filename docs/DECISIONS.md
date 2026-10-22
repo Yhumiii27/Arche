@@ -126,3 +126,6 @@ type du pack, définitions RSPDI / ASPD, relevé de l’existant).
 | Vue `pub_journal` pour Matrix | journal unifié des outils (convention D18 de Keystone) | **retenu** |
 | Alertes à règles sans IA | le CDC demande des alertes ; elles marchent sans fournisseur d’IA | **retenu** |
 | Mode démo « Voir en tant que » | développement, tests, démonstrations, derrière authentification HTTP | **retenu** |
+| Carte des CAPEX (reprise de la carte des projets de Keystone) et sélecteur de zone des vues de portefeuille | demandé par le responsable produit le 22 oct. 2026 ; maquettes validées le même jour | **retenu** |
+| Menu par thèmes, section CAPEX toujours visible avec sélecteur de CAPEX, recherche de page ⌘K, actions en boutons et panneaux | demandé par le responsable produit le 22 oct. 2026 ; maquettes validées le même jour | **retenu** |
+| Nommer le chef de projet dès la création d'un CAPEX (Sponsor) | maquette « Nouveau CAPEX » validée le 22 oct. 2026 | **retenu** |

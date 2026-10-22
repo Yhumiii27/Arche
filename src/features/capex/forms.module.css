@@ -1,0 +1,30 @@
+/* Dialogs of the CAPEX pages: two columns of fields, the note and the actions at the bottom. */
+.dialogForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+}
+
+.dialogNote {
+  grid-column: 1 / -1;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-neutral-800);
+  font-size: 12.5px;
+  color: var(--color-neutral-300);
+}
+
+.dialogActions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+@media (max-width: 640px) {
+  .dialogForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

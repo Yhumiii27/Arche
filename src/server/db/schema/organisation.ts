@@ -1,6 +1,6 @@
 // Group organisation (docs/spec/02-objets.md §1–2): zones, subsidiaries, their sites and reference revenue, users and their
 // role assignments with a scope (docs/spec/01 §2).
-import { boolean, date, index, integer, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
+import { boolean, date, doublePrecision, index, integer, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import type { ExpertSpeciality, RoleKey, ScopeKind } from '@/config/roles';
 import { arche } from './_schema';
 import { id, keur, timestamps } from './_common';
@@ -8,6 +8,11 @@ import { id, keur, timestamps } from './_common';
 export const zones = arche.table('zones', {
   code: text('code').primaryKey(),
   name: text('name').notNull(),
+  /** Geographic frame of the zone on the CAPEX map, degrees (Keystone's ZONE_BOUNDS; Matrix M-12 to come). */
+  boundsWest: doublePrecision('bounds_west'),
+  boundsNorth: doublePrecision('bounds_north'),
+  boundsEast: doublePrecision('bounds_east'),
+  boundsSouth: doublePrecision('bounds_south'),
   ...timestamps,
 });
 
@@ -29,6 +34,9 @@ export const sites = arche.table('sites', {
   name: text('name').notNull(),
   city: text('city'),
   countryIso2: text('country_iso2').notNull(),
+  /** WGS 84 decimal degrees, for the CAPEX map (Matrix M-11 to come: then a copy of matrix.pub_sites). */
+  latitude: doublePrecision('latitude'),
+  longitude: doublePrecision('longitude'),
   ...timestamps,
 }, (t) => [unique('sites_subsidiary_name_uq').on(t.subsidiaryCode, t.name)]);
 

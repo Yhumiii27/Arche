@@ -1,7 +1,7 @@
 // Phosphor icons of the screens (kept out of ./screens.ts so that server code and scripts load the registry without React).
 import type { Icon } from '@phosphor-icons/react';
 import {
-  Books, ChartLineUp, CheckSquareOffset, ClipboardText, Factory, FileText, Gauge, Gavel, GearSix, House, Key, ListChecks,
+  Books, ChartLineUp, CheckSquareOffset, ClipboardText, Factory, FileText, Gauge, Gavel, GearSix, House, Key, ListChecks, MapTrifold,
   Notebook, Path, PlugsConnected, Scales, ShieldCheck, Stack, Strategy, TrendUp, UsersThree, Warning, Buildings, Wrench, Wallet,
 } from '@phosphor-icons/react/dist/ssr';
 import type { ScreenId } from './screens';
@@ -10,6 +10,7 @@ export const SCREEN_ICONS: Record<ScreenId, Icon> = {
   home: House,
   approvals: CheckSquareOffset,
   'capex-list': Stack,
+  map: MapTrifold,
   portfolio: ChartLineUp,
   copil: Gavel,
   rex: Books,
