@@ -23,6 +23,6 @@ describe('screen registry', () => {
     expect(canSee('admin', 'admin-users')).toBe(true);
     expect(canSee('admin', 'capex-list')).toBe(false);
     expect(canSee('ceo', 'admin-users')).toBe(false);
-    expect([...BUILT].sort()).toEqual(['admin-org', 'admin-users', 'capex-list', 'capex-overview', 'home']);
+    expect([...BUILT].sort()).toEqual(['admin-model', 'admin-org', 'admin-users', 'capex-budget', 'capex-governance', 'capex-journal', 'capex-list', 'capex-overview', 'capex-risks', 'home']);
   });
 });

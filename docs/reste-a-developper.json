@@ -1,729 +1,753 @@
 {
- "generated": "2026-10-22",
- "updated": "2026-10-22",
- "branch": "claude/brave-curie-chxbck",
- "history": [
-  {
-   "date": "2026-10-22",
-   "text": "Livraison 0 (cadrage) : inventaire initial aligné sur docs/PLAN.md."
-  },
-  {
-   "date": "2026-10-22",
-   "text": "Livraison 1 (socle) : socle repris de Keystone (63f43ad) sur PostgreSQL seul, connexion Entra et démo, 13 profils et isolation par filiale, coquille, CI. Demandes à Codex, Vigie, Cursus et Matrix ajoutées."
-  },
-  {
-   "date": "2026-10-22",
-   "text": "Livraison 1b : administration en écriture, connexion Entra testée de bout en bout, déclaration à Matrix, pub_journal, worker et sauvegardes ; questionnaire « Décisions Arche » publié."
-  }
- ],
- "items": [
-  {
-   "id": "AR-001",
-   "title": "Cadrage de la livraison 0",
-   "description": "Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autres applications, plan, socle.",
-   "category": "cadrage_decisions",
-   "kind": "cadrage",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/",
-    "docs/DECISIONS.md"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "fait",
-    "delivery": "Livraison 0",
-    "note": "PR Yhumiii27/Arche#1 fusionnée le 22 oct. 2026 ; complété le 22 oct. par les demandes à Codex, Vigie, Cursus et Matrix."
-   }
-  },
-  {
-   "id": "AR-002",
-   "title": "Réponses du responsable produit aux questions de DECISIONS.md",
-   "description": "Les réponses par défaut s’appliquent tant qu’il n’y a pas d’autre réponse ; à confirmer en priorité : N-3, N-4, C-6, C-13, N-22, N-24.",
-   "category": "cadrage_decisions",
-   "kind": "decision",
-   "priority": "a_decider",
-   "status": "bloque_attente_proprietaire",
-   "waiting_on": "Responsable produit",
-   "effort": "S",
-   "sources": [
-    "docs/DECISIONS.md"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "en_cours",
-    "note": "Reçu le 22 oct. 2026 : nom Arche, PostgreSQL uniquement, Codex pour tous les documents. Questionnaire « Décisions Arche » publié le 22 oct. pour les autres réponses."
-   }
-  },
-  {
-   "id": "AR-003",
-   "title": "Données de référence des filiales",
-   "description": "Liste des filiales (code, pays, zone, devise), sites, CA de référence par exercice (C-5).",
-   "category": "cadrage_decisions",
-   "kind": "donnees",
-   "priority": "a_decider",
-   "status": "bloque_attente_proprietaire",
-   "waiting_on": "Responsable produit / DAF groupe",
-   "effort": "S",
-   "sources": [
-    "docs/DECISIONS.md C-5, N-22"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-004",
-   "title": "Socle repris de Keystone (configuration, journaux, santé, horloge, base, audit, HTTP, i18n, Nocturne)",
-   "description": "Copie du socle au commit Keystone 63f43ad, adaptée à PostgreSQL seul (schéma arche).",
-   "category": "plateforme_production",
-   "kind": "socle",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/SOCLE.md"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "fait",
-    "delivery": "Livraison 1",
-    "note": "docs/DELIVERY-1.md ; 98 tests unitaires sur PostgreSQL, test de fumée HTTP."
-   }
-  },
-  {
-   "id": "AR-005",
-   "title": "PostgreSQL uniquement (schéma arche, rôle arche_app, db:local, migrateur)",
-   "description": "Pas de PGlite (décision du 22 oct.) : développement, tests, CI et production sur PostgreSQL ; une base de test par fichier.",
-   "category": "plateforme_production",
-   "kind": "socle",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/DECISIONS.md N-23"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "fait",
-    "delivery": "Livraison 1"
-   }
-  },
-  {
-   "id": "AR-006",
-   "title": "Connexion Entra ID et mode démo",
-   "description": "Routes de connexion, cookie de session scellé, rôles et portées lus dans Arche, compte administrateur à la première connexion (ARCHE_ADMIN_EMAILS) ; « Voir en tant que » en démo.",
-   "category": "droits_acces",
-   "kind": "socle",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/01 §4"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "fait",
-    "delivery": "Livraison 1",
-    "note": "Le parcours Entra complet n’a pas encore de test de bout en bout (AR-012)."
-   }
-  },
-  {
-   "id": "AR-007",
-   "title": "Profils, portées et isolation par filiale dans la couche de données",
-   "description": "13 profils, affectations à portée groupe / zone / filiale / CAPEX ; filtre SQL sur chaque lecture ; un CAPEX hors portée répond 404.",
-   "category": "droits_acces",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/01 §2"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "fait",
-    "delivery": "Livraison 1",
-    "note": "Test par profil (src/server/dal/capex.test.ts) et test de fumée HTTP."
-   }
-  },
-  {
-   "id": "AR-008",
-   "title": "Coquille, registre d’écrans, accueil, registre et fiche CAPEX, administration en lecture",
-   "description": "25 écrans au registre ; ceux des livraisons suivantes affichent « prévu pour la livraison n ».",
-   "category": "pilotage_gouvernance",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/08"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "fait",
-    "delivery": "Livraison 1"
-   }
-  },
-  {
-   "id": "AR-009",
-   "title": "Conteneur, kit Coolify et CI",
-   "description": "Image (port 3400), compose (PostgreSQL créé comme le serveur commun, migration, application), CI avec service PostgreSQL 16 et test de fumée.",
-   "category": "plateforme_production",
-   "kind": "socle",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "S",
-   "sources": [
-    "Dockerfile",
-    "deploy/",
-    ".github/workflows/ci.yml"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "fait",
-    "delivery": "Livraison 1"
-   }
-  },
-  {
-   "id": "AR-010",
-   "title": "Tâches planifiées et worker",
-   "description": "Relances, revues en retard, synchronisations, instantanés hebdomadaires (moteur de Keystone).",
-   "category": "plateforme_production",
-   "kind": "socle",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "S",
-   "sources": [
-    "docs/SOCLE.md"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "fait",
-    "delivery": "Livraison 1b",
-    "note": "docs/DELIVERY-1b.md"
-   }
-  },
-  {
-   "id": "AR-011",
-   "title": "Sauvegardes et restauration du schéma arche",
-   "description": "pg_dump du schéma, rétention, exercice de restauration ; sur le serveur commun, la sauvegarde de Matrix couvre arche après M-7.",
-   "category": "plateforme_production",
-   "kind": "socle",
-   "priority": "bloquant_production",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "S",
-   "sources": [
-    "docs/SOCLE.md",
-    "docs/DEMANDES-MATRIX.md M-7"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "fait",
-    "delivery": "Livraison 1b",
-    "note": "docs/DELIVERY-1b.md"
-   }
-  },
-  {
-   "id": "AR-012",
-   "title": "Test de bout en bout de la connexion Entra",
-   "description": "Fournisseur OpenID simulé (src/test/mock-entra.ts) : connexion, refus, compte administrateur créé, déconnexion.",
-   "category": "droits_acces",
-   "kind": "test",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "S",
-   "sources": [
-    "src/server/auth/"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "fait",
-    "delivery": "Livraison 1b",
-    "note": "docs/DELIVERY-1b.md"
-   }
-  },
-  {
-   "id": "AR-013",
-   "title": "Administration des comptes et des rôles (écriture)",
-   "description": "Créer un compte, lui donner des rôles et des portées, le désactiver ; audit.",
-   "category": "droits_acces",
-   "kind": "fonction",
-   "priority": "bloquant_production",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/01 §3"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "fait",
-    "delivery": "Livraison 1b",
-    "note": "docs/DELIVERY-1b.md"
-   }
-  },
-  {
-   "id": "AR-014",
-   "title": "Arche sur le serveur PostgreSQL commun (Matrix)",
-   "description": "Rôle, schéma, droits, partage, journal unifié, sauvegarde, déclaration des tables.",
-   "category": "plateforme_production",
-   "kind": "integration",
-   "priority": "bloquant_production",
-   "status": "bloque_systeme_externe",
-   "waiting_on": "Matrix (M-1 à M-8)",
-   "effort": "S",
-   "sources": [
-    "docs/DEMANDES-MATRIX.md"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-015",
-   "title": "Hébergement en France et choix du serveur de production",
-   "description": "D-11 / C-13 ; même décision que Keystone (I-1a).",
-   "category": "plateforme_production",
-   "kind": "decision",
-   "priority": "bloquant_production",
-   "status": "bloque_attente_proprietaire",
-   "waiting_on": "Responsable produit et DSI",
-   "effort": "S",
-   "sources": [
-    "docs/DECISIONS.md C-13"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-016",
-   "title": "CAPEX : création, lots, équipe et gabarit de staffing",
-   "description": "Livraison 2.",
-   "category": "capex_cycle",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "L",
-   "sources": [
-    "docs/PLAN.md"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-017",
-   "title": "Budget par versions et classes d’estimation E50 / E30 / E10",
-   "description": "Livraison 2 (C-8).",
-   "category": "capex_cycle",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/03 §5"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-018",
-   "title": "Typologie Light / Stratégique",
-   "description": "Calcul sur le CA de référence, forçage, confirmation (C-5).",
-   "category": "capex_cycle",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "S",
-   "sources": [
-    "docs/spec/06 §1"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-019",
-   "title": "Cycle DIG-PRODI paramétré : phases, K3, critères des jalons",
-   "description": "Livraison 2 (C-1).",
-   "category": "capex_cycle",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/03"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-020",
-   "title": "Vue pub_capex",
-   "description": "Contrat publié pour Keystone et Matrix.",
-   "category": "besoins_machines",
-   "kind": "integration",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "S",
-   "sources": [
-    "docs/CONTRATS.md §3"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-021",
-   "title": "Dossiers vivants : sections, complétude, versions, figement, empreinte",
-   "description": "Livraison 3.",
-   "category": "dossiers_circuits",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "L",
-   "sources": [
-    "docs/spec/04"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-022",
-   "title": "Consultations d’experts, circuits G1 / K3 / G2 / G3, signature simple, Mes validations",
-   "description": "Livraison 3 (C-7, N-6 à N-10).",
-   "category": "dossiers_circuits",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "L",
-   "sources": [
-    "docs/spec/05"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-023",
-   "title": "Matrice de délégation et MoC",
-   "description": "Livraison 3 (C-4).",
-   "category": "dossiers_circuits",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/05 §5"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-024",
-   "title": "BP : VAN, TRI, délai de retour",
-   "description": "Livraison 3 (N-11).",
-   "category": "dossiers_circuits",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/06 §4"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-025",
-   "title": "Connecteur codex : références de documents, vérification, dépôt des dossiers figés",
-   "description": "Tous les documents d’Arche dans Codex (N-17) ; simulation tant que l’API manque.",
-   "category": "documents_codex",
-   "kind": "integration",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/DEMANDES-CODEX.md"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-026",
-   "title": "API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants",
-   "description": "CX-01 à CX-07.",
-   "category": "documents_codex",
-   "kind": "integration",
-   "priority": "prochaine_etape",
-   "status": "bloque_systeme_externe",
-   "waiting_on": "Codex",
-   "effort": "M",
-   "sources": [
-    "docs/DEMANDES-CODEX.md"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-027",
-   "title": "Connecteur keystone : simulation, miroir, liens profonds",
-   "description": "Livraison 4.",
-   "category": "besoins_machines",
-   "kind": "integration",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/07"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-028",
-   "title": "Besoins machines, réponses EPC2i, passage à « commandé » au G2 ; vue pub_besoins_machines",
-   "description": "Livraison 4.",
-   "category": "besoins_machines",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/07"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-029",
-   "title": "Vues Keystone pour Arche (catalogue, réponses, jalons, avancement, avenants, réserves, pack)",
-   "description": "K-01 à K-11.",
-   "category": "besoins_machines",
-   "kind": "integration",
-   "priority": "prochaine_etape",
-   "status": "bloque_systeme_externe",
-   "waiting_on": "Keystone (R-185 à R-193)",
-   "effort": "L",
-   "sources": [
-    "docs/DEMANDES-KEYSTONE.md"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-030",
-   "title": "Tableaux de bord : synthèse, maturité des études, écart d’incertitude, S-curve, portefeuilles",
-   "description": "Livraison 5.",
-   "category": "pilotage_gouvernance",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "L",
-   "sources": [
-    "docs/spec/06 §3, §5"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-031",
-   "title": "Revues, rapport Copil, audits ; écran COPIL GPI ; alertes à règles",
-   "description": "Livraison 5 (N-19).",
-   "category": "pilotage_gouvernance",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/06 §2, §7"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-032",
-   "title": "Jalons HS (déclaratifs) et registre des autorisations",
-   "description": "Livraison 5 (C-3, N-13).",
-   "category": "securite_vigie",
-   "kind": "fonction",
-   "priority": "prochaine_etape",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/03 §4"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-033",
-   "title": "Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite",
-   "description": "VG-01 à VG-05 ; Vigie ne les modélise pas aujourd’hui.",
-   "category": "securite_vigie",
-   "kind": "integration",
-   "priority": "a_decider",
-   "status": "bloque_systeme_externe",
-   "waiting_on": "Responsable produit (AC-3) puis Vigie",
-   "effort": "L",
-   "sources": [
-    "docs/DEMANDES-VIGIE.md"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-034",
-   "title": "Pilote sur 1 à 2 CAPEX",
-   "description": "Jeu production, utilisateurs réels, guides par rôle, mesure de référence (C-10).",
-   "category": "pilotage_gouvernance",
-   "kind": "deploiement",
-   "priority": "bloquant_production",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/PLAN.md"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-035",
-   "title": "Ramp-up : saisie journalière, TRS, 30 jours continus, 6 mois ; vue pub_rampup",
-   "description": "Livraison 6 (N-16).",
-   "category": "demarrage_transfert",
-   "kind": "fonction",
-   "priority": "plus_tard",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/06 §6"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-036",
-   "title": "Dossier Transfert & REX, PV de transfert contresigné, bibliothèque REX",
-   "description": "Livraison 6 (N-15).",
-   "category": "demarrage_transfert",
-   "kind": "fonction",
-   "priority": "plus_tard",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/spec/04 §4"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-037",
-   "title": "Aide à la décision (règles puis IA conforme) et signature avancée G2 / AFE",
-   "description": "Livraison 7 (C-7, C-13).",
-   "category": "ia_signature",
-   "kind": "fonction",
-   "priority": "plus_tard",
-   "status": "non_commence",
-   "waiting_on": "",
-   "effort": "M",
-   "sources": [
-    "docs/PLAN.md"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  },
-  {
-   "id": "AR-038",
-   "title": "Socle partagé @epc2i/socle",
-   "description": "Remplacer les copies du socle par le paquet (R-194 de Keystone).",
-   "category": "plateforme_production",
-   "kind": "socle",
-   "priority": "plus_tard",
-   "status": "bloque_systeme_externe",
-   "waiting_on": "Keystone (R-194)",
-   "effort": "M",
-   "sources": [
-    "docs/SOCLE.md"
-   ],
-   "evidence": [],
-   "progress": {
-    "state": "a_faire"
-   }
-  }
- ]
+  "generated": "2026-10-22",
+  "updated": "2026-10-22",
+  "branch": "claude/brave-curie-chxbck",
+  "history": [
+    {
+      "date": "2026-10-22",
+      "text": "Livraison 0 (cadrage) : inventaire initial aligné sur docs/PLAN.md."
+    },
+    {
+      "date": "2026-10-22",
+      "text": "Livraison 1 (socle) : socle repris de Keystone (63f43ad) sur PostgreSQL seul, connexion Entra et démo, 13 profils et isolation par filiale, coquille, CI. Demandes à Codex, Vigie, Cursus et Matrix ajoutées."
+    },
+    {
+      "date": "2026-10-22",
+      "text": "Livraison 1b : administration en écriture, connexion Entra testée de bout en bout, déclaration à Matrix, pub_journal, worker et sauvegardes ; questionnaire « Décisions Arche » publié."
+    },
+    {
+      "date": "2026-10-22",
+      "text": "Livraison 2 : CAPEX et cycle DIG-PRODI — brouillon et ouverture, lots, versions de budget E50 / E30 / E10, typologie, équipe et gabarit, critères des jalons et décisions G1 / G2 / K3 / G3, risques, décisions, journal, modèle DIG-PRODI réglable, vue pub_capex."
+    }
+  ],
+  "items": [
+    {
+      "id": "AR-001",
+      "title": "Cadrage de la livraison 0",
+      "description": "Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autres applications, plan, socle.",
+      "category": "cadrage_decisions",
+      "kind": "cadrage",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/",
+        "docs/DECISIONS.md"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 0",
+        "note": "PR Yhumiii27/Arche#1 fusionnée le 22 oct. 2026 ; complété le 22 oct. par les demandes à Codex, Vigie, Cursus et Matrix."
+      }
+    },
+    {
+      "id": "AR-002",
+      "title": "Réponses du responsable produit aux questions de DECISIONS.md",
+      "description": "Les réponses par défaut s’appliquent tant qu’il n’y a pas d’autre réponse ; à confirmer en priorité : N-3, N-4, C-6, C-13, N-22, N-24.",
+      "category": "cadrage_decisions",
+      "kind": "decision",
+      "priority": "a_decider",
+      "status": "bloque_attente_proprietaire",
+      "waiting_on": "Responsable produit",
+      "effort": "S",
+      "sources": [
+        "docs/DECISIONS.md"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "en_cours",
+        "note": "Reçu le 22 oct. 2026 : nom Arche, PostgreSQL uniquement, Codex pour tous les documents ; questionnaire : C-6, N-3, N-4, N-22, N-24 confirmées (défaut). N-26 à N-29 ajoutées au questionnaire par la livraison 2."
+      }
+    },
+    {
+      "id": "AR-003",
+      "title": "Données de référence des filiales",
+      "description": "Liste des filiales (code, pays, zone, devise), sites, CA de référence par exercice (C-5).",
+      "category": "cadrage_decisions",
+      "kind": "donnees",
+      "priority": "a_decider",
+      "status": "bloque_attente_proprietaire",
+      "waiting_on": "Responsable produit / DAF groupe",
+      "effort": "S",
+      "sources": [
+        "docs/DECISIONS.md C-5, N-22"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-004",
+      "title": "Socle repris de Keystone (configuration, journaux, santé, horloge, base, audit, HTTP, i18n, Nocturne)",
+      "description": "Copie du socle au commit Keystone 63f43ad, adaptée à PostgreSQL seul (schéma arche).",
+      "category": "plateforme_production",
+      "kind": "socle",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/SOCLE.md"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 1",
+        "note": "docs/DELIVERY-1.md ; 98 tests unitaires sur PostgreSQL, test de fumée HTTP."
+      }
+    },
+    {
+      "id": "AR-005",
+      "title": "PostgreSQL uniquement (schéma arche, rôle arche_app, db:local, migrateur)",
+      "description": "Pas de PGlite (décision du 22 oct.) : développement, tests, CI et production sur PostgreSQL ; une base de test par fichier.",
+      "category": "plateforme_production",
+      "kind": "socle",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/DECISIONS.md N-23"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 1"
+      }
+    },
+    {
+      "id": "AR-006",
+      "title": "Connexion Entra ID et mode démo",
+      "description": "Routes de connexion, cookie de session scellé, rôles et portées lus dans Arche, compte administrateur à la première connexion (ARCHE_ADMIN_EMAILS) ; « Voir en tant que » en démo.",
+      "category": "droits_acces",
+      "kind": "socle",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/01 §4"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 1",
+        "note": "Le parcours Entra complet n’a pas encore de test de bout en bout (AR-012)."
+      }
+    },
+    {
+      "id": "AR-007",
+      "title": "Profils, portées et isolation par filiale dans la couche de données",
+      "description": "13 profils, affectations à portée groupe / zone / filiale / CAPEX ; filtre SQL sur chaque lecture ; un CAPEX hors portée répond 404.",
+      "category": "droits_acces",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/01 §2"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 1",
+        "note": "Test par profil (src/server/dal/capex.test.ts) et test de fumée HTTP."
+      }
+    },
+    {
+      "id": "AR-008",
+      "title": "Coquille, registre d’écrans, accueil, registre et fiche CAPEX, administration en lecture",
+      "description": "25 écrans au registre ; ceux des livraisons suivantes affichent « prévu pour la livraison n ».",
+      "category": "pilotage_gouvernance",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/08"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 1"
+      }
+    },
+    {
+      "id": "AR-009",
+      "title": "Conteneur, kit Coolify et CI",
+      "description": "Image (port 3400), compose (PostgreSQL créé comme le serveur commun, migration, application), CI avec service PostgreSQL 16 et test de fumée.",
+      "category": "plateforme_production",
+      "kind": "socle",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "S",
+      "sources": [
+        "Dockerfile",
+        "deploy/",
+        ".github/workflows/ci.yml"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 1"
+      }
+    },
+    {
+      "id": "AR-010",
+      "title": "Tâches planifiées et worker",
+      "description": "Relances, revues en retard, synchronisations, instantanés hebdomadaires (moteur de Keystone).",
+      "category": "plateforme_production",
+      "kind": "socle",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "S",
+      "sources": [
+        "docs/SOCLE.md"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 1b",
+        "note": "docs/DELIVERY-1b.md"
+      }
+    },
+    {
+      "id": "AR-011",
+      "title": "Sauvegardes et restauration du schéma arche",
+      "description": "pg_dump du schéma, rétention, exercice de restauration ; sur le serveur commun, la sauvegarde de Matrix couvre arche après M-7.",
+      "category": "plateforme_production",
+      "kind": "socle",
+      "priority": "bloquant_production",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "S",
+      "sources": [
+        "docs/SOCLE.md",
+        "docs/DEMANDES-MATRIX.md M-7"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 1b",
+        "note": "docs/DELIVERY-1b.md"
+      }
+    },
+    {
+      "id": "AR-012",
+      "title": "Test de bout en bout de la connexion Entra",
+      "description": "Fournisseur OpenID simulé (src/test/mock-entra.ts) : connexion, refus, compte administrateur créé, déconnexion.",
+      "category": "droits_acces",
+      "kind": "test",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "S",
+      "sources": [
+        "src/server/auth/"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 1b",
+        "note": "docs/DELIVERY-1b.md"
+      }
+    },
+    {
+      "id": "AR-013",
+      "title": "Administration des comptes et des rôles (écriture)",
+      "description": "Créer un compte, lui donner des rôles et des portées, le désactiver ; audit.",
+      "category": "droits_acces",
+      "kind": "fonction",
+      "priority": "bloquant_production",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/01 §3"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 1b",
+        "note": "docs/DELIVERY-1b.md"
+      }
+    },
+    {
+      "id": "AR-014",
+      "title": "Arche sur le serveur PostgreSQL commun (Matrix)",
+      "description": "Rôle, schéma, droits, partage, journal unifié, sauvegarde, déclaration des tables.",
+      "category": "plateforme_production",
+      "kind": "integration",
+      "priority": "bloquant_production",
+      "status": "bloque_systeme_externe",
+      "waiting_on": "Matrix (M-1 à M-8)",
+      "effort": "S",
+      "sources": [
+        "docs/DEMANDES-MATRIX.md"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-015",
+      "title": "Hébergement en France et choix du serveur de production",
+      "description": "D-11 / C-13 ; même décision que Keystone (I-1a).",
+      "category": "plateforme_production",
+      "kind": "decision",
+      "priority": "bloquant_production",
+      "status": "bloque_attente_proprietaire",
+      "waiting_on": "Responsable produit et DSI",
+      "effort": "S",
+      "sources": [
+        "docs/DECISIONS.md C-13"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-016",
+      "title": "CAPEX : création, lots, équipe et gabarit de staffing",
+      "description": "Livraison 2.",
+      "category": "capex_cycle",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "L",
+      "sources": [
+        "docs/PLAN.md"
+      ],
+      "evidence": [
+        "docs/DELIVERY-2.md"
+      ],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 2",
+        "note": "Création du brouillon, ouverture, fiche, lots, équipe et gabarit de staffing (docs/DELIVERY-2.md)."
+      }
+    },
+    {
+      "id": "AR-017",
+      "title": "Budget par versions et classes d’estimation E50 / E30 / E10",
+      "description": "Livraison 2 (C-8).",
+      "category": "capex_cycle",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/03 §5"
+      ],
+      "evidence": [
+        "docs/DELIVERY-2.md"
+      ],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 2",
+        "note": "Versions E50 / E30 / E10, fourchettes, soumission, validation (E10 par la DAF groupe), baseline G2."
+      }
+    },
+    {
+      "id": "AR-018",
+      "title": "Typologie Light / Stratégique",
+      "description": "Calcul sur le CA de référence, forçage, confirmation (C-5).",
+      "category": "capex_cycle",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "S",
+      "sources": [
+        "docs/spec/06 §1"
+      ],
+      "evidence": [
+        "docs/DELIVERY-2.md"
+      ],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 2",
+        "note": "Calcul (ratio ≥ 20 %, nouvelle usine), confirmation et forçage par le Dir.IG."
+      }
+    },
+    {
+      "id": "AR-019",
+      "title": "Cycle DIG-PRODI paramétré : phases, K3, critères des jalons",
+      "description": "Livraison 2 (C-1).",
+      "category": "capex_cycle",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/03"
+      ],
+      "evidence": [
+        "docs/DELIVERY-2.md"
+      ],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 2",
+        "note": "Modèle 4.0, moteur des critères et des transitions, décision directe du décideur en attendant les circuits (N-27) ; valeurs réglables."
+      }
+    },
+    {
+      "id": "AR-020",
+      "title": "Vue pub_capex",
+      "description": "Contrat publié pour Keystone et Matrix.",
+      "category": "besoins_machines",
+      "kind": "integration",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "S",
+      "sources": [
+        "docs/CONTRATS.md §3"
+      ],
+      "evidence": [
+        "docs/DELIVERY-2.md"
+      ],
+      "progress": {
+        "state": "fait",
+        "delivery": "Livraison 2",
+        "note": "drizzle/0005_share_capex.sql, contrat testé."
+      }
+    },
+    {
+      "id": "AR-021",
+      "title": "Dossiers vivants : sections, complétude, versions, figement, empreinte",
+      "description": "Livraison 3.",
+      "category": "dossiers_circuits",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "L",
+      "sources": [
+        "docs/spec/04"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-022",
+      "title": "Consultations d’experts, circuits G1 / K3 / G2 / G3, signature simple, Mes validations",
+      "description": "Livraison 3 (C-7, N-6 à N-10).",
+      "category": "dossiers_circuits",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "L",
+      "sources": [
+        "docs/spec/05"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-023",
+      "title": "Matrice de délégation et MoC",
+      "description": "Livraison 3 (C-4).",
+      "category": "dossiers_circuits",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/05 §5"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-024",
+      "title": "BP : VAN, TRI, délai de retour",
+      "description": "Livraison 3 (N-11).",
+      "category": "dossiers_circuits",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/06 §4"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-025",
+      "title": "Connecteur codex : références de documents, vérification, dépôt des dossiers figés",
+      "description": "Tous les documents d’Arche dans Codex (N-17) ; simulation tant que l’API manque.",
+      "category": "documents_codex",
+      "kind": "integration",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/DEMANDES-CODEX.md"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-026",
+      "title": "API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants",
+      "description": "CX-01 à CX-07.",
+      "category": "documents_codex",
+      "kind": "integration",
+      "priority": "prochaine_etape",
+      "status": "bloque_systeme_externe",
+      "waiting_on": "Codex",
+      "effort": "M",
+      "sources": [
+        "docs/DEMANDES-CODEX.md"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-027",
+      "title": "Connecteur keystone : simulation, miroir, liens profonds",
+      "description": "Livraison 4.",
+      "category": "besoins_machines",
+      "kind": "integration",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/07"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-028",
+      "title": "Besoins machines, réponses EPC2i, passage à « commandé » au G2 ; vue pub_besoins_machines",
+      "description": "Livraison 4.",
+      "category": "besoins_machines",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/07"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-029",
+      "title": "Vues Keystone pour Arche (catalogue, réponses, jalons, avancement, avenants, réserves, pack)",
+      "description": "K-01 à K-11.",
+      "category": "besoins_machines",
+      "kind": "integration",
+      "priority": "prochaine_etape",
+      "status": "bloque_systeme_externe",
+      "waiting_on": "Keystone (R-185 à R-193)",
+      "effort": "L",
+      "sources": [
+        "docs/DEMANDES-KEYSTONE.md"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-030",
+      "title": "Tableaux de bord : synthèse, maturité des études, écart d’incertitude, S-curve, portefeuilles",
+      "description": "Livraison 5.",
+      "category": "pilotage_gouvernance",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "L",
+      "sources": [
+        "docs/spec/06 §3, §5"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-031",
+      "title": "Revues, rapport Copil, audits ; écran COPIL GPI ; alertes à règles",
+      "description": "Livraison 5 (N-19).",
+      "category": "pilotage_gouvernance",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/06 §2, §7"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-032",
+      "title": "Jalons HS (déclaratifs) et registre des autorisations",
+      "description": "Livraison 5 (C-3, N-13).",
+      "category": "securite_vigie",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/03 §4"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-033",
+      "title": "Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite",
+      "description": "VG-01 à VG-05 ; Vigie ne les modélise pas aujourd’hui.",
+      "category": "securite_vigie",
+      "kind": "integration",
+      "priority": "a_decider",
+      "status": "bloque_systeme_externe",
+      "waiting_on": "Responsable produit (AC-3) puis Vigie",
+      "effort": "L",
+      "sources": [
+        "docs/DEMANDES-VIGIE.md"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-034",
+      "title": "Pilote sur 1 à 2 CAPEX",
+      "description": "Jeu production, utilisateurs réels, guides par rôle, mesure de référence (C-10).",
+      "category": "pilotage_gouvernance",
+      "kind": "deploiement",
+      "priority": "bloquant_production",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/PLAN.md"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-035",
+      "title": "Ramp-up : saisie journalière, TRS, 30 jours continus, 6 mois ; vue pub_rampup",
+      "description": "Livraison 6 (N-16).",
+      "category": "demarrage_transfert",
+      "kind": "fonction",
+      "priority": "plus_tard",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/06 §6"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-036",
+      "title": "Dossier Transfert & REX, PV de transfert contresigné, bibliothèque REX",
+      "description": "Livraison 6 (N-15).",
+      "category": "demarrage_transfert",
+      "kind": "fonction",
+      "priority": "plus_tard",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/spec/04 §4"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-037",
+      "title": "Aide à la décision (règles puis IA conforme) et signature avancée G2 / AFE",
+      "description": "Livraison 7 (C-7, C-13).",
+      "category": "ia_signature",
+      "kind": "fonction",
+      "priority": "plus_tard",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "docs/PLAN.md"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-038",
+      "title": "Socle partagé @epc2i/socle",
+      "description": "Remplacer les copies du socle par le paquet (R-194 de Keystone).",
+      "category": "plateforme_production",
+      "kind": "socle",
+      "priority": "plus_tard",
+      "status": "bloque_systeme_externe",
+      "waiting_on": "Keystone (R-194)",
+      "effort": "M",
+      "sources": [
+        "docs/SOCLE.md"
+      ],
+      "evidence": [],
+      "progress": {
+        "state": "a_faire"
+      }
+    }
+  ]
 }

@@ -43,8 +43,13 @@ async function main(): Promise<void> {
   check(overview.status === 200 && overview.body.includes('Deuxième ligne d’extrusion'), 'CAPEX overview of the project lead');
   check((await get('/admin/users', 'sponsor')).status === 404, 'administration refused to a sponsor (404)');
   check((await get('/admin/users', 'admin')).status === 200, 'administration open to the administrator');
-  const soon = await get('/capex/CPX-APM-2026-01/budget', 'project_lead');
-  check(soon.status === 200 && soon.body.includes('Prévu pour la livraison 2'), 'a screen of a later delivery says when it comes');
+  check(overview.body.includes('Cycle DIG-PRODI') && overview.body.includes('Budget E10 validé par la DAF groupe'), 'the overview shows the gate the CAPEX faces and its criteria');
+  const budget = await get('/capex/CPX-APM-2026-01/budget', 'project_lead');
+  check(budget.status === 200 && budget.body.includes('Versions de budget') && budget.body.includes('E30'), 'budget page: lots and versions');
+  for (const page of ['risks', 'governance', 'journal']) check((await get(`/capex/CPX-SAI-2026-01/${page}`, 'epc2i_pmo')).status === 200, `CAPEX page ${page} opens for a team member`);
+  check((await get('/admin/model', 'admin')).status === 200, 'DIG-PRODI model page for the administrator');
+  const soon = await get('/capex/CPX-APM-2026-01/gates', 'project_lead');
+  check(soon.status === 200 && soon.body.includes('Prévu pour la livraison 3'), 'a screen of a later delivery says when it comes');
   check((await get('/capex/CPX-SAI-2026-01/budget', 'sponsor')).status === 404, 'every page of another subsidiary’s CAPEX is not found');
   check((await get('/nowhere', 'dir_ig')).status === 404, 'an unknown path is not found');
 

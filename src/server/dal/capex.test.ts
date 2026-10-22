@@ -50,3 +50,11 @@ describe('capex visibility in SQL', () => {
     expect(await capexForViewer(await viewerOf('dir_ig'), 'CPX-APM-2026-02')).toBeNull();
   });
 });
+
+describe('pub_capex', () => {
+  it('publishes the open CAPEX only (drafts stay in their subsidiary), with the dates of the gates passed', async () => {
+    const rows = (await t.handle.pool.query(`select code, statut, phase_code, typologie, g1_le::text, g2_le::text, g3_le from arche.pub_capex order by code`)).rows;
+    expect(rows.map((r) => r.code)).toEqual(['CPX-APM-2026-01', 'CPX-SAI-2026-01']);
+    expect(rows[1]).toMatchObject({ statut: 'active', phase_code: 'execution', typologie: 'strategic', g1_le: '2026-01-20', g2_le: '2026-07-08', g3_le: null });
+  });
+});

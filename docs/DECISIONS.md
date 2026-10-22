@@ -22,6 +22,11 @@ uniquement**, pas de PGlite (N-23) ; **Codex héberge tous les documents** d’A
 de Codex, Vigie, Cursus et Matrix (demandes `DEMANDES-*.md`). Le responsable produit a demandé de lancer la livraison 1
 avec les réponses par défaut ci-dessous, qui restent révisables.
 
+**Réponses du questionnaire (22 oct. 2026)** : réponse par défaut confirmée pour **C-6** (glossaire et RACI), **N-3** (comptes
+des filiales), **N-4** (administrateur), **N-22** (filiales, zones et sites tenus dans Arche en attendant Matrix) et **N-24**
+(rattachement `capex` dans Codex). Les autres questions gardent leur réponse par défaut, appliquée par la livraison 2 ; la
+livraison 2 ajoute N-26 à N-29 (§3) au questionnaire.
+
 ## 1. Décisions d’architecture déjà prises (à confirmer pour Arche)
 
 | # | Décision (architecture §1) | Application dans Arche | ★ |
@@ -87,6 +92,10 @@ avec les réponses par défaut ci-dessous, qui restent révisables.
 | N-22 | Qui possède les filiales, leurs zones et leurs sites ? Matrix possède les sites (D14) et l’organigramme (D15) mais sans niveau « société » | Matrix (nouveau niveau « société », [`DEMANDES-MATRIX.md`](DEMANDES-MATRIX.md) M-9) ; Arche garde ses tables `zones`, `subsidiaries`, `sites` en attendant, tenues par son administrateur | L2 |
 | N-23 | Base de données | **Décidé (22 oct.) : PostgreSQL uniquement**, pas de PGlite : développement, tests, CI et production sur PostgreSQL, schéma `arche` partout (`npm run db:local` sur un poste) | — |
 | N-24 | Rattachement Codex d’un document de CAPEX : nouveau rattachement `capex` dans Codex, ou CAPEX traité comme un « projet » Codex | nouveau rattachement **`capex`** (contexte = code CAPEX), qui évite de mélanger CAPEX et projets EPC2i ([`DEMANDES-CODEX.md`](DEMANDES-CODEX.md) CX-01) | L3 |
+| N-26 | Qui valide une version de budget E50 ou E30 ? (le CDC ne parle que de l’E10, validé par la DAF groupe) | le **CDG de la filiale** ou la DAF groupe ; l’E10 reste réservé à la DAF groupe | L2 |
+| N-27 | Qui enregistre la décision d’un jalon avant les circuits de la livraison 3 ? | le décideur l’enregistre lui-même sur la synthèse du CAPEX : **Dir.IG** pour G1 (au nom du COPIL GPI, N-6), K3 et G3 ; **PDG** pour G2 ; critères évalués et gardés avec la décision, forçage motivé et tracé ; remplacé par les circuits (visa, avis, signature) en L3 | L2 |
+| N-28 | Échelle du registre des risques | probabilité et impact de **1 à 4** ; criticité = P × I ; **majeur à partir de 9** | L2 |
+| N-29 | Qui crée le brouillon et qui le porte | le Sponsor (dans sa filiale) ou le chef de projet (dans la filiale de son compte) ; le chef de projet qui crée est nommé d’office ; le Sponsor est celui qui ouvre ; un membre d’équipe est toujours de la filiale ou du groupe (jamais d’une autre filiale) | L2 |
 | N-25 | Identité des personnes entre outils (Cursus : matricule ; Arche : e-mail Entra) | Arche identifie par l’objet Entra et l’e-mail ; le matricule est ajouté aux comptes du groupe quand Cursus l’expose à Arche (CU-03) ; les salariés des filiales n’ont pas de matricule Cursus (CU-01) | L2 |
 
 ## 5. Ajouts au-delà du CDC (à valider, règle « rien hors du CDC sans accord »)
