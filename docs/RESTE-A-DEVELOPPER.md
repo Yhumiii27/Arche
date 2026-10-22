@@ -228,12 +228,12 @@ Livraison 7 (C-7, C-13).
 ### 2.11 Cadrage, décisions et données attendues (2 restants, 1 faits)
 
 **AR-002 · Réponses du responsable produit aux questions de DECISIONS.md** — *À décider · attend le responsable produit · effort S* · **en cours**  
-Les réponses par défaut s’appliquent tant qu’il n’y a pas d’autre réponse ; à confirmer en priorité : N-3, N-4, C-6, C-13, N-22, N-24.  
-*Avancement : Reçu le 22 oct. 2026 : nom Arche, PostgreSQL uniquement, Codex pour tous les documents ; questionnaire : C-6, N-3, N-4, N-22, N-24 confirmées (défaut). N-26 à N-29 ajoutées au questionnaire par la livraison 2. · Attend : Responsable produit · Sources : docs/DECISIONS.md*
+Restent ouvertes : N-26 à N-29 (livraison 2) ; données à fournir D-1 à D-8.  
+*Avancement : 22 oct. 2026 : réponse par défaut confirmée pour 51 questions (A, C, AC, N-1 à N-25, ajouts X-1 à X-7). Restent N-26 à N-29 et les données D-1 à D-8. · Attend : Responsable produit · Sources : docs/DECISIONS.md*
 
 **AR-003 · Données de référence des filiales** — *À décider · attend le responsable produit · effort S*  
 Liste des filiales (code, pays, zone, devise), sites, CA de référence par exercice (C-5).  
-*Attend : Responsable produit / DAF groupe · Sources : docs/DECISIONS.md C-5, N-22*
+*Avancement : Attendu dans le questionnaire : D-1 (filiales), D-2 (sites), D-3 (COPIL GPI), D-4 (premiers comptes). · Attend : Responsable produit / DAF groupe · Sources : docs/DECISIONS.md C-5, N-22*
 
 **~~AR-001 · Cadrage de la livraison 0~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 0)**  
 Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autres applications, plan, socle.  
@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-22 — Questionnaire : réponse par défaut confirmée pour 51 questions, reportée dans DECISIONS.md ; restent N-26 à N-29 et les données D-1 à D-8.
 - 2026-10-22 — Livraison 2 : CAPEX et cycle DIG-PRODI — brouillon et ouverture, lots, versions de budget E50 / E30 / E10, typologie, équipe et gabarit, critères des jalons et décisions G1 / G2 / K3 / G3, risques, décisions, journal, modèle DIG-PRODI réglable, vue pub_capex.
 - 2026-10-22 — Livraison 1b : administration en écriture, connexion Entra testée de bout en bout, déclaration à Matrix, pub_journal, worker et sauvegardes ; questionnaire « Décisions Arche » publié.
 - 2026-10-22 — Livraison 1 (socle) : socle repris de Keystone (63f43ad) sur PostgreSQL seul, connexion Entra et démo, 13 profils et isolation par filiale, coquille, CI. Demandes à Codex, Vigie, Cursus et Matrix ajoutées.
