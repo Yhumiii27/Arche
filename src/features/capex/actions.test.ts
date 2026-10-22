@@ -12,10 +12,10 @@ vi.mock('next/headers', () => ({
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
 import { and, desc, eq } from 'drizzle-orm';
-import { auditEntries, budgetVersions, capex, capexLots, capexMembers, gateCriteriaResults, gates, phaseTransitions, roleAssignments, users } from '@/server/db/schema';
+import { auditEntries, budgetVersions, capex, capexLots, capexMembers, roleAssignments, users } from '@/server/db/schema';
 import { testDatabase, type TestDatabase } from '@/test/db';
 import {
-  addDecisionAction, addLotAction, addMemberAction, confirmTypologyAction, createCapexAction, decideGateAction, forceTypologyAction, openCapexAction,
+  addDecisionAction, addLotAction, addMemberAction, confirmTypologyAction, createCapexAction, forceTypologyAction, openCapexAction,
   removeMemberAction, reviewVersionAction, saveBudgetVersionAction, saveRiskAction, submitVersionAction, suspendAction, updateSheetAction,
 } from './actions';
 
@@ -96,32 +96,7 @@ describe('a CAPEX through the DIG-PRODI cycle', () => {
     expect(await row(CODE)).toMatchObject({ typology: 'light', typologySource: 'computed', typologyProposed: null });
   });
 
-  it('G1: the CEO does not record it; the group industrial director does, criteria kept; the CAPEX enters phase 2', async () => {
-    as('ceo');
-    expect(await decideGateAction(CODE, null, form({ decision: 'go' }))).toEqual({ ok: false, error: 'The group industrial director records this decision' });
-    as('dir_ig');
-    expect(await decideGateAction(CODE, null, form({ decision: 'deferred' }))).toEqual({ ok: false, error: 'Give the reason for the decision' });
-    expect(await decideGateAction(CODE, null, form({ decision: 'deferred', reason: 'Market study to complete' }))).toEqual({ ok: true });
-    expect(await row(CODE)).toMatchObject({ phase: 'cadrage' });
-    expect(await decideGateAction(CODE, null, form({ decision: 'go' }))).toEqual({ ok: true });
-    const c = await row(CODE);
-    expect(c).toMatchObject({ status: 'active', phase: 'avant_projet' });
-    const g = (await t.db.select().from(gates).where(and(eq(gates.capexId, c.id), eq(gates.code, 'G1'))).orderBy(gates.session)).map((x) => [x.session, x.decision]);
-    expect(g).toEqual([[1, 'deferred'], [2, 'go']]);
-    const [g2] = await t.db.select().from(gates).where(and(eq(gates.capexId, c.id), eq(gates.code, 'G1'), eq(gates.session, 2)));
-    const crit = await t.db.select().from(gateCriteriaResults).where(eq(gateCriteriaResults.gateId, g2.id));
-    expect(crit.find((x) => x.criterionCode === 'g1_budget_e50')).toMatchObject({ state: 'met', value: 'E50' });
-    expect(crit.find((x) => x.criterionCode === 'g1_dossier')).toMatchObject({ state: 'not_evaluated' });
-    expect(await lastAudit()).toMatchObject({ change: 'G1 session 2: go → phase 2' });
-  });
-
-  it('G2 needs an E10 version validated by the group CFO; the CEO decides it; the E10 version becomes the baseline', async () => {
-    as('dir_ig');
-    expect(await decideGateAction(CODE, null, form({ decision: 'go' }))).toEqual({ ok: false, error: 'The CEO decides G2' });
-    as('ceo');
-    expect(await decideGateAction(CODE, null, form({ decision: 'go' }))).toEqual({ ok: false, error: 'Blocking criteria are not met' });
-    expect(await decideGateAction(CODE, null, form({ decision: 'go', 'force:g2_budget_e10': 'Validated by phone' }))).toEqual({ ok: false, error: 'Blocking criteria are not met' });
-
+  it('an E10 version is validated by the group CFO only; the typology change waits for the group industrial director', async () => {
     as('project_lead');
     expect(await newVersion(CODE, 'E10', ['900', '12 000'])).toEqual({ ok: true });
     const c = await row(CODE);
@@ -135,37 +110,9 @@ describe('a CAPEX through the DIG-PRODI cycle', () => {
     // 12 900 / 62 000 = 20.8 % → Strategic: proposed, not applied.
     expect(await row(CODE)).toMatchObject({ typology: 'light', typologyProposed: 'strategic' });
     expect(await lastAudit()).toMatchObject({ change: 'typology to confirm: light → strategic (ratio 20.8 %)' });
-
     as('dir_ig');
     expect(await confirmTypologyAction(CODE)).toEqual({ ok: true });
     expect(await row(CODE)).toMatchObject({ typology: 'strategic', typologyProposed: null });
-    // Strategic staffing: controller and EPC2i PMO are missing — G2 blocks, the CEO forces it with a reason.
-    as('ceo');
-    expect(await decideGateAction(CODE, null, form({ decision: 'go' }))).toEqual({ ok: false, error: 'Blocking criteria are not met' });
-    expect(await decideGateAction(CODE, null, form({ decision: 'go_with_conditions', 'force:g2_staffing': 'PMO named next week', conditions: '' }))).toEqual({ ok: false, error: 'Enter at least one condition' });
-    expect(await decideGateAction(CODE, null, form({ decision: 'go_with_conditions', 'force:g2_staffing': 'PMO named next week', conditions: 'Name the EPC2i PMO\nName the controller' }))).toEqual({ ok: true });
-    const after = await row(CODE);
-    expect(after).toMatchObject({ phase: 'execution' });
-    expect((await versionOf(c.id, 2)).isG2Baseline).toBe(true);
-    const [tr] = await t.db.select().from(phaseTransitions).where(and(eq(phaseTransitions.capexId, c.id), eq(phaseTransitions.gateCode, 'G2')));
-    expect(tr).toMatchObject({ forced: true, toPhase: 'execution' });
-    const forced = await t.db.select().from(auditEntries).where(and(eq(auditEntries.capexId, c.id), eq(auditEntries.change, 'G2: criterion forced (g2_staffing)')));
-    expect(forced[0].reason).toBe('PMO named next week');
-  });
-
-  it('K3 then G3: phase 4, then closed; a closed CAPEX is read-only', async () => {
-    as('dir_ig');
-    expect(await decideGateAction(CODE, null, form({ decision: 'no_go', reason: 'x' }))).toEqual({ ok: false, error: 'Choose the decision' });
-    expect(await decideGateAction(CODE, null, form({ decision: 'go' }))).toEqual({ ok: true });
-    expect(await row(CODE)).toMatchObject({ status: 'active', phase: 'demarrage' });
-    expect(await decideGateAction(CODE, null, form({ decision: 'go' }))).toEqual({ ok: true });
-    const c = await row(CODE);
-    expect(c.status).toBe('closed');
-    expect(c.closedAt).not.toBeNull();
-    as('project_lead');
-    expect(await addLotAction(CODE, null, form({ kind: 'other', title: 'Late lot' }))).toEqual({ ok: false, error: 'You cannot do this on this CAPEX' });
-    const phases = (await t.db.select().from(phaseTransitions).where(eq(phaseTransitions.capexId, c.id)).orderBy(phaseTransitions.occurredAt)).map((x) => `${x.toStatus}/${x.toPhase}`);
-    expect(phases).toEqual(['active/cadrage', 'active/avant_projet', 'active/execution', 'active/demarrage', 'closed/demarrage']);
   });
 });
 
@@ -193,20 +140,12 @@ describe('other rules', () => {
     as('dir_ig');
     expect(await suspendAction('CPX-SAI-2026-01', 'suspend', ' ')).toEqual({ ok: false, error: 'Give the reason for the decision' });
     expect(await suspendAction('CPX-SAI-2026-01', 'suspend', 'Financing under review')).toEqual({ ok: true });
-    expect(await decideGateAction('CPX-SAI-2026-01', null, form({ decision: 'go' }))).toEqual({ ok: false, error: 'You cannot do this on this CAPEX' });
+    expect((await row('CPX-SAI-2026-01')).status).toBe('on_hold');
     expect(await suspendAction('CPX-SAI-2026-01', 'resume', 'Financing confirmed')).toEqual({ ok: true });
     expect(await row('CPX-SAI-2026-01')).toMatchObject({ status: 'active', phase: 'execution' });
   });
 
-  it('no-go abandons the CAPEX; removing the lead clears it and its CAPEX role', async () => {
-    as('project_lead');
-    expect((await createCapexAction(null, form({ title: 'Solar roof', investmentType: 'other' }))).ok).toBe(true);
-    const code = 'CPX-APM-2026-04';
-    as('sponsor');
-    expect(await openCapexAction(code)).toEqual({ ok: true });
-    as('dir_ig');
-    expect(await decideGateAction(code, null, form({ decision: 'no_go', reason: 'Not aligned with the plan' }))).toEqual({ ok: true });
-    expect(await row(code)).toMatchObject({ status: 'abandoned' });
+  it('removing the lead clears it and its CAPEX role; a draft without lead cannot be opened', async () => {
     as('sponsor');
     const c = await row('CPX-APM-2026-02');
     const [m] = await t.db.select().from(capexMembers).where(and(eq(capexMembers.capexId, c.id), eq(capexMembers.capexRole, 'lead')));

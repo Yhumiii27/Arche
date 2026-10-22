@@ -106,7 +106,7 @@ async function jwks(uri: string, refresh = false): Promise<Jwk[]> {
 export const SCOPES = 'openid profile email';
 
 /** URL of the Microsoft sign-in page for this request. */
-export function authorizationUrl(meta: OidcMetadata, cfg: Pick<EntraConfig, 'clientId' | 'redirectUri'>, p: { state: string; nonce: string; codeChallenge: string }): string {
+export function authorizationUrl(meta: OidcMetadata, cfg: Pick<EntraConfig, 'clientId' | 'redirectUri'>, p: { state: string; nonce: string; codeChallenge: string; reauth?: boolean }): string {
   const u = new URL(meta.authorization_endpoint);
   u.searchParams.set('client_id', cfg.clientId);
   u.searchParams.set('response_type', 'code');
@@ -117,6 +117,8 @@ export function authorizationUrl(meta: OidcMetadata, cfg: Pick<EntraConfig, 'cli
   u.searchParams.set('nonce', p.nonce);
   u.searchParams.set('code_challenge', p.codeChallenge);
   u.searchParams.set('code_challenge_method', 'S256');
+  // Re-authentication before a signature (N-8): Microsoft asks for the credentials again.
+  if (p.reauth) u.searchParams.set('prompt', 'login');
   return u.toString();
 }
 

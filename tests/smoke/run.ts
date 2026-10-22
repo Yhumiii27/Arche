@@ -48,8 +48,18 @@ async function main(): Promise<void> {
   check(budget.status === 200 && budget.body.includes('Versions de budget') && budget.body.includes('E30'), 'budget page: lots and versions');
   for (const page of ['risks', 'governance', 'journal']) check((await get(`/capex/CPX-SAI-2026-01/${page}`, 'epc2i_pmo')).status === 200, `CAPEX page ${page} opens for a team member`);
   check((await get('/admin/model', 'admin')).status === 200, 'DIG-PRODI model page for the administrator');
-  const soon = await get('/capex/CPX-APM-2026-01/gates', 'project_lead');
-  check(soon.status === 200 && soon.body.includes('Prévu pour la livraison 3'), 'a screen of a later delivery says when it comes');
+  const gatesPage = await get('/capex/CPX-APM-2026-01/gates', 'project_lead');
+  check(gatesPage.status === 200 && gatesPage.body.includes('Sessions précédentes') && gatesPage.body.includes('Avis HSE'), 'gates page: criteria and the G1 circuit of the demo');
+  const dossier = await get('/capex/CPX-APM-2026-01/dossiers/business_case', 'dir_ig');
+  check(dossier.status === 200 && dossier.body.includes('Intègre') && dossier.body.includes('NOT-CPX-APM-2026-01-001'), 'living dossier: fingerprint checked, Codex references');
+  check((await get('/print/capex/CPX-APM-2026-01/dossiers/business_case', 'project_lead')).status === 200, 'print view of a dossier');
+  check((await get('/print/capex/CPX-APM-2026-01/dossiers/business_case', 'expert')).status === 404, 'print view outside the scope is not found');
+  const inbox = await get('/my/approvals', 'dir_ig');
+  check(inbox.status === 200 && inbox.body.includes('MOC-02'), 'my approvals of the group industrial director: the change to decide');
+  check((await get('/capex/CPX-SAI-2026-01/changes', 'dir_ig')).status === 200, 'management of change page');
+  check((await get('/admin/delegation', 'admin')).status === 200, 'delegation matrix page for the administrator');
+  const soon = await get('/capex/CPX-APM-2026-01/machines', 'project_lead');
+  check(soon.status === 200 && soon.body.includes('Prévu pour la livraison 4'), 'a screen of a later delivery says when it comes');
   check((await get('/capex/CPX-SAI-2026-01/budget', 'sponsor')).status === 404, 'every page of another subsidiary’s CAPEX is not found');
   check((await get('/nowhere', 'dir_ig')).status === 404, 'an unknown path is not found');
 

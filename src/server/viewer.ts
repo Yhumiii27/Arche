@@ -18,6 +18,8 @@ export interface Viewer {
   subsidiaryCode: string | null;
   /** True for a demo persona ("View as"). */
   demo: boolean;
+  /** When the user last entered their credentials (Entra sign-in); null in demo mode. A signature needs a recent one (N-8). */
+  authenticatedAt?: Date | null;
 }
 
 /** "Leïla Haddad" → "LH". */

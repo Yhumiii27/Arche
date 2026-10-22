@@ -6,10 +6,11 @@ import { ActionForm, Result } from '@/components/app/ActionForm';
 import { Button } from '@/components/ds/Button';
 import { Field, Input, Select } from '@/components/ds/Field';
 import { EXPERT_SPECIALITIES, ROLE_KEYS, ROLE_LABEL, ROLE_SCOPE, SPECIALITY_LABEL, type RoleKey } from '@/config/roles';
+import { LEVEL_LABEL, type DelegationMatrix } from '@/domain/delegation';
 import { GATES, VALUE_BOUNDS, type ModelValues } from '@/domain/lifecycle';
 import { useI18n } from '@/i18n/client';
 import {
-  addRoleAction, createSiteAction, createSubsidiaryAction, createUserAction, createZoneAction, removeRoleAction, setRevenueAction, setUserActiveAction, updateModelValuesAction,
+  addRoleAction, createSiteAction, createSubsidiaryAction, createUserAction, createZoneAction, removeRoleAction, setRevenueAction, setUserActiveAction, updateMatrixAction, updateModelValuesAction,
 } from './actions';
 import s from './forms.module.css';
 
@@ -184,6 +185,31 @@ export function ModelValuesForm({ values }: { values: ModelValues }) {
       {n('worksThresholdPct', 'Works lots at K3 (%)', values.worksThresholdPct, VALUE_BOUNDS.worksThresholdPct)}
       {n('rampupDays', 'Days at nominal capacity for G3', values.rampupDays, VALUE_BOUNDS.rampupDays)}
       {n('mesMaxMonths', 'Months after commissioning for G3', values.mesMaxMonths, VALUE_BOUNDS.mesMaxMonths)}
+    </ActionForm>
+  );
+}
+
+export function DelegationMatrixForm({ matrix }: { matrix: DelegationMatrix }) {
+  const { t } = useI18n();
+  const n = (name: string, label: string, value: number) => (
+    <Field key={name} label={label} htmlFor={`dm-${name}`}>
+      <Input id={`dm-${name}`} name={name} inputMode="decimal" defaultValue={String(value)} required />
+    </Field>
+  );
+  const fields: React.ReactNode[] = [];
+  for (const typ of ['light', 'strategic'] as const)
+    for (const l of ['copil_projet', 'dir_ig'] as const) {
+      const head = `${t(typ === 'light' ? 'Light' : 'Strategic')} · ${t(LEVEL_LABEL[l])}`;
+      fields.push(n(`${typ}.${l}.costPct`, `${head} — ${t('cost, % of G2')}`, matrix[typ][l].costPct));
+      fields.push(n(`${typ}.${l}.costKeur`, `${head} — ${t('cost, k€')}`, matrix[typ][l].costKeur));
+      fields.push(n(`${typ}.${l}.delayDays`, `${head} — ${t('delay, days')}`, matrix[typ][l].delayDays));
+    }
+  fields.push(n('cumulativePct.copil_projet', `${t(LEVEL_LABEL.copil_projet)} — ${t('cumulative cost, % of G2')}`, matrix.cumulativePct.copil_projet));
+  fields.push(n('cumulativePct.dir_ig', `${t(LEVEL_LABEL.dir_ig)} — ${t('cumulative cost, % of G2')}`, matrix.cumulativePct.dir_ig));
+  fields.push(n('contingencyPct', t('Contingency draw-down by the project steering committee, % of the provision'), matrix.contingencyPct));
+  return (
+    <ActionForm action={updateMatrixAction} submit="Put in force from today" done="Matrix in force">
+      {fields}
     </ActionForm>
   );
 }

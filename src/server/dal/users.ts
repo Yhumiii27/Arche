@@ -36,7 +36,7 @@ async function accountsWhere(q: Q, where: ReturnType<typeof eq>, today: string):
   return rows.map((u) => {
     const assignments = assigned
       .filter((a) => a.userId === u.id && inForce(a, today))
-      .map((a): RoleAssignment => ({ role: a.role, scopeKind: a.scopeKind, scopeRef: a.scopeRef }))
+      .map((a): RoleAssignment => ({ role: a.role, scopeKind: a.scopeKind, scopeRef: a.scopeRef, ...(a.speciality ? { speciality: a.speciality } : {}) }))
       .filter(isValidAssignment);
     return {
       userId: u.id, email: u.email, displayName: u.displayName, jobTitle: u.jobTitle, subsidiaryCode: u.subsidiaryCode, active: u.active,

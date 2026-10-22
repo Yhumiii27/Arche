@@ -530,6 +530,77 @@
     "blocks": "L2"
   },
   {
+    "id": "N-30",
+    "group": "arche",
+    "title": "Décision du Copil projet sur une modification",
+    "context": "Après G2, une petite modification (MoC) est décidée par le Copil projet selon la matrice de délégation. Qui l’enregistre dans Arche ?",
+    "proposal": "Le Sponsor de la filiale, au nom du Copil projet ; le Dir.IG et le PDG enregistrent la leur.",
+    "alts": [
+      "Le chef de projet, secrétaire du Copil projet",
+      "Le Co-DIG"
+    ],
+    "blocks": "L3"
+  },
+  {
+    "id": "N-31",
+    "group": "arche",
+    "title": "Qui rend les avis HSE et DAF",
+    "context": "Les consultations d’experts demandent des avis HSE, DAF, Qualité et Exploitation.",
+    "proposal": "L’expert de la spécialité nommé sur le CAPEX, ou le SSE groupe (HSE) et la DAF groupe (DAF) ; Qualité et Exploitation : un expert nommé sur le CAPEX ; le chef de projet peut nommer l’expert à la soumission.",
+    "alts": [
+      "Toujours un expert nommé sur le CAPEX",
+      "Toujours les fonctions centrales (SSE groupe, DAF groupe…)"
+    ],
+    "blocks": "L3"
+  },
+  {
+    "id": "N-32",
+    "group": "arche",
+    "title": "Client Interne du G3",
+    "context": "Le PV de transfert du G3 est contresigné par le Client Interne et le Dir.IG.",
+    "proposal": "La personne nommée « Client interne » dans l’équipe du CAPEX contresigne.",
+    "alts": [
+      "Le directeur d’usine de la filiale (profil à créer)",
+      "Le Sponsor"
+    ],
+    "blocks": "L3"
+  },
+  {
+    "id": "N-33",
+    "group": "arche",
+    "title": "Provision pour aléas",
+    "context": "La matrice de délégation route les tirages de provision selon la part de la provision tirée ; Arche ne connaît pas encore la provision d’un CAPEX.",
+    "proposal": "Un tirage de provision va au Dir.IG tant que la provision n’est pas saisie (elle le sera avec le suivi d’exécution, L5).",
+    "alts": [
+      "Saisir la provision dans la version E10 du budget dès maintenant"
+    ],
+    "blocks": "L5"
+  },
+  {
+    "id": "N-34",
+    "group": "arche",
+    "title": "Jours ouvrés",
+    "context": "Les échéances des étapes (2 jours ouvrés au G1, 5 jours pour un avis) se comptent en jours ouvrés.",
+    "proposal": "Du lundi au vendredi, sans jours fériés en v1 ; le calendrier des jours fériés des filiales sera fourni plus tard.",
+    "alts": [
+      "Jours fériés français dès maintenant",
+      "Calendrier par filiale dès maintenant"
+    ],
+    "blocks": "L3"
+  },
+  {
+    "id": "N-35",
+    "group": "arche",
+    "title": "Relances par e-mail",
+    "context": "La spec prévoit une relance le matin des étapes dues et une alerte au chef de projet à échéance dépassée.",
+    "proposal": "Pas d’e-mail en v1 : « Mes validations » et la page du jalon montrent ce qui est dû et en retard ; l’envoi attend le choix du transport.",
+    "alts": [
+      "E-mail par SMTP du groupe",
+      "E-mail par Microsoft Graph (compte de service)"
+    ],
+    "blocks": "L5"
+  },
+  {
     "id": "X-1",
     "group": "extra",
     "title": "Profil Administrateur et écrans d’administration",

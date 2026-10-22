@@ -1,11 +1,17 @@
 // Demonstration data set (N-21): two fictitious subsidiaries — Atlas Process Maroc (APM, North Africa) and Sahel Agro
 // Industries (SAI, West Africa) —, the group, one person per profile and three CAPEX (one Light, one Strategic, one draft).
 // No real person or company. The e-mail domains are reserved example domains.
+import { eq } from 'drizzle-orm';
 import type { RoleKey, ScopeKind, ExpertSpeciality } from '@/config/roles';
 import {
   budgetLines, budgetVersions, capex, capexLots, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
   roleAssignments, sites, subsidiaries, users, zones, type CapexRole, type EstimateClass, type GateCode,
 } from '../schema';
+import { createHash } from 'node:crypto';
+import { circuitTemplate } from '@/domain/circuits';
+import { canonicalJson, emptyContent, SECTIONS, type DossierKind } from '@/domain/dossiers';
+import { computedSnapshot } from '@/server/dal/dossiers';
+import { businessPlans, changes, circuitSteps, dossiers, dossierVersions, signatures } from '../schema';
 import type { Tx } from '../types';
 
 export const DEMO_ZONES = [
@@ -156,21 +162,94 @@ export async function seedDemo(tx: Tx): Promise<void> {
     if (c.openedOn) {
       await tx.insert(phaseTransitions).values({ capexId, fromStatus: 'draft', fromPhase: 'cadrage', toStatus: 'active', toPhase: 'cadrage', effectiveOn: c.openedOn, byName: nameOf(c.sponsor), byUserId: idOf(c.sponsor), occurredAt: at(c.openedOn) });
     }
-    let phase = 'cadrage';
-    for (const [code, on] of c.passed) {
-      const decider = GATE_DECIDER_KEY[code];
-      const [g] = await tx.insert(gates).values({ capexId, code, session: 1, status: 'decided', decision: 'go', decidedAt: at(on), decidedByName: nameOf(decider), decidedByUserId: idOf(decider) }).returning({ id: gates.id });
-      await tx.insert(gateCriteriaResults).values({ gateId: g.id, criterionCode: code === 'G1' ? 'g1_budget_e50' : 'g2_budget_e10', state: 'met', value: code === 'G1' ? 'E50' : 'E10' });
-      await tx.insert(phaseTransitions).values({ capexId, fromStatus: 'active', fromPhase: phase, toStatus: 'active', toPhase: PHASE_AFTER[code], gateCode: code, effectiveOn: on, byName: nameOf(decider), byUserId: idOf(decider), occurredAt: at(on) });
-      phase = PHASE_AFTER[code];
-    }
     if (c.risks.length) {
       await tx.insert(risks).values(c.risks.map((r, i) => ({
         capexId, number: i + 1, title: r.title, category: r.category, probability: r.p, impact: r.i, ownerUserId: idOf(r.owner), response: r.response, status: r.status ?? 'open', dueOn: r.due ?? null,
       })));
     }
+    let phase = 'cadrage';
+    for (const [code, on] of c.passed) {
+      const decider = GATE_DECIDER_KEY[code];
+      const kind: DossierKind | null = code === 'G1' ? 'business_case' : code === 'G2' ? 'investment' : null;
+      const version = kind ? await seedDossier(tx, capexId, c.code, kind, 'approved', on, nameOf(c.lead), idOf(c.lead), { typology: c.typology }) : null;
+      const [g] = await tx.insert(gates).values({ capexId, code, session: 1, status: 'decided', decision: 'go', decidedAt: at(on), decidedByName: nameOf(decider), decidedByUserId: idOf(decider), dossierVersionId: version?.id ?? null }).returning({ id: gates.id });
+      await seedCircuit(tx, g.id, code, c.typology, on, version?.hash ?? null, (actor) => actor === 'sponsor' ? c.sponsor : actor, nameOf, idOf, c.code);
+      await tx.insert(gateCriteriaResults).values({ gateId: g.id, criterionCode: code === 'G1' ? 'g1_budget_e50' : 'g2_budget_e10', state: 'met', value: code === 'G1' ? 'E50' : 'E10' });
+      await tx.insert(phaseTransitions).values({ capexId, fromStatus: 'active', fromPhase: phase, toStatus: 'active', toPhase: PHASE_AFTER[code], gateCode: code, effectiveOn: on, byName: nameOf(decider), byUserId: idOf(decider), occurredAt: at(on) });
+      phase = PHASE_AFTER[code];
+    }
     if (c.decisions.length) {
       await tx.insert(decisions).values(c.decisions.map(([takenOn, body, text], i) => ({ capexId, number: i + 1, takenOn, body, text, recordedByName: nameOf(c.lead) })));
     }
   }
+  await seedDemoExtras(tx, idOf, nameOf);
+}
+
+/** Demonstration text of a dossier section (English; French in src/i18n/fr/demo.json). */
+const DEMO_SECTION_TEXT: Record<string, string> = {
+  need: 'Need, product, capacity and scope as presented to the committee.',
+  strategy: 'Fit with the subsidiary’s plan and the group strategy; market study attached.',
+  barriers: 'No technological barrier; two local competitors.',
+  land: 'Site owned by the subsidiary; ICPE declaration regime.',
+  safety: 'Safety review done; report in Codex.',
+  baseline: 'Variant retained after the preliminary design; baseline frozen.',
+  pack: 'Engineering pack above the threshold; documents in Codex.',
+  regulatory: 'ICPE file and building permit filed.',
+  schedule: 'Order, works, commissioning, ramp-up and G3 planned.',
+};
+
+async function seedDossier(tx: Tx, capexId: string, code: string, kind: DossierKind, state: 'approved' | 'draft', on: string, by: string, byId: string, facts: { typology: string | null } = { typology: null }) {
+  const [d] = await tx.insert(dossiers).values({ capexId, kind }).returning({ id: dossiers.id });
+  const content = emptyContent(kind);
+  for (const sec of SECTIONS[kind]) if (sec.mode === 'text' && (state === 'approved' || sec.key === 'baseline')) content.sections[sec.key].text = DEMO_SECTION_TEXT[sec.key] ?? 'Done.';
+  if (kind === 'business_case' && code === 'CPX-APM-2026-01') {
+    content.sections.strategy.refs.push({ id: 'NOT-CPX-APM-2026-01-001', revision: 'B', title: 'Market study — extruded profiles 2027–2031', verified: true });
+    content.sections.safety.refs.push({ id: 'NOT-CPX-APM-2026-01-002', revision: 'A', title: 'HazID report — second extrusion line', verified: true });
+  }
+  if (kind === 'investment' && code === 'CPX-APM-2026-01') content.sections.pack.refs.push({ id: 'PID-CPX-APM-2026-01-001', revision: 'A', title: 'P&ID — extrusion line and cooling', verified: true });
+  const frozen = state === 'approved';
+  const computed = frozen ? await computedSnapshot(tx, { id: capexId, typology: facts.typology, typologySource: facts.typology ? 'computed' : null }) : null;
+  const hash = frozen ? createHash('sha256').update(canonicalJson({ kind, number: 1, content, computed })).digest('hex') : null;
+  const [v] = await tx.insert(dossierVersions).values({
+    dossierId: d.id, number: 1, state, content: content as never, computed: computed as never, completenessPct: frozen ? 100 : 20, contentHash: hash,
+    frozenAt: frozen ? at(on) : null, frozenByName: frozen ? by : null, frozenByUserId: frozen ? byId : null, createdByName: by,
+  }).returning({ id: dossierVersions.id });
+  return { id: v.id, hash };
+}
+
+/** The circuit of a gate passed before Arche held it: every step done on the day of the decision. */
+async function seedCircuit(
+  tx: Tx, gateId: string, code: GateCode, typology: 'light' | 'strategic' | null, on: string, hash: string | null,
+  personOf: (actor: string) => string, nameOf: (k: string) => string, idOf: (k: string) => string, capexCode: string,
+) {
+  const tpl = circuitTemplate(code, typology).filter((x) => !x.optional);
+  const who = (actor: string, spec?: string) => (actor === 'expert' ? (spec === 'hse' ? 'group_hse' : spec === 'finance' ? 'group_cfo' : 'expert') : personOf(actor));
+  for (const [i, x] of tpl.entries()) {
+    const key = who(x.actor, x.speciality);
+    const outcome = x.kind === 'opinion' ? 'favorable' : x.kind === 'decision' || x.kind === 'signature' ? 'go' : 'approved';
+    const [st] = await tx.insert(circuitSteps).values({
+      gateId, position: i + 1, group: x.group, kind: x.kind, actor: x.actor, speciality: x.speciality ?? null, label: x.label, decides: !!x.decides,
+      status: 'done', openedOn: on, dueOn: on, outcome, actedByName: nameOf(key), actedByUserId: idOf(key), actedAt: at(on),
+    }).returning({ id: circuitSteps.id });
+    if (x.kind !== 'opinion') {
+      await tx.insert(signatures).values({ circuitStepId: st.id, userId: idOf(key), userName: nameOf(key), signedAt: at(on), contentHash: hash, statement: `${x.label} — ${capexCode}, ${code} session 1${hash ? `, dossier version 1, SHA-256 ${hash}` : ''}: ${outcome}` });
+    }
+  }
+}
+
+/** Dossier in progress, business plans and changes of the demonstration CAPEX. */
+async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: string) => string) {
+  const id = async (code: string) => (await tx.select({ id: capex.id }).from(capex).where(eq(capex.code, code)))[0].id;
+  const apm = await id('CPX-APM-2026-01');
+  const sai = await id('CPX-SAI-2026-01');
+  await seedDossier(tx, apm, 'CPX-APM-2026-01', 'investment', 'draft', '2026-10-01', nameOf('project_lead'), idOf('project_lead'));
+  const flows = (capexK: number, rev: number, opex: number) => Array.from({ length: 10 }, (_, y) => ({ year: y, capexKeur: y === 0 ? capexK : 0, opexKeur: y === 0 ? 0 : opex, revenueKeur: y === 0 ? 0 : rev }));
+  await tx.insert(businessPlans).values([
+    { capexId: apm, horizonYears: 10, discountRatePct: 9, flows: flows(5200, 2400, 1300), updatedByName: nameOf('controller') },
+    { capexId: sai, horizonYears: 10, discountRatePct: 11, flows: flows(18300, 9800, 6200), updatedByName: nameOf('sai_controller'), validatedByName: nameOf('group_cfo'), validatedAt: at('2026-06-30') },
+  ]);
+  await tx.insert(changes).values([
+    { capexId: sai, number: 1, title: 'Additional drainage of the plot', kind: 'cost', amountKeur: 150, requiredDecider: 'copil_projet', status: 'approved', createdByName: nameOf('sai_lead'), decidedByName: nameOf('sai_sponsor'), decidedByUserId: idOf('sai_sponsor'), decidedAt: at('2026-09-10') },
+    { capexId: sai, number: 2, title: 'Second evaporator for the concentrate line', kind: 'cost', amountKeur: 600, delayDays: 20, requiredDecider: 'dir_ig', createdByName: nameOf('sai_lead') },
+  ]);
 }

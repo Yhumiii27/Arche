@@ -1,0 +1,57 @@
+/* A4 print view of a dossier version: black on white, no application shell. */
+.page {
+  background: #fff;
+  color: #111;
+  min-height: 100vh;
+  padding: 24px 32px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  max-width: 210mm;
+  margin: 0 auto;
+}
+
+.page h1 {
+  font-size: 20px;
+  margin: 0 0 4px;
+}
+
+.page h2 {
+  font-size: 14px;
+  margin: 18px 0 6px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 2px;
+}
+
+.meta {
+  color: #555;
+  font-size: 11.5px;
+}
+
+.page table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 4px 0;
+}
+
+.page td,
+.page th {
+  border: 1px solid #ddd;
+  padding: 3px 6px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.text {
+  white-space: pre-wrap;
+}
+
+@media print {
+  .page {
+    padding: 0;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 16mm;
+}

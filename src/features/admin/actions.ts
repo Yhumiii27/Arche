@@ -6,12 +6,13 @@
 import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import type { RoleKey } from '@/config/roles';
+import { checkMatrix } from '@/domain/delegation';
 import { checkModelValues, MODEL_CODE, MODEL_VERSION } from '@/domain/lifecycle';
 import { checkAssignment, checkRevenue, checkSite, checkSubsidiary, checkUser, checkZone, selfLockout } from '@/domain/admin';
 import { businessToday } from '@/server/clock';
 import { getDb } from '@/server/db/client';
 import { writeAudit } from '@/server/db/helpers';
-import { capex, lifecycleModels, referenceRevenues, roleAssignments, sites, subsidiaries, users, zones } from '@/server/db/schema';
+import { capex, delegationMatrices, lifecycleModels, referenceRevenues, roleAssignments, sites, subsidiaries, users, zones } from '@/server/db/schema';
 import { getViewer, type Viewer } from '@/server/session';
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -189,5 +190,24 @@ export async function updateModelValuesAction(_prev: ActionResult | null, fd: Fo
     return { ok: true };
   });
   if (r.ok) revalidatePath('/admin/model');
+  return r;
+}
+
+/** A new delegation matrix in force from today (C-4): the administrator only; earlier matrices stay for the changes they judged. */
+export async function updateMatrixAction(_prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  const v = await asRole(['admin']);
+  if (!v) return REFUSED;
+  const c = checkMatrix(fieldsOf(fd));
+  if (!c.ok) return c;
+  const today = await businessToday();
+  const db = await getDb();
+  const r = await db.transaction(async (tx): Promise<ActionResult> => {
+    const definition = { ...c.value } as Record<string, unknown>;
+    await tx.insert(delegationMatrices).values({ validFrom: today, definition, updatedByName: v.name })
+      .onConflictDoUpdate({ target: delegationMatrices.validFrom, set: { definition, updatedByName: v.name } });
+    await writeAudit(tx, audit(v, `Delegation matrix ${today}`, 'delegation matrix in force from this day', { after: definition }));
+    return { ok: true };
+  });
+  if (r.ok) revalidatePath('/admin/delegation');
   return r;
 }

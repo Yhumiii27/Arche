@@ -8,6 +8,8 @@ export interface RoleAssignment {
   scopeKind: ScopeKind;
   /** Zone code, subsidiary code or CAPEX code; null for a group-wide assignment. */
   scopeRef: string | null;
+  /** Expert speciality (role `expert`): the opinions the expert gives (docs/spec/05 §4). */
+  speciality?: string | null;
 }
 
 /** The CAPEX facts the rule needs. */

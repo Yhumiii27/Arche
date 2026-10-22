@@ -22,6 +22,10 @@
     {
       "date": "2026-10-22",
       "text": "Questionnaire : réponse par défaut confirmée pour 51 questions, reportée dans DECISIONS.md ; restent N-26 à N-29 et les données D-1 à D-8."
+    },
+    {
+      "date": "2026-10-22",
+      "text": "Livraison 3 : dossiers vivants (versions, figement, empreinte, impression), circuits des jalons G1 / G2 / K3 / G3 avec avis, visas et signature simple, Mes validations, matrice de délégation et MoC, BP (VAN, TRI, retour), connecteur Codex (références vérifiées)."
     }
   ],
   "items": [
@@ -49,7 +53,7 @@
     {
       "id": "AR-002",
       "title": "Réponses du responsable produit aux questions de DECISIONS.md",
-      "description": "Restent ouvertes : N-26 à N-29 (livraison 2) ; données à fournir D-1 à D-8.",
+      "description": "Restent ouvertes : N-26 à N-35 ; données à fournir D-1 à D-8.",
       "category": "cadrage_decisions",
       "kind": "decision",
       "priority": "a_decider",
@@ -62,7 +66,7 @@
       "evidence": [],
       "progress": {
         "state": "en_cours",
-        "note": "22 oct. 2026 : réponse par défaut confirmée pour 51 questions (A, C, AC, N-1 à N-25, ajouts X-1 à X-7). Restent N-26 à N-29 et les données D-1 à D-8."
+        "note": "22 oct. 2026 : réponse par défaut confirmée pour 51 questions. Restent N-26 à N-35 et les données D-1 à D-8."
       }
     },
     {
@@ -443,9 +447,13 @@
       "sources": [
         "docs/spec/04"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/DELIVERY-3.md"
+      ],
       "progress": {
-        "state": "a_faire"
+        "state": "fait",
+        "delivery": "Livraison 3",
+        "note": "Sections, complétude, versions, figement, empreinte SHA-256 vérifiée, vue imprimable (docs/DELIVERY-3.md)."
       }
     },
     {
@@ -461,9 +469,13 @@
       "sources": [
         "docs/spec/05"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/DELIVERY-3.md"
+      ],
       "progress": {
-        "state": "a_faire"
+        "state": "fait",
+        "delivery": "Livraison 3",
+        "note": "Circuits G1 / G2 / K3 / G3, avis d’experts, visas, signature simple (authentification récente, empreinte, append-only), Mes validations. Relances par e-mail : N-35."
       }
     },
     {
@@ -479,9 +491,13 @@
       "sources": [
         "docs/spec/05 §5"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/DELIVERY-3.md"
+      ],
       "progress": {
-        "state": "a_faire"
+        "state": "fait",
+        "delivery": "Livraison 3",
+        "note": "Matrice datée réglable par l’administrateur, MoC routées et décidées."
       }
     },
     {
@@ -497,9 +513,13 @@
       "sources": [
         "docs/spec/06 §4"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/DELIVERY-3.md"
+      ],
       "progress": {
-        "state": "a_faire"
+        "state": "fait",
+        "delivery": "Livraison 3",
+        "note": "Saisie du BP sur 10 ans, VAN, TRI, délai de retour, validation par la DAF groupe."
       }
     },
     {
@@ -515,9 +535,13 @@
       "sources": [
         "docs/DEMANDES-CODEX.md"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/DELIVERY-3.md"
+      ],
       "progress": {
-        "state": "a_faire"
+        "state": "en_cours",
+        "delivery": "Livraison 3",
+        "note": "Références Codex vérifiées dans codex.pub_documents (ou la simulation de démo), liens profonds ; dépôt des dossiers figés en attente de CX-03 / CX-07."
       }
     },
     {

@@ -1,5 +1,5 @@
 // CAPEX overview (docs/spec/08): identity sheet, the DIG-PRODI cycle — phases, the gate the CAPEX faces with its criteria
-// evaluated now, the decision (delivery 2: recorded by the decider; circuits come with delivery 3) — and the cycle history.
+// evaluated now (the circuit runs on the Gates page) — and the cycle history.
 // A CAPEX outside the viewer's scope does not exist (404).
 import { KeyValueList } from '@/components/app/KeyValueList';
 import { KpiGrid, KpiTile } from '@/components/app/Kpi';
@@ -9,24 +9,25 @@ import { Table, Td, Th } from '@/components/ds/Table';
 import { Tag } from '@/components/ds/Tag';
 import { rangeOf } from '@/domain/budget';
 import { INVESTMENT_TYPE_LABEL, PHASE_LABEL, STATUS_LABEL, TYPOLOGY_LABEL, labelOf } from '@/domain/capex-labels';
-import { DECISIONS_OF_GATE, DECISION_LABEL, GATE_DECIDER, GATE_LABEL, GATE_OF_PHASE, PHASES, currentGate, evaluateGate, type CriterionState } from '@/domain/lifecycle';
-import { GateDecisionForm, OpenCapexButton, SheetForm, SuspendForm } from '@/features/capex/forms';
+import { DECISION_LABEL, GATE_LABEL, GATE_OF_PHASE, PHASES, currentGate, type CriterionState } from '@/domain/lifecycle';
+import { ButtonLink } from '@/components/ds/Button';
+import { screenHref } from '@/config/screens';
+import { OpenCapexButton, SheetForm, SuspendForm } from '@/features/capex/forms';
+import { currentEvaluation } from '@/server/cycle/evaluation';
 import { loadCapexPage } from '@/features/capex/page-data';
 import { dataText } from '@/i18n/data-text';
 import { fmtDate, fmtKeur } from '@/lib/format';
-import { gateFacts, gatesOf, latestValidated, transitionsOf, versionsOf } from '@/server/dal/cycle';
+import { gatesOf, latestValidated, transitionsOf, versionsOf } from '@/server/dal/cycle';
 import { siteOptions } from '@/server/dal/capex';
 
 const STATE_LABEL: Record<CriterionState, string> = { met: 'Met', unmet: 'Not met', forced: 'Forced', not_evaluated: 'Not evaluated yet' };
 const STATE_TONE: Record<CriterionState, 'neutral' | 'accent' | 'outline'> = { met: 'neutral', unmet: 'accent', forced: 'outline', not_evaluated: 'outline' };
 
 export default async function CapexOverviewPage({ params }: PageProps<'/capex/[code]'>) {
-  const { t, lang, viewer, db, c, can } = await loadCapexPage(params);
-  const [versions, history, gateRows, facts, sites] = await Promise.all([versionsOf(db, c.id), transitionsOf(db, c.id), gatesOf(db, c.id), gateFacts(db, c), siteOptions(c.subsidiaryCode)]);
+  const { t, lang, db, c, can } = await loadCapexPage(params);
+  const [versions, history, gateRows, ev, sites] = await Promise.all([versionsOf(db, c.id), transitionsOf(db, c.id), gatesOf(db, c.id), currentEvaluation(db, c), siteOptions(c.subsidiaryCode)]);
   const validated = latestValidated(versions);
   const gate = currentGate(c);
-  const ev = gate ? evaluateGate(gate, facts) : null;
-  const decider = gate ? GATE_DECIDER[gate] === viewer.role && can('decide_gate') : false;
   const phaseNo = PHASES.indexOf(c.phase) + 1;
   return (
     <>
@@ -94,8 +95,10 @@ export default async function CapexOverviewPage({ params }: PageProps<'/capex/[c
             </tbody>
           </Table>
         )}
-        {gate && decider && ev && (
-          <GateDecisionForm code={c.code} gate={gate} decisions={DECISIONS_OF_GATE[gate]} forcible={ev.results.filter((r) => r.state === 'unmet' && r.forcible).map((r) => ({ code: r.code, label: r.label }))} />
+        {gate && (
+          <div>
+            <ButtonLink href={screenHref('capex-gates', { code: c.code })} variant="secondary" size="sm">{t('Open the gate circuit')}</ButtonLink>
+          </div>
         )}
         {can('suspend') && <SuspendForm code={c.code} outcome={c.status === 'on_hold' ? 'resume' : 'suspend'} />}
       </SectionCard>

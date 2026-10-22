@@ -1,64 +1,29 @@
 'use server';
 // CAPEX Server Functions (delivery 2; docs/spec/01 §3, 03, 06 §1–2): create and open a draft, the identity sheet, lots, budget
-// versions, typology, team, risks, decisions, gate decisions and suspension. Each one reads the CAPEX through the viewer's
+// versions, typology, team, risks, decisions, business plan and suspension. Each one reads the CAPEX through the viewer's
 // visibility (outside it: "not found"), checks the right of the active role with the pure rules (src/domain/capex.ts), validates
 // its input inside its transaction, writes, audits (area "CAPEX", linked to the CAPEX) and revalidates the CAPEX pages.
 import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { canMoveVersion, validatorsOf, ESTIMATE_CLASSES, type EstimateClass, type Typology } from '@/domain/budget';
 import {
-  canDo, checkBudgetLines, checkDecision, checkLot, checkRisk, checkSheet, creatableSubsidiaries, holdsOn, nextCapexCode, nextNumber, refOf,
-  ROLE_OF_TEAM_ROLE, TEAM_ROLES, type CapexAction,
+  checkBudgetLines, checkDecision, checkLot, checkRisk, checkSheet, creatableSubsidiaries, holdsOn, nextCapexCode, nextNumber, refOf,
+  ROLE_OF_TEAM_ROLE, TEAM_ROLES,
 } from '@/domain/capex';
-import { CRITERIA, DECISIONS_OF_GATE, GATE_DECIDER, MODEL_VERSION, currentGate, decideGate, evaluateGate, openCapex, resume, suspend, type CycleState, type GateDecision } from '@/domain/lifecycle';
+import { BP_HORIZON, checkBusinessPlan } from '@/domain/bp';
+import { MODEL_VERSION, openCapex, resume, suspend, type CycleState } from '@/domain/lifecycle';
 import { businessToday } from '@/server/clock';
 import { getDb } from '@/server/db/client';
 import { recordActivity, writeAudit } from '@/server/db/helpers';
 import {
-  budgetLines, budgetVersions, capex, capexLots, capexMembers, decisions, gateConditions, gateCriteriaResults, gates, phaseTransitions, risks, roleAssignments, sites, users,
+  budgetLines, budgetVersions, businessPlans, capex, capexLots, capexMembers, decisions, phaseTransitions, risks, roleAssignments, sites, users,
 } from '@/server/db/schema';
 import type { Tx } from '@/server/db/types';
-import { capexForViewer } from '@/server/dal/capex';
-import { capexRow, computedTypologyOf, gateFacts, lotsOf, nextSession, teamOf, versionsOf } from '@/server/dal/cycle';
+import { computedTypologyOf, lotsOf, teamOf, versionsOf } from '@/server/dal/cycle';
+import { auditOf, fieldsOf, onCapex, REFUSED_MSG, type ActionResult, type CapexRowFull } from '@/server/capex/write';
 import { getViewer, type Viewer } from '@/server/session';
 
-export type ActionResult = { ok: true; code?: string } | { ok: false; error: string };
-
-type Row = NonNullable<Awaited<ReturnType<typeof capexRow>>>;
-
-const fieldsOf = (fd: FormData) => Object.fromEntries([...fd.entries()].map(([k, v]) => [k, typeof v === 'string' ? v : '']));
-const NOT_FOUND: ActionResult = { ok: false, error: 'CAPEX not found' };
-const REFUSED_MSG = 'You cannot do this on this CAPEX';
-const REFUSED: ActionResult = { ok: false, error: REFUSED_MSG };
-
-function auditOf(v: Viewer, c: Row, change: string, extra: { entityType?: string; entityId?: string; before?: Record<string, unknown>; after?: Record<string, unknown>; reason?: string | null } = {}) {
-  return { actorName: v.name, actorUserId: v.userId, actorRole: v.role, objectRef: c.code, change, area: 'CAPEX', capexId: c.id, ...extra };
-}
-
-const revalidate = (code: string) => {
-  revalidatePath('/capex');
-  revalidatePath(`/capex/${code}`, 'layout');
-};
-
-/**
- * Runs `work` on the CAPEX `code` when the viewer sees it and may do `action` on it. The CAPEX row is read again inside the
- * transaction (behind the write lock), so the state the right was checked on is the one written over.
- */
-async function onCapex(code: string, action: CapexAction | null, work: (tx: Tx, c: Row, v: Viewer, today: string) => Promise<ActionResult>): Promise<ActionResult> {
-  const v = await getViewer();
-  const seen = await capexForViewer(v, code);
-  if (!seen) return NOT_FOUND;
-  const db = await getDb();
-  const today = await businessToday();
-  const r = await db.transaction(async (tx) => {
-    const c = await capexRow(tx, seen.id);
-    if (!c) return NOT_FOUND;
-    if (action && !canDo(action, v.role, v.assignments, c)) return REFUSED;
-    return work(tx, c, v, today);
-  });
-  if (r.ok) revalidate(code);
-  return r;
-}
+type Row = CapexRowFull;
 
 // ── Draft, opening, identity sheet ────────────────────────────────────────────────────────────────────────────────────
 
@@ -347,55 +312,7 @@ export async function addDecisionAction(code: string, _prev: ActionResult | null
   });
 }
 
-// ── Gates (spec 03 §2–3) ──────────────────────────────────────────────────────────────────────────────────────────────
-
-const PHASE_NO: Record<string, number> = { cadrage: 1, avant_projet: 2, execution: 3, demarrage: 4 };
-
-/**
- * Records the decision of the gate the CAPEX faces (until the circuits of delivery 3, the decider records it directly: the
- * group industrial director for G1, K3 and G3, the CEO for G2). The criteria are evaluated now and kept with the gate; a
- * blocking criterion can be forced with a reason (field `force:<code>`) when it is forcible.
- */
-export async function decideGateAction(code: string, _prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  return onCapex(code, 'decide_gate', async (tx, c, v, today) => {
-    const gate = currentGate(c);
-    if (!gate) return { ok: false, error: 'The CAPEX faces no gate' };
-    if (GATE_DECIDER[gate] !== v.role) return { ok: false, error: gate === 'G2' ? 'The CEO decides G2' : 'The group industrial director records this decision' };
-    const f = fieldsOf(fd);
-    const decision = f.decision as GateDecision;
-    if (!DECISIONS_OF_GATE[gate].includes(decision)) return { ok: false, error: 'Choose the decision' };
-    const forced = Object.fromEntries(CRITERIA.filter((x) => x.gate === gate && f[`force:${x.code}`]?.trim()).map((x) => [x.code, f[`force:${x.code}`].trim()]));
-    const ev = evaluateGate(gate, await gateFacts(tx, c), forced);
-    const conditions = (f.conditions ?? '').split('\n').map((x) => x.trim()).filter(Boolean);
-    const reason = (f.reason ?? '').trim() || null;
-    const t = decideGate(c as CycleState, gate, decision, ev, { reason, conditions });
-    if (!t.ok) return t;
-    const session = await nextSession(tx, c.id, gate);
-    const [g] = await tx.insert(gates).values({
-      capexId: c.id, code: gate, session, status: 'decided', decision, decisionReason: reason, decidedAt: new Date(), decidedByName: v.name, decidedByUserId: v.userId,
-    }).returning({ id: gates.id });
-    await tx.insert(gateCriteriaResults).values(ev.results.map((r) => ({ gateId: g.id, criterionCode: r.code, state: r.state, value: r.value, forcedReason: r.forcedReason })));
-    if (conditions.length && decision === 'go_with_conditions') await tx.insert(gateConditions).values(conditions.map((text, i) => ({ gateId: g.id, number: i + 1, text })));
-    const anyForced = ev.results.some((r) => r.state === 'forced');
-    if (t.value.status !== c.status || t.value.phase !== c.phase) {
-      await tx.update(capex).set({ ...t.value, closedAt: t.value.status === 'closed' || t.value.status === 'abandoned' ? new Date() : null, updatedAt: new Date() }).where(eq(capex.id, c.id));
-      await tx.insert(phaseTransitions).values({ capexId: c.id, fromStatus: c.status, fromPhase: c.phase, toStatus: t.value.status, toPhase: t.value.phase, gateCode: gate, effectiveOn: today, forced: anyForced, reason, byName: v.name, byUserId: v.userId });
-    }
-    if (gate === 'G2' && decision !== 'no_go' && decision !== 'deferred') {
-      await tx.update(budgetVersions).set({ isG2Baseline: true, updatedAt: new Date() }).where(and(eq(budgetVersions.capexId, c.id), eq(budgetVersions.status, 'validated'), eq(budgetVersions.estimateClass, 'E10')));
-    }
-    const number = nextNumber((await tx.select({ n: decisions.number }).from(decisions).where(eq(decisions.capexId, c.id))).map((x) => x.n));
-    const body = gate === 'G1' ? 'copil_gpi' : gate === 'G2' ? 'ceo' : 'dir_ig';
-    await tx.insert(decisions).values({ capexId: c.id, number, takenOn: today, body, text: `${gate} ${decision}${reason ? ` — ${reason}` : ''}`, gateId: g.id, recordedByName: v.name });
-    for (const r of ev.results.filter((x) => x.state === 'forced')) {
-      await writeAudit(tx, auditOf(v, c, `${gate}: criterion forced (${r.code})`, { entityType: 'gate', entityId: g.id, reason: r.forcedReason }));
-    }
-    const label = t.value.status === 'closed' ? 'closed' : t.value.status === 'abandoned' ? 'abandoned' : `phase ${PHASE_NO[t.value.phase]}`;
-    await writeAudit(tx, auditOf(v, c, `${gate} session ${session}: ${decision} → ${label}`, { entityType: 'gate', entityId: g.id, reason }));
-    await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'gate.decided', text: `${c.code}: ${gate} ${decision}`, capexId: c.id });
-    return { ok: true };
-  });
-}
+// ── Suspension (spec 03 §1); gate decisions go through the circuits (src/features/gates/actions.ts) ──────────────────
 
 export async function suspendAction(code: string, outcome: 'suspend' | 'resume', reason: string): Promise<ActionResult> {
   return onCapex(code, 'suspend', async (tx, c, v, today) => {
@@ -405,6 +322,33 @@ export async function suspendAction(code: string, outcome: 'suspend' | 'resume',
     await tx.update(capex).set({ status: t.value.status, updatedAt: new Date() }).where(eq(capex.id, c.id));
     await tx.insert(phaseTransitions).values({ capexId: c.id, fromStatus: c.status, fromPhase: c.phase, toStatus: t.value.status, toPhase: t.value.phase, effectiveOn: today, reason: reason.trim(), byName: v.name, byUserId: v.userId });
     await writeAudit(tx, auditOf(v, c, outcome === 'suspend' ? 'status: Active → On hold' : 'status: On hold → Active', { entityType: 'capex', entityId: c.id, reason }));
+    return { ok: true };
+  });
+}
+
+// ── Business plan (spec 06 §4; N-11) ─────────────────────────────────────────────────────────────────────────────────
+
+/** The controller or the project lead types the business plan; a change after the CFO's validation clears it. */
+export async function saveBusinessPlanAction(code: string, _prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  return onCapex(code, 'budget', async (tx, c, v) => {
+    const ch = checkBusinessPlan(fieldsOf(fd), BP_HORIZON);
+    if (!ch.ok) return ch;
+    const row = { horizonYears: BP_HORIZON, discountRatePct: ch.value.discountRatePct, flows: ch.value.years, updatedByName: v.name, validatedByName: null, validatedAt: null, updatedAt: new Date() };
+    await tx.insert(businessPlans).values({ capexId: c.id, ...row }).onConflictDoUpdate({ target: businessPlans.capexId, set: row });
+    await writeAudit(tx, auditOf(v, c, `business plan updated (rate ${ch.value.discountRatePct} %)`, { entityType: 'business_plan', entityId: c.id, after: { ...ch.value } }));
+    return { ok: true };
+  });
+}
+
+/** The group CFO validates the business plan (Dossier 2, spec 01 §3). */
+export async function validateBusinessPlanAction(code: string): Promise<ActionResult> {
+  return onCapex(code, null, async (tx, c, v) => {
+    if (v.role !== 'group_cfo' || !holdsOn(v.assignments, 'group_cfo', c) || (c.status !== 'active' && c.status !== 'draft')) return { ok: false, error: 'Only the group CFO validates the business plan' };
+    const [b] = await tx.select().from(businessPlans).where(eq(businessPlans.capexId, c.id));
+    if (!b) return { ok: false, error: 'There is no business plan yet' };
+    if (b.validatedAt) return { ok: true };
+    await tx.update(businessPlans).set({ validatedByName: v.name, validatedAt: new Date(), updatedAt: new Date() }).where(eq(businessPlans.capexId, c.id));
+    await writeAudit(tx, auditOf(v, c, 'business plan validated by the group CFO', { entityType: 'business_plan', entityId: c.id }));
     return { ok: true };
   });
 }

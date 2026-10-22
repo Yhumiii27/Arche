@@ -133,13 +133,15 @@ export const gates = arche.table('gates', {
   capexId: uuid('capex_id').notNull().references(() => capex.id, { onDelete: 'cascade' }),
   code: text('code').$type<GateCode>().notNull(),
   session: integer('session').notNull(),
-  status: text('status').$type<'open' | 'submitted' | 'in_review' | 'decided'>().notNull().default('open'),
+  status: text('status').$type<'open' | 'submitted' | 'in_review' | 'decided' | 'returned'>().notNull().default('open'),
   decision: text('decision').$type<GateDecision>(),
   decisionReason: text('decision_reason'),
   decidedAt: timestamp('decided_at', { withTimezone: true }),
   decidedByName: text('decided_by_name'),
   decidedByUserId: uuid('decided_by_user_id').references(() => users.id),
   dueAt: date('due_at', { mode: 'string' }),
+  /** The frozen dossier version the session decides on (delivery 3; none at K3). */
+  dossierVersionId: uuid('dossier_version_id'),
   ...timestamps,
 }, (t) => [unique('gates_session_uq').on(t.capexId, t.code, t.session)]);
 

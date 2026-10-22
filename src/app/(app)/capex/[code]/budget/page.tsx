@@ -8,17 +8,21 @@ import { Tag } from '@/components/ds/Tag';
 import { holdsOn, LOT_KIND_LABEL, type LotKind } from '@/domain/capex';
 import { canMoveVersion, rangeOf, validatorsOf } from '@/domain/budget';
 import { labelOf } from '@/domain/capex-labels';
-import { LotForm, RemoveLotButton, VersionActions, VersionForm } from '@/features/capex/forms';
+import { BusinessPlanForm, LotForm, RemoveLotButton, ValidateBusinessPlanButton, VersionActions, VersionForm } from '@/features/capex/forms';
 import { loadCapexPage } from '@/features/capex/page-data';
 import { dataText } from '@/i18n/data-text';
-import { fmtDate, fmtKeur } from '@/lib/format';
+import { fmtDate, fmtKeur, fmtNum } from '@/lib/format';
 import { lotsOf, versionsOf } from '@/server/dal/cycle';
+import { businessPlanOf } from '@/server/dal/dossiers';
+import { BP_HORIZON } from '@/domain/bp';
+import { KeyValueList } from '@/components/app/KeyValueList';
 
 const VERSION_STATUS: Record<string, string> = { draft: 'Draft', submitted: 'Submitted', validated: 'Validated', superseded: 'Superseded' };
 
 export default async function BudgetPage({ params }: PageProps<'/capex/[code]/budget'>) {
   const { t, lang, viewer, db, c, can } = await loadCapexPage(params);
-  const [lots, versions] = await Promise.all([lotsOf(db, c.id), versionsOf(db, c.id)]);
+  const [lots, versions, bp] = await Promise.all([lotsOf(db, c.id), versionsOf(db, c.id), businessPlanOf(db, c.id)]);
+  const cfo = viewer.role === 'group_cfo' && holdsOn(viewer.assignments, 'group_cfo', c) && (c.status === 'active' || c.status === 'draft');
   const edit = can('edit');
   const budget = can('budget');
   const open = c.status === 'draft' || c.status === 'active';
@@ -122,6 +126,24 @@ export default async function BudgetPage({ params }: PageProps<'/capex/[code]/bu
         )}
         {budget && lots.length > 0 && versions.filter((v) => v.status === 'draft').map((v) => <VersionForm key={v.id} code={c.code} lots={lots} version={v} />)}
         {budget && lots.length > 0 && !inProgress && <VersionForm code={c.code} lots={lots} />}
+      </SectionCard>
+
+      <SectionCard title={t('Business plan')} hint={t('Prepared by the controller, validated by the group CFO')}>
+        {bp ? (
+          <KeyValueList
+            items={[
+              { id: 'r', k: t('Discount rate'), v: `${fmtNum(bp.discountRatePct, lang)} %` },
+              { id: 'n', k: t('NPV'), v: fmtKeur(bp.npvKeur, lang) },
+              { id: 'i', k: t('IRR'), v: bp.irrPct != null ? `${fmtNum(bp.irrPct, lang)} %` : '—' },
+              { id: 'p', k: t('Payback (years)'), v: fmtNum(bp.paybackYears, lang) },
+              { id: 'v', k: t('Validated by the group CFO'), v: bp.validatedByName ? `${bp.validatedByName} · ${fmtDate(bp.validatedAt, lang)}` : t('No') },
+            ]}
+          />
+        ) : (
+          <EmptyState>{t('No business plan yet')}</EmptyState>
+        )}
+        {bp && !bp.validatedAt && cfo && <ValidateBusinessPlanButton code={c.code} />}
+        {budget && <BusinessPlanForm code={c.code} horizon={BP_HORIZON} rate={bp?.discountRatePct ?? null} flows={bp?.flows ?? []} />}
       </SectionCard>
     </>
   );

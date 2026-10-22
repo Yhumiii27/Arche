@@ -15,3 +15,6 @@ export function fmtDate(v: string | Date | null | undefined, lang: Lang): string
 
 /** "22/10/2026 14:05". */
 export const fmtInstant = (d: Date, lang: Lang) => `${fmtDate(d, lang)} ${d.toLocaleTimeString(locale(lang), { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' })}`;
+
+/** A number in the viewer's language ("15,3" / "15.3"), one decimal at most. */
+export const fmtNum = (n: number | null | undefined, lang: Lang) => (n == null ? '—' : n.toLocaleString(locale(lang), { maximumFractionDigits: 1 }));

@@ -11,7 +11,7 @@
 **Pour répondre : questionnaire « Décisions Arche »**, https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe (toutes les questions
 ci-dessous et les données à fournir ; réponses enregistrées dans la page et relues par Claude).
 
-Toutes les questions posées jusqu’à la livraison 1 sont tranchées (voir ci-dessous). À trancher : **N-26 à N-29** (livraison 2).
+Toutes les questions posées jusqu’à la livraison 1 sont tranchées (voir ci-dessous). À trancher : **N-26 à N-29** (livraison 2) et **N-30 à N-35** (livraison 3).
 Données de référence attendues : la liste des filiales, de leurs zones et de leurs CA (C-5), la matrice de délégation
 (C-4), la table des jalons HS (C-3), la liste type du pack (C-9).
 
@@ -93,9 +93,15 @@ type du pack, définitions RSPDI / ASPD, relevé de l’existant).
 | N-23 | Base de données | **Décidé (22 oct.) : PostgreSQL uniquement**, pas de PGlite : développement, tests, CI et production sur PostgreSQL, schéma `arche` partout (`npm run db:local` sur un poste) | — |
 | N-24 | Rattachement Codex d’un document de CAPEX : nouveau rattachement `capex` dans Codex, ou CAPEX traité comme un « projet » Codex | nouveau rattachement **`capex`** (contexte = code CAPEX), qui évite de mélanger CAPEX et projets EPC2i ([`DEMANDES-CODEX.md`](DEMANDES-CODEX.md) CX-01) — **confirmé** | L3 |
 | N-26 | Qui valide une version de budget E50 ou E30 ? (le CDC ne parle que de l’E10, validé par la DAF groupe) | le **CDG de la filiale** ou la DAF groupe ; l’E10 reste réservé à la DAF groupe | L2 |
-| N-27 | Qui enregistre la décision d’un jalon avant les circuits de la livraison 3 ? | le décideur l’enregistre lui-même sur la synthèse du CAPEX : **Dir.IG** pour G1 (au nom du COPIL GPI, N-6), K3 et G3 ; **PDG** pour G2 ; critères évalués et gardés avec la décision, forçage motivé et tracé ; remplacé par les circuits (visa, avis, signature) en L3 | L2 |
+| N-27 | Qui enregistre la décision d’un jalon avant les circuits de la livraison 3 ? | le décideur l’enregistre lui-même sur la synthèse du CAPEX : **Dir.IG** pour G1 (au nom du COPIL GPI, N-6), K3 et G3 ; **PDG** pour G2 ; critères évalués et gardés avec la décision, forçage motivé et tracé ; remplacé par les circuits (visa, avis, signature) en L3 — **remplacée en L3** : la décision est l’étape « décision » (ou « signature ») du circuit du jalon | L2 |
 | N-28 | Échelle du registre des risques | probabilité et impact de **1 à 4** ; criticité = P × I ; **majeur à partir de 9** | L2 |
 | N-29 | Qui crée le brouillon et qui le porte | le Sponsor (dans sa filiale) ou le chef de projet (dans la filiale de son compte) ; le chef de projet qui crée est nommé d’office ; le Sponsor est celui qui ouvre ; un membre d’équipe est toujours de la filiale ou du groupe (jamais d’une autre filiale) | L2 |
+| N-30 | Qui enregistre la décision du Copil projet sur une MoC ? | le **Sponsor** de la filiale, au nom du Copil projet ; le Dir.IG et le PDG enregistrent la leur | L3 |
+| N-31 | Qui rend les avis HSE et DAF d’une consultation ? | l’expert de la spécialité nommé sur le CAPEX, **ou** le SSE groupe (HSE) et la DAF groupe (DAF) ; les avis Qualité et Exploitation : un expert nommé sur le CAPEX par l’administrateur ; le CPF peut nommer l’expert de chaque spécialité à la soumission | L3 |
+| N-32 | Client Interne du G3 | la personne nommée « Client interne » dans l’équipe du CAPEX contresigne le PV de transfert (avec son profil de chef de projet, d’expert, de Sponsor ou de CDG) | L3 |
+| N-33 | Provision pour aléas d’un CAPEX | pas encore saisie dans Arche : un tirage de provision va au **Dir.IG** tant que la provision n’est pas connue | L5 |
+| N-34 | Jours ouvrés des échéances | lundi au vendredi, **sans jours fériés** en v1 (calendrier des filiales à fournir) | L3 |
+| N-35 | Relances par e-mail des étapes dues (spec 05 §1) | pas d’e-mail en v1 : les étapes dues et en retard apparaissent dans « Mes validations » et sur la page du jalon ; l’envoi attend le choix du transport (SMTP ou Microsoft Graph) | L5 |
 | N-25 | Identité des personnes entre outils (Cursus : matricule ; Arche : e-mail Entra) | Arche identifie par l’objet Entra et l’e-mail ; le matricule est ajouté aux comptes du groupe quand Cursus l’expose à Arche (CU-03) ; les salariés des filiales n’ont pas de matricule Cursus (CU-01) — **confirmé** | L2 |
 
 ## 5. Ajouts au-delà du CDC (retenus le 22 oct. 2026, X-1 à X-7 du questionnaire)

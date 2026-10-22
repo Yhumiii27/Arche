@@ -6,11 +6,10 @@ import { Field, Input, Select, Textarea } from '@/components/ds/Field';
 import { ESTIMATE_CLASSES } from '@/domain/budget';
 import { DECISION_BODIES, DECISION_BODY_LABEL, INVESTMENT_TYPES, LOT_KINDS, LOT_KIND_LABEL, RISK_CATEGORIES, RISK_CATEGORY_LABEL, RISK_STATUSES, RISK_STATUS_LABEL, TEAM_ROLES, TEAM_ROLE_LABEL } from '@/domain/capex';
 import { INVESTMENT_TYPE_LABEL } from '@/domain/capex-labels';
-import { DECISION_LABEL, type GateCode, type GateDecision } from '@/domain/lifecycle';
 import { useI18n } from '@/i18n/client';
 import {
-  addDecisionAction, addLotAction, addMemberAction, confirmTypologyAction, createCapexAction, decideGateAction, deleteDraftVersionAction, forceTypologyAction,
-  openCapexAction, removeLotAction, removeMemberAction, reviewVersionAction, saveBudgetVersionAction, saveRiskAction, submitVersionAction, suspendAction,
+  addDecisionAction, addLotAction, addMemberAction, confirmTypologyAction, createCapexAction, deleteDraftVersionAction, forceTypologyAction,
+  openCapexAction, removeLotAction, saveBusinessPlanAction, validateBusinessPlanAction, removeMemberAction, reviewVersionAction, saveBudgetVersionAction, saveRiskAction, submitVersionAction, suspendAction,
   updateSheetAction,
 } from './actions';
 
@@ -92,32 +91,6 @@ export function OpenCapexButton({ code }: { code: string }) {
 }
 
 // ── Cycle ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-export function GateDecisionForm({ code, gate, decisions, forcible }: { code: string; gate: GateCode; decisions: readonly GateDecision[]; forcible: { code: string; label: string }[] }) {
-  const { t } = useI18n();
-  return (
-    <Folded summary={`Record the ${gate} decision`}>
-      <ActionForm action={(p, fd) => decideGateAction(code, p, fd)} submit="Record the decision" done="Decision recorded">
-        <Field label={t('Decision')} htmlFor="gd-decision" required>
-          <Select id="gd-decision" name="decision" options={decisions.map((d) => ({ value: d, label: t(DECISION_LABEL[d]) }))} />
-        </Field>
-        <Field label={t('Reason (deferred, no-go)')} htmlFor="gd-reason">
-          <Input id="gd-reason" name="reason" />
-        </Field>
-        {decisions.includes('go_with_conditions') && (
-          <Field label={t('Conditions (one per line)')} htmlFor="gd-cond" span="full">
-            <Textarea id="gd-cond" name="conditions" rows={2} />
-          </Field>
-        )}
-        {forcible.map((c) => (
-          <Field key={c.code} label={`${t('Force')} — ${t(c.label)}`} htmlFor={`gd-f-${c.code}`} span="full" hint={t('Reason, audited')}>
-            <Input id={`gd-f-${c.code}`} name={`force:${c.code}`} />
-          </Field>
-        ))}
-      </ActionForm>
-    </Folded>
-  );
-}
 
 export function SuspendForm({ code, outcome }: { code: string; outcome: 'suspend' | 'resume' }) {
   const { t } = useI18n();
@@ -310,4 +283,49 @@ export function DecisionForm({ code, today }: { code: string; today: string }) {
       </ActionForm>
     </Folded>
   );
+}
+
+// ── Business plan ─────────────────────────────────────────────────────────────────────────────────────────────────────
+
+export function BusinessPlanForm({ code, horizon, rate, flows }: { code: string; horizon: number; rate: number | null; flows: { year: number; capexKeur: number; opexKeur: number; revenueKeur: number }[] }) {
+  const { t } = useI18n();
+  const at = (y: number) => flows.find((f) => f.year === y);
+  const cell = (k: 'capex' | 'opex' | 'revenue', y: number, v: number | undefined) => (
+    <Input key={`${k}:${y}`} size="cell" name={`${k}:${y}`} inputMode="decimal" aria-label={`${k} ${y}`} defaultValue={v ? String(v) : ''} />
+  );
+  return (
+    <Folded summary={flows.length ? 'Edit the business plan' : 'Enter the business plan'}>
+      <ActionForm action={(p, fd) => saveBusinessPlanAction(code, p, fd)} submit="Save the business plan" done="Saved">
+        <Field label={t('Discount rate (%)')} htmlFor="bp-rate" required>
+          <Input id="bp-rate" name="discountRatePct" inputMode="decimal" defaultValue={rate != null ? String(rate) : ''} required />
+        </Field>
+        <div style={{ gridColumn: '1 / -1', overflowX: 'auto' }}>
+          <table style={{ borderSpacing: 4 }}>
+            <thead>
+              <tr>
+                <th />
+                {Array.from({ length: horizon }, (_, y) => (
+                  <th key={y} style={{ fontSize: 11, fontWeight: 500 }}>{`${t('Year')} ${y}`}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(['capex', 'opex', 'revenue'] as const).map((k) => (
+                <tr key={k}>
+                  <th style={{ fontSize: 11.5, fontWeight: 500, textAlign: 'left', whiteSpace: 'nowrap' }}>{t(k === 'capex' ? 'CAPEX (k€)' : k === 'opex' ? 'OPEX (k€)' : 'Revenue (k€)')}</th>
+                  {Array.from({ length: horizon }, (_, y) => (
+                    <td key={y}>{cell(k, y, at(y)?.[`${k}Keur`])}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </ActionForm>
+    </Folded>
+  );
+}
+
+export function ValidateBusinessPlanButton({ code }: { code: string }) {
+  return <ActionButton run={() => validateBusinessPlanAction(code)} label="Validate the business plan" done="Validated" variant="primary" />;
 }
