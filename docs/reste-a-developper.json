@@ -21,6 +21,10 @@
     },
     {
       "date": "2026-10-22",
+      "text": "Questionnaire : réponse par défaut confirmée pour 51 questions, reportée dans DECISIONS.md ; restent N-26 à N-29 et les données D-1 à D-8."
+    },
+    {
+      "date": "2026-10-22",
       "text": "Décisions D21, D22 et P-01 de Matrix reportées dans la spécification : référentiels du groupe tenus par Matrix (zones, subsidiaries, sites d'Arche deviennent des miroirs de matrix.pub_*), REX publié (pub_rex), PostgreSQL 16."
     }
   ],
@@ -49,7 +53,7 @@
     {
       "id": "AR-002",
       "title": "Réponses du responsable produit aux questions de DECISIONS.md",
-      "description": "Les réponses par défaut s’appliquent tant qu’il n’y a pas d’autre réponse ; à confirmer en priorité : N-3, N-4, C-6, C-13, N-22, N-24.",
+      "description": "Restent ouvertes : N-26 à N-29 (livraison 2) ; données à fournir D-1 à D-8.",
       "category": "cadrage_decisions",
       "kind": "decision",
       "priority": "a_decider",
@@ -62,7 +66,7 @@
       "evidence": [],
       "progress": {
         "state": "en_cours",
-        "note": "Reçu le 22 oct. 2026 : nom Arche, PostgreSQL uniquement, Codex pour tous les documents ; questionnaire : C-6, N-3, N-4, N-22, N-24 confirmées (défaut). N-26 à N-29 ajoutées au questionnaire par la livraison 2."
+        "note": "22 oct. 2026 : réponse par défaut confirmée pour 51 questions (A, C, AC, N-1 à N-25, ajouts X-1 à X-7). Restent N-26 à N-29 et les données D-1 à D-8."
       }
     },
     {
@@ -80,7 +84,8 @@
       ],
       "evidence": [],
       "progress": {
-        "state": "a_faire"
+        "state": "a_faire",
+        "note": "Attendu dans le questionnaire : D-1 (filiales), D-2 (sites), D-3 (COPIL GPI), D-4 (premiers comptes)."
       }
     },
     {
