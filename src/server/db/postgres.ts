@@ -19,6 +19,8 @@ export interface PostgresOptions {
   poolMax: number;
   /** Shown in pg_stat_activity. */
   applicationName?: string;
+  /** Role every connection switches to (tests: an administrator connection acting as arche_app). */
+  role?: string;
 }
 
 export interface PostgresHandle {
@@ -35,7 +37,7 @@ export const POOL_TIMEOUTS = { idleTimeoutMillis: 30_000, connectionTimeoutMilli
 export async function openPostgres(opts: PostgresOptions): Promise<PostgresHandle> {
   const [{ default: pg }, { drizzle }] = await Promise.all([import('pg'), import('drizzle-orm/node-postgres')]);
   const pool = new pg.Pool({
-    connectionString: opts.url, max: opts.poolMax, application_name: opts.applicationName ?? 'arche', options: SERVER_CONNECTION_OPTIONS, ...POOL_TIMEOUTS,
+    connectionString: opts.url, max: opts.poolMax, application_name: opts.applicationName ?? 'arche', options: opts.role ? `${SERVER_CONNECTION_OPTIONS} -c role=${opts.role}` : SERVER_CONNECTION_OPTIONS, ...POOL_TIMEOUTS,
   });
   // An idle connection dropped by the server must not crash the process: the pool replaces it.
   pool.on('error', (err) => log.error('PostgreSQL pool connection error', { component: 'db', err }));

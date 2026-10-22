@@ -2,6 +2,7 @@
 // database, the role `arche_app` (LOGIN, no other right) and the schema `arche` it owns, with search_path=arche. Same shape
 // as the proposal for Matrix's base layer (docs/DEMANDES-MATRIX.md M-1, M-2); on the shared server Matrix does it instead.
 // Needs a superuser connection to the maintenance database. Idempotent. No `server-only`: scripts and tests run it.
+import { randomBytes } from 'node:crypto';
 import type { Client } from 'pg';
 import { SERVER_SCHEMA } from './server-schema';
 
@@ -13,8 +14,12 @@ const ident = (s: string) => {
 };
 const literal = (s: string) => `'${s.replace(/'/g, "''")}'`;
 
-/** Creates the role (or resets its password) and the database when missing. `admin` is connected to another database. */
-export async function provisionDatabase(admin: Client, opts: { database: string; password: string }): Promise<void> {
+/**
+ * Creates the role and the database when missing. `password` sets the role's password (a developer machine); without it an
+ * existing role keeps its password and a new one gets a random one (the tests connect as the administrator and SET ROLE).
+ * `admin` is connected to another database.
+ */
+export async function provisionDatabase(admin: Client, opts: { database: string; password?: string }): Promise<void> {
   // Test files provision in parallel: one at a time (concurrent ALTER ROLE fails with "tuple concurrently updated").
   await admin.query("select pg_advisory_lock(hashtext('arche.provision'))");
   try {
@@ -24,10 +29,11 @@ export async function provisionDatabase(admin: Client, opts: { database: string;
   }
 }
 
-async function provisionLocked(admin: Client, opts: { database: string; password: string }): Promise<void> {
+async function provisionLocked(admin: Client, opts: { database: string; password?: string }): Promise<void> {
   const { rows: role } = await admin.query('select 1 from pg_roles where rolname = $1', [APP_ROLE]);
-  const attrs = `LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD ${literal(opts.password)}`;
-  await admin.query(role.length ? `ALTER ROLE ${ident(APP_ROLE)} ${attrs}` : `CREATE ROLE ${ident(APP_ROLE)} ${attrs}`);
+  const attrs = 'LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS';
+  if (!role.length) await admin.query(`CREATE ROLE ${ident(APP_ROLE)} ${attrs} PASSWORD ${literal(opts.password ?? randomBytes(24).toString('base64url'))}`);
+  else if (opts.password) await admin.query(`ALTER ROLE ${ident(APP_ROLE)} ${attrs} PASSWORD ${literal(opts.password)}`);
   const { rows: db } = await admin.query('select 1 from pg_database where datname = $1', [opts.database]);
   if (!db.length) await admin.query(`CREATE DATABASE ${ident(opts.database)}`);
   await admin.query(`REVOKE CREATE ON DATABASE ${ident(opts.database)} FROM ${ident(APP_ROLE)}`);

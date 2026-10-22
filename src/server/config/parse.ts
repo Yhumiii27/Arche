@@ -13,6 +13,7 @@ import path from 'node:path';
 import { z } from 'zod';
 import { parseClockSetting, type ClockSetting } from '@/domain/clock';
 import { normaliseEmail } from '@/domain/auth';
+import { BACKUP_DEFAULTS } from '@/domain/backup';
 
 export const SEED_MODES = ['demo', 'production'] as const;
 /** What a NEW database is seeded with (ARCHE_SEED): the demonstration data set, or reference data only. */
@@ -46,6 +47,8 @@ export interface ArcheConfig {
   /** Business clock (ARCHE_CLOCK): null = the real clock; else the real clock or a pinned date (demonstrations, tests). */
   clock: ClockSetting | null;
   log: { level: LogLevel; format: LogFormat };
+  /** Backups of the schema (ARCHE_BACKUP_DIR): off when null; every `everyMin` minutes, kept `retentionDays` days. */
+  backup: { dir: string | null; everyMin: number; retentionDays: number };
   /** E-mails granted the administrator role at their first Entra sign-in (bootstrap of a new database, N-4). */
   adminEmails: string[];
   /** Secret values present in the environment: the logger masks them wherever they appear. */
@@ -115,13 +118,21 @@ const VARS = {
   ENTRA_CLIENT_SECRET: z.string().optional(),
   ENTRA_REDIRECT_URI: httpUrl.optional(),
   ENTRA_POST_LOGOUT_REDIRECT_URI: httpUrl.optional(),
+  // Schema declaration to Matrix, the data catalogue (read by src/server/integrations/matrix after migrations and at start-up).
+  MATRIX_URL: httpUrl.optional(),
+  // Backups of the schema by the job worker (npm run worker): off unless the folder is set.
+  ARCHE_BACKUP_DIR: z.string().optional(),
+  ARCHE_BACKUP_EVERY_MIN: z.coerce.number().int().min(BACKUP_DEFAULTS.minEveryMin, `must be at least ${BACKUP_DEFAULTS.minEveryMin}`).max(10080, 'must be at most 10080').optional(),
+  ARCHE_BACKUP_RETENTION_DAYS: z.coerce.number().int().min(1, 'must be at least 1').max(3650, 'must be at most 3650').optional(),
+  MATRIX_TOKEN: z.string().optional(),
+  MATRIX_DECLARATIONS_DIR: z.string().optional(),
 } as const;
 
 export type ConfigVariable = keyof typeof VARS;
 /** Every variable the configuration reads (the cache key of src/server/config/index.ts). */
 export const CONFIG_VARIABLES = Object.keys(VARS) as ConfigVariable[];
 /** Variables whose value is a secret (masked in logs, never echoed in messages). */
-const SECRET_VARIABLES: ConfigVariable[] = ['ARCHE_SESSION_SECRET', 'ENTRA_CLIENT_SECRET'];
+const SECRET_VARIABLES: ConfigVariable[] = ['ARCHE_SESSION_SECRET', 'ENTRA_CLIENT_SECRET', 'MATRIX_TOKEN'];
 
 type Values = { [K in ConfigVariable]: z.output<(typeof VARS)[K]> };
 
@@ -202,7 +213,7 @@ export function parseConfig(env: Record<string, string | undefined>, opts: { cwd
   // A pinned date in production is a demonstration setting; real use needs the real clock.
   if (production && v.ARCHE_CLOCK?.kind === 'fixed')
     warnings.push({ variable: 'ARCHE_CLOCK', message: 'pins the business date in production: lateness, due dates and dated writes ignore the real date' });
-  const secrets = [...SECRET_VARIABLES.map((n) => v[n] as string | undefined), urlPassword(v.DATABASE_URL)].filter((s): s is string => !!s && s.length >= 4);
+  const secrets = [...SECRET_VARIABLES.map((n) => v[n] as string | undefined), urlPassword(v.DATABASE_URL), urlPassword(v.MATRIX_URL)].filter((s): s is string => !!s && s.length >= 4);
 
   return {
     errors,
@@ -212,6 +223,11 @@ export function parseConfig(env: Record<string, string | undefined>, opts: { cwd
       production,
       dataDir,
       database,
+      backup: {
+        dir: v.ARCHE_BACKUP_DIR ? path.resolve(opts.cwd, v.ARCHE_BACKUP_DIR) : null,
+        everyMin: v.ARCHE_BACKUP_EVERY_MIN ?? BACKUP_DEFAULTS.everyMin,
+        retentionDays: v.ARCHE_BACKUP_RETENTION_DAYS ?? BACKUP_DEFAULTS.retentionDays,
+      },
       seed: v.ARCHE_SEED ?? 'demo',
       seedExplicit: v.ARCHE_SEED != null,
       clock: v.ARCHE_CLOCK ?? null,

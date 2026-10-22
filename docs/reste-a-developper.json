@@ -10,6 +10,10 @@
   {
    "date": "2026-10-22",
    "text": "Livraison 1 (socle) : socle repris de Keystone (63f43ad) sur PostgreSQL seul, connexion Entra et démo, 13 profils et isolation par filiale, coquille, CI. Demandes à Codex, Vigie, Cursus et Matrix ajoutées."
+  },
+  {
+   "date": "2026-10-22",
+   "text": "Livraison 1b : administration en écriture, connexion Entra testée de bout en bout, déclaration à Matrix, pub_journal, worker et sauvegardes ; questionnaire « Décisions Arche » publié."
   }
  ],
  "items": [
@@ -50,7 +54,7 @@
    "evidence": [],
    "progress": {
     "state": "en_cours",
-    "note": "Reçu le 22 oct. 2026 : nom Arche, PostgreSQL uniquement, Codex pour tous les documents."
+    "note": "Reçu le 22 oct. 2026 : nom Arche, PostgreSQL uniquement, Codex pour tous les documents. Questionnaire « Décisions Arche » publié le 22 oct. pour les autres réponses."
    }
   },
   {
@@ -205,7 +209,9 @@
    ],
    "evidence": [],
    "progress": {
-    "state": "a_faire"
+    "state": "fait",
+    "delivery": "Livraison 1b",
+    "note": "docs/DELIVERY-1b.md"
    }
   },
   {
@@ -224,7 +230,9 @@
    ],
    "evidence": [],
    "progress": {
-    "state": "a_faire"
+    "state": "fait",
+    "delivery": "Livraison 1b",
+    "note": "docs/DELIVERY-1b.md"
    }
   },
   {
@@ -242,7 +250,9 @@
    ],
    "evidence": [],
    "progress": {
-    "state": "a_faire"
+    "state": "fait",
+    "delivery": "Livraison 1b",
+    "note": "docs/DELIVERY-1b.md"
    }
   },
   {
@@ -260,7 +270,9 @@
    ],
    "evidence": [],
    "progress": {
-    "state": "a_faire"
+    "state": "fait",
+    "delivery": "Livraison 1b",
+    "note": "docs/DELIVERY-1b.md"
    }
   },
   {

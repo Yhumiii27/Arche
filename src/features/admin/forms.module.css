@@ -1,0 +1,73 @@
+/* Administration forms: a wrapping grid of fields, the submit button on the last row, the result line under it. */
+.form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px 12px;
+  align-items: end;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.error {
+  font-size: 12px;
+  color: var(--color-accent-300);
+}
+
+.done {
+  font-size: 12px;
+  color: var(--color-neutral-400);
+}
+
+.roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.role {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.remove {
+  border: 0;
+  background: transparent;
+  color: var(--color-neutral-400);
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.remove:hover {
+  color: var(--color-accent-300);
+}
+
+.addRole {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.addDetails {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.addDetails summary {
+  cursor: pointer;
+  color: var(--color-accent);
+}
+
+.addRole :global(select) {
+  width: auto;
+  max-width: 220px;
+}

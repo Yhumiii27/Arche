@@ -9,8 +9,11 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
 
 - **Delivery 0 (framing) is done** (`docs/spec/00`–`08`, `docs/DECISIONS.md`, `docs/CONTRATS.md`, `docs/DEMANDES-*.md`,
   `docs/PLAN.md`, `docs/SOCLE.md`). The owner started delivery 1 with the default answers of `DECISIONS.md`.
-- **Delivery 1 (platform) is done** (`docs/DELIVERY-1.md`). Next: L1b (jobs, backups, Matrix declaration, user
-  administration), then L2 (CAPEX and the DIG-PRODI cycle) — see `docs/PLAN.md` and `docs/RESTE-A-DEVELOPPER.md`.
+- **Delivery 1 (platform) and 1b (operations, administration) are done** (`docs/DELIVERY-1.md`, `docs/DELIVERY-1b.md`).
+  Next: L2 (CAPEX and the DIG-PRODI cycle) — see `docs/PLAN.md` and `docs/RESTE-A-DEVELOPPER.md`.
+- **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
+  (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
+  before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.
 - Sources of the framing (Keystone repository, branch `main-2a2fep`): `docs/dig-prodi/CDC-DIG-PRODI-v4.0-draft.md`,
   `ANALYSE-DIG-PRODI.md`, `ARCHITECTURE-CAPEX-KEYSTONE.md` (the reference), `PROMPT-APP-CAPEX.md` (kick-off prompt).
 - **Remaining-work page**: after every development, update `docs/reste-a-developper.json` (`progress`, `history`, `updated`),

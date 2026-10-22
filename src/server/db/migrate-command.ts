@@ -3,6 +3,7 @@ import 'server-only';
 // advisory lock (deploy step, before the new version starts; two deploys never interleave). An empty database needs
 // ARCHE_SEED. The configuration is checked strictly (an invalid variable stops the command, whatever NODE_ENV).
 import { assertValidConfig, formatIssues, redactUrl } from '@/server/config';
+import { declareArcheSchema } from '@/server/integrations/matrix';
 import { log } from '@/server/log';
 import { DatabaseNotConfiguredError } from './client';
 import { MIGRATIONS_FOLDER, migrationFiles } from './migrations';
@@ -26,6 +27,7 @@ export async function runMigrateCommand(migrationsFolder = MIGRATIONS_FOLDER()):
     const r = await migrateAndSeedPostgres(h, config.seedExplicit ? config.seed : null, migrationsFolder);
     const seed = (await readSeedRecord(h.db))?.mode ?? null;
     log.info('Database ready', { component: 'db', applied: r.applied, seeded: r.seeded, seed });
+    await declareArcheSchema((sql) => h.pool.query(sql).then((x) => x.rows as Record<string, unknown>[]));
     return { ...r, seed };
   } finally {
     await h.close().catch(() => null);

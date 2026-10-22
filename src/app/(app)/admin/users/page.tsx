@@ -1,20 +1,27 @@
-// Users & roles (docs/spec/08): accounts and their role assignments with their scope. Read-only in delivery 1.
+// Users & roles (docs/spec/08): accounts and their role assignments with their scope; the administrator creates accounts,
+// gives and removes roles, deactivates accounts (src/features/admin/actions.ts checks each one again).
 import { notFound } from 'next/navigation';
 import { SectionCard } from '@/components/app/SectionCard';
 import { PageHeader } from '@/components/app/shell/page-header';
 import { Table, Td, Th } from '@/components/ds/Table';
-import { ROLE_LABEL } from '@/config/roles';
+import { ROLE_LABEL, SPECIALITY_LABEL } from '@/config/roles';
 import { canSee } from '@/config/screens';
-import { usersWithAssignments } from '@/server/dal/admin';
+import { ActiveToggle, AddRoleForm, NewUserForm, RemoveRoleButton } from '@/features/admin/forms';
+import s from '@/features/admin/forms.module.css';
+import { dataText } from '@/i18n/data-text';
+import { referenceLists, usersWithAssignments } from '@/server/dal/admin';
 import { getI18n, getViewer } from '@/server/session';
 
 export default async function UsersPage() {
-  const [{ t }, viewer] = await Promise.all([getI18n(), getViewer()]);
+  const [{ t, lang }, viewer] = await Promise.all([getI18n(), getViewer()]);
   if (!canSee(viewer.role, 'admin-users')) notFound();
-  const rows = await usersWithAssignments();
+  const [rows, refs] = await Promise.all([usersWithAssignments(), referenceLists()]);
   return (
     <>
       <PageHeader screen="admin-users" crumbs={['Administration']} />
+      <SectionCard title={t('New account')} subtitle={t('The person signs in with their Microsoft account; give them a role below.')}>
+        <NewUserForm subsidiaries={refs.subsidiaries.map((x) => ({ code: x.code, name: dataText(x.name, lang) }))} />
+      </SectionCard>
       <SectionCard title={t('Accounts')} hint={String(rows.length)} scroll>
         <Table>
           <thead>
@@ -29,11 +36,28 @@ export default async function UsersPage() {
           <tbody>
             {rows.map((u) => (
               <tr key={u.id}>
-                <Td>{u.displayName}</Td>
-                <Td tone="secondary">{u.email}</Td>
-                <Td>{u.subsidiaryCode ?? '—'}</Td>
-                <Td>{u.assignments.map((a) => `${t(ROLE_LABEL[a.role])}${a.scopeRef ? ` · ${a.scopeRef}` : ''}`).join(' ; ') || '—'}</Td>
-                <Td>{u.active ? t('Active') : t('Deactivated')}</Td>
+                <Td valign="top">{u.displayName}</Td>
+                <Td valign="top" tone="secondary">{u.email}</Td>
+                <Td valign="top">{u.subsidiaryCode ?? '—'}</Td>
+                <Td valign="top">
+                  <div className={s.roles}>
+                    {u.assignments.map((a) => {
+                      const label = `${t(ROLE_LABEL[a.role])}${a.scopeRef ? ` · ${a.scopeRef}` : ''}${a.speciality ? ` · ${t(SPECIALITY_LABEL[a.speciality])}` : ''}`;
+                      return (
+                        <span key={a.id} className={`tag tag-neutral ${s.role}`}>
+                          {label}
+                          <RemoveRoleButton id={a.id} label={label} />
+                        </span>
+                      );
+                    })}
+                    {!u.assignments.length && <span className="text-muted">{t('No role')}</span>}
+                  </div>
+                  <AddRoleForm userId={u.id} refs={refs} />
+                </Td>
+                <Td valign="top">
+                  {u.active ? t('Active') : t('Deactivated')}
+                  <ActiveToggle userId={u.id} active={u.active} />
+                </Td>
               </tr>
             ))}
           </tbody>

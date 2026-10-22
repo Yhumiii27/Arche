@@ -52,6 +52,9 @@ export const ROLE_SCOPE: Record<RoleKey, ScopeKind> = {
 export const EXPERT_SPECIALITIES = ['quality', 'hse', 'finance', 'operations'] as const;
 export type ExpertSpeciality = (typeof EXPERT_SPECIALITIES)[number];
 
+/** Speciality names (EN source strings). */
+export const SPECIALITY_LABEL: Record<ExpertSpeciality, string> = { quality: 'Quality', hse: 'HSE', finance: 'Finance', operations: 'Operations' };
+
 /** Central functions with a cross view of every subsidiary (CDC §4), beyond drafts (N-5). The CEO sees everything. */
 export const CROSS_VIEW_ROLES: readonly RoleKey[] = ['dir_ig', 'group_cfo', 'group_hse', 'copil_member'];
 

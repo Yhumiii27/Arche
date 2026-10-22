@@ -6,6 +6,8 @@
 #   migrate  one-shot `npm run db:migrate` before every start (migrations, then the seed of an EMPTY schema: ARCHE_SEED must
 #            be set — demo for the beta, production for reference data only); left out of Coolify's health status
 #   app      the web server (port 3400, behind Coolify's proxy and TLS); starts once the migration has succeeded
+#   worker   `npm run worker`: backups of the schema into the arche-backups volume (replicate it off the host), daily
+#            declaration to Matrix
 #
 # The demo beta (ARCHE_AUTH=demo: "View as" any profile, the CEO included) ONLY behind Coolify's basic authentication —
 # nothing in Arche enforces it. The key `exclude_from_hc` is Coolify's: remove it to run this file with plain `docker compose`.
@@ -30,6 +32,10 @@ x-arche-env: &arche-env
   NEXT_PUBLIC_CODEX_URL: ${NEXT_PUBLIC_CODEX_URL:-}
   NEXT_PUBLIC_VIGIE_URL: ${NEXT_PUBLIC_VIGIE_URL:-}
   LOG_LEVEL: ${LOG_LEVEL:-}
+  MATRIX_URL: ${MATRIX_URL:-}
+  MATRIX_TOKEN: ${MATRIX_TOKEN:-}
+  ARCHE_BACKUP_EVERY_MIN: ${ARCHE_BACKUP_EVERY_MIN:-}
+  ARCHE_BACKUP_RETENTION_DAYS: ${ARCHE_BACKUP_RETENTION_DAYS:-}
 
 services:
   db:
@@ -77,5 +83,21 @@ services:
     expose:
       - "3400"
 
+  worker:
+    image: arche:local
+    pull_policy: never
+    command: ["npm", "run", "worker"]
+    environment:
+      <<: *arche-env
+      ARCHE_BACKUP_DIR: /backups
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    volumes:
+      - arche-backups:/backups
+    exclude_from_hc: true
+
 volumes:
   arche-db:
+  arche-backups:

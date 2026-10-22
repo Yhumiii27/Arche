@@ -1,23 +1,26 @@
 // A fresh PostgreSQL database per test file (Arche runs on PostgreSQL only): created on the test server
 // (ARCHE_TEST_ADMIN_URL, a superuser; default postgres://postgres:postgres@127.0.0.1:5432/postgres), provisioned like the
-// shared server (role arche_app, schema arche), migrated, seeded (demo by default), and dropped by `close()`.
+// shared server (role arche_app, schema arche), migrated, seeded (demo by default), and dropped by `close()`. The tests connect
+// as the administrator and SET ROLE arche_app (pool option), so they have exactly arche_app's rights without ever touching
+// the role's password (a developer's local database uses the same role).
 //   const t = await testDatabase();  …  await t.close();
 import { randomBytes } from 'node:crypto';
 import pg from 'pg';
 import type { SeedMode } from '@/server/config/parse';
 import { setDb } from '@/server/db/client';
 import { migrateAndSeedPostgres, openPostgres, type PostgresHandle } from '@/server/db/postgres';
-import { appUrlOf, provisionDatabase, provisionSchema, withDatabase } from '@/server/db/provision';
+import { APP_ROLE, provisionDatabase, provisionSchema, withDatabase } from '@/server/db/provision';
 import type { DB } from '@/server/db/types';
 
 export const TEST_ADMIN_URL = process.env.ARCHE_TEST_ADMIN_URL || 'postgres://postgres:postgres@127.0.0.1:5432/postgres';
-const TEST_PASSWORD = 'arche-test';
 
 export interface TestDatabase {
   db: DB;
   handle: PostgresHandle;
-  /** DATABASE_URL of the test database (arche_app). */
+  /** URL of the test database (administrator credentials: use it with `role`). */
   url: string;
+  /** The role to act as on `url`. */
+  role: string;
   name: string;
   close(): Promise<void>;
 }
@@ -38,10 +41,10 @@ async function withClient<T>(url: string, run: (c: pg.Client) => Promise<T>): Pr
  */
 export async function testDatabase(opts: { migrate?: boolean; seed?: SeedMode | null; useAsDefault?: boolean } = {}): Promise<TestDatabase> {
   const name = `arche_test_${randomBytes(6).toString('hex')}`;
-  await withClient(TEST_ADMIN_URL, (c) => provisionDatabase(c, { database: name, password: TEST_PASSWORD }));
+  await withClient(TEST_ADMIN_URL, (c) => provisionDatabase(c, { database: name }));
   await withClient(withDatabase(TEST_ADMIN_URL, name), (c) => provisionSchema(c));
-  const url = appUrlOf(TEST_ADMIN_URL, name, TEST_PASSWORD);
-  const handle = await openPostgres({ url, poolMax: 4, applicationName: 'arche-test' });
+  const url = withDatabase(TEST_ADMIN_URL, name);
+  const handle = await openPostgres({ url, poolMax: 4, applicationName: 'arche-test', role: APP_ROLE });
   if (opts.migrate ?? true) {
     const seed = opts.seed === undefined ? 'demo' : opts.seed;
     if (seed) await migrateAndSeedPostgres(handle, seed);
@@ -53,7 +56,7 @@ export async function testDatabase(opts: { migrate?: boolean; seed?: SeedMode | 
   }
   if (opts.useAsDefault ?? true) setDb(handle.db);
   return {
-    db: handle.db, handle, url, name,
+    db: handle.db, handle, url, role: APP_ROLE, name,
     async close() {
       await handle.close().catch(() => null);
       await withClient(TEST_ADMIN_URL, (c) => c.query(`DROP DATABASE IF EXISTS "${name}" WITH (FORCE)`));
