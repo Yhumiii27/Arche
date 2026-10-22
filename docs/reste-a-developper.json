@@ -46,6 +46,10 @@
     {
       "date": "2026-10-22",
       "text": "Livraison 5, lot 5a : jalons HS déclarés par le SSE groupe, registre des autorisations, pack ingénierie (part filiale et part EPC2i lue dans Keystone), engagé / réalisé mensuel et import CSV, courbe en S avec SPI, CPI, EAC et écart d’incertitude ; critères HS, autorisations, pack et travaux des jalons évalués."
+    },
+    {
+      "date": "2026-10-22",
+      "text": "Livraison 5, lot 5b : revues projet et audits transversaux, rapport Copil imprimable, écran COPIL GPI, portefeuille groupe / zone / filiale avec maturité des études, alertes à règles sur l’accueil, la synthèse et le portefeuille, instantanés hebdomadaires. Livraison 5 terminée, à valider sur le jeu de démo."
     }
   ],
   "items": [
@@ -659,15 +663,15 @@
         "docs/spec/06 §3, §5"
       ],
       "evidence": [
-        "src/domain/pack.ts",
         "src/domain/execution.ts",
-        "src/app/(app)/capex/[code]/execution/page.tsx",
-        "src/app/(app)/capex/[code]/pack/page.tsx"
+        "src/server/dal/governance.ts",
+        "src/app/(app)/portfolio/page.tsx",
+        "src/app/(app)/capex/[code]/execution/page.tsx"
       ],
       "progress": {
-        "state": "en_cours",
+        "state": "fait",
         "delivery": "L5",
-        "note": "Lot 5a : pack ingénierie (C-9), engagé / réalisé et import CSV (N-14), courbe en S, SPI / CPI / EAC, écart d’incertitude, critères g2_pack et k3_works. Lot 5b : synthèse, maturité, portefeuilles."
+        "note": "Synthèse du CAPEX, maturité des études (pack pondéré, parts filiale et EPC2i, tendance hebdomadaire), écart d’incertitude, courbe en S, SPI / CPI / EAC, portefeuilles groupe / zone / filiale ; à valider sur le jeu de démo par le responsable produit."
       }
     },
     {
@@ -683,9 +687,16 @@
       "sources": [
         "docs/spec/06 §2, §7"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/domain/governance.ts",
+        "src/domain/alerts.ts",
+        "src/app/(app)/copil/page.tsx",
+        "src/app/print/capex/[code]/report/page.tsx"
+      ],
       "progress": {
-        "state": "a_faire"
+        "state": "fait",
+        "delivery": "L5",
+        "note": "Revues projet (cadence par typologie, retard, signalement au Dir.IG), audits transversaux par phase (N-19), rapport Copil imprimable, écran COPIL GPI, alertes à règles, instantanés hebdomadaires."
       }
     },
     {

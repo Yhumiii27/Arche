@@ -1,15 +1,20 @@
 // Governance of a CAPEX (docs/spec/06 §1–2): the named team against the staffing template of its typology, the typology
 // (computed from the latest validated budget and the reference revenue, forced or confirmed by the group industrial director)
-// and the decisions register. Reviews and the Copil report come with delivery 5.
+// the project reviews (cadence by typology, next one due, Strategic audits by phase — delivery 5), the Copil report and the
+// decisions register.
 import { EmptyState } from '@/components/app/EmptyState';
 import { KeyValueList } from '@/components/app/KeyValueList';
 import { SectionCard } from '@/components/app/SectionCard';
 import { PageHeader } from '@/components/app/shell/page-header';
 import { Table, Td, Th } from '@/components/ds/Table';
+import { ButtonLink } from '@/components/ds/Button';
 import { Tag } from '@/components/ds/Tag';
 import { missingStaff, STAFFING } from '@/domain/budget';
 import { DECISION_BODY_LABEL, refOf, TEAM_ROLE_LABEL, type DecisionBody } from '@/domain/capex';
-import { TYPOLOGY_LABEL, labelOf } from '@/domain/capex-labels';
+import { PHASE_LABEL, TYPOLOGY_LABEL, labelOf } from '@/domain/capex-labels';
+import { CADENCE_LABEL, missingAudits, nextReview, REVIEW_KIND_LABEL, type ReviewKind } from '@/domain/governance';
+import { ReviewForm } from '@/features/governance/forms';
+import { reviewsOf } from '@/server/dal/governance';
 import { ConfirmTypologyButton, DecisionForm, ForceTypologyForm, MemberForm, RemoveMemberButton } from '@/features/capex/forms';
 import { loadCapexPage } from '@/features/capex/page-data';
 import { dataText } from '@/i18n/data-text';
@@ -22,6 +27,10 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
   const today = await businessToday();
   const [team, decisions, computed, candidates] = await Promise.all([teamOf(db, c.id), decisionsOf(db, c.id), computedTypologyOf(db, c, today), teamCandidates(db, c.subsidiaryCode)]);
   const edit = can('edit');
+  const revs = await reviewsOf(db, c.id);
+  const review = nextReview({ status: c.status, typology: c.typology, openedOn: c.openedAt ? c.openedAt.toISOString().slice(0, 10) : null, lastHeldOn: revs.find((r) => r.kind === 'copil_projet')?.heldOn ?? null }, today);
+  const audits = missingAudits(c, revs.filter((r) => r.kind === 'audit'));
+  const reviewKinds: ReviewKind[] = c.status === 'active' ? [...(edit ? ['copil_projet' as const] : []), ...(can('audit') && c.typology === 'strategic' ? ['audit' as const] : [])] : [];
   const template = STAFFING[c.typology ?? 'light'];
   const missing = missingStaff(c.typology, team.map((m) => m.capexRole));
   return (
@@ -84,6 +93,54 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
         )}
         {c.typologyProposed && can('confirm_typology') && <ConfirmTypologyButton code={c.code} />}
         {can('force_typology') && <ForceTypologyForm code={c.code} />}
+      </SectionCard>
+
+      <SectionCard
+        title={t('Reviews')}
+        hint={c.typology === 'light' || c.typology === 'strategic' ? `${t('Project steering committee')} · ${t(CADENCE_LABEL[c.typology])}` : t('Cadence set by the typology')}
+        scroll
+      >
+        <KeyValueList
+          items={[
+            { k: t('Next project review'), v: review.dueOn ? `${fmtDate(review.dueOn, lang)}${review.state === 'ok' ? '' : ` · ${review.daysLate} ${t('day(s) late')}`}` : '—' },
+            ...(c.typology === 'strategic' ? [{ k: t('Phase audits missing'), v: audits.length ? audits.map((ph) => t(labelOf(PHASE_LABEL, ph))).join(' · ') : t('None') }] : []),
+          ]}
+        />
+        {review.state === 'escalated' && <Tag tone="accent" size="sm">{t('Flagged to the group industrial director')}</Tag>}
+        {revs.length ? (
+          <Table>
+            <thead>
+              <tr>
+                <Th>{t('Ref.')}</Th>
+                <Th>{t('Held on')}</Th>
+                <Th>{t('Kind')}</Th>
+                <Th>{t('Phase')}</Th>
+                <Th>{t('Attendees')}</Th>
+                <Th>{t('Summary')}</Th>
+                <Th>{t('Recorded by')}</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {revs.map((r) => (
+                <tr key={r.id}>
+                  <Td nowrap>{refOf('REV', r.number)}</Td>
+                  <Td nowrap>{fmtDate(r.heldOn, lang)}</Td>
+                  <Td>{t(REVIEW_KIND_LABEL[r.kind])}</Td>
+                  <Td tone="secondary">{t(labelOf(PHASE_LABEL, r.phase))}</Td>
+                  <Td tone="secondary">{dataText(r.attendees, lang)}</Td>
+                  <Td>{dataText(r.summary, lang)}</Td>
+                  <Td tone="secondary">{r.recordedByName}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        ) : (
+          <EmptyState>{t('No review recorded.')}</EmptyState>
+        )}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {reviewKinds.length > 0 && <ReviewForm code={c.code} kinds={reviewKinds} today={today} />}
+          <ButtonLink href={`/print/capex/${encodeURIComponent(c.code)}/report`} variant="secondary" size="sm" target="_blank">{t('Copil report')}</ButtonLink>
+        </div>
       </SectionCard>
 
       <SectionCard title={t('Decisions')} hint={t(`${decisions.length} decisions`)} scroll>

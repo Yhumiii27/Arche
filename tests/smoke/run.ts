@@ -79,6 +79,15 @@ async function main(): Promise<void> {
   check(permits.status === 200 && permits.body.includes('Échéance proche') && permits.body.includes('Ajouter une autorisation'), 'permits register: a decision due soon, the add action');
   const pack = await get('/capex/CPX-APM-2026-01/pack', 'project_lead');
   check(pack.status === 200 && pack.body.includes('Pack pondéré') && pack.body.includes('60'), 'engineering pack: weighted %');
+  const portfolio = await get('/portfolio', 'dir_ig');
+  check(portfolio.status === 200 && portfolio.body.includes('Maturité des études') && portfolio.body.includes('CPX-SAI-2026-01'), 'portfolio: maturity of the studies and the CAPEX of the group');
+  check((await get('/portfolio', 'zone_director')).body.includes('CPX-SAI-2026-01') === false, 'the zone portfolio stays within the zone');
+  const copil = await get('/copil', 'copil_member');
+  check(copil.status === 200 && copil.body.includes('Ordre du jour'), 'COPIL GPI agenda');
+  const report = await get('/print/capex/CPX-SAI-2026-01/report', 'dir_ig');
+  check(report.status === 200 && report.body.includes('Rapport Copil') && report.body.includes('Risques principaux'), 'printable Copil report');
+  const homeAlerts = await get('/', 'dir_ig');
+  check(homeAlerts.body.includes('Alertes') && homeAlerts.body.includes('Prochains jalons'), 'home: alerts and next gates');
   const soon = await get('/capex/CPX-SAI-2026-01/rampup', 'epc2i_pmo');
   check(soon.status === 200 && soon.body.includes('Prévu pour la livraison 6'), 'a screen of a later delivery says when it comes');
   check((await get('/capex/CPX-SAI-2026-01/budget', 'sponsor')).status === 404, 'every page of another subsidiary’s CAPEX is not found');

@@ -66,11 +66,8 @@ export const SECTION_LABEL: Record<Exclude<Section, 'fixed'>, string> = {
   admin: 'Administration',
 };
 
-/** Screens of delivery 5 built so far (lot 5a); the portfolio and the COPIL GPI come with lot 5b. */
-const BUILT_L5: readonly ScreenId[] = ['capex-pack', 'capex-permits', 'capex-execution', 'capex-safety'];
-
-/** Screens built (the others open the "coming soon" page). */
-export const BUILT: ReadonlySet<ScreenId> = new Set(SCREENS.filter((s) => s.delivery === 'L1' || s.delivery === 'L2' || s.delivery === 'L3' || s.delivery === 'L4' || BUILT_L5.includes(s.id)).map((s) => s.id));
+/** Screens built by deliveries 1 to 5 (the others open the "coming soon" page). */
+export const BUILT: ReadonlySet<ScreenId> = new Set(SCREENS.filter((s) => s.delivery !== 'L6').map((s) => s.id));
 
 /** True when the profile has the screen in its workspace. */
 export function canSee(role: RoleKey, id: ScreenId): boolean {

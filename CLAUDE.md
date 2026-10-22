@@ -29,12 +29,14 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   theme (`group` in `src/config/screens.ts`), CAPEX section always visible with the CAPEX switcher, ⌘K page search; `Folded`
   is a button opening a side panel (closed on success); main actions in the page header; CAPEX map `/map` (Keystone's map,
   origin `6645cb6`) and the zone selector (`arche-zone`).
-- **Delivery 5 (dashboards and governance) is under way** (`docs/DELIVERY-5.md`). Lot 5a is done: safety milestones declared by
-  the group HSE (`src/domain/safety.ts`, right `safety`; the PSSR discharge is the G3 circuit's quitus step), permits
-  (`src/domain/permits.ts`), engineering pack (`src/domain/pack.ts`, seed list until the owner's C-9 list), monthly actuals and
-  CSV import, S-curve, SPI / CPI / EAC and uncertainty gap (`src/domain/execution.ts`, `src/server/dal/execution.ts`); the L5
-  gate criteria are evaluated in `deliveryFacts`. Next: lot 5b (reviews, Copil report, audits, COPIL GPI, portfolios, alerts,
-  weekly snapshots).
+- **Delivery 5 (dashboards and governance) is done** (`docs/DELIVERY-5.md`), to be validated by the owner on the demo data
+  set. Lot 5a: safety milestones declared by the group HSE (`src/domain/safety.ts`, right `safety`; the PSSR discharge is the
+  G3 circuit's quitus step), permits (`src/domain/permits.ts`), engineering pack (`src/domain/pack.ts`, seed list until the
+  owner's C-9 list), monthly actuals and CSV import, S-curve, SPI / CPI / EAC, uncertainty gap (`src/domain/execution.ts`,
+  `src/server/dal/execution.ts`); the L5 gate criteria are evaluated in `deliveryFacts`. Lot 5b: reviews and audits
+  (`src/domain/governance.ts`, right `audit`), rule-based alerts (`src/domain/alerts.ts`), dashboards (`capexDashboard`,
+  `portfolioDashboard`, `copilAgenda` in `src/server/dal/governance.ts`), Copil report `/print/capex/[code]/report`, job
+  `weekly-snapshot`. Next: the pilot, then L6 — see `docs/PLAN.md`.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

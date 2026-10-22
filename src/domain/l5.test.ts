@@ -1,10 +1,12 @@
 // Delivery 5 (lot 5a), pure rules: safety milestones (N-13), permits, engineering pack (C-9), execution — planned curve, EV,
-// SPI / CPI / EAC, works completion, uncertainty gap (CDC §4), the CSV import template (N-14).
+// SPI / CPI / EAC, works completion, uncertainty gap (CDC §4), the CSV import template (N-14); lot 5b: reviews, audits, alerts.
 import { describe, expect, it } from 'vitest';
 import { checkActual, checkWindow, epc2iLotValues, indicatorsAt, monthsBetween, parseActualsCsv, plannedAt, sCurve, uncertaintyGap, worksFact, type LotActual, type LotPlan } from './execution';
 import { packFact, packSummary, PACK_TEMPLATE } from './pack';
 import { checkPermit, permitsDue, permitsFact } from './permits';
 import { checkHs, emptyHs, safetyFacts, withPssrDischarge } from './safety';
+import { addMonths, checkReview, missingAudits, nextReview } from './governance';
+import { alertsOf, sortAlerts, type AlertInput } from './alerts';
 
 const lot = (o: Partial<LotPlan>): LotPlan => ({ id: 'L1', number: 1, kind: 'civil_works', title: 'Slab', epc2i: false, budgetKeur: 1200, start: '2026-01', end: '2026-12', ...o });
 const act = (o: Partial<LotActual>): LotActual => ({ lotId: 'L1', month: '2026-06', committedKeur: null, spentKeur: null, physicalPct: null, ...o });
@@ -114,5 +116,48 @@ describe('execution', () => {
     expect(epc2iLotValues([{ contractKeur: 1000, amendmentsKeur: 50, invoicedKeur: 400, physicalPct: 60 }, { contractKeur: 3000, amendmentsKeur: 0, invoicedKeur: 900, physicalPct: 20 }]))
       .toEqual({ committedKeur: 4050, spentKeur: 1300, physicalPct: 30 });
     expect(epc2iLotValues([])).toBeNull();
+  });
+});
+
+describe('governance and alerts (lot 5b)', () => {
+  it('reviews: cadence by typology, late, flagged after 15 days; none without an active typed CAPEX', () => {
+    expect(addMonths('2026-01-31', 1)).toBe('2026-02-28');
+    expect(nextReview({ status: 'active', typology: 'light', openedOn: '2026-03-02', lastHeldOn: '2026-06-20' }, '2026-09-20')).toEqual({ dueOn: '2026-09-20', state: 'ok', daysLate: 0 });
+    expect(nextReview({ status: 'active', typology: 'light', openedOn: '2026-03-02', lastHeldOn: '2026-06-20' }, '2026-10-05')).toMatchObject({ state: 'late', daysLate: 15 });
+    expect(nextReview({ status: 'active', typology: 'light', openedOn: '2026-03-02', lastHeldOn: '2026-06-20' }, '2026-10-06')).toMatchObject({ state: 'escalated' });
+    expect(nextReview({ status: 'active', typology: 'strategic', openedOn: '2026-10-01', lastHeldOn: null }, '2026-10-22')).toMatchObject({ dueOn: '2026-11-01', state: 'ok' });
+    expect(nextReview({ status: 'on_hold', typology: 'strategic', openedOn: '2026-01-01', lastHeldOn: null }, '2026-10-22').state).toBe('none');
+    expect(nextReview({ status: 'active', typology: null, openedOn: '2026-01-01', lastHeldOn: null }, '2026-10-22').state).toBe('none');
+  });
+
+  it('audits: one per phase left, Strategic only', () => {
+    expect(missingAudits({ typology: 'strategic', phase: 'execution', status: 'active' }, [{ phase: 'cadrage' }])).toEqual(['avant_projet']);
+    expect(missingAudits({ typology: 'light', phase: 'execution', status: 'active' }, [])).toEqual([]);
+    expect(missingAudits({ typology: 'strategic', phase: 'demarrage', status: 'closed' }, [])).toEqual(['cadrage', 'avant_projet', 'execution', 'demarrage']);
+  });
+
+  it('a review: date not in the future, attendees and summary required, one decision per line', () => {
+    expect(checkReview({ kind: 'copil_projet', heldOn: '2026-10-22', attendees: 'A', summary: '' }, '2026-10-22')).toEqual({ ok: false, error: 'Write the summary' });
+    expect(checkReview({ kind: 'audit', heldOn: '2026-10-22', attendees: 'A', summary: 'S', decisions: 'One\n\n Two ' }, '2026-10-22')).toMatchObject({ ok: true, value: { decisions: ['One', 'Two'] } });
+  });
+
+  const base: AlertInput = {
+    code: 'C', status: 'active', typologyProposed: null, running: null, openSteps: [], review: { dueOn: null, state: 'none', daysLate: 0 }, missingAudits: [], permitsDue: [],
+    indicators: null, g2Keur: null, missingStaff: [], lateConditions: 0,
+  };
+  it('rule-based alerts', () => {
+    expect(alertsOf(base, '2026-10-22')).toEqual([]);
+    const all = alertsOf({
+      ...base, running: { gate: 'G1', submittedOn: '2026-10-15', targetOn: '2026-10-19' }, openSteps: [{ label: 'HSE opinion', kind: 'opinion', dueOn: '2026-10-20' }, { label: 'Sponsor visa', kind: 'visa', dueOn: '2026-10-30' }],
+      review: { dueOn: '2026-09-20', state: 'escalated', daysLate: 32 }, missingAudits: ['avant_projet'], permitsDue: [{ dueOn: '2026-11-10' }],
+      indicators: { spi: 0.95, cpi: 0.7, eacKeur: 26000 }, g2Keur: 18300, typologyProposed: 'strategic', missingStaff: ['controller'], lateConditions: 1,
+    }, '2026-10-22');
+    expect(all.map((a) => [a.rule, a.level])).toEqual([
+      ['gate_late', 'alert'], ['opinion_missing', 'alert'], ['review_escalated', 'alert'], ['audit_missing', 'watch'], ['permit_due', 'watch'], ['cpi_low', 'alert'], ['eac_over', 'alert'],
+      ['typology_to_confirm', 'watch'], ['team_incomplete', 'watch'], ['condition_late', 'alert'],
+    ]);
+    expect(all.find((a) => a.rule === 'team_incomplete')!.detail).toBe('Controller');
+    expect(sortAlerts(all)[0].level).toBe('alert');
+    expect(alertsOf({ ...base, status: 'closed', lateConditions: 3 }, '2026-10-22')).toEqual([]);
   });
 });

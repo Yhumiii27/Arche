@@ -182,6 +182,18 @@ export function addWorkingDays(iso: string, n: number): string {
   return d;
 }
 
+/** Working days from `from` to `to` (0 on the same day, negative when `to` is before `from`). */
+export function workingDaysBetween(from: string, to: string): number {
+  if (to < from) return -workingDaysBetween(to, from);
+  let n = 0;
+  for (let d = from; d < to; ) {
+    d = addDaysIso(d, 1);
+    const w = dowOfIso(d);
+    if (w !== 0 && w !== 6) n++;
+  }
+  return n;
+}
+
 /** Deadline of a step opened on `openedOn`: 5 working days for an opinion (N-10), the gate's target delay otherwise. */
 export function dueOf(kind: StepKind, gate: GateCode, openedOn: string, values: ModelValues): string {
   return addWorkingDays(openedOn, kind === 'opinion' ? 5 : values.gateDelayDays[gate]);

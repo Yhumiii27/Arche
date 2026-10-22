@@ -64,3 +64,41 @@ export const lotActuals = arche.table('lot_actuals', {
   enteredByName: text('entered_by_name').notNull(),
   enteredAt: timestamp('entered_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [unique('lot_actuals_uq').on(t.lotId, t.month)]);
+
+/**
+ * Reviews held (docs/spec/06 §2, N-19): the project steering committees (cadence by typology) and the cross-functional audits
+ * of Strategic CAPEX (one per phase); their decisions go to the decisions register (`decisions.review_id`).
+ */
+export const reviews = arche.table('reviews', {
+  id: id(),
+  capexId: uuid('capex_id').notNull().references(() => capex.id, { onDelete: 'cascade' }),
+  number: integer('number').notNull(),
+  kind: text('kind').$type<'copil_projet' | 'audit'>().notNull(),
+  heldOn: date('held_on', { mode: 'string' }).notNull(),
+  /** Phase of the CAPEX when the review was held (the audit of that phase). */
+  phase: text('phase').notNull(),
+  attendees: text('attendees').notNull(),
+  summary: text('summary').notNull(),
+  recordedByName: text('recorded_by_name').notNull(),
+  ...timestamps,
+}, (t) => [unique('reviews_number_uq').on(t.capexId, t.number)]);
+
+/** Weekly picture of a CAPEX (spec 06 §5): the trends of the dashboards; one row per CAPEX and week (Monday). */
+export const capexSnapshots = arche.table('capex_snapshots', {
+  capexId: uuid('capex_id').notNull().references(() => capex.id, { onDelete: 'cascade' }),
+  week: date('week', { mode: 'string' }).notNull(),
+  status: text('status').notNull(),
+  phase: text('phase').notNull(),
+  packPct: keur('pack_pct'),
+  subsidiaryPackPct: keur('subsidiary_pack_pct'),
+  epc2iPackPct: keur('epc2i_pack_pct'),
+  bacKeur: keur('bac_keur'),
+  pvKeur: keur('pv_keur'),
+  evKeur: keur('ev_keur'),
+  acKeur: keur('ac_keur'),
+  eacKeur: keur('eac_keur'),
+  spi: keur('spi'),
+  cpi: keur('cpi'),
+  alerts: integer('alerts').notNull().default(0),
+  takenAt: timestamp('taken_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [unique('capex_snapshots_uq').on(t.capexId, t.week)]);
