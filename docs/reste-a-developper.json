@@ -1,0 +1,353 @@
+{
+ "generated": "2026-10-22",
+ "updated": "2026-10-22",
+ "branch": "claude/brave-curie-chxbck",
+ "history": [
+  {
+   "date": "2026-10-22",
+   "text": "Livraison 0 (cadrage) : inventaire initial de 26 points, aligné sur docs/PLAN.md."
+  }
+ ],
+ "items": [
+  {
+   "id": "AR-001",
+   "title": "Cadrage de la livraison 0 : spécification, décisions, contrats, demandes, plan",
+   "lot": "L0",
+   "effort": "S",
+   "waiting_on": null,
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "fait",
+    "delivery": "Livraison 0",
+    "note": "Documents livrés le 22 oct. 2026 ; en attente des réponses du responsable produit."
+   }
+  },
+  {
+   "id": "AR-002",
+   "title": "Réponses du responsable produit aux questions de DECISIONS.md",
+   "lot": "L0",
+   "effort": "S",
+   "waiting_on": "Responsable produit",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-003",
+   "title": "Reprise du socle Keystone (SOCLE.md) avec commit d’origine",
+   "lot": "L1",
+   "effort": "M",
+   "waiting_on": "AR-002 (N-1, N-3, N-4)",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-004",
+   "title": "Profils, rôles, portées et isolation par filiale dans la couche de données",
+   "lot": "L1",
+   "effort": "M",
+   "waiting_on": "C-6",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-005",
+   "title": "Référentiels zones, filiales, sites et CA de référence",
+   "lot": "L1",
+   "effort": "S",
+   "waiting_on": "liste des filiales",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-006",
+   "title": "Registre et fiche CAPEX, lots, équipe et gabarit de staffing",
+   "lot": "L2",
+   "effort": "M",
+   "waiting_on": null,
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-007",
+   "title": "Versions de budget et classes d’estimation E50 / E30 / E10",
+   "lot": "L2",
+   "effort": "M",
+   "waiting_on": "C-8",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-008",
+   "title": "Typologie Light / Stratégique : calcul, forçage, confirmation",
+   "lot": "L2",
+   "effort": "S",
+   "waiting_on": "C-5",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-009",
+   "title": "Modèle DIG-PRODI 4.0 paramétré : phases, K3, critères des jalons",
+   "lot": "L2",
+   "effort": "M",
+   "waiting_on": "C-1",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-010",
+   "title": "Vue pub_capex",
+   "lot": "L2",
+   "effort": "S",
+   "waiting_on": "M-1 à M-4 (Matrix)",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-011",
+   "title": "Dossiers vivants : sections, complétude, versions, figement et empreinte",
+   "lot": "L3",
+   "effort": "L",
+   "waiting_on": null,
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-012",
+   "title": "Consultations d’experts asynchrones",
+   "lot": "L3",
+   "effort": "M",
+   "waiting_on": "N-10",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-013",
+   "title": "Circuits G1 / K3 / G2 / G3 et signature simple ; Mes validations",
+   "lot": "L3",
+   "effort": "L",
+   "waiting_on": "C-7, N-6, N-7, N-8",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-014",
+   "title": "Matrice de délégation et MoC",
+   "lot": "L3",
+   "effort": "M",
+   "waiting_on": "C-4",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-015",
+   "title": "BP : VAN, TRI, délai de retour ; import du gabarit",
+   "lot": "L3",
+   "effort": "M",
+   "waiting_on": "N-11",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-016",
+   "title": "Connecteur keystone : simulation, miroir, liens profonds, interrupteur",
+   "lot": "L4",
+   "effort": "M",
+   "waiting_on": null,
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-017",
+   "title": "Besoins machines depuis le catalogue, réponses EPC2i, passage à commandé au G2 ; vue pub_besoins_machines",
+   "lot": "L4",
+   "effort": "M",
+   "waiting_on": "K-01 à K-05, K-10 (Keystone)",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-018",
+   "title": "Tableaux de bord : synthèse, maturité des études, écart d’incertitude, S-curve, portefeuilles",
+   "lot": "L5",
+   "effort": "L",
+   "waiting_on": "K-04, K-08",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-019",
+   "title": "Jalons HS (déclaratif puis Vigie) et registre des autorisations",
+   "lot": "L5",
+   "effort": "M",
+   "waiting_on": "C-3, AC-3",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-020",
+   "title": "Cadence de revue, revues en retard, rapport Copil, audits ; écran COPIL GPI",
+   "lot": "L5",
+   "effort": "M",
+   "waiting_on": "N-19",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-021",
+   "title": "Alertes à règles et instantanés hebdomadaires",
+   "lot": "L5",
+   "effort": "S",
+   "waiting_on": null,
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-022",
+   "title": "Pilote sur 1 à 2 CAPEX : jeu production, utilisateurs réels, guides par rôle, mesure de référence",
+   "lot": "Pilote",
+   "effort": "M",
+   "waiting_on": "C-13 (hébergement), C-10",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-023",
+   "title": "Ramp-up : saisie journalière, TRS, critère des 30 jours, délai des 6 mois ; vue pub_rampup",
+   "lot": "L6",
+   "effort": "M",
+   "waiting_on": "N-16",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-024",
+   "title": "Dossier Transfert & REX, PV de transfert contresigné, bibliothèque REX",
+   "lot": "L6",
+   "effort": "M",
+   "waiting_on": "N-15",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-025",
+   "title": "IA conforme (désactivable) et signature avancée G2 / AFE",
+   "lot": "L7",
+   "effort": "M",
+   "waiting_on": "C-7, C-13",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  },
+  {
+   "id": "AR-026",
+   "title": "Remplacer les copies du socle par @epc2i/socle",
+   "lot": "Déploiement",
+   "effort": "M",
+   "waiting_on": "R-194 (Keystone)",
+   "sources": [
+    "docs/PLAN.md"
+   ],
+   "progress": {
+    "state": "a_faire"
+   }
+  }
+ ]
+}
