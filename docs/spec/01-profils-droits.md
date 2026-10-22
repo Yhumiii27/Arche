@@ -20,7 +20,7 @@ Douze profils métier (prompt §2), plus l’administrateur (hors CDC, N-4). Les
 | `expert` | Expert (Qualité / HSE / DAF / Exploitation) | CAPEX où il est consulté | rend un avis motivé ; spécialité portée par l’affectation |
 | `copil_member` | Membre COPIL GPI | groupe (lecture) | examine les dossiers soumis au G1 ; donne un avis en séance ou en ligne |
 | `zone_director` | Directeur de Zone | filiales de ses zones (lecture) | lecteur ; portefeuille de sa zone |
-| `admin` *(hors CDC)* | Administrateur Arche | global | référentiels (filiales, sites, zones), utilisateurs et rôles, paramètres du cycle, matrice de délégation, connecteurs ; **aucune donnée métier** |
+| `admin` *(hors CDC)* | Administrateur Arche | global | CA de référence et paramètres propres à Arche (filiales, sites et zones : tenus dans Matrix, D21), utilisateurs et rôles, paramètres du cycle, matrice de délégation, connecteurs ; **aucune donnée métier** |
 
 Un utilisateur peut porter plusieurs rôles (comme dans Keystone : rôle actif + liste des rôles).
 

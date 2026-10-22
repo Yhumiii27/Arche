@@ -22,6 +22,10 @@
     {
       "date": "2026-10-22",
       "text": "Questionnaire : réponse par défaut confirmée pour 51 questions, reportée dans DECISIONS.md ; restent N-26 à N-29 et les données D-1 à D-8."
+    },
+    {
+      "date": "2026-10-22",
+      "text": "Décisions D21, D22 et P-01 de Matrix reportées dans la spécification : référentiels du groupe tenus par Matrix (zones, subsidiaries, sites d'Arche deviennent des miroirs de matrix.pub_*), REX publié (pub_rex), PostgreSQL 16."
     }
   ],
   "items": [
