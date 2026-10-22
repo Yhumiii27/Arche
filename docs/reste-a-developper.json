@@ -42,6 +42,10 @@
     {
       "date": "2026-10-22",
       "text": "Livraison 4b (interface, maquettes validées) : menu par thèmes, section CAPEX toujours visible avec sélecteur de CAPEX, recherche ⌘K, actions en boutons et panneaux, « Nouveau CAPEX », prochaine étape sur la synthèse, carte des CAPEX reprise de Keystone et sélecteur de zone ; demandes déposées chez Keystone, Matrix (M-10 à M-12) et Codex."
+    },
+    {
+      "date": "2026-10-22",
+      "text": "Livraison 5, lot 5a : jalons HS déclarés par le SSE groupe, registre des autorisations, pack ingénierie (part filiale et part EPC2i lue dans Keystone), engagé / réalisé mensuel et import CSV, courbe en S avec SPI, CPI, EAC et écart d’incertitude ; critères HS, autorisations, pack et travaux des jalons évalués."
     }
   ],
   "items": [
@@ -654,9 +658,16 @@
       "sources": [
         "docs/spec/06 §3, §5"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/domain/pack.ts",
+        "src/domain/execution.ts",
+        "src/app/(app)/capex/[code]/execution/page.tsx",
+        "src/app/(app)/capex/[code]/pack/page.tsx"
+      ],
       "progress": {
-        "state": "a_faire"
+        "state": "en_cours",
+        "delivery": "L5",
+        "note": "Lot 5a : pack ingénierie (C-9), engagé / réalisé et import CSV (N-14), courbe en S, SPI / CPI / EAC, écart d’incertitude, critères g2_pack et k3_works. Lot 5b : synthèse, maturité, portefeuilles."
       }
     },
     {
@@ -690,9 +701,16 @@
       "sources": [
         "docs/spec/03 §4"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/domain/safety.ts",
+        "src/domain/permits.ts",
+        "src/app/(app)/capex/[code]/safety/page.tsx",
+        "src/app/(app)/capex/[code]/permits/page.tsx"
+      ],
       "progress": {
-        "state": "a_faire"
+        "state": "fait",
+        "delivery": "L5",
+        "note": "Lot 5a : jalons HS déclarés par le SSE groupe (N-13) avec preuve, quitus PSSR par le circuit du G3, registre des autorisations, critères g1_hs2, g2_hs3, g2_permits, k3_hs4, g3_pssr, g3_hs6."
       }
     },
     {

@@ -27,6 +27,9 @@ import { testDatabase, type TestDatabase } from '@/test/db';
 import { addLotAction, addMemberAction, createCapexAction, openCapexAction, reviewVersionAction, saveBudgetVersionAction, saveBusinessPlanAction, saveRiskAction, submitVersionAction, validateBusinessPlanAction } from '../capex/actions';
 import { createChangeAction, decideChangeAction } from '../changes/actions';
 import { addReferenceAction, freezeVersionAction, saveSectionAction } from '../dossiers/actions';
+import { saveActualAction, savePackItemAction, savePermitAction } from '../delivery/actions';
+import { declareHsAction } from '../safety/actions';
+import { PACK_TEMPLATE } from '@/domain/pack';
 import { actOnStepAction, submitGateAction } from './actions';
 
 let t: TestDatabase;
@@ -55,6 +58,12 @@ const act = async (role: string, gate: GateCode, label: string, o: Record<string
 };
 const latestVersion = async (kind: DossierKind) =>
   (await t.db.execute(sql`select v.* from arche.dossier_versions v join arche.dossiers d on d.id = v.dossier_id join arche.capex c on c.id = d.capex_id where c.code = ${CODE} and d.kind = ${kind} order by v.number desc limit 1`)).rows[0] as { id: string; number: number; state: string; completeness_pct: number; content_hash: string | null };
+
+/** The group HSE declares a safety milestone passed (N-13). */
+async function hsPassed(code: string) {
+  as('group_hse');
+  expect(await declareHsAction(CODE, code, null, form({ status: 'passed', evidenceRef: `HSE-${CODE}-${code}`, passedOn: TODAY }))).toEqual({ ok: true });
+}
 
 async function fillTexts(kind: DossierKind) {
   as('project_lead');
@@ -86,6 +95,11 @@ describe('delivery 3: a CAPEX through its four gates by the circuits', () => {
     expect(await saveRiskAction(CODE, null, null, form({ title: 'Recycled resin quality', category: 'technical', probability: '2', impact: '3' }))).toEqual({ ok: true });
     await validatedVersion('E50', ['500', '2 500'], 'controller');
     expect(await row()).toMatchObject({ typology: 'light', phase: 'cadrage' });
+    as('project_lead');
+    expect(await declareHsAction(CODE, 'HS2', null, form({ status: 'passed', evidenceRef: 'X', passedOn: TODAY }))).toEqual({ ok: false, error: 'You cannot do this on this CAPEX' });
+    as('group_hse');
+    expect(await declareHsAction(CODE, 'HS2', null, form({ status: 'passed', passedOn: TODAY }))).toEqual({ ok: false, error: 'Give the reference of the evidence (Vigie or Codex)' });
+    await hsPassed('HS2');
   });
 
   it('dossier 1: sections and Codex references, complete, frozen with its SHA-256; submission before freezing refused', async () => {
@@ -147,7 +161,7 @@ describe('delivery 3: a CAPEX through its four gates by the circuits', () => {
     expect(decided).toMatchObject({ status: 'decided', decision: 'go', decidedByName: 'Claire Morel' });
     expect(decided.decidedAt!.toISOString().slice(0, 10) <= addWorkingDays(TODAY, 2)).toBe(true);
     const crit = Object.fromEntries((await t.db.select().from(gateCriteriaResults).where(eq(gateCriteriaResults.gateId, decided.id))).map((c) => [c.criterionCode, c.state]));
-    expect(crit).toMatchObject({ g1_dossier: 'met', g1_sponsor_visa: 'met', g1_experts: 'met', g1_budget_e50: 'met', g1_typology: 'met', g1_hs2: 'not_evaluated' });
+    expect(crit).toMatchObject({ g1_dossier: 'met', g1_sponsor_visa: 'met', g1_experts: 'met', g1_budget_e50: 'met', g1_typology: 'met', g1_hs2: 'met' });
     expect((await latestVersion('business_case')).state).toBe('approved');
   });
 
@@ -169,6 +183,13 @@ describe('delivery 3: a CAPEX through its four gates by the circuits', () => {
     expect(await validateBusinessPlanAction(CODE)).toEqual({ ok: false, error: 'Only the group CFO validates the business plan' });
     as('group_cfo');
     expect(await validateBusinessPlanAction(CODE)).toEqual({ ok: true });
+    // Delivery 5: HS 3, the ICPE and the building permit, the engineering pack above 80 %.
+    await hsPassed('HS3');
+    as('project_lead');
+    expect(await savePermitAction(CODE, null, null, form({ kind: 'icpe', title: 'ICPE declaration', status: 'filed', filedOn: '2026-09-01', dueOn: '2026-12-15' }))).toEqual({ ok: true });
+    expect(await savePermitAction(CODE, null, null, form({ kind: 'building_permit', title: 'Building permit', status: 'obtained', filedOn: '2026-06-01', obtainedOn: '2026-10-01' }))).toEqual({ ok: true });
+    expect(await savePackItemAction(CODE, PACK_TEMPLATE[0].code, null, form({ status: 'validated' }))).toEqual({ ok: false, error: 'Give the Codex reference of the validated document' });
+    for (const i of PACK_TEMPLATE.slice(0, 9)) expect(await savePackItemAction(CODE, i.code, null, form({ status: 'validated', codexRef: `PLN-${CODE}-${i.code}` }))).toEqual({ ok: true });
     await fillTexts('investment');
     expect((await latestVersion('investment')).completeness_pct).toBe(100);
     expect(await freezeVersionAction(CODE, 'investment')).toEqual({ ok: true });
@@ -220,11 +241,18 @@ describe('delivery 3: a CAPEX through its four gates by the circuits', () => {
   });
 
   it('K3 (no dossier) by the visa of the group industrial director; G3 by discharge, attestation and countersignatures', async () => {
+    // Delivery 5: HS 4 and the works lot complete (the slab at 100 %), entered by the controller.
+    await hsPassed('HS4');
+    const slab = (await t.db.select().from(capexLots).where(and(eq(capexLots.capexId, (await row()).id), eq(capexLots.kind, 'civil_works'))))[0];
+    as('controller');
+    expect(await saveActualAction(CODE, slab.id, null, form({ month: '2026-10', spentKeur: '590', physicalPct: '100' }))).toEqual({ ok: true });
     as('project_lead');
     expect(await submitGateAction(CODE, null, form({}))).toEqual({ ok: true });
     expect(await act('dir_ig', 'K3', 'Ready-to-start visa', { outcome: 'approved', confirm: 'on' })).toEqual({ ok: true });
     expect(await row()).toMatchObject({ phase: 'demarrage' });
 
+    await hsPassed('PSSR');
+    await hsPassed('HS6');
     await fillTexts('transfer');
     expect(await freezeVersionAction(CODE, 'transfer')).toEqual({ ok: true });
     expect(await submitGateAction(CODE, null, form({}))).toEqual({ ok: true });

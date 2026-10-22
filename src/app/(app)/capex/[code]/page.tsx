@@ -34,7 +34,7 @@ export default async function CapexOverviewPage({ params }: PageProps<'/capex/[c
   const gate = currentGate(c);
   const phaseNo = PHASES.indexOf(c.phase) + 1;
   const next = ev ? nextCriterion(ev.results) : null;
-  const r0Value = next?.value ? `${t('now')} ${next.value}` : t('not met');
+  const r0Value = next?.value ? `${t('now')} ${t(next.value)}` : t('not met');
   return (
     <>
       <PageHeader
@@ -125,7 +125,7 @@ export default async function CapexOverviewPage({ params }: PageProps<'/capex/[c
                     <Tag tone={STATE_TONE[r.state]} size="sm">{t(STATE_LABEL[r.state])}</Tag>
                     {r.state === 'not_evaluated' && <span className="text-muted"> {t(`delivery ${r.from.slice(1)}`)}</span>}
                   </Td>
-                  <Td tone="secondary">{r.value ?? '—'}</Td>
+                  <Td tone="secondary">{r.value ? t(r.value) : '—'}</Td>
                   <Td align="right" nowrap>
                     {r.state === 'unmet' && CRITERION_ACTION[r.code] && (
                       <Link href={screenHref(CRITERION_ACTION[r.code].screen, { code: c.code })}>{t(CRITERION_ACTION[r.code].label)}</Link>

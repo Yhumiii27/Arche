@@ -75,7 +75,7 @@ export default async function GatesPage({ params }: PageProps<'/capex/[code]/gat
                     <Tag tone={r.state === 'unmet' ? 'accent' : r.state === 'met' ? 'neutral' : 'outline'} size="sm">{t(STATE_LABEL[r.state])}</Tag>
                     {r.state === 'not_evaluated' && <span className="text-muted"> {t(`delivery ${r.from.slice(1)}`)}</span>}
                   </Td>
-                  <Td tone="secondary">{r.value ?? '—'}</Td>
+                  <Td tone="secondary">{r.value ? t(r.value) : '—'}</Td>
                 </tr>
               ))}
             </tbody>

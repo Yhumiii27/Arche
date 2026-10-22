@@ -14,6 +14,7 @@ import {
 } from '@/domain/circuits';
 import { DOSSIER_LABEL, DOSSIER_OF_GATE } from '@/domain/dossiers';
 import { CRITERIA, currentGate, decideGate, evaluateGate, type CycleState, type GateCode } from '@/domain/lifecycle';
+import { withPssrDischarge } from '@/domain/safety';
 import { EXPERT_SPECIALITIES } from '@/config/roles';
 import { recordActivity, writeAudit } from '@/server/db/helpers';
 import { circuitSteps, dossierVersions, gates, signatures } from '@/server/db/schema';
@@ -127,7 +128,7 @@ export async function actOnStepAction(code: string, stepId: string, _prev: Actio
       const forced = Object.fromEntries(CRITERIA.filter((x) => x.gate === g.code && f[`force:${x.code}`]?.trim()).map((x) => [x.code, f[`force:${x.code}`].trim()]));
       const dossierFact = version ? { [`${g.code.toLowerCase()}_dossier`]: { met: version.completenessPct === 100, value: `v${version.number} · ${version.completenessPct} %` } } : {};
       const facts = { ...(await gateFacts(tx, c)), ...circuitFacts(g.code, after), ...dossierFact };
-      const ev = evaluateGate(g.code, facts, forced);
+      const ev = evaluateGate(g.code, withPssrDischarge(facts), forced);
       const conditions = (f.conditions ?? '').split('\n').map((x) => x.trim()).filter(Boolean);
       const t = decideGate(c as CycleState, g.code, decision, ev, { reason: comment, conditions });
       if (!t.ok) return t;

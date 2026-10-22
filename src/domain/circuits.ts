@@ -150,7 +150,7 @@ export function decisionOf(step: StepState): GateDecision | null {
   return step.outcome === 'approved' ? 'go' : null;
 }
 
-/** Criteria facts the circuit gives (spec 03 §3): opinions given, sponsor visa. */
+/** Criteria facts the circuit gives (spec 03 §3): opinions given, sponsor visa, the PSSR discharge (combined by safety.ts). */
 export function circuitFacts(gate: GateCode, steps: readonly (StepState & { actor: StepActor })[]): Record<string, { met: boolean; value?: string }> {
   const live = steps.filter((s) => s.status !== 'cancelled');
   const opinions = live.filter((s) => s.kind === 'opinion');
@@ -160,6 +160,10 @@ export function circuitFacts(gate: GateCode, steps: readonly (StepState & { acto
   if (gate === 'G1') {
     const visa = live.find((s) => s.kind === 'visa' && s.actor === 'sponsor');
     f.g1_sponsor_visa = { met: visa?.status === 'done' && visa.outcome === 'approved' };
+  }
+  if (gate === 'G3') {
+    const quitus = live.find((s) => s.kind === 'quitus' && s.actor === 'group_hse');
+    if (quitus) f.pssr_discharge = { met: quitus.status === 'done' && quitus.outcome === 'approved' };
   }
   return f;
 }
