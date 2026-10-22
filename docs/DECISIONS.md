@@ -8,11 +8,24 @@
 
 ## À traiter en priorité
 
+**Pour répondre : questionnaire « Décisions Arche »**, https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe (toutes les questions
+ci-dessous et les données à fournir ; réponses enregistrées dans la page et relues par Claude).
+
 À trancher avant la livraison 1 : **N-1** (nom du schéma), **N-3** (comptes des filiales), **N-4** (administrateur),
 **AC-1** (nom et dépôt : réponse « Arche », `Yhumiii27/Arche`, à confirmer), **C-6** (glossaire et rôles), **C-13 / D-11**
 (hébergement).
 Données de référence attendues : la liste des filiales, de leurs zones et de leurs CA (C-5), la matrice de délégation
 (C-4), la table des jalons HS (C-3), la liste type du pack (C-9).
+
+**Décisions reçues le 22 oct. 2026** (appliquées dès la livraison 1) : le système s’appelle **Arche** (AC-1) ; **PostgreSQL
+uniquement**, pas de PGlite (N-23) ; **Codex héberge tous les documents** d’Arche (N-17) ; tenir compte des environnements
+de Codex, Vigie, Cursus et Matrix (demandes `DEMANDES-*.md`). Le responsable produit a demandé de lancer la livraison 1
+avec les réponses par défaut ci-dessous, qui restent révisables.
+
+**Réponses du questionnaire (22 oct. 2026)** : réponse par défaut confirmée pour **C-6** (glossaire et RACI), **N-3** (comptes
+des filiales), **N-4** (administrateur), **N-22** (filiales, zones et sites tenus dans Arche en attendant Matrix) et **N-24**
+(rattachement `capex` dans Codex). Les autres questions gardent leur réponse par défaut, appliquée par la livraison 2 ; la
+livraison 2 ajoute N-26 à N-29 (§3) au questionnaire.
 
 ## 1. Décisions d’architecture déjà prises (à confirmer pour Arche)
 
@@ -27,7 +40,7 @@ Données de référence attendues : la liste des filiales, de leurs zones et de 
 
 | # | Décision (journal `docs/decisions.md` de Matrix) | Effet dans Arche |
 |---|---|---|
-| D21 | Filiales et zones du groupe : « A · Matrix » | pas de tables `zones`, `subsidiaries`, `sites` : lecture de `matrix.pub_zones`, `pub_filiales`, `pub_sites` (spec 02 §1, CONTRATS §2.4) ; l’écran `admin-org` consulte ces listes et ne garde que le CA de référence |
+| D21 | Filiales et zones du groupe : « A · Matrix » (répond à N-22 / M-9) | `zones`, `subsidiaries`, `sites` deviennent des miroirs de `matrix.pub_zones`, `pub_filiales`, `pub_sites` (spec 02 §1, CONTRATS §2.4) ; l’écran `admin-org` les consulte et ne garde que la saisie du CA de référence ; à faire dans une prochaine livraison |
 | D22 | REX : « A · Deux registres » | `rex_entries` reste dans Arche et se publie dans `pub_rex` (CONTRATS §3), réunie par Matrix avec le REX de Keystone |
 | P-01 | Version du serveur : « Rester en 16 » | PostgreSQL 16 en production ; tests sur 16 (PGlite est en 18 : aucune fonction propre à 17 ou 18) |
 
@@ -55,7 +68,7 @@ Données de référence attendues : la liste des filiales, de leurs zones et de 
 |---|---|---|---|
 | AC-1 | Nom et dépôt de l’application | **Arche**, `Yhumiii27/Arche` (réponse du 22 oct. 2026) | — |
 | AC-2 | P-05 : données financières d’un projet EPC2i visibles par la filiale | prix de vente, avenants, facturé, % physique, SPI : **oui** ; coûts, taux, marge : **non** | L4 |
-| AC-3 | Vigie porte-t-il HazID / HazOp / AMDEC / PSSR ? | oui à terme ; **en attendant**, statut déclaratif dans Arche (N-13) | L5 |
+| AC-3 | Vigie porte-t-il HazID / HazOp / AMDEC / PSSR ? | **constat du 22 oct. : non**, Vigie ne modélise aucune de ces études (seulement « HAZOP » comme source libre d’action QSE). Proposition : les demander à Vigie ([`DEMANDES-VIGIE.md`](DEMANDES-VIGIE.md)) ; **en attendant**, statut déclaratif dans Arche (N-13) | L5 |
 | AC-4 | Catalogue : module Keystone (R-186) puis configurateur à part si besoin | **module Keystone** ; Arche lit `pub_catalogue_machines` | L4 |
 | AC-5 | Multi-équipements (R-185) | un besoin de plusieurs machines = **un projet EPC2i à plusieurs équipements** | L4 |
 
@@ -63,7 +76,7 @@ Données de référence attendues : la liste des filiales, de leurs zones et de 
 
 | # | Question | ★ Réponse par défaut | Bloque |
 |---|---|---|---|
-| N-1 | Nom du schéma et du rôle (le prompt dit « `capex`, nom à confirmer ») | schéma **`arche`**, rôle **`arche_app`** (le nom de l’outil, comme `keystone`) | L1 |
+| N-1 | Nom du schéma et du rôle (le prompt dit « `capex`, nom à confirmer ») | schéma **`arche`**, rôle **`arche_app`** (le nom de l’outil, comme `keystone`) — appliqué en livraison 1 | L1 |
 | N-2 | Devise des filiales hors zone euro | v1 en **k€** seulement ; le montant en devise locale et le taux de référence groupe viennent plus tard | L2 |
 | N-3 | Comptes des filiales | même locataire Entra si les filiales y sont, sinon **invités B2B** ; rôles et portées attribués dans Arche par l’admin | L1 |
 | N-4 | Administrateur *(hors CDC)* | profil `admin` (PMO groupe ou DSI) : référentiels, utilisateurs, paramètres ; aucune donnée métier | L1 |
@@ -79,11 +92,19 @@ Données de référence attendues : la liste des filiales, de leurs zones et de 
 | N-14 | Engagé et réalisé des lots hors EPC2i | saisie mensuelle ou import CSV par le CDG ; import Sage plus tard | L5 |
 | N-15 | Clôture comptable du G3 | **attestation** du CDG (coût final par lot, solde de l’AFE), sans lien Sage en v1 | L6 |
 | N-16 | Ramp-up : saisie et seuils (analyse §6.8) | saisie journalière par le CPF ou l’expert Exploitation de la filiale, import CSV ; jour conforme = production ≥ 100 % du nominal et rebuts ≤ objectif ; arrêts planifiés neutres | L6 |
-| N-17 | Documents | Arche ne stocke **aucun fichier** en v1 : références Codex (ou lien) ; export PDF des dossiers vers Codex avec le connecteur Codex | L3 |
+| N-17 | Documents | **Décidé (22 oct.) : Codex héberge tous les documents d’Arche.** Arche ne stocke aucun fichier : références Codex (identifiant, révision, lien) ; dépôt des dossiers figés et lecture d’état par API Codex à obtenir ([`DEMANDES-CODEX.md`](DEMANDES-CODEX.md) CX-03, CX-04) ; en attendant, dépôt dans Codex par l’utilisateur et référence collée dans Arche | L3 |
 | N-18 | Langues | français (par défaut) et anglais, comme Keystone | L1 |
 | N-19 | « Audits transversaux » des projets Stratégiques | un audit par phase, tenu par le Dir.IG ou le PMO, consigné comme revue de type « audit » | L5 |
 | N-20 | Reprise des CAPEX en cours | saisie manuelle des CAPEX pilotes (phase courante, jalons passés datés, budget validé) ; pas d’import en masse en v1 | pilote |
 | N-21 | Jeu de démonstration | deux filiales fictives (APM Maroc, SAI Sahel), trois CAPEX ; aucune donnée réelle | L1 |
+| N-22 | Qui possède les filiales, leurs zones et leurs sites ? | **Répondu le 22 oct. 2026 (D21 de Matrix) : Matrix**, vues `matrix.pub_zones`, `pub_filiales`, `pub_sites` ; les tables d’Arche deviennent des miroirs (plus de saisie dans Arche) | L2 |
+| N-23 | Base de données | **Décidé (22 oct.) : PostgreSQL uniquement**, pas de PGlite : développement, tests, CI et production sur PostgreSQL, schéma `arche` partout (`npm run db:local` sur un poste) | — |
+| N-24 | Rattachement Codex d’un document de CAPEX : nouveau rattachement `capex` dans Codex, ou CAPEX traité comme un « projet » Codex | nouveau rattachement **`capex`** (contexte = code CAPEX), qui évite de mélanger CAPEX et projets EPC2i ([`DEMANDES-CODEX.md`](DEMANDES-CODEX.md) CX-01) | L3 |
+| N-26 | Qui valide une version de budget E50 ou E30 ? (le CDC ne parle que de l’E10, validé par la DAF groupe) | le **CDG de la filiale** ou la DAF groupe ; l’E10 reste réservé à la DAF groupe | L2 |
+| N-27 | Qui enregistre la décision d’un jalon avant les circuits de la livraison 3 ? | le décideur l’enregistre lui-même sur la synthèse du CAPEX : **Dir.IG** pour G1 (au nom du COPIL GPI, N-6), K3 et G3 ; **PDG** pour G2 ; critères évalués et gardés avec la décision, forçage motivé et tracé ; remplacé par les circuits (visa, avis, signature) en L3 | L2 |
+| N-28 | Échelle du registre des risques | probabilité et impact de **1 à 4** ; criticité = P × I ; **majeur à partir de 9** | L2 |
+| N-29 | Qui crée le brouillon et qui le porte | le Sponsor (dans sa filiale) ou le chef de projet (dans la filiale de son compte) ; le chef de projet qui crée est nommé d’office ; le Sponsor est celui qui ouvre ; un membre d’équipe est toujours de la filiale ou du groupe (jamais d’une autre filiale) | L2 |
+| N-25 | Identité des personnes entre outils (Cursus : matricule ; Arche : e-mail Entra) | Arche identifie par l’objet Entra et l’e-mail ; le matricule est ajouté aux comptes du groupe quand Cursus l’expose à Arche (CU-03) ; les salariés des filiales n’ont pas de matricule Cursus (CU-01) | L2 |
 
 ## 5. Ajouts au-delà du CDC (à valider, règle « rien hors du CDC sans accord »)
 

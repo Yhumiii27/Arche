@@ -1,20 +1,22 @@
 # 02 — Objets et modèle de données
 
-> Proposition. Schéma PostgreSQL `arche` (N-1) sur le serveur commun ; PGlite (`public`) en développement et en tests.
+> Proposition. Schéma PostgreSQL `arche` (N-1), partout : serveur commun, recette, CI, poste de développement (PostgreSQL
+> uniquement, N-23). La livraison 1 crée les référentiels, les utilisateurs et leurs rôles, l’identité des CAPEX et leur équipe,
+> et les tables du socle ; les autres arrivent avec leur livraison (nouvelles migrations).
 > Montants en **k€** sauf colonne `_eur` (convention Keystone ; devise : N-2). Dates en `date` ISO ; instants en
 > `timestamptz`. Codes stockés, jamais de libellés traduits. Chaque table porte `created_at`, `updated_at`.
 > Référentiels du groupe (décision D21 de Matrix, 22 oct. 2026) : zones, filiales, sites et pays sont tenus et publiés par
-> Matrix ; Arche stocke leurs **codes** (`subsidiary_code`, `site_code`, `zone_code`, `country_iso2`) et contrôle qu’ils
-> existent dans les vues `matrix.pub_*`, sans clé étrangère entre schémas.
+> Matrix. Les tables `zones`, `subsidiaries` et `sites` d’Arche restent (clés étrangères locales) mais deviennent des
+> **miroirs** alimentés par les vues `matrix.pub_*` (`synced_at`, comme les miroirs `keystone_*`) : plus de saisie dans
+> Arche. Pays : codes ISO contrôlés dans `matrix.pub_pays` (D17).
 
 ## 1. Référentiels
 
 | Table | Colonnes principales | Notes |
 |---|---|---|
-| *(Matrix)* zones | lues dans `matrix.pub_zones` : `code`, `libelle`, `responsable`, `ordre`, `actif` | **décision D21 de Matrix (22 oct. 2026)** : pas de table `zones` dans Arche |
-| *(Matrix)* filiales | lues dans `matrix.pub_filiales` : `code` (3 lettres), `nom`, `pays_iso2`, `zone_code`, `devise`, `ordre`, `actif` | D21 : pas de table `subsidiaries` ; le code est le `<FIL>` des codes CAPEX et la clé de `keystone.clients.code3` |
-| *(Matrix)* sites | lus dans `matrix.pub_sites` (`filiale_code` renseignée) : `code`, `libelle`, `ville`, `pays_iso2`, `ordre`, `actif`, `filiale_code` | D21 et D14 : pas de table `sites` ; un CAPEX porte `site_code` |
-| *(Matrix)* pays | lus dans `matrix.pub_pays` (`iso2`, noms) | D17 |
+| `zones` | `code`, `name` | Directeurs de Zone. **Miroir** de `matrix.pub_zones` (décision D21 de Matrix, 22 oct. 2026) |
+| `subsidiaries` | `code` (3 lettres), `name`, `country_iso2`, `zone_code`, `currency` | filiale. **Miroir** de `matrix.pub_filiales` (D21) ; le code est le `<FIL>` des codes CAPEX et la clé de `keystone.clients.code3` |
+| `sites` | `id`, `subsidiary_code`, `name`, `city`, `country_iso2` | usine ou terrain. **Miroir** des lignes de `matrix.pub_sites` dont `filiale_code` est renseignée (D21, D14) ; garder le code Matrix du site |
 | `reference_revenues` | `subsidiary_code`, `fiscal_year`, `revenue_keur`, `entered_by`, `entered_at`, `source_note` | CA de référence (C-5), saisi par la DAF groupe ; une ligne par exercice |
 | `lifecycle_models` | `code` (`dig-prodi`), `version` (`4.0`), `definition` (jsonb), `active` | cycle paramétré (03) ; une version par révision de la méthode |
 | `delegation_rules` | `id`, `typology`, `object_kind`, `max_pct_of_g2`, `max_keur`, `max_delay_days`, `decider_role`, `valid_from` | matrice de délégation (C-4) ; datée |
@@ -34,7 +36,7 @@
 
 | Table | Colonnes | Notes |
 |---|---|---|
-| `capex` | `id`, `code`, `subsidiary_code`, `site_code`, `title`, `description`, `investment_type` (`new_plant` / `new_line` / `extension` / `other`), `status` (`draft` / `active` / `on_hold` / `closed` / `abandoned`), `phase` (`cadrage` / `avant_projet` / `execution` / `demarrage`), `typology` (`light` / `strategic`), `typology_source` (`computed` / `forced`), `typology_reason`, `lifecycle_model_version`, `sponsor_user_id`, `lead_user_id`, `need_date`, `mes_started_on`, `opened_at`, `closed_at` | code `CPX-<FIL>-<AAAA>-<NN>` calculé dans la transaction |
+| `capex` | `id`, `code`, `subsidiary_code`, `site_id`, `title`, `description`, `investment_type` (`new_plant` / `new_line` / `extension` / `other`), `status` (`draft` / `active` / `on_hold` / `closed` / `abandoned`), `phase` (`cadrage` / `avant_projet` / `execution` / `demarrage`), `typology` (`light` / `strategic`), `typology_source` (`computed` / `forced`), `typology_reason`, `lifecycle_model_version`, `sponsor_user_id`, `lead_user_id`, `need_date`, `mes_started_on`, `opened_at`, `closed_at` | code `CPX-<FIL>-<AAAA>-<NN>` calculé dans la transaction |
 | `capex_members` | `capex_id`, `user_id`, `capex_role` (`lead`, `controller`, `co_dig`, `epc2i_pmo`, `internal_client`, `member`) | équipe nommée ; contrôle du gabarit de staffing |
 | `capex_lots` | `id`, `capex_id`, `number`, `kind` (`civil_works`, `buildings`, `utilities`, `vrd`, `machines`, `recruitment`, `land`, `other`), `title`, `epc2i` (bool), `position` | lots (N-12 pour la liste) ; `machines` = lots alimentés par les projets EPC2i |
 | `budget_versions` | `id`, `capex_id`, `number`, `estimate_class` (`E50` / `E30` / `E10`), `status` (`draft` / `submitted` / `validated` / `superseded`), `basis` (texte), `validated_by`, `validated_at`, `is_g2_baseline` | entonnoir de précision |
@@ -58,7 +60,7 @@
 | `gate_criteria_results` | `gate_id`, `criterion_code`, `met`, `value`, `forced_reason` | instantané des critères au moment de la soumission |
 | `dossiers` | `id`, `capex_id`, `kind` (`business_case` / `investment` / `transfer`) | un par type et par CAPEX |
 | `dossier_versions` | `id`, `dossier_id`, `number`, `state` (`draft` / `frozen` / `approved` / `rejected` / `superseded`), `content` (jsonb par section), `frozen_at`, `frozen_by`, `content_hash` (SHA-256), `completeness_pct` | figé = immuable ; toute modification crée une version |
-| `dossier_attachments` | `dossier_version_id`, `section`, `codex_ref`, `title`, `revision` | références Codex, figées avec la version |
+| `dossier_attachments` | `dossier_version_id`, `section`, `codex_ref`, `codex_type`, `title`, `revision`, `verified` | références de documents **Codex** (identifiant `TYPE-CONTEXTE-SEQ`), figées avec la version ; `verified` = trouvé dans `codex.pub_documents` |
 | `circuit_steps` | `id`, `gate_id`, `position`, `parallel_group`, `kind` (`visa` / `signature` / `decision` / `countersign` / `quitus` / `attestation`), `role`, `user_id`, `due_at`, `status`, `acted_at`, `outcome`, `comment` | circuit instancié depuis le modèle (05) |
 | `signatures` | `circuit_step_id`, `user_id`, `signed_at`, `level` (`simple` / `advanced`), `content_hash`, `auth_time`, `ip_hash`, `provider_ref` | preuve de signature ; append-only |
 | `consultations` | `id`, `dossier_version_id`, `opened_by`, `opened_at`, `due_on`, `status` (`open` / `closed`) | consultation d’experts |
@@ -85,7 +87,7 @@
 ## 7. Socle
 
 `audit_entries` (append-only, déclencheur), `activity_events`, `notifications`, `approvals` (moteur « Mes validations »),
-`job_runs`, `connector_outbox`, `connector_settings` — repris de Keystone (voir [`../SOCLE.md`](../SOCLE.md)).
+`job_runs`, `connector_outbox`, `connector_settings` — repris de Keystone. Aucune table de fichiers : les documents sont dans Codex (voir [`../SOCLE.md`](../SOCLE.md)).
 
 ## 8. Vues publiées
 
