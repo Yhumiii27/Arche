@@ -3,14 +3,18 @@
 > Proposition. Schéma PostgreSQL `arche` (N-1) sur le serveur commun ; PGlite (`public`) en développement et en tests.
 > Montants en **k€** sauf colonne `_eur` (convention Keystone ; devise : N-2). Dates en `date` ISO ; instants en
 > `timestamptz`. Codes stockés, jamais de libellés traduits. Chaque table porte `created_at`, `updated_at`.
+> Référentiels du groupe (décision D21 de Matrix, 22 oct. 2026) : zones, filiales, sites et pays sont tenus et publiés par
+> Matrix ; Arche stocke leurs **codes** (`subsidiary_code`, `site_code`, `zone_code`, `country_iso2`) et contrôle qu’ils
+> existent dans les vues `matrix.pub_*`, sans clé étrangère entre schémas.
 
 ## 1. Référentiels
 
 | Table | Colonnes principales | Notes |
 |---|---|---|
-| `zones` | `code`, `name` | Directeurs de Zone |
-| `subsidiaries` | `code` (3 lettres), `name`, `country_iso2`, `zone_code`, `currency` | filiale |
-| `sites` | `id`, `subsidiary_code`, `name`, `city`, `country_iso2` | usine ou terrain |
+| *(Matrix)* zones | lues dans `matrix.pub_zones` : `code`, `libelle`, `responsable`, `ordre`, `actif` | **décision D21 de Matrix (22 oct. 2026)** : pas de table `zones` dans Arche |
+| *(Matrix)* filiales | lues dans `matrix.pub_filiales` : `code` (3 lettres), `nom`, `pays_iso2`, `zone_code`, `devise`, `ordre`, `actif` | D21 : pas de table `subsidiaries` ; le code est le `<FIL>` des codes CAPEX et la clé de `keystone.clients.code3` |
+| *(Matrix)* sites | lus dans `matrix.pub_sites` (`filiale_code` renseignée) : `code`, `libelle`, `ville`, `pays_iso2`, `ordre`, `actif`, `filiale_code` | D21 et D14 : pas de table `sites` ; un CAPEX porte `site_code` |
+| *(Matrix)* pays | lus dans `matrix.pub_pays` (`iso2`, noms) | D17 |
 | `reference_revenues` | `subsidiary_code`, `fiscal_year`, `revenue_keur`, `entered_by`, `entered_at`, `source_note` | CA de référence (C-5), saisi par la DAF groupe ; une ligne par exercice |
 | `lifecycle_models` | `code` (`dig-prodi`), `version` (`4.0`), `definition` (jsonb), `active` | cycle paramétré (03) ; une version par révision de la méthode |
 | `delegation_rules` | `id`, `typology`, `object_kind`, `max_pct_of_g2`, `max_keur`, `max_delay_days`, `decider_role`, `valid_from` | matrice de délégation (C-4) ; datée |
@@ -30,7 +34,7 @@
 
 | Table | Colonnes | Notes |
 |---|---|---|
-| `capex` | `id`, `code`, `subsidiary_code`, `site_id`, `title`, `description`, `investment_type` (`new_plant` / `new_line` / `extension` / `other`), `status` (`draft` / `active` / `on_hold` / `closed` / `abandoned`), `phase` (`cadrage` / `avant_projet` / `execution` / `demarrage`), `typology` (`light` / `strategic`), `typology_source` (`computed` / `forced`), `typology_reason`, `lifecycle_model_version`, `sponsor_user_id`, `lead_user_id`, `need_date`, `mes_started_on`, `opened_at`, `closed_at` | code `CPX-<FIL>-<AAAA>-<NN>` calculé dans la transaction |
+| `capex` | `id`, `code`, `subsidiary_code`, `site_code`, `title`, `description`, `investment_type` (`new_plant` / `new_line` / `extension` / `other`), `status` (`draft` / `active` / `on_hold` / `closed` / `abandoned`), `phase` (`cadrage` / `avant_projet` / `execution` / `demarrage`), `typology` (`light` / `strategic`), `typology_source` (`computed` / `forced`), `typology_reason`, `lifecycle_model_version`, `sponsor_user_id`, `lead_user_id`, `need_date`, `mes_started_on`, `opened_at`, `closed_at` | code `CPX-<FIL>-<AAAA>-<NN>` calculé dans la transaction |
 | `capex_members` | `capex_id`, `user_id`, `capex_role` (`lead`, `controller`, `co_dig`, `epc2i_pmo`, `internal_client`, `member`) | équipe nommée ; contrôle du gabarit de staffing |
 | `capex_lots` | `id`, `capex_id`, `number`, `kind` (`civil_works`, `buildings`, `utilities`, `vrd`, `machines`, `recruitment`, `land`, `other`), `title`, `epc2i` (bool), `position` | lots (N-12 pour la liste) ; `machines` = lots alimentés par les projets EPC2i |
 | `budget_versions` | `id`, `capex_id`, `number`, `estimate_class` (`E50` / `E30` / `E10`), `status` (`draft` / `submitted` / `validated` / `superseded`), `basis` (texte), `validated_by`, `validated_at`, `is_g2_baseline` | entonnoir de précision |
@@ -76,7 +80,7 @@
 | `keystone_*` (miroir) | `keystone_catalogue`, `keystone_responses`, `keystone_projects`, `keystone_milestones`, `keystone_progress`, `keystone_amendments`, `keystone_punch`, `keystone_deliverables`, `keystone_pack`, `keystone_machines` | copies en lecture des vues `pub_` Keystone (ou de la simulation), avec `synced_at` |
 | `production_lines` | `id`, `capex_id`, `name`, `nominal_capacity_per_day`, `unit`, `machine_numbers` (Keystone MCH-…) | ligne de production à monter en puissance |
 | `rampup_days` | `line_id`, `day`, `output`, `availability_pct`, `performance_pct`, `quality_pct`, `oee_pct`, `scrap_pct`, `entered_by`, `source` | une ligne par jour ; TRS = D × P × Q si non saisi |
-| `rex_entries` | `id`, `capex_id`, `category`, `title`, `text`, `phase`, `shared_with` (fonctions centrales), `published_at` | REX capitalisé |
+| `rex_entries` | `id`, `capex_id`, `category`, `title`, `text`, `phase`, `shared_with` (fonctions centrales), `published_at` | décision D22 de Matrix : Arche garde le REX des CAPEX et le publie dans `pub_rex` (Keystone garde celui des projets) ; REX capitalisé |
 
 ## 7. Socle
 
@@ -85,4 +89,4 @@
 
 ## 8. Vues publiées
 
-`pub_capex`, `pub_besoins_machines`, `pub_rampup`, `pub_journal` : [`../CONTRATS.md`](../CONTRATS.md) §3.
+`pub_capex`, `pub_besoins_machines`, `pub_rampup`, `pub_journal`, `pub_rex` (D22) : [`../CONTRATS.md`](../CONTRATS.md) §3.

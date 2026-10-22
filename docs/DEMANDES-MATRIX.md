@@ -4,6 +4,13 @@
 > pas** dans le dépôt Matrix : les scripts ci-dessous sont des **propositions**, à intégrer par le responsable produit (ou le
 > chat Matrix) à `infra/postgres/`. Les noms de fichiers suivent ceux que cite Keystone (`docs/EXPLOITATION.md` §4.1) ; ils
 > sont à vérifier dans Matrix. Le nom `arche` attend la réponse à N-1.
+>
+> **État au 22 oct. 2026 : M-1 à M-5 sont faites côté Matrix** (PR Yhumiii27/Matrix#10) : rôle `arche_app`, schéma `arche`,
+> droits de base, lecteurs dans `partage/90-droits.sql` (vues absentes signalées sans erreur jusqu’à leur création),
+> `arche.pub_journal` dans le journal unifié, Arche dans le catalogue de Matrix (d’après `spec/02-objets.md`). Différences
+> avec les propositions ci-dessous : pas de fichier `partage/40-arche.sql` (règle P-02 de Matrix : les vues `pub_` viennent
+> des migrations de l’outil) ; Arche lit aussi les référentiels de Matrix (`pub_filiales`, `pub_zones`, `pub_sites`,
+> `pub_pays`, décision D21) ; `arche.pub_rex` est accordée à `matrix_app` (décision D22).
 
 ## M-1 · Rôle et schéma (`init/01-base-et-roles.sql`, `init/02-schemas.sql`)
 

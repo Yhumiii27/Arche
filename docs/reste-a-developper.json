@@ -6,6 +6,10 @@
   {
    "date": "2026-10-22",
    "text": "Livraison 0 (cadrage) : inventaire initial de 26 points, aligné sur docs/PLAN.md."
+  },
+  {
+   "date": "2026-10-22",
+   "text": "Décisions D21, D22 et P-01 de Matrix reportées dans la spécification : référentiels du groupe lus dans Matrix, REX publié (pub_rex), PostgreSQL 16."
   }
  ],
  "items": [

@@ -29,7 +29,7 @@
 | `capex-governance` | `/capex/[code]/governance` | Gouvernance | équipe et gabarit, typologie, revues, décisions, rapport Copil |
 | `capex-rampup` | `/capex/[code]/rampup` | Ramp-up | lignes, saisie journalière, courbe, critère 30 jours |
 | `capex-journal` | `/capex/[code]/journal` | Journal | audit et activité du CAPEX |
-| `admin-org` | `/admin/organisation` | Filiales, sites, zones | référentiels ; CA de référence (DAF groupe) |
+| `admin-org` | `/admin/organisation` | Filiales, sites, zones | consultation des référentiels de Matrix (D21 : tenus dans Matrix, lien vers son écran « Référentiels ») ; saisie du CA de référence (DAF groupe) |
 | `admin-users` | `/admin/users` | Utilisateurs & rôles | affectations et portées |
 | `admin-model` | `/admin/model` | Modèle DIG-PRODI | délais, experts requis, seuils (ramp-up, alertes), table HS, gabarits de staffing et de pack |
 | `admin-delegation` | `/admin/delegation` | Matrice de délégation | règles datées |

@@ -23,6 +23,14 @@ Données de référence attendues : la liste des filiales, de leurs zones et de 
 | A-3 | Socle repris de Keystone une fois, puis paquet `@epc2i/socle` (R-194) | inventaire et commit d’origine dans [`SOCLE.md`](SOCLE.md) ; aucun module métier copié | confirmer |
 | A-4 | Propriétés : Arche = CAPEX, phases, jalons, dossiers, lots hors EPC2i, BP, typologie, ramp-up, besoins (demande) ; Keystone = catalogue, réponses, projets EPC2i ; Vigie = études et actions de sécurité | spec 00 §2 ; ajout proposé : le **registre des autorisations** (ICPE, PC, PLU, ATEX) appartient à Arche | confirmer, dont l’ajout |
 
+### Décisions de Matrix qui s’appliquent à Arche (22 oct. 2026)
+
+| # | Décision (journal `docs/decisions.md` de Matrix) | Effet dans Arche |
+|---|---|---|
+| D21 | Filiales et zones du groupe : « A · Matrix » | pas de tables `zones`, `subsidiaries`, `sites` : lecture de `matrix.pub_zones`, `pub_filiales`, `pub_sites` (spec 02 §1, CONTRATS §2.4) ; l’écran `admin-org` consulte ces listes et ne garde que le CA de référence |
+| D22 | REX : « A · Deux registres » | `rex_entries` reste dans Arche et se publie dans `pub_rex` (CONTRATS §3), réunie par Matrix avec le REX de Keystone |
+| P-01 | Version du serveur : « Rester en 16 » | PostgreSQL 16 en production ; tests sur 16 (PGlite est en 18 : aucune fonction propre à 17 ou 18) |
+
 ## 2. Compléments au CDC (analyse §1.3)
 
 | # | Question | ★ Réponse par défaut | Bloque |
