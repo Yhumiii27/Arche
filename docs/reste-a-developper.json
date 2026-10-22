@@ -30,6 +30,10 @@
     {
       "date": "2026-10-22",
       "text": "Livraison 3 : dossiers vivants (versions, figement, empreinte, impression), circuits des jalons G1 / G2 / K3 / G3 avec avis, visas et signature simple, Mes validations, matrice de délégation et MoC, BP (VAN, TRI, retour), connecteur Codex (références vérifiées)."
+    },
+    {
+      "date": "2026-10-22",
+      "text": "Kit Coolify du serveur commun : deploy/compose.shared.yaml (migrate, app, worker sur le réseau coolify, base epc2i-postgres), authentification HTTP de la bêta par un middleware Traefik dans les étiquettes, runbook EXPLOITATION.md § 4 (ressource, variables, contrôles, partage 70/90/95)."
     }
   ],
   "items": [
@@ -307,7 +311,9 @@
       ],
       "evidence": [],
       "progress": {
-        "state": "a_faire"
+        "state": "en_cours",
+        "delivery": "Livraison 3",
+        "note": "Kit Coolify du serveur commun (deploy/compose.shared.yaml, EXPLOITATION.md § 4.1) essayé en local contre le socle de Matrix : migrations, jeu de démonstration, santé, sauvegarde, partage 70/90/95. Reste : mise en service dans Coolify."
       }
     },
     {
