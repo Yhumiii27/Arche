@@ -15,7 +15,8 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `ANALYSE-DIG-PRODI.md`, `ARCHITECTURE-CAPEX-KEYSTONE.md` (the reference), `PROMPT-APP-CAPEX.md` (kick-off prompt).
 - **Remaining-work page**: after every development, update `docs/reste-a-developper.json` (`progress`, `history`, `updated`),
   run `npm run remaining:page` (regenerates `docs/RESTE-A-DEVELOPPER.md` and `.artifacts/reste-a-developper.html`), commit,
-  and republish the HTML as the "Reste à développer Arche" artifact.
+  and republish the HTML with the Artifact tool to the same page, https://claude.ai/artifact/NYa4xuAJicPTQcsJhBUBKh (pass it
+  as `url`).
 
 ## Rules from the product owner
 
