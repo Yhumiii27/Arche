@@ -170,11 +170,12 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
                   <Td>
                     <strong>{dataText(r.title, lang)}</strong>
                     <div className="text-muted">{dataText(r.text, lang)}</div>
+                    {r.recommendation && <div>{`${t('Recommendation')} — `}{dataText(r.recommendation, lang)}</div>}
                   </Td>
                   <Td tone="secondary">{r.authorName}</Td>
                   <Td nowrap>{r.publishedAt ? fmtDate(r.publishedAt, lang) : '—'}</Td>
                   <Td align="right" nowrap>
-                    {!r.publishedAt && can('rex') && <RexForm code={c.code} phase={c.phase} rex={{ id: r.id, phase: r.phase, category: r.category as RexCategory, title: r.title, text: r.text }} />}{' '}
+                    {!r.publishedAt && can('rex') && <RexForm code={c.code} phase={c.phase} rex={{ id: r.id, phase: r.phase, category: r.category as RexCategory, title: r.title, text: r.text, recommendation: r.recommendation }} />}{' '}
                     {!r.publishedAt && edit && <PublishRexButton code={c.code} rexId={r.id} />}
                   </Td>
                 </tr>

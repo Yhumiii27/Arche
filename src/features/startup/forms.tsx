@@ -139,6 +139,7 @@ export interface RexValues {
   category: RexCategory;
   title: string;
   text: string;
+  recommendation: string | null;
 }
 
 export function RexForm({ code, rex, phase }: { code: string; rex?: RexValues; phase: string }) {
@@ -158,6 +159,9 @@ export function RexForm({ code, rex, phase }: { code: string; rex?: RexValues; p
         </Field>
         <Field label={t('Lesson')} htmlFor={`rx-text-${p}`} required span="full">
           <Textarea id={`rx-text-${p}`} name="text" rows={4} defaultValue={rex?.text} required />
+        </Field>
+        <Field label={t('Recommendation')} htmlFor={`rx-rec-${p}`} span="full" hint={t('What to do next time (optional)')}>
+          <Textarea id={`rx-rec-${p}`} name="recommendation" rows={2} defaultValue={rex?.recommendation ?? ''} />
         </Field>
       </ActionForm>
     </Folded>

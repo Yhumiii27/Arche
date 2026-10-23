@@ -238,8 +238,15 @@ tant qu’elles n’existent pas. Lecteurs accordés par Matrix (`partage/90-dro
 `ref_source`, `nature`, `quand`, `qui`, `qui_ref`, `qui_role`, `action`, `objet`, `detail`, `projet` (= code CAPEX),
 `qui_matricule` (toujours null en v1).
 
-**`pub_rex`** — lecteur : `matrix_app`. Décision D22 de Matrix (22 oct. 2026, option A) : Arche garde le REX des CAPEX,
-Keystone celui des projets (`keystone.pub_rex`) ; Matrix réunit les deux. Contrat commun **à fixer avec Matrix et
-Keystone** ; la livraison 6 publie la proposition (migration `0014_share_rampup_rex`), sur le modèle du journal unifié : `ref_source` (`rex_entries.id`),
-`capex_code`, `projet_code` (null), `categorie`, `titre`, `texte`, `phase`, `publie_le`, `auteur`. Seules les entrées
-publiées (`published_at` renseignée) y figurent.
+**`pub_rex_v2`** — lecteur : `matrix_app`. Décision D22 de Matrix (22 oct. 2026, option A) : Arche garde le REX des CAPEX,
+Keystone celui des projets (`keystone.pub_rex`) ; Matrix réunit les deux par `UNION ALL`. Contrat commun fixé par Matrix
+(demande du 23 oct. 2026, `REQUESTS.md`), migration `0016_share_rex_v2`, colonnes dans cet ordre (`text` sauf indication) :
+`ref_source` (`'rex_entries:' || id`), `outil` (`'arche'`), `projet_code` (null), `capex_code`, `numero` (`REX-nn`),
+`categorie`, `titre`, `constat` (le texte du REX), `impact` (null), `recommandation` (facultative, `rex_entries.recommendation`),
+`portee` (null), `statut` (`'publie'`), `auteur`, `cree_le` (timestamptz, `published_at`), `maj_le` (timestamptz,
+`updated_at`) ; colonne propre à Arche en fin de vue : `phase`. Seules les entrées publiées (`published_at` renseignée) y
+figurent.
+
+**`pub_rex`** (v1, remplacée par `pub_rex_v2`) — lecteur : `matrix_app`. Proposition de la livraison 6 (migration
+`0014_share_rampup_rex`) : `ref_source` (`rex_entries.id`), `capex_code`, `projet_code` (null), `categorie`, `titre`, `texte`,
+`phase`, `publie_le`, `auteur`. Gardée telle quelle (contrat `pub_`) ; plus de nouveau lecteur.
