@@ -11,12 +11,13 @@ import {
   ROLE_OF_TEAM_ROLE, TEAM_ROLES,
 } from '@/domain/capex';
 import { BP_HORIZON, checkBusinessPlan } from '@/domain/bp';
-import { MODEL_VERSION, openCapex, resume, suspend, type CycleState } from '@/domain/lifecycle';
+import { MODEL_VERSION, NEXT_PHASE, openCapex, resume, suspend, type CycleState } from '@/domain/lifecycle';
+import { checkTakeover, TAKEOVER_REASON } from '@/domain/takeover';
 import { businessToday } from '@/server/clock';
 import { getDb } from '@/server/db/client';
 import { recordActivity, writeAudit } from '@/server/db/helpers';
 import {
-  budgetLines, budgetVersions, businessPlans, capex, capexLots, capexMembers, decisions, phaseTransitions, risks, roleAssignments, sites, users,
+  budgetLines, budgetVersions, businessPlans, capex, capexLots, capexMembers, decisions, gates, phaseTransitions, risks, roleAssignments, sites, users,
 } from '@/server/db/schema';
 import type { Tx } from '@/server/db/types';
 import { computedTypologyOf, lotsOf, teamOf, versionsOf } from '@/server/dal/cycle';
@@ -86,6 +87,55 @@ export async function openCapexAction(code: string): Promise<ActionResult> {
     await tx.insert(phaseTransitions).values({ capexId: c.id, fromStatus: c.status, fromPhase: c.phase, toStatus: t.value.status, toPhase: t.value.phase, effectiveOn: today, byName: v.name, byUserId: v.userId });
     await writeAudit(tx, auditOf(v, c, 'status: Draft → Active (phase 1)', { entityType: 'capex', entityId: c.id }));
     await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'capex.opened', text: `${c.code} opened: phase 1`, capexId: c.id });
+    return { ok: true };
+  });
+}
+
+/**
+ * Takeover of a CAPEX already in progress (N-20, pilot): instead of the ordinary opening, the sponsor opens the draft in its
+ * current phase with the gates passed before Arche (dated, decider named) and the validated budget. The gates are recorded as
+ * "taken over" (no circuit, no signature) and every step is in the audit trail, with the opening and gate transitions dated.
+ */
+export async function takeoverCapexAction(code: string, _prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  return onCapex(code, 'open', async (tx, c, v, today) => {
+    if (!c.leadUserId) return { ok: false, error: 'Name the project lead first' };
+    const lots = await lotsOf(tx, c.id);
+    const ch = checkTakeover(fieldsOf(fd), { today, lotIds: lots.map((l) => l.id) });
+    if (!ch.ok) return ch;
+    const t = ch.value;
+    const now = new Date();
+    const at = (day: string) => new Date(`${day}T12:00:00Z`);
+    await tx.update(capex).set({
+      status: 'active', phase: t.phase, openedAt: at(t.openedOn), lifecycleModelVersion: MODEL_VERSION, sponsorUserId: c.sponsorUserId ?? v.userId,
+      mesStartedOn: t.mesStartedOn, takenOverAt: now, takenOverByName: v.name, updatedAt: now,
+    }).where(eq(capex.id, c.id));
+    const reason = TAKEOVER_REASON;
+    await tx.insert(phaseTransitions).values({ capexId: c.id, fromStatus: 'draft', fromPhase: 'cadrage', toStatus: 'active', toPhase: 'cadrage', effectiveOn: t.openedOn, reason, byName: v.name, byUserId: v.userId });
+    let phase = 'cadrage';
+    for (const g of t.gates) {
+      const session = await tx.select({ s: gates.session }).from(gates).where(and(eq(gates.capexId, c.id), eq(gates.code, g.code)));
+      await tx.insert(gates).values({
+        capexId: c.id, code: g.code, session: nextNumber(session.map((x) => x.s)), status: 'decided', decision: 'go', decidedAt: at(g.decidedOn), decidedByName: g.decidedByName, takenOver: true,
+      });
+      const to = NEXT_PHASE[g.code]!;
+      await tx.insert(phaseTransitions).values({ capexId: c.id, fromStatus: 'active', fromPhase: phase, toStatus: 'active', toPhase: to, gateCode: g.code, effectiveOn: g.decidedOn, reason, byName: v.name, byUserId: v.userId });
+      phase = to;
+    }
+    const b = t.budget;
+    await tx.update(budgetVersions).set({ status: 'superseded', updatedAt: now }).where(and(eq(budgetVersions.capexId, c.id), eq(budgetVersions.status, 'validated')));
+    const numbers = (await tx.select({ n: budgetVersions.number }).from(budgetVersions).where(eq(budgetVersions.capexId, c.id))).map((x) => x.n);
+    const [bv] = await tx.insert(budgetVersions).values({
+      capexId: c.id, number: nextNumber(numbers), estimateClass: b.estimateClass, status: 'validated', basis: null, submittedAt: at(b.validatedOn),
+      validatedAt: at(b.validatedOn), validatedByName: b.validatedByName, isG2Baseline: b.estimateClass === 'E10', createdByName: v.name,
+    }).returning({ id: budgetVersions.id, number: budgetVersions.number });
+    await tx.insert(budgetLines).values(b.lines.map((l) => ({ budgetVersionId: bv.id, lotId: l.lotId, amountKeur: l.amountKeur })));
+    const gatesText = t.gates.map((g) => `${g.code} ${g.decidedOn} (${g.decidedByName})`).join(', ');
+    await writeAudit(tx, auditOf(v, c, `taken over in progress (N-20): Draft → Active, phase ${t.phase}; opened ${t.openedOn}; gates ${gatesText}; budget version ${bv.number} (${b.estimateClass}) validated ${b.validatedOn} by ${b.validatedByName}${t.mesStartedOn ? `; commissioning started ${t.mesStartedOn}` : ''}`, {
+      entityType: 'capex', entityId: c.id, after: { ...t },
+    }));
+    await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'capex.taken_over', text: `${c.code} taken over in progress`, capexId: c.id });
+    const [fresh] = await tx.select().from(capex).where(eq(capex.id, c.id));
+    await recomputeTypology(tx, fresh as Row, v, today);
     return { ok: true };
   });
 }

@@ -62,6 +62,10 @@
     {
       "date": "2026-10-23",
       "text": "REX au contrat commun de Matrix (D22, option 1) : vue pub_rex_v2 (15 colonnes, phase en fin de vue, migration 0016), recommandation facultative d'un REX (migration 0015) ; pub_rex v1 inchangée. Demande de Matrix marquée FAITE, M-13 mise à jour, K-13 retirée (doublon de la demande de Matrix chez Keystone)."
+    },
+    {
+      "date": "2026-10-23",
+      "text": "Pilote lancé : reprise d'un CAPEX en cours (N-20 : phase, jalons franchis datés, budget validé ; jalons « Repris » sans circuit), écran Objectifs DIG-PRODI (C-10 : délai soumission → décision par jalon, documents statiques par dossier de jalon, décisions tracées ; référence de l'existant saisie par le Dir.IG, cibles −40 % / −50 % / 100 %), guides par rôle, procédure du pilote et journal des retours."
     }
   ],
   "items": [
@@ -769,7 +773,9 @@
       ],
       "evidence": [],
       "progress": {
-        "state": "a_faire"
+        "state": "en_cours",
+        "delivery": "Pilote",
+        "note": "23 oct. 2026 : lot de développement fait — reprise d'un CAPEX en cours par le Sponsor (N-20), écran Objectifs DIG-PRODI et référence de l'existant (C-10), guides par rôle, procédure et journal des retours. Restent les prérequis du responsable produit (hébergement C-13, Entra, D-1 à D-4, relevé de l'existant, choix des CAPEX) et les corrections issues des retours."
       }
     },
     {

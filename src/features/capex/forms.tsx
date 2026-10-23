@@ -3,7 +3,7 @@
 // check the rights and the input again.
 import { Plus } from '@phosphor-icons/react/dist/ssr';
 import { useRouter } from 'next/navigation';
-import { useActionState, useState } from 'react';
+import { Fragment, useActionState, useState } from 'react';
 import { ActionButton, ActionForm, Folded, Result, type ActionResult } from '@/components/app/ActionForm';
 import { Button } from '@/components/ds/Button';
 import { Dialog } from '@/components/ds/Dialog';
@@ -16,8 +16,11 @@ import { useI18n } from '@/i18n/client';
 import {
   addDecisionAction, addLotAction, addMemberAction, confirmTypologyAction, createCapexAction, deleteDraftVersionAction, forceTypologyAction,
   openCapexAction, removeLotAction, saveBusinessPlanAction, validateBusinessPlanAction, removeMemberAction, reviewVersionAction, saveBudgetVersionAction, saveRiskAction, submitVersionAction, suspendAction,
-  updateSheetAction,
+  takeoverCapexAction, updateSheetAction,
 } from './actions';
+import { PHASE_LABEL } from '@/domain/capex-labels';
+import { gatesPassedBefore, takeoverClasses, TAKEOVER_PHASES } from '@/domain/takeover';
+import type { Phase } from '@/domain/lifecycle';
 
 type Opt = { value: string; label: string };
 
@@ -136,6 +139,54 @@ export function SheetForm({ code, sheet, sites }: { code: string; sheet: SheetVa
 
 export function OpenCapexButton({ code }: { code: string }) {
   return <ActionButton run={() => openCapexAction(code)} label="Open the CAPEX (phase 1)" done="CAPEX opened" variant="primary" />;
+}
+
+/** Takeover of a CAPEX already in progress (N-20): opened in its current phase with the gates passed before Arche. */
+export function TakeoverForm({ code, lots, today }: { code: string; lots: { id: string; label: string }[]; today: string }) {
+  const { t } = useI18n();
+  const [phase, setPhase] = useState<Phase>('avant_projet');
+  return (
+    <Folded summary="Take over a CAPEX in progress" title="Take over a CAPEX in progress">
+      <ActionForm action={(prev, fd) => takeoverCapexAction(code, prev, fd)} submit="Take over the CAPEX" done="CAPEX taken over">
+        <p className={styles.dialogNote}>{t('For a CAPEX started before Arche: its current phase, the gates already passed and the budget validated. These gates are recorded as taken over, without a circuit or signature.')}</p>
+        <Field label={t('Current phase')} htmlFor="to-phase" required>
+          <Select id="to-phase" name="phase" value={phase} onChange={(e) => setPhase(e.target.value as Phase)} options={TAKEOVER_PHASES.map((p) => ({ value: p, label: t(PHASE_LABEL[p]) }))} />
+        </Field>
+        <Field label={t('Opened on')} htmlFor="to-open" required>
+          <Input id="to-open" name="openedOn" type="date" max={today} required />
+        </Field>
+        {gatesPassedBefore(phase).map((g) => (
+          <Fragment key={g}>
+            <Field label={`${g} — ${t('decided on')}`} htmlFor={`to-${g}-on`} required>
+              <Input id={`to-${g}-on`} name={`${g}:on`} type="date" max={today} required />
+            </Field>
+            <Field label={`${g} — ${t('decided by')}`} htmlFor={`to-${g}-by`} required>
+              <Input id={`to-${g}-by`} name={`${g}:by`} required />
+            </Field>
+          </Fragment>
+        ))}
+        <Field label={t('Class of the validated budget')} htmlFor="to-class" required>
+          <Select key={phase} id="to-class" name="estimateClass" defaultValue={takeoverClasses(phase)[0]} options={takeoverClasses(phase).map((c) => ({ value: c, label: c }))} />
+        </Field>
+        <Field label={t('Budget validated on')} htmlFor="to-val-on" required>
+          <Input id="to-val-on" name="validatedOn" type="date" max={today} required />
+        </Field>
+        <Field label={t('Budget validated by')} htmlFor="to-val-by" required span="full">
+          <Input id="to-val-by" name="validatedByName" required />
+        </Field>
+        {lots.map((l) => (
+          <Field key={l.id} label={`${l.label} (k€)`} htmlFor={`to-lot-${l.id}`} required>
+            <Input id={`to-lot-${l.id}`} name={`lot:${l.id}`} inputMode="decimal" required />
+          </Field>
+        ))}
+        {phase === 'demarrage' && (
+          <Field label={t('Start of commissioning')} htmlFor="to-mes" hint={t('If commissioning has started')}>
+            <Input id="to-mes" name="mesStartedOn" type="date" max={today} />
+          </Field>
+        )}
+      </ActionForm>
+    </Folded>
+  );
 }
 
 // ── Cycle ─────────────────────────────────────────────────────────────────────────────────────────────────────────────

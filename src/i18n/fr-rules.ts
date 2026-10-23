@@ -22,4 +22,7 @@ export const FR_RULES: [RegExp, string][] = [
   [/^Line (\d+)$/, 'Ligne $1'],
   [/^(audit|project steering committee) (REV-\d+) recorded \((\S+), (\d+) decision\(s\)\)$/, '$1 $2 enregistré(e) ($3, $4 décision(s))'],
   [/^actuals imported: (\d+) line\(s\)$/, 'engagé et réalisé importés : $1 ligne(s)'],
+  [/^Enter the date of (G1|G2|K3|G3) \(not in the future\)$/, 'Saisissez la date du $1 (pas dans le futur)'],
+  [/^The date of (G1|G2|K3|G3) comes before the previous step$/, 'La date du $1 est antérieure à l’étape précédente'],
+  [/^Name who decided (G1|G2|K3|G3)$/, 'Nommez qui a décidé le $1'],
 ];

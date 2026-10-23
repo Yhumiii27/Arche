@@ -4,7 +4,7 @@
 import type { RoleKey } from './roles';
 
 export type ScreenId =
-  | 'home' | 'approvals' | 'capex-list' | 'map' | 'portfolio' | 'copil' | 'rex'
+  | 'home' | 'approvals' | 'capex-list' | 'map' | 'portfolio' | 'copil' | 'rex' | 'kpi'
   | 'capex-overview' | 'capex-gates' | 'capex-dossiers' | 'capex-budget' | 'capex-execution' | 'capex-changes' | 'capex-machines'
   | 'capex-pack' | 'capex-permits' | 'capex-safety' | 'capex-risks' | 'capex-governance' | 'capex-rampup' | 'capex-journal'
   | 'admin-org' | 'admin-users' | 'admin-model' | 'admin-delegation' | 'admin-connectors';
@@ -22,7 +22,7 @@ export interface ScreenDef {
   /** Profiles that see it; the others get "outside my workspace" (read-only) or nothing (§2 of spec 08). */
   roles: readonly RoleKey[] | 'all';
   /** Delivery that builds it (docs/PLAN.md). */
-  delivery: 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6';
+  delivery: 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6' | 'P';
 }
 
 const BUSINESS: readonly RoleKey[] = ['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'epc2i_pmo', 'expert'];
@@ -35,6 +35,7 @@ export const SCREENS: readonly ScreenDef[] = [
   { id: 'map', path: '/map', title: 'CAPEX map', section: 'steering', group: 'Portfolio', roles: STEERING, delivery: 'L4' },
   { id: 'portfolio', path: '/portfolio', title: 'Portfolio', section: 'steering', group: 'Portfolio', roles: STEERING, delivery: 'L5' },
   { id: 'copil', path: '/copil', title: 'COPIL GPI', section: 'steering', group: 'Bodies and lessons learned', roles: ['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'sponsor', 'project_lead'], delivery: 'L5' },
+  { id: 'kpi', path: '/kpi', title: 'DIG-PRODI objectives', section: 'steering', group: 'Bodies and lessons learned', roles: ['ceo', 'dir_ig', 'group_cfo', 'copil_member'], delivery: 'P' },
   { id: 'rex', path: '/rex', title: 'Lessons learned library', section: 'steering', group: 'Bodies and lessons learned', roles: BUSINESS, delivery: 'L6' },
   { id: 'capex-overview', path: '/capex/[code]', title: 'CAPEX overview', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'L1' },
   { id: 'capex-gates', path: '/capex/[code]/gates', title: 'Gates & circuits', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'L3' },
@@ -66,7 +67,7 @@ export const SECTION_LABEL: Record<Exclude<Section, 'fixed'>, string> = {
   admin: 'Administration',
 };
 
-/** Screens built (deliveries 1 to 6: every screen of the registry). */
+/** Screens built (deliveries 1 to 6 and the pilot: every screen of the registry). */
 export const BUILT: ReadonlySet<ScreenId> = new Set(SCREENS.map((s) => s.id));
 
 /** True when the profile has the screen in its workspace. */

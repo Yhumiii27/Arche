@@ -156,7 +156,9 @@ export default async function GatesPage({ params }: PageProps<'/capex/[code]/gat
                   <Td>{g.decision ? `${t(DECISION_LABEL[g.decision as GateDecision])}${g.decisionReason ? ` · ${g.decisionReason}` : ''}` : '—'}</Td>
                   <Td nowrap>{fmtDate(g.decidedAt ?? g.updatedAt, lang)}</Td>
                   <Td tone="secondary">
-                    {allSteps.filter((s) => s.gateId === g.id && s.status === 'done').map((s) => `${t(s.label)}: ${t(OUTCOME_LABEL[s.outcome as Outcome])}`).join(' · ') || '—'}
+                    {g.takenOver
+                      ? <><Tag tone="outline" size="xs">{t('Taken over')}</Tag> {`${t('Decided before Arche by')} ${g.decidedByName ?? '—'}`}</>
+                      : allSteps.filter((s) => s.gateId === g.id && s.status === 'done').map((s) => `${t(s.label)}: ${t(OUTCOME_LABEL[s.outcome as Outcome])}`).join(' · ') || '—'}
                   </Td>
                 </tr>
               ))}
