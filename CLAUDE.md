@@ -19,7 +19,9 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   version = immutable, SHA-256 of the canonical content), circuits `src/domain/circuits.ts` (gate decisions only through the
   deciding step; `src/server/cycle/gate-decision.ts`), signatures append-only (trigger), delegation `src/domain/delegation.ts`,
   BP `src/domain/bp.ts`, "My approvals" `src/server/dal/approvals.ts`, Codex connector `src/server/integrations/codex/`
-  (simulated catalogue in the demo data set).
+  (simulated catalogue in the demo data set); deposit in Codex `src/server/integrations/codex/deposit.ts` (CX-03,
+  `POST /api/documents`: a file from a section, the PDF of a frozen version; called before the write transaction,
+  `capexBeforeCall`; Arche keeps the identifier only).
 - **Delivery 4 (machine needs, Keystone connector) is done** (`docs/DELIVERY-4.md`): needs `src/domain/needs.ts`,
   `src/features/needs/`, view `pub_besoins_machines`; Keystone connector `src/server/integrations/keystone/` — the mirror
   (`keystone_mirror`, written only by `mirror.ts`), modes `ARCHE_KEYSTONE` off / simulation / views (a missing view is

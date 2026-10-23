@@ -1,6 +1,6 @@
 // Print view of a dossier version (docs/spec/04 §1): A4, black on white, the sections, the values as frozen, the Codex
 // references and the fingerprint. Same visibility as the dossier page (outside the viewer's scope: 404). The frozen and signed
-// version is deposited in Codex by the user until Codex offers a deposit API (CX-03, CX-07).
+// version is printed to PDF by the user, then deposited in Codex from the dossier page (CX-03; frozen in Codex: CX-07).
 import { notFound } from 'next/navigation';
 import { DOSSIER_LABEL, isDossierKind, readContent, SECTIONS, VERSION_STATE_LABEL } from '@/domain/dossiers';
 import { refOf, TEAM_ROLE_LABEL } from '@/domain/capex';

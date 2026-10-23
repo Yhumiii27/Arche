@@ -62,6 +62,10 @@
     {
       "date": "2026-10-23",
       "text": "REX au contrat commun de Matrix (D22, option 1) : vue pub_rex_v2 (15 colonnes, phase en fin de vue, migration 0016), recommandation facultative d'un REX (migration 0015) ; pub_rex v1 inchangée. Demande de Matrix marquée FAITE, M-13 mise à jour, K-13 retirée (doublon de la demande de Matrix chez Keystone)."
+    },
+    {
+      "date": "2026-10-23",
+      "text": "Dépôt dans Codex (CX-03) : depuis une section d’un dossier, un fichier est déposé dans Codex et rattaché ; le PDF d’une version figée est déposé et son identifiant gardé sur la version (migration 0017). Variables CODEX_API_URL, CODEX_DOCUMENTS_TOKEN, CODEX_DOCUMENTS_SECRET."
     }
   ],
   "items": [
@@ -575,12 +579,14 @@
         "docs/DEMANDES-CODEX.md"
       ],
       "evidence": [
-        "docs/DELIVERY-3.md"
+        "docs/DELIVERY-3.md",
+        "src/features/dossiers/actions.ts",
+        "src/server/integrations/codex/deposit.ts"
       ],
       "progress": {
         "state": "en_cours",
         "delivery": "Livraison 3",
-        "note": "Références Codex vérifiées dans codex.pub_documents (ou la simulation de démo), liens profonds ; dépôt des dossiers figés en attente de CX-03 / CX-07."
+        "note": "Références Codex vérifiées (pub_documents ou simulation), liens profonds ; dépôt dans Codex depuis une section et dépôt du PDF de la version figée (CX-03, POST /api/documents). Reste : rattachement CAPEX (CX-01) et version figée dans Codex (CX-07)."
       }
     },
     {
@@ -598,7 +604,8 @@
       ],
       "evidence": [],
       "progress": {
-        "state": "a_faire"
+        "state": "en_cours",
+        "note": "CX-03, CX-04 et CX-08 traitées par Codex (Yhumiii27/Codex#12) ; CX-01, CX-02, CX-06 et CX-07 attendent une décision."
       }
     },
     {

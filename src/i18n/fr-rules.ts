@@ -22,4 +22,10 @@ export const FR_RULES: [RegExp, string][] = [
   [/^Line (\d+)$/, 'Ligne $1'],
   [/^(audit|project steering committee) (REV-\d+) recorded \((\S+), (\d+) decision\(s\)\)$/, '$1 $2 enregistré(e) ($3, $4 décision(s))'],
   [/^actuals imported: (\d+) line\(s\)$/, 'engagé et réalisé importés : $1 ligne(s)'],
+  [/^Expected types: (.+)$/, 'Types attendus : $1'],
+  [/^Another file was already deposited in Codex under this reference \((.+)\)$/, 'Un autre fichier a déjà été déposé dans Codex sous cette référence ($1)'],
+  [/^Codex refused Arche's credentials \((.+)\)$/, 'Codex a refusé les identifiants d’Arche ($1)'],
+  [/^Codex is unavailable \((.+)\)$/, 'Codex est indisponible ($1)'],
+  [/^Codex refused the deposit: (.+)$/, 'Codex a refusé le dépôt : $1'],
+  [/^Codex could not be reached \((.+)\)$/, 'Codex est injoignable ($1)'],
 ];

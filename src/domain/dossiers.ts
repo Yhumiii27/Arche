@@ -168,3 +168,36 @@ export function checkSectionText(kind: DossierKind, key: string, raw: unknown): 
   if (text.length > 20000) return { ok: false, error: 'The text is too long (20 000 characters at most)' };
   return { ok: true, value: text };
 }
+
+/** Confidentiality levels a deposit from Arche may ask for (Codex's levels above "public", the one of communication only). */
+export const CODEX_CONF_LEVELS = ['restreint', 'interne', 'confidentiel', 'tres_confidentiel'] as const;
+export type CodexConf = (typeof CODEX_CONF_LEVELS)[number];
+
+export interface CodexDepositFields {
+  /** Codex type code of the registry (e.g. PID, AUT, NOT). */
+  typeCode: string;
+  /** Department code of the owner in Codex (3 letters, e.g. DIR). */
+  department: string;
+  /** Owner in Codex: matricule (EMP-0042) or Codex identifier. */
+  owner: string;
+  conf: CodexConf;
+}
+
+/** The Codex metadata of a deposit typed by a person (CX-03); the title is given by the caller or typed (`title`). */
+export function checkCodexDeposit(raw: Record<string, unknown>, opts: { titleRequired: boolean }): Check<CodexDepositFields & { title: string }> {
+  const title = String(raw.title ?? '').trim();
+  if (opts.titleRequired && !title) return { ok: false, error: 'Give the title of the document' };
+  if (title.length > 300) return { ok: false, error: 'The title is too long (300 characters at most)' };
+  const typeCode = String(raw.typeCode ?? '').trim().toUpperCase();
+  if (!/^[A-Z]{2,5}$/.test(typeCode)) return { ok: false, error: 'Enter a Codex document type such as PID or NOT' };
+  const department = String(raw.department ?? '').trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(department)) return { ok: false, error: 'Enter the owner’s department code in Codex (3 letters, e.g. DIR)' };
+  const owner = String(raw.owner ?? '').trim();
+  if (!owner || owner.length > 64 || /\s/.test(owner)) return { ok: false, error: 'Enter the owner’s matricule (EMP-…) or Codex identifier' };
+  const conf = String(raw.conf ?? 'interne');
+  if (!(CODEX_CONF_LEVELS as readonly string[]).includes(conf)) return { ok: false, error: 'Unknown confidentiality level' };
+  return { ok: true, value: { title, typeCode, department, owner, conf: conf as CodexConf } };
+}
+
+/** `arche:` reference of a deposit (Codex `sourceRef`, ≤ 200 characters): it makes the deposit replayable. */
+export const depositSourceRef = (capexCode: string, kind: DossierKind, what: string) => `arche:dossier/${capexCode}/${kind}/${what}`.slice(0, 200);

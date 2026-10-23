@@ -6,7 +6,7 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-23 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 27 faits, 4 en cours, 7 à faire, sur 38 points.
+**Avancement** : 27 faits, 5 en cours, 6 à faire, sur 38 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
@@ -175,11 +175,11 @@ Livraison 4.
 
 **AR-025 · Connecteur codex : références de documents, vérification, dépôt des dossiers figés** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 3)**  
 Tous les documents d’Arche dans Codex (N-17) ; simulation tant que l’API manque.  
-*Avancement : Références Codex vérifiées dans codex.pub_documents (ou la simulation de démo), liens profonds ; dépôt des dossiers figés en attente de CX-03 / CX-07. · Sources : docs/DEMANDES-CODEX.md*
+*Avancement : Références Codex vérifiées (pub_documents ou simulation), liens profonds ; dépôt dans Codex depuis une section et dépôt du PDF de la version figée (CX-03, POST /api/documents). Reste : rattachement CAPEX (CX-01) et version figée dans Codex (CX-07). · Sources : docs/DEMANDES-CODEX.md*
 
-**AR-026 · API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants** — *Prochaine étape · attend un système externe · effort M*  
+**AR-026 · API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants** — *Prochaine étape · attend un système externe · effort M* · **en cours**  
 CX-01 à CX-07.  
-*Attend : Codex · Sources : docs/DEMANDES-CODEX.md*
+*Avancement : CX-03, CX-04 et CX-08 traitées par Codex (Yhumiii27/Codex#12) ; CX-01, CX-02, CX-06 et CX-07 attendent une décision. · Attend : Codex · Sources : docs/DEMANDES-CODEX.md*
 
 ### 2.7 Jalons de sécurité (Vigie) (1 restants, 1 faits)
 
@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-23 — Dépôt dans Codex (CX-03) : depuis une section d’un dossier, un fichier est déposé dans Codex et rattaché ; le PDF d’une version figée est déposé et son identifiant gardé sur la version (migration 0017). Variables CODEX_API_URL, CODEX_DOCUMENTS_TOKEN, CODEX_DOCUMENTS_SECRET.
 - 2026-10-23 — REX au contrat commun de Matrix (D22, option 1) : vue pub_rex_v2 (15 colonnes, phase en fin de vue, migration 0016), recommandation facultative d'un REX (migration 0015) ; pub_rex v1 inchangée. Demande de Matrix marquée FAITE, M-13 mise à jour, K-13 retirée (doublon de la demande de Matrix chez Keystone).
 - 2026-10-23 — Demandes déposées (validées par Guillaume) : M-13 chez Matrix (partage de pub_rampup et pub_rex, REX réuni, Yhumiii27/Matrix#21) et K-13 chez Keystone (keystone.pub_rex au contrat commun, Yhumiii27/Keystone#27).
 - 2026-10-23 — Livraison 6 : début de la MES après le PSSR, lignes de production, saisie journalière et import CSV du ramp-up, série de 30 jours conformes, alertes M+5 / M+6, clôture comptable du CDG, REX et bibliothèque, vues pub_rampup et pub_rex, critères du G3 évalués ; CAPEX de démo en démarrage.

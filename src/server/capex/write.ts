@@ -52,3 +52,17 @@ export async function onCapex(code: string, action: CapexAction | null, work: (t
   if (r.ok) revalidateCapex(code);
   return r;
 }
+
+/**
+ * The CAPEX `code` and the viewer, checked outside any transaction (visibility, then the right of the active role): for a
+ * Server Function that calls another application before it writes, so that no transaction waits on the network. The write
+ * that follows goes through `onCapex`, which checks again.
+ */
+export async function capexBeforeCall(code: string, action: CapexAction): Promise<{ ok: true; c: CapexRowFull; v: Viewer } | { ok: false; error: string }> {
+  const v = await getViewer();
+  const seen = await capexForViewer(v, code);
+  const c = seen ? await capexRow(await getDb(), seen.id) : null;
+  if (!c) return { ok: false, error: 'CAPEX not found' };
+  if (!canDo(action, v.role, v.assignments, c)) return { ok: false, error: REFUSED_MSG };
+  return { ok: true, c, v };
+}
