@@ -36,7 +36,12 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `src/server/dal/execution.ts`); the L5 gate criteria are evaluated in `deliveryFacts`. Lot 5b: reviews and audits
   (`src/domain/governance.ts`, right `audit`), rule-based alerts (`src/domain/alerts.ts`), dashboards (`capexDashboard`,
   `portfolioDashboard`, `copilAgenda` in `src/server/dal/governance.ts`), Copil report `/print/capex/[code]/report`, job
-  `weekly-snapshot`. Next: the pilot, then L6 — see `docs/PLAN.md`.
+  `weekly-snapshot`.
+- **Delivery 6 (start-up, ramp-up, transfer) is done** (`docs/DELIVERY-6.md`): start of commissioning after the PSSR,
+  production lines and daily ramp-up (`src/domain/rampup.ts`, right `rampup`: project lead or the CAPEX's operations expert;
+  line results stored on `production_lines` by `recomputeLines`, read by `pub_rampup`), accounting closure (`src/domain/closure.ts`,
+  right `closure`), lessons learned and library `/rex` (right `rex`, published by the lead or sponsor, view `pub_rex`), G3
+  criteria in `startupFacts`. Every screen of the registry is built. Next: the pilot (`docs/PLAN.md`); L7 after it.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

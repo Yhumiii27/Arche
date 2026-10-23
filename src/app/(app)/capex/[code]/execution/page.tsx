@@ -1,7 +1,7 @@
 // Execution of a CAPEX (docs/spec/06 §3, N-14): the lots with their budget (G2 baseline, else the latest validated version) and
 // planned window, the committed, spent and physical % of each month — entered or imported by the controller for the lots outside
 // EPC2i, read in Keystone for the machine lots (contract and signed amendments, invoiced, physical %) — the consolidated
-// S-curve with SPI, CPI and EAC, and the uncertainty gap (CDC §4).
+// S-curve with SPI, CPI and EAC, the uncertainty gap (CDC §4) and, in phase 4, the controller's accounting closure (N-15).
 import { EmptyState } from '@/components/app/EmptyState';
 import { KpiGrid, KpiTile } from '@/components/app/Kpi';
 import { SectionCard } from '@/components/app/SectionCard';
@@ -16,9 +16,11 @@ import { currentGate, type CycleState } from '@/domain/lifecycle';
 import { loadCapexPage } from '@/features/capex/page-data';
 import { ActualForm, ImportActualsForm, LotWindowForm } from '@/features/delivery/forms';
 import { dataText } from '@/i18n/data-text';
-import { fmtKeur, fmtNum, fmtRatio } from '@/lib/format';
+import { fmtDate, fmtKeur, fmtNum, fmtRatio } from '@/lib/format';
 import { businessToday } from '@/server/clock';
 import { executionOf } from '@/server/dal/execution';
+import { closureOf } from '@/server/dal/rampup';
+import { ClosureForm } from '@/features/startup/forms';
 import { keystoneProjectUrl } from '@/server/integrations/keystone';
 
 const SOURCE: Record<string, string> = { manual: 'Entered', import: 'Imported', keystone: 'Keystone' };
@@ -27,6 +29,7 @@ export default async function ExecutionPage({ params }: PageProps<'/capex/[code]
   const { t, lang, db, c, can } = await loadCapexPage(params);
   const today = await businessToday(db);
   const x = await executionOf(db, c, today);
+  const closure = await closureOf(db, c.id, x.g2Keur);
   const edit = can('budget');
   const i = x.indicators;
   const afterG2 = c.phase === 'execution' || c.phase === 'demarrage';
@@ -133,6 +136,42 @@ export default async function ExecutionPage({ params }: PageProps<'/capex/[code]
           <EmptyState>{t('No lot yet: lots are created on the budget page.')}</EmptyState>
         )}
       </SectionCard>
+
+      {(c.phase === 'demarrage' || closure.statement) && (
+        <SectionCard title={t('Accounting closure')} hint={t('Final cost by lot, gap to the G2 budget, AFE balance; attested by the controller in the G3 circuit (N-15)')} scroll>
+          <KpiGrid>
+            <KpiTile label={t('Final cost')} value={closure.statement ? k(closure.summary.finalKeur) : '—'} sub={closure.fact.value === 'No statement' ? t('No statement') : `${closure.fact.value} ${t('lots')}`} />
+            <KpiTile label={t('Gap to the G2 budget')} value={closure.statement && closure.summary.gapKeur != null ? `${closure.summary.gapKeur > 0 ? '+' : ''}${k(closure.summary.gapKeur)}` : '—'} sub={closure.summary.gapPct != null && closure.statement ? `${closure.summary.gapPct > 0 ? '+' : ''}${fmtNum(closure.summary.gapPct, lang)} %` : undefined} />
+            <KpiTile label={t('AFE balance')} value={closure.statement ? k(closure.statement.afeBalanceKeur) : '—'} tone={closure.statement && closure.statement.afeBalanceKeur < 0 ? 'alert' : 'default'} sub={closure.statement ? `${closure.statement.enteredByName} · ${fmtDate(closure.statement.updatedAt, lang)}` : undefined} />
+          </KpiGrid>
+          {closure.statement && (
+            <Table>
+              <thead>
+                <tr>
+                  <Th>{t('No.')}</Th>
+                  <Th>{t('Lot')}</Th>
+                  <Th align="right">{t('Budget')}</Th>
+                  <Th align="right">{t('Final cost')}</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {closure.lots.map((l) => (
+                  <tr key={l.id}>
+                    <Td>{l.number}</Td>
+                    <Td>{dataText(l.title, lang)}</Td>
+                    <Td align="right" numeric>{k(x.lots.find((y) => y.id === l.id)?.budgetKeur ?? 0)}</Td>
+                    <Td align="right" numeric>{l.finalKeur == null ? '—' : k(l.finalKeur)}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+          {closure.statement?.note && <span className="text-muted">{dataText(closure.statement.note, lang)}</span>}
+          {can('closure') && c.phase === 'demarrage' && (
+            <ClosureForm code={c.code} statement={closure.statement ? { afeBalanceKeur: closure.statement.afeBalanceKeur, note: closure.statement.note } : null} lots={closure.lots.map((l) => ({ id: l.id, label: `${l.number}. ${dataText(l.title, lang)}`, finalKeur: l.finalKeur }))} />
+          )}
+        </SectionCard>
+      )}
 
       {x.projects.length > 0 && (
         <SectionCard title={t('EPC2i projects')} hint={t('Selling side only: contract, signed amendments, invoiced, physical progress and SPI (AC-2)')} scroll>

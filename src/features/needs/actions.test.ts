@@ -51,7 +51,7 @@ describe('delivery 4: machine needs and the Keystone connector', () => {
       'besoin_ref', 'capex_code', 'ligne', 'catalogue_code', 'catalogue_version', 'libelle_libre', 'quantite', 'options', 'capacite_visee', 'unite_capacite', 'date_besoin', 'site', 'statut',
       'commentaire', 'soumis_le', 'commande_le', 'maj_le',
     ]);
-    expect((await published()).map((r) => `${r.besoin_ref} ${r.statut}`)).toEqual([`${APM}/B01 submitted`, `${APM}/B02 submitted`, `${SAI}/B01 ordered`, `${SAI}/B02 ordered`]);
+    expect((await published()).map((r) => `${r.besoin_ref} ${r.statut}`)).toEqual(['CPX-APM-2025-01/B01 ordered', `${APM}/B01 submitted`, `${APM}/B02 submitted`, `${SAI}/B01 ordered`, `${SAI}/B02 ordered`]);
   });
 
   it('the demo mirror: simulated catalogue, answers and the EPC2i projects of SAI', async () => {

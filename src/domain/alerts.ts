@@ -1,7 +1,7 @@
 // Rule-based alerts of a CAPEX (docs/spec/06 §7), always on, no AI: gate late on its target delay, circuit step past due (an
 // expert opinion missing), project review late (flagged to the group industrial director after 15 days), Strategic audit
 // missing, permit decision due within 30 days, SPI or CPI below 0.9, EAC above the G2 budget + 5 %, typology to confirm, team
-// incomplete, gate condition past due. Pure: texts are EN source strings, details are values.
+// incomplete, gate condition past due; ramp-up close to (M+5) or beyond (M+6) its time limit. Pure: texts are EN source strings, details are values.
 import type { ScreenId } from '@/config/screens';
 import type { TeamRole } from './budget';
 import { TEAM_ROLE_LABEL } from './capex';
@@ -35,6 +35,8 @@ export interface AlertInput {
   g2Keur: number | null;
   missingStaff: readonly string[];
   lateConditions: number;
+  /** Ramp-up after the start of commissioning (delivery 6): M+5 alert date, M+6 limit, reached or not. */
+  rampup?: { alertOn: string | null; limitOn: string | null; reached: boolean } | null;
 }
 
 /** SPI / CPI below this ratio raise an alert (spec 06 §7). */
@@ -63,6 +65,10 @@ export function alertsOf(i: AlertInput, today: string): Alert[] {
   if (i.typologyProposed) add('typology_to_confirm', 'watch', 'Typology to confirm', TYPOLOGY_LABEL[i.typologyProposed as keyof typeof TYPOLOGY_LABEL] ?? i.typologyProposed, 'capex-governance');
   if (i.missingStaff.length) add('team_incomplete', 'watch', 'Team incomplete', i.missingStaff.map((r) => TEAM_ROLE_LABEL[r as TeamRole] ?? r).join(' · '), 'capex-governance');
   if (i.lateConditions) add('condition_late', 'alert', 'Gate condition past due', String(i.lateConditions), 'capex-gates');
+  if (i.rampup && !i.rampup.reached && i.rampup.limitOn && i.rampup.alertOn) {
+    if (today > i.rampup.limitOn) add('rampup_overdue', 'alert', 'Ramp-up beyond the time limit (flagged to the group industrial director)', i.rampup.limitOn, 'capex-rampup');
+    else if (today >= i.rampup.alertOn) add('rampup_m5', 'watch', 'Ramp-up close to the time limit', i.rampup.limitOn, 'capex-rampup');
+  }
   return out;
 }
 

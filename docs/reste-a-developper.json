@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-22",
-  "updated": "2026-10-22",
+  "updated": "2026-10-23",
   "branch": "claude/brave-curie-chxbck",
   "history": [
     {
@@ -50,6 +50,10 @@
     {
       "date": "2026-10-22",
       "text": "Livraison 5, lot 5b : revues projet et audits transversaux, rapport Copil imprimable, écran COPIL GPI, portefeuille groupe / zone / filiale avec maturité des études, alertes à règles sur l’accueil, la synthèse et le portefeuille, instantanés hebdomadaires. Livraison 5 terminée, à valider sur le jeu de démo."
+    },
+    {
+      "date": "2026-10-23",
+      "text": "Livraison 6 : début de la MES après le PSSR, lignes de production, saisie journalière et import CSV du ramp-up, série de 30 jours conformes, alertes M+5 / M+6, clôture comptable du CDG, REX et bibliothèque, vues pub_rampup et pub_rex, critères du G3 évalués ; CAPEX de démo en démarrage."
     }
   ],
   "items": [
@@ -773,9 +777,16 @@
       "sources": [
         "docs/spec/06 §6"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/domain/rampup.ts",
+        "src/server/dal/rampup.ts",
+        "src/app/(app)/capex/[code]/rampup/page.tsx",
+        "drizzle/0014_share_rampup_rex.sql"
+      ],
       "progress": {
-        "state": "a_faire"
+        "state": "fait",
+        "delivery": "L6",
+        "note": "MES après le PSSR, lignes de production et machines du parc, saisie journalière et import CSV, TRS, jour conforme, série de 30 jours (arrêts planifiés neutres), alertes M+5 / M+6, vue pub_rampup."
       }
     },
     {
@@ -791,9 +802,15 @@
       "sources": [
         "docs/spec/04 §4"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/domain/closure.ts",
+        "src/app/(app)/rex/page.tsx",
+        "src/features/startup/actions.ts"
+      ],
       "progress": {
-        "state": "a_faire"
+        "state": "fait",
+        "delivery": "L6",
+        "note": "Clôture comptable du CDG (N-15), critères G3 (ramp-up, délai, clôture, REX), REX par phase et bibliothèque, vue pub_rex (colonnes à confirmer avec Matrix et Keystone) ; PV de transfert contresigné dans le circuit du G3 (livraison 3)."
       }
     },
     {

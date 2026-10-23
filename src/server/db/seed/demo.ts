@@ -4,7 +4,7 @@
 import { eq } from 'drizzle-orm';
 import type { RoleKey, ScopeKind, ExpertSpeciality } from '@/config/roles';
 import {
-  authorizations, budgetLines, budgetVersions, capex, capexLots, capexSnapshots, hsStatuses, lotActuals, packItems, reviews, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
+  authorizations, budgetLines, budgetVersions, capex, capexLots, capexSnapshots, hsStatuses, lotActuals, packItems, productionLines, rampupDays, reviews, rexEntries, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
   roleAssignments, sites, subsidiaries, users, zones, type CapexRole, type EstimateClass, type GateCode,
 } from '../schema';
 import { createHash } from 'node:crypto';
@@ -16,6 +16,9 @@ import { and } from 'drizzle-orm';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import { PACK_TEMPLATE } from '@/domain/pack';
 import { takeSnapshots, weekOf } from '@/server/dal/governance';
+import { recomputeLines } from '@/server/dal/rampup';
+import { readValues } from '@/domain/lifecycle';
+import { simulatedMachineNumber, simulatedProjectCode } from '@/server/integrations/keystone/simulation';
 import type { Tx } from '../types';
 
 export const DEMO_ZONES = [
@@ -56,7 +59,7 @@ export const DEMO_PEOPLE: DemoPerson[] = [
   { key: 'copil_member', name: 'Marc Dufour', email: `m.dufour@${G}`, title: 'COPIL GPI member', subsidiary: null, roles: [{ role: 'copil_member', scope: 'group', ref: null }] },
   { key: 'zone_director', name: 'Youssef El Amrani', email: `y.elamrani@${G}`, title: 'Zone director — North Africa', subsidiary: null, roles: [{ role: 'zone_director', scope: 'zone', ref: 'AFN' }] },
   { key: 'sponsor', name: 'Karim Benali', email: `k.benali@${APM}`, title: 'Managing director', subsidiary: 'APM', roles: [{ role: 'sponsor', scope: 'subsidiary', ref: 'APM' }] },
-  { key: 'project_lead', name: 'Leïla Haddad', email: `l.haddad@${APM}`, title: 'Project lead', subsidiary: 'APM', roles: [{ role: 'project_lead', scope: 'capex', ref: 'CPX-APM-2026-01' }, { role: 'project_lead', scope: 'capex', ref: 'CPX-APM-2026-02' }] },
+  { key: 'project_lead', name: 'Leïla Haddad', email: `l.haddad@${APM}`, title: 'Project lead', subsidiary: 'APM', roles: [{ role: 'project_lead', scope: 'capex', ref: 'CPX-APM-2026-01' }, { role: 'project_lead', scope: 'capex', ref: 'CPX-APM-2026-02' }, { role: 'project_lead', scope: 'capex', ref: 'CPX-APM-2025-01' }] },
   { key: 'controller', name: 'Nadia Tazi', email: `n.tazi@${APM}`, title: 'Management controller', subsidiary: 'APM', roles: [{ role: 'controller', scope: 'subsidiary', ref: 'APM' }] },
   { key: 'co_dig', name: 'Thomas Girard', email: `t.girard@${G}`, title: 'Co-DIG', subsidiary: null, roles: [{ role: 'co_dig', scope: 'capex', ref: 'CPX-APM-2026-01' }] },
   { key: 'epc2i_pmo', name: 'Julien Roche', email: `j.roche@${G}`, title: 'EPC2i PMO', subsidiary: null, roles: [{ role: 'epc2i_pmo', scope: 'capex', ref: 'CPX-SAI-2026-01' }] },
@@ -69,7 +72,7 @@ export const DEMO_PEOPLE: DemoPerson[] = [
 
 interface DemoCapex {
   code: string; subsidiary: string; site: string; title: string; investmentType: 'new_plant' | 'new_line' | 'extension' | 'other';
-  status: 'draft' | 'active'; phase: 'cadrage' | 'avant_projet' | 'execution'; typology: 'light' | 'strategic' | null;
+  status: 'draft' | 'active'; phase: 'cadrage' | 'avant_projet' | 'execution' | 'demarrage'; typology: 'light' | 'strategic' | null;
   sponsor: string; lead: string; team: [string, CapexRole][]; openedOn?: string; needDate?: string;
   /** Gates passed: code and decision date. */
   passed: [GateCode, string][];
@@ -81,6 +84,19 @@ interface DemoCapex {
 }
 
 const DEMO_CAPEX: DemoCapex[] = [
+  {
+    // Delivery 6: a CAPEX in its start-up phase — commissioning started on 1 July 2026, ramp-up of its line.
+    code: 'CPX-APM-2025-01', subsidiary: 'APM', site: 'Kénitra plant', title: 'Ageing oven and finishing line', investmentType: 'new_line', status: 'active', phase: 'demarrage', typology: 'light',
+    sponsor: 'sponsor', lead: 'project_lead', team: [['project_lead', 'lead'], ['controller', 'controller'], ['co_dig', 'co_dig']], openedOn: '2025-03-03', needDate: '2026-07-01',
+    passed: [['G1', '2025-05-20'], ['G2', '2025-09-15'], ['K3', '2026-06-10']],
+    lots: [['civil_works', 'Finishing hall slab'], ['utilities', 'Gas and effluent treatment'], ['machines', 'Ageing oven (EPC2i)']],
+    versions: [
+      { cls: 'E50', status: 'superseded', amounts: [280, 420, 600], on: '2025-05-05', basis: 'Ratios and EPC2i catalogue prices' },
+      { cls: 'E10', status: 'validated', amounts: [300, 450, 680], on: '2025-09-05', basis: 'Firm EPC2i offer, quotes for the works', g2: true },
+    ],
+    risks: [{ title: 'Ageing cycle longer than planned', category: 'technical', p: 2, i: 2, owner: 'project_lead', response: 'Recipes tuned with EPC2i during the ramp-up' }],
+    decisions: [['2025-09-15', 'ceo', 'G2 Go: ageing oven ordered'], ['2026-06-10', 'dir_ig', 'K3: ready to start']],
+  },
   {
     code: 'CPX-APM-2026-01', subsidiary: 'APM', site: 'Kénitra plant', title: 'Second extrusion line', investmentType: 'new_line', status: 'active', phase: 'avant_projet', typology: 'light',
     sponsor: 'sponsor', lead: 'project_lead', team: [['project_lead', 'lead'], ['controller', 'controller'], ['co_dig', 'co_dig']], openedOn: '2026-03-02', needDate: '2027-09-01',
@@ -259,17 +275,76 @@ async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: s
   // Machine needs (delivery 4): APM in phase 2 — a quote, a firm offer, a draft —; SAI ordered at its G2 with two EPC2i
   // projects. The answers and the projects come from the simulation of Keystone (src/server/integrations/keystone).
   const lot = async (capexId: string) => (await tx.select({ id: capexLots.id }).from(capexLots).where(and(eq(capexLots.capexId, capexId), eq(capexLots.kind, 'machines'))))[0]?.id ?? null;
-  const [apmLot, saiLot] = [await lot(apm), await lot(sai)];
+  const apm25 = await id('CPX-APM-2025-01');
+  const [apmLot, saiLot, apm25Lot] = [await lot(apm), await lot(sai), await lot(apm25)];
   await tx.insert(machineNeeds).values([
     { capexId: apm, number: 1, catalogueCode: 'EXT-9MN', catalogueVersion: 3, quantity: 1, options: ['PULLER'], targetCapacity: 1.8, capacityUnit: 't/h', needDate: '2027-09-01', status: 'submitted', submittedAt: at('2026-09-10'), lotId: apmLot, createdByName: nameOf('project_lead') },
     { capexId: apm, number: 2, catalogueCode: 'EXT-AGE', catalogueVersion: 1, quantity: 1, needDate: '2027-09-01', status: 'submitted', submittedAt: at('2026-08-10'), lotId: apmLot, createdByName: nameOf('project_lead') },
     { capexId: apm, number: 3, freeLabel: 'Billet saw with automatic loader', quantity: 1, needDate: '2027-10-01', status: 'draft', lotId: apmLot, comment: 'To size with the process team', createdByName: nameOf('project_lead') },
+    { capexId: apm25, number: 1, catalogueCode: 'EXT-AGE', catalogueVersion: 1, quantity: 1, targetCapacity: 2, capacityUnit: 't/h', needDate: '2026-07-01', status: 'ordered', submittedAt: at('2025-06-02'), orderedOn: '2025-09-15', lotId: apm25Lot, createdByName: nameOf('project_lead') },
     { capexId: sai, number: 1, catalogueCode: 'PRC-TOM', catalogueVersion: 2, quantity: 1, options: ['EVAP3'], targetCapacity: 40, capacityUnit: 't/h', needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-03-02'), orderedOn: '2026-07-08', lotId: saiLot, createdByName: nameOf('sai_lead') },
     { capexId: sai, number: 2, catalogueCode: 'PRC-CAN', catalogueVersion: 1, quantity: 1, needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-03-02'), orderedOn: '2026-07-08', lotId: saiLot, createdByName: nameOf('sai_lead') },
   ]);
   await seedDelivery(tx, apm, sai, nameOf);
   await syncKeystone(tx, { now: at('2026-10-22'), mode: 'simulation' });
+  await seedStartup(tx, apm25, nameOf);
   await seedGovernance(tx, apm, sai, nameOf);
+}
+
+/**
+ * Delivery 6 demonstration (CPX-APM-2025-01): safety milestones to the PSSR, commissioning started on 1 July 2026, one line
+ * (the ageing oven delivered by EPC2i, its machine number from Keystone) ramping up to its nominal capacity — a planned stop
+ * on 15 August, the run of conforming days reached in October —, the lessons of three phases (two published). The accounting
+ * closure is still to enter: it is the next step of the CAPEX.
+ */
+async function seedStartup(tx: Tx, capexId: string, nameOf: (k: string) => string) {
+  const hse = nameOf('group_hse');
+  await tx.insert(hsStatuses).values([
+    { capexId, hsCode: 'HS2', status: 'passed', passedOn: '2025-05-02', evidenceRef: 'NOT-CPX-APM-2025-01-001', updatedByName: hse },
+    { capexId, hsCode: 'HS3', status: 'passed', passedOn: '2025-08-28', evidenceRef: 'NOT-CPX-APM-2025-01-004', updatedByName: hse },
+    { capexId, hsCode: 'HS4', status: 'passed', passedOn: '2026-06-02', evidenceRef: 'NOT-CPX-APM-2025-01-007', updatedByName: hse },
+    { capexId, hsCode: 'PSSR', status: 'passed', passedOn: '2026-06-26', evidenceRef: 'NOT-CPX-APM-2025-01-009', updatedByName: hse },
+  ]);
+  await tx.update(capex).set({ mesStartedOn: '2026-07-01' }).where(eq(capex.id, capexId));
+  const lead = nameOf('project_lead');
+  const [line] = await tx.insert(productionLines).values({
+    capexId, number: 1, name: 'Ageing oven', nominalPerDay: 48, unit: 't', scrapTargetPct: 2,
+    machineNumbers: [simulatedMachineNumber(simulatedProjectCode('CPX-APM-2025-01/B01'), 0)], updatedByName: lead,
+  }).returning({ id: productionLines.id });
+  const start = Date.parse('2026-07-01T12:00:00Z');
+  const days = Array.from({ length: 114 }, (_, i) => new Date(start + i * 86_400_000).toISOString().slice(0, 10));
+  await tx.insert(rampupDays).values(days.map((day, i) => {
+    if (day === '2026-08-15') return { lineId: line.id, day, plannedStop: true, enteredByName: lead, source: 'import' as const };
+    // Output from 55 % of the nominal to above 100 % by mid-September; scrap from 5 % down to 1.5 %; one bad day on 18 September.
+    const k = Math.min(1, i / 78);
+    const bad = day === '2026-09-18';
+    const share = bad ? 0.82 : 0.55 + 0.5 * k;
+    const scrap = Math.round((5 - 3.5 * k) * 10) / 10;
+    const a = Math.round((80 + 15 * k) * 10) / 10, p = Math.round((75 + 20 * k) * 10) / 10, q = Math.round((100 - scrap) * 10) / 10;
+    return { lineId: line.id, day, output: Math.round(48 * share * 10) / 10, availabilityPct: a, performancePct: p, qualityPct: q, oeePct: Math.round((a * p * q) / 1000) / 10, scrapPct: scrap, plannedStop: false, enteredByName: lead, source: 'import' as const };
+  }));
+  await recomputeLines(tx, { id: capexId, mesStartedOn: '2026-07-01' }, readValues(null), '2026-10-22');
+  // Delivery and governance of the CAPEX: works lots complete, pack complete, quarterly project reviews.
+  for (const [n, plannedStart, plannedEnd] of [[1, '2025-10', '2026-03'], [2, '2025-11', '2026-04'], [3, '2025-09', '2026-06']] as const) {
+    await tx.update(capexLots).set({ plannedStart, plannedEnd }).where(and(eq(capexLots.capexId, capexId), eq(capexLots.number, n)));
+  }
+  const lotIds = new Map((await tx.select({ id: capexLots.id, number: capexLots.number }).from(capexLots).where(eq(capexLots.capexId, capexId))).map((l) => [l.number, l.id]));
+  const ctl = nameOf('controller');
+  await tx.insert(lotActuals).values([
+    { lotId: lotIds.get(1)!, month: '2026-03', committedKeur: 296, spentKeur: 296, physicalPct: 100, source: 'import' as const, enteredByName: ctl },
+    { lotId: lotIds.get(2)!, month: '2026-04', committedKeur: 462, spentKeur: 455, physicalPct: 100, source: 'import' as const, enteredByName: ctl },
+  ]);
+  await tx.insert(packItems).values(PACK_TEMPLATE.map((i) => ({ capexId, itemCode: i.code, status: 'validated' as const, codexRef: `PLN-${i.code.replace('.', '-').toUpperCase()}`, validatedOn: '2025-09-01', updatedByName: lead })));
+  await tx.insert(reviews).values([
+    { capexId, number: 1, kind: 'copil_projet' as const, heldOn: '2026-06-18', phase: 'demarrage', attendees: 'Sponsor, project lead, controller, Co-DIG', summary: 'K3 passed; commissioning planned on 1 July after the PSSR.', recordedByName: lead },
+    { capexId, number: 2, kind: 'copil_projet' as const, heldOn: '2026-09-17', phase: 'demarrage', attendees: 'Sponsor, project lead, controller, Co-DIG', summary: 'Ramp-up at 95 % of the nominal; scrap under target since early September.', recordedByName: lead },
+  ]);
+  const rex = (number: number, phase: string, category: string, title: string, text: string, published: string | null) => ({ capexId, number, phase, category, title, text, authorName: lead, publishedAt: published ? at(published) : null });
+  await tx.insert(rexEntries).values([
+    rex(1, 'cadrage', 'organisation', 'Involve the plant manager from the framing', 'The capacity target changed twice because production was not in the framing workshop.', '2025-06-10'),
+    rex(2, 'avant_projet', 'supplier', 'Ask EPC2i for the firm offer before the G2 dossier freezes', 'The firm offer arrived after the dossier was frozen: one more version was needed.', '2025-10-01'),
+    rex(3, 'execution', 'hse', 'Plan the gas connection inspection early', 'The gas utility inspection slot was four weeks out; book it at the order.', null),
+  ]);
 }
 
 /**

@@ -21,6 +21,7 @@ import { visibleCapex, type CapexRow } from './capex';
 import { modelValues, teamOf } from './cycle';
 import { executionOf, hsOf, packOf, permitsOf } from './execution';
 import { portfolioOf } from './portfolio';
+import { rampupOf } from './rampup';
 
 type Q = DB | Tx;
 
@@ -42,6 +43,8 @@ export async function capexDashboard(q: Q, c: CapexFull, today: string) {
     q.select({ p: risks.probability, i: risks.impact }).from(risks).where(and(eq(risks.capexId, c.id), inArray(risks.status, ['open', 'mitigated']))),
   ]);
   const pack = await packOf(q, c, exec.projects);
+  const [mes] = await q.select({ on: capex.mesStartedOn }).from(capex).where(eq(capex.id, c.id));
+  const startup = await rampupOf(q, { id: c.id, mesStartedOn: mes?.on ?? null }, values, today);
   const session = running[0] ?? null;
   const steps = session ? await q.select().from(circuitSteps).where(and(eq(circuitSteps.gateId, session.id), eq(circuitSteps.status, 'open'))) : [];
   const submittedOn = session ? session.createdAt.toISOString().slice(0, 10) : null;
@@ -59,6 +62,7 @@ export async function capexDashboard(q: Q, c: CapexFull, today: string) {
     indicators: afterG2 && measured ? { spi: exec.indicators.spi, cpi: exec.indicators.cpi, eacKeur: exec.indicators.eacKeur } : null,
     g2Keur: exec.g2Keur, missingStaff: c.status === 'active' ? missingStaff(c.typology as 'light' | 'strategic' | null, team.map((m) => m.capexRole)) : [],
     lateConditions: conds.length,
+    rampup: c.phase === 'demarrage' && startup.result.mesStartedOn ? { alertOn: startup.result.alertOn, limitOn: startup.result.limitOn, reached: !!startup.result.reachedOn } : null,
   }, today));
   const board = hsBoard(hs);
   return {
@@ -70,6 +74,7 @@ export async function capexDashboard(q: Q, c: CapexFull, today: string) {
     hs: { passed: board.filter((s) => s.status === 'passed' || s.status === 'waived').length, total: board.length, next: board.find((s) => s.status !== 'passed' && s.status !== 'waived') ?? null },
     review, missingAudits: audits, lastReview: revs[0] ?? null,
     openChanges: openChanges.length, majorRisks: openRisks.filter((r) => r.p * r.i >= 9).length, openRisks: openRisks.length,
+    rampup: startup.result,
     alerts,
   };
 }

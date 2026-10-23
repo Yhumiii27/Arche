@@ -104,15 +104,15 @@ describe('delivery 5: dashboards and governance', () => {
 
   it('the portfolio through the visibility filter; the COPIL GPI agenda; the weekly snapshots', async () => {
     as('zone_director');
-    expect((await portfolioDashboard(await getViewer(), null)).rows.map((r) => r.code)).toEqual([APM]);
+    expect((await portfolioDashboard(await getViewer(), null)).rows.map((r) => r.code)).toEqual(['CPX-APM-2025-01', APM]);
     as('dir_ig');
     const p = await portfolioDashboard(await getViewer(), null);
-    expect(p.rows.map((r) => r.code)).toEqual([APM, SAI]);
+    expect(p.rows.map((r) => r.code)).toEqual(['CPX-APM-2025-01', APM, SAI]);
     expect(p.rows.find((r) => r.code === APM)!.trend.length).toBeGreaterThanOrEqual(12);
     const agenda = await copilAgenda(await getViewer());
     expect(agenda.running).toEqual([]);
-    expect(await takeSnapshots(t.db, TODAY)).toBe(2);
-    expect(await takeSnapshots(t.db, TODAY)).toBe(2);
-    expect(await t.db.$count(capexSnapshots, eq(capexSnapshots.week, weekOf(TODAY)))).toBe(2);
+    expect(await takeSnapshots(t.db, TODAY)).toBe(3);
+    expect(await takeSnapshots(t.db, TODAY)).toBe(3);
+    expect(await t.db.$count(capexSnapshots, eq(capexSnapshots.week, weekOf(TODAY)))).toBe(3);
   });
 });

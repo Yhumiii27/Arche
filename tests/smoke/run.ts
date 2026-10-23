@@ -27,10 +27,10 @@ async function main(): Promise<void> {
   check(home.headers.get('x-frame-options') === 'DENY', 'X-Frame-Options: DENY');
 
   const expected: Record<string, string[]> = {
-    ceo: ['CPX-APM-2026-01', 'CPX-APM-2026-02', 'CPX-SAI-2026-01'],
-    dir_ig: ['CPX-APM-2026-01', 'CPX-SAI-2026-01'],
-    sponsor: ['CPX-APM-2026-01', 'CPX-APM-2026-02'],
-    zone_director: ['CPX-APM-2026-01'],
+    ceo: ['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-APM-2026-02', 'CPX-SAI-2026-01'],
+    dir_ig: ['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-SAI-2026-01'],
+    sponsor: ['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-APM-2026-02'],
+    zone_director: ['CPX-APM-2025-01', 'CPX-APM-2026-01'],
     epc2i_pmo: ['CPX-SAI-2026-01'],
   };
   for (const [role, want] of Object.entries(expected)) {
@@ -88,8 +88,13 @@ async function main(): Promise<void> {
   check(report.status === 200 && report.body.includes('Rapport Copil') && report.body.includes('Risques principaux'), 'printable Copil report');
   const homeAlerts = await get('/', 'dir_ig');
   check(homeAlerts.body.includes('Alertes') && homeAlerts.body.includes('Prochains jalons'), 'home: alerts and next gates');
-  const soon = await get('/capex/CPX-SAI-2026-01/rampup', 'epc2i_pmo');
-  check(soon.status === 200 && soon.body.includes('Prévu pour la livraison 6'), 'a screen of a later delivery says when it comes');
+  const rampup = await get('/capex/CPX-APM-2025-01/rampup', 'project_lead');
+  check(rampup.status === 200 && rampup.body.includes('Four de vieillissement') && rampup.body.includes('Saisir un jour'), 'ramp-up: the line of the demo CAPEX in start-up and the daily entry');
+  const rex = await get('/rex', 'sponsor');
+  check(rex.status === 200 && rex.body.includes('Associer le directeur d’usine dès le cadrage'), 'lessons learned library');
+  check((await get('/rex', 'epc2i_pmo')).body.includes('Associer le directeur d’usine') === false, 'the library follows the subsidiary isolation');
+  const closing = await get('/capex/CPX-APM-2025-01', 'controller');
+  check(closing.status === 200 && closing.body.includes('Saisir la déclaration de clôture'), 'overview of a CAPEX in start-up: next step is the accounting closure');
   check((await get('/capex/CPX-SAI-2026-01/budget', 'sponsor')).status === 404, 'every page of another subsidiary’s CAPEX is not found');
   check((await get('/nowhere', 'dir_ig')).status === 404, 'an unknown path is not found');
 

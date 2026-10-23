@@ -1,26 +1,26 @@
 # Arche — reste à développer
 
-Inventaire initial du 2026-10-22, mis à jour le 2026-10-22 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
+Inventaire initial du 2026-10-22, mis à jour le 2026-10-23 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
 
 **Lecture.** Priorité : Bloquant production, Prochaine étape, À décider (il faut d'abord trancher), Plus tard. Effort, pour un développeur qui connaît le code : S < 2 jours, M ≤ 1 semaine, L ≤ 3 semaines, XL > 3 semaines. Les identifiants entre parenthèses renvoient aux décisions (`docs/DECISIONS.md`) et aux demandes (`docs/DEMANDES-*.md`).
 
 ## 1. En bref
 
-**Avancement** : 25 faits, 4 en cours, 9 à faire, sur 38 points.
+**Avancement** : 27 faits, 4 en cours, 7 à faire, sur 38 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
 | Bloquant production | 3 | ≈ 7 |
 | Prochaine étape | 3 | ≈ 20 |
 | À décider | 3 | ≈ 15 |
-| Plus tard | 4 | ≈ 16 |
-| **Total** | **13** | **≈ 58** |
+| Plus tard | 2 | ≈ 8 |
+| **Total** | **11** | **≈ 50** |
 
 L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il ne compte ni l'attente des décisions et des données, ni les développements à faire côté Keystone, Codex, Vigie, Cursus ou Matrix, ni la recette.
 
 | Statut (points restants) | Points |
 |---|---:|
-| Non commencé | 5 |
+| Non commencé | 3 |
 | Partiel | 0 |
 | Attend le responsable produit | 3 |
 | Attend un système externe | 5 |
@@ -35,7 +35,7 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 | Documents (Codex) | 0 | 2 | 0 | 0 | 2 | 0 |
 | Jalons de sécurité (Vigie) | 0 | 0 | 1 | 0 | 1 | 1 |
 | Tableaux de bord et gouvernance | 1 | 0 | 0 | 0 | 1 | 3 |
-| Démarrage, montée en puissance et transfert | 0 | 0 | 0 | 2 | 2 | 0 |
+| Démarrage, montée en puissance et transfert | 0 | 0 | 0 | 0 | 0 | 2 |
 | Aide à la décision et signature avancée | 0 | 0 | 0 | 1 | 1 | 0 |
 | Cadrage, décisions et données attendues | 0 | 0 | 2 | 0 | 2 | 1 |
 
@@ -209,15 +209,15 @@ Livraison 5.
 Livraison 5 (N-19).  
 *Avancement : Revues projet (cadence par typologie, retard, signalement au Dir.IG), audits transversaux par phase (N-19), rapport Copil imprimable, écran COPIL GPI, alertes à règles, instantanés hebdomadaires. · Sources : docs/spec/06 §2, §7*
 
-### 2.9 Démarrage, montée en puissance et transfert (2 restants)
+### 2.9 Démarrage, montée en puissance et transfert (0 restants, 2 faits)
 
-**AR-035 · Ramp-up : saisie journalière, TRS, 30 jours continus, 6 mois ; vue pub_rampup** — *Plus tard · non commencé · effort M*  
+**~~AR-035 · Ramp-up : saisie journalière, TRS, 30 jours continus, 6 mois ; vue pub_rampup~~** — *Plus tard · non commencé · effort M* · **fait (L6)**  
 Livraison 6 (N-16).  
-*Sources : docs/spec/06 §6*
+*Avancement : MES après le PSSR, lignes de production et machines du parc, saisie journalière et import CSV, TRS, jour conforme, série de 30 jours (arrêts planifiés neutres), alertes M+5 / M+6, vue pub_rampup. · Sources : docs/spec/06 §6*
 
-**AR-036 · Dossier Transfert & REX, PV de transfert contresigné, bibliothèque REX** — *Plus tard · non commencé · effort M*  
+**~~AR-036 · Dossier Transfert & REX, PV de transfert contresigné, bibliothèque REX~~** — *Plus tard · non commencé · effort M* · **fait (L6)**  
 Livraison 6 (N-15).  
-*Sources : docs/spec/04 §4*
+*Avancement : Clôture comptable du CDG (N-15), critères G3 (ramp-up, délai, clôture, REX), REX par phase et bibliothèque, vue pub_rex (colonnes à confirmer avec Matrix et Keystone) ; PV de transfert contresigné dans le circuit du G3 (livraison 3). · Sources : docs/spec/04 §4*
 
 ### 2.10 Aide à la décision et signature avancée (1 restants)
 
@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-23 — Livraison 6 : début de la MES après le PSSR, lignes de production, saisie journalière et import CSV du ramp-up, série de 30 jours conformes, alertes M+5 / M+6, clôture comptable du CDG, REX et bibliothèque, vues pub_rampup et pub_rex, critères du G3 évalués ; CAPEX de démo en démarrage.
 - 2026-10-22 — Livraison 5, lot 5b : revues projet et audits transversaux, rapport Copil imprimable, écran COPIL GPI, portefeuille groupe / zone / filiale avec maturité des études, alertes à règles sur l’accueil, la synthèse et le portefeuille, instantanés hebdomadaires. Livraison 5 terminée, à valider sur le jeu de démo.
 - 2026-10-22 — Livraison 5, lot 5a : jalons HS déclarés par le SSE groupe, registre des autorisations, pack ingénierie (part filiale et part EPC2i lue dans Keystone), engagé / réalisé mensuel et import CSV, courbe en S avec SPI, CPI, EAC et écart d’incertitude ; critères HS, autorisations, pack et travaux des jalons évalués.
 - 2026-10-22 — Livraison 4b (interface, maquettes validées) : menu par thèmes, section CAPEX toujours visible avec sélecteur de CAPEX, recherche ⌘K, actions en boutons et panneaux, « Nouveau CAPEX », prochaine étape sur la synthèse, carte des CAPEX reprise de Keystone et sélecteur de zone ; demandes déposées chez Keystone, Matrix (M-10 à M-12) et Codex.

@@ -2,7 +2,8 @@
 // deterministic: from the needs Arche publishes (pub_besoins_machines) and the instant, it gives what EPC2i would answer — a
 // qualification two hours after the submission, an indicative answer (E50) the next day, a budgetary quote (E30) after 30
 // days and a firm offer (E10) after 60 — and, for a need ordered at the G2, the EPC2i project with its milestones, progress,
-// amendments, reservations, deliverables and EPC2i's part of the engineering pack. Rows have the columns of the contract (French names, ISO dates).
+// amendments, reservations, deliverables, EPC2i's part of the engineering pack and, once delivered on site, the machines of
+// the installed base. Rows have the columns of the contract (French names, ISO dates).
 import { rangeOf, round1 } from '@/domain/budget';
 import type { KeystoneRow, KeystoneViewName } from './views';
 
@@ -65,6 +66,12 @@ export function simulatedProjectCode(ref: string): string {
   return m ? `${m[1]}-${m[2]}${m[3]}${Number(m[4])}` : `EPC-${ref.replace(/\W/g, '').slice(-6)}`;
 }
 
+/** A machine number in Keystone's form ("MCH-417"), deterministic from the project code and the machine's rank. */
+export function simulatedMachineNumber(project: string, rank: number): string {
+  const h = [...project].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 900, 7);
+  return `MCH-${String(100 + ((h + rank) % 900)).padStart(3, '0')}`;
+}
+
 function priceOf(n: PublishedNeed): { keur: number | null; weeks: number; label: string } {
   const sheet = SIMULATED_CATALOGUE.find((c) => c.code === n.catalogue_code && c.version === n.catalogue_version);
   if (!sheet) return { keur: null, weeks: 30, label: n.libelle_libre ?? n.ligne };
@@ -81,7 +88,7 @@ const MILESTONES: [string, number][] = [['commande', 0], ['fin_etudes', 0.25], [
 export function simulateKeystone(needs: readonly PublishedNeed[], now: Date): Record<KeystoneViewName, KeystoneRow[]> {
   const t = now.getTime();
   const out: Record<KeystoneViewName, KeystoneRow[]> = {
-    pub_catalogue_machines: [...SIMULATED_CATALOGUE], pub_reponses_besoins: [], pub_projets: [], pub_jalons_projets: [], pub_avancement_projets: [], pub_avenants: [], pub_reserves: [], pub_livrables: [], pub_pack_ingenierie: [],
+    pub_catalogue_machines: [...SIMULATED_CATALOGUE], pub_reponses_besoins: [], pub_projets: [], pub_jalons_projets: [], pub_avancement_projets: [], pub_avenants: [], pub_reserves: [], pub_livrables: [], pub_pack_ingenierie: [], pub_parc_machines: [],
   };
   for (const n of needs) {
     if (!n.soumis_le) continue;
@@ -156,6 +163,16 @@ export function simulateKeystone(needs: readonly PublishedNeed[], now: Date): Re
     const pack = PACK_FAMILIES_EPC2I.map(([famille, attendues]) => ({ famille, attendues, validees: Math.floor(attendues * Math.min(1, 0.6 + 0.4 * studied)) }));
     const pondere = Math.round((pack.reduce((a, f) => a + (20 * f.validees) / f.attendues, 0) / (20 * pack.length)) * 1000) / 10;
     for (const f of pack) out.pub_pack_ingenierie.push({ projet_code: project, ...f, poids: 20, pct_pondere: pondere, maj_le: iso(t) });
+    // Once on site, the machines join the installed base (pub_parc_machines, one row per machine: no fitted part here).
+    const arrived = ms.find((m) => m.code === 'arrivee_site')!;
+    if (arrived.actual != null) {
+      for (let k = 0; k < n.quantite; k++) {
+        out.pub_parc_machines.push({
+          number: simulatedMachineNumber(project, k), name: label, client_name: n.capex_code.slice(4, 7), site_text: n.site, project_code: project, warranty_status: 'in_progress', part_ref: null,
+          fitted_revision: null, type_machine_code: n.catalogue_code?.split('-')[0] ?? null, livree_le: day(arrived.actual), maj_le: iso(arrived.actual),
+        });
+      }
+    }
     const pv = ms.find((m) => m.code === 'pv_reception')!;
     out.pub_livrables.push({ project_code: project, number: 'LIV-02', title: 'Client acceptance report', status: pv.actual != null ? 'accepted' : 'planned', type: 'client_acceptance', accepte_le: pv.actual != null ? day(pv.actual) : null, maj_le: iso(pv.actual ?? o) });
   }

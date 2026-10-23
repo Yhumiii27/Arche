@@ -1,7 +1,7 @@
 // Governance of a CAPEX (docs/spec/06 §1–2): the named team against the staffing template of its typology, the typology
 // (computed from the latest validated budget and the reference revenue, forced or confirmed by the group industrial director)
 // the project reviews (cadence by typology, next one due, Strategic audits by phase — delivery 5), the Copil report and the
-// decisions register.
+// decisions register and the lessons learned of the CAPEX (delivery 6, published to the library and pub_rex).
 import { EmptyState } from '@/components/app/EmptyState';
 import { KeyValueList } from '@/components/app/KeyValueList';
 import { SectionCard } from '@/components/app/SectionCard';
@@ -15,6 +15,9 @@ import { PHASE_LABEL, TYPOLOGY_LABEL, labelOf } from '@/domain/capex-labels';
 import { CADENCE_LABEL, missingAudits, nextReview, REVIEW_KIND_LABEL, type ReviewKind } from '@/domain/governance';
 import { ReviewForm } from '@/features/governance/forms';
 import { reviewsOf } from '@/server/dal/governance';
+import { rexOf } from '@/server/dal/rampup';
+import { REX_CATEGORY_LABEL, rexFact, type RexCategory } from '@/domain/closure';
+import { PublishRexButton, RexForm } from '@/features/startup/forms';
 import { ConfirmTypologyButton, DecisionForm, ForceTypologyForm, MemberForm, RemoveMemberButton } from '@/features/capex/forms';
 import { loadCapexPage } from '@/features/capex/page-data';
 import { dataText } from '@/i18n/data-text';
@@ -27,7 +30,8 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
   const today = await businessToday();
   const [team, decisions, computed, candidates] = await Promise.all([teamOf(db, c.id), decisionsOf(db, c.id), computedTypologyOf(db, c, today), teamCandidates(db, c.subsidiaryCode)]);
   const edit = can('edit');
-  const revs = await reviewsOf(db, c.id);
+  const [revs, rex] = await Promise.all([reviewsOf(db, c.id), rexOf(db, c.id)]);
+  const rexCover = rexFact(rex);
   const review = nextReview({ status: c.status, typology: c.typology, openedOn: c.openedAt ? c.openedAt.toISOString().slice(0, 10) : null, lastHeldOn: revs.find((r) => r.kind === 'copil_projet')?.heldOn ?? null }, today);
   const audits = missingAudits(c, revs.filter((r) => r.kind === 'audit'));
   const reviewKinds: ReviewKind[] = c.status === 'active' ? [...(edit ? ['copil_projet' as const] : []), ...(can('audit') && c.typology === 'strategic' ? ['audit' as const] : [])] : [];
@@ -141,6 +145,46 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
           {reviewKinds.length > 0 && <ReviewForm code={c.code} kinds={reviewKinds} today={today} />}
           <ButtonLink href={`/print/capex/${encodeURIComponent(c.code)}/report`} variant="secondary" size="sm" target="_blank">{t('Copil report')}</ButtonLink>
         </div>
+      </SectionCard>
+
+      <SectionCard title={t('Lessons learned')} hint={`${t('Phases covered')} ${rexCover.value} · ${t('G3 needs a lesson for every phase')}`} scroll>
+        {rex.length ? (
+          <Table>
+            <thead>
+              <tr>
+                <Th>{t('Ref.')}</Th>
+                <Th>{t('Phase')}</Th>
+                <Th>{t('Category')}</Th>
+                <Th>{t('Lesson')}</Th>
+                <Th>{t('Author')}</Th>
+                <Th>{t('Published')}</Th>
+                <Th />
+              </tr>
+            </thead>
+            <tbody>
+              {rex.map((r) => (
+                <tr key={r.id}>
+                  <Td nowrap>{refOf('REX', r.number)}</Td>
+                  <Td tone="secondary">{t(labelOf(PHASE_LABEL, r.phase))}</Td>
+                  <Td tone="secondary">{t(REX_CATEGORY_LABEL[r.category as RexCategory] ?? r.category)}</Td>
+                  <Td>
+                    <strong>{dataText(r.title, lang)}</strong>
+                    <div className="text-muted">{dataText(r.text, lang)}</div>
+                  </Td>
+                  <Td tone="secondary">{r.authorName}</Td>
+                  <Td nowrap>{r.publishedAt ? fmtDate(r.publishedAt, lang) : '—'}</Td>
+                  <Td align="right" nowrap>
+                    {!r.publishedAt && can('rex') && <RexForm code={c.code} phase={c.phase} rex={{ id: r.id, phase: r.phase, category: r.category as RexCategory, title: r.title, text: r.text }} />}{' '}
+                    {!r.publishedAt && edit && <PublishRexButton code={c.code} rexId={r.id} />}
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        ) : (
+          <EmptyState>{t('No lesson recorded.')}</EmptyState>
+        )}
+        {can('rex') && <RexForm code={c.code} phase={c.phase} />}
       </SectionCard>
 
       <SectionCard title={t('Decisions')} hint={t(`${decisions.length} decisions`)} scroll>
