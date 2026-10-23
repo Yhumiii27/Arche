@@ -82,7 +82,7 @@ describe('delivery 6: start-up, ramp-up and transfer', () => {
     expect(await saveClosureAction(CODE, null, form({ afeBalanceKeur: '0' }))).toEqual({ ok: false, error: 'Give the final cost of every lot (k€)' });
     expect(await saveClosureAction(CODE, null, form(statement))).toEqual({ ok: true });
     as('project_lead');
-    expect(await saveRexAction(CODE, null, null, form({ phase: 'demarrage', category: 'technical', title: 'Tune the recipes before the MES', text: 'Two weeks lost on the ageing recipes.' }))).toEqual({ ok: true });
+    expect(await saveRexAction(CODE, null, null, form({ phase: 'demarrage', category: 'technical', title: 'Tune the recipes before the MES', text: 'Two weeks lost on the ageing recipes.', recommendation: 'Validate the recipes at the FAT.' }))).toEqual({ ok: true });
     const ev = (await currentEvaluation(t.db, await row()))!;
     expect(Object.fromEntries(ev.results.map((r) => [r.code, r.state]))).toMatchObject({ g3_accounts: 'met', g3_rex: 'met' });
     const [draft] = await t.db.select().from(rexEntries).where(eq(rexEntries.title, 'Tune the recipes before the MES'));
@@ -94,6 +94,13 @@ describe('delivery 6: start-up, ramp-up and transfer', () => {
     as('project_lead');
     expect(await saveRexAction(CODE, draft.id, null, form({ phase: 'demarrage', category: 'technical', title: 'x', text: 'x' }))).toEqual({ ok: false, error: 'A published lesson is not changed' });
     expect((await t.handle.pool.query('select titre from arche.pub_rex order by publie_le')).rows.map((r) => r.titre)).toContain('Tune the recipes before the MES');
+    // pub_rex_v2: the common REX contract of Matrix (same columns as keystone.pub_rex), phase at the end.
+    const v2 = await t.handle.pool.query(`select column_name, data_type from information_schema.columns where table_schema = 'arche' and table_name = 'pub_rex_v2' order by ordinal_position`);
+    expect(v2.rows.map((r) => r.column_name)).toEqual(['ref_source', 'outil', 'projet_code', 'capex_code', 'numero', 'categorie', 'titre', 'constat', 'impact', 'recommandation', 'portee', 'statut', 'auteur', 'cree_le', 'maj_le', 'phase']);
+    expect(v2.rows.filter((r) => r.column_name === 'cree_le' || r.column_name === 'maj_le').map((r) => r.data_type)).toEqual(['timestamp with time zone', 'timestamp with time zone']);
+    const pub = (await t.handle.pool.query(`select * from arche.pub_rex_v2 where titre = 'Tune the recipes before the MES'`)).rows[0];
+    expect(pub).toMatchObject({ ref_source: `rex_entries:${draft.id}`, outil: 'arche', projet_code: null, capex_code: CODE, categorie: 'technical', constat: 'Two weeks lost on the ageing recipes.', recommandation: 'Validate the recipes at the FAT.', statut: 'publie', phase: 'demarrage' });
+    expect(pub.numero).toMatch(/^REX-\d{2}$/);
     // The library shows the CAPEX the viewer sees only: a SAI sponsor does not see the lessons of APM.
     as('sponsor');
     expect((await rexLibrary(await getViewer())).length).toBe(3);

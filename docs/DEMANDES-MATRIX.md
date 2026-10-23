@@ -108,8 +108,8 @@ Arche lit alors `matrix.pub_sites` / `pub_organigramme` au lieu de tenir ses pro
 
 **Déposée le 23 oct. 2026** dans le `REQUESTS.md` de Matrix (validée par Guillaume, Yhumiii27/Matrix#21), entrée OUVERTE.
 (1) Déclarer dans `partage/70-arche.sql` les deux vues de la livraison 6 : `arche.pub_rampup` (lecteurs `keystone_app`,
-`matrix_app`) et `arche.pub_rex` (lecteur `matrix_app`, déjà accordée dans `90-droits.sql`) ; (2) accorder `arche.pub_rampup`
-dans `90-droits.sql` ; (3) confirmer le contrat commun `pub_rex` (`ref_source`, `capex_code`, `projet_code`, `categorie`,
-`titre`, `texte`, `phase`, `publie_le`, `auteur`, voir [`CONTRATS.md`](CONTRATS.md) §3) et bâtir la vue de Matrix qui réunit
-`arche.pub_rex` et `keystone.pub_rex` (demande K-13 chez Keystone), colonne `outil`. Sans ces droits, les vues existent mais
-ne sont pas lues ; Arche n'est pas bloqué.
+`matrix_app`) et `arche.pub_rex_v2` (lecteur `matrix_app`) ; (2) accorder `arche.pub_rampup` et `arche.pub_rex_v2` dans
+`90-droits.sql` ; (3) réunir `arche.pub_rex_v2` et `keystone.pub_rex` dans la vue commune de Matrix. Mise à jour du 23 oct.
+2026 : Arche a adopté le contrat commun du REX demandé par Matrix (15 colonnes, `phase` en fin de vue) dans `pub_rex_v2`
+(voir [`CONTRATS.md`](CONTRATS.md) §3) ; `arche.pub_rex` (v1) reste en place mais n'est plus à lire. Sans ces droits, les vues
+existent mais ne sont pas lues ; Arche n'est pas bloqué.

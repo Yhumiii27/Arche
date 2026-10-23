@@ -24,8 +24,10 @@ Migrations `0013_rampup_rex` (tables) et `0014_share_rampup_rex` (vues, écrites
 
 ## 2. Écarts et points ouverts
 
-- **`pub_rex`** : les colonnes suivent la proposition de `CONTRATS.md` §3 ; le contrat commun reste **à confirmer avec Matrix et
-  Keystone** (D22). Matrix accorde déjà `arche.pub_rex` à `matrix_app` (`90-droits.sql`).
+- **`pub_rex`** : les colonnes suivent la proposition de `CONTRATS.md` §3. **Complément du 23 oct. 2026** : Matrix a fixé le
+  contrat commun du REX (D22) ; Arche le publie dans **`pub_rex_v2`** (migration `0016_share_rex_v2`, `phase` en fin de vue)
+  et ajoute la recommandation facultative d'un REX (`rex_entries.recommendation`, migration `0015`, champ du formulaire,
+  affichée dans la gouvernance et la bibliothèque). `pub_rex` (v1) reste inchangée.
 - **Dossier 3 (Transfert & REX)** : ses sections restent rédigées ; les données (ramp-up, clôture, REX) sont sur leurs écrans.
 - **Seuils N-16** : la part du nominal (100 %) est fixe ; la durée de la série (30 jours) et le délai (6 mois) sont les valeurs
   du modèle DIG-PRODI réglées par l'administrateur.

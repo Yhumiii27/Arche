@@ -1,0 +1,1 @@
+ALTER TABLE "arche"."rex_entries" ADD COLUMN "recommendation" text;

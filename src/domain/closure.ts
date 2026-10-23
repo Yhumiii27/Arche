@@ -59,6 +59,8 @@ export interface RexInput {
   category: RexCategory;
   title: string;
   text: string;
+  /** What to do next time (optional; `recommandation` of the common REX contract). */
+  recommendation: string | null;
 }
 
 export function checkRex(raw: Record<string, unknown>): { ok: true; value: RexInput } | { ok: false; error: string } {
@@ -70,7 +72,8 @@ export function checkRex(raw: Record<string, unknown>): { ok: true; value: RexIn
   if (!title) return { ok: false, error: 'Give a title' };
   const text = String(raw.text ?? '').trim().slice(0, 5000);
   if (!text) return { ok: false, error: 'Describe the lesson' };
-  return { ok: true, value: { phase, category, title, text } };
+  const recommendation = String(raw.recommendation ?? '').trim().slice(0, 5000) || null;
+  return { ok: true, value: { phase, category, title, text, recommendation } };
 }
 
 /** G3 criterion "lessons learned entered for every phase" (spec 03 §3): ≥ 1 entry per phase. */

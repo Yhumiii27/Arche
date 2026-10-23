@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-23 — REX au contrat commun de Matrix (D22, option 1) : vue pub_rex_v2 (15 colonnes, phase en fin de vue, migration 0016), recommandation facultative d'un REX (migration 0015) ; pub_rex v1 inchangée. Demande de Matrix marquée FAITE, M-13 mise à jour, K-13 retirée (doublon de la demande de Matrix chez Keystone).
 - 2026-10-23 — Demandes déposées (validées par Guillaume) : M-13 chez Matrix (partage de pub_rampup et pub_rex, REX réuni, Yhumiii27/Matrix#21) et K-13 chez Keystone (keystone.pub_rex au contrat commun, Yhumiii27/Keystone#27).
 - 2026-10-23 — Livraison 6 : début de la MES après le PSSR, lignes de production, saisie journalière et import CSV du ramp-up, série de 30 jours conformes, alertes M+5 / M+6, clôture comptable du CDG, REX et bibliothèque, vues pub_rampup et pub_rex, critères du G3 évalués ; CAPEX de démo en démarrage.
 - 2026-10-22 — Livraison 5, lot 5b : revues projet et audits transversaux, rapport Copil imprimable, écran COPIL GPI, portefeuille groupe / zone / filiale avec maturité des études, alertes à règles sur l’accueil, la synthèse et le portefeuille, instantanés hebdomadaires. Livraison 5 terminée, à valider sur le jeu de démo.

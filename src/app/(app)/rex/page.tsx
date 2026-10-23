@@ -1,6 +1,6 @@
 // Lessons learned library (docs/spec/06, 08; D22): the published lessons of the CAPEX the viewer sees (subsidiary isolation
 // applies), searched and filtered by phase and category (URL). The same entries are published in pub_rex, where Matrix
-// joins them with Keystone's lessons of the EPC2i projects.
+// joins them with Keystone's lessons of the EPC2i projects (pub_rex_v2, the common contract of D22).
 import Link from 'next/link';
 import { EmptyState } from '@/components/app/EmptyState';
 import { KpiGrid, KpiTile } from '@/components/app/Kpi';
@@ -66,6 +66,7 @@ export default async function RexLibraryPage({ searchParams }: PageProps<'/rex'>
                   <Td>
                     <strong>{dataText(r.title, lang)}</strong>
                     <div className="text-muted">{dataText(r.text, lang)}</div>
+                    {r.recommendation && <div>{`${t('Recommendation')} — `}{dataText(r.recommendation, lang)}</div>}
                   </Td>
                   <Td nowrap>{r.publishedAt ? fmtDate(r.publishedAt, lang) : '—'}<div className="text-muted">{r.authorName}</div></Td>
                 </tr>

@@ -67,6 +67,8 @@ export const rexEntries = arche.table('rex_entries', {
   title: text('title').notNull(),
   text: text('text').notNull(),
   authorName: text('author_name').notNull(),
+  /** What to do next time (optional; `recommandation` of pub_rex_v2, the common REX contract of Matrix). */
+  recommendation: text('recommendation'),
   /** Published to the library and to pub_rex (null: kept within the CAPEX team). */
   publishedAt: timestamp('published_at', { withTimezone: true }),
   ...timestamps,
