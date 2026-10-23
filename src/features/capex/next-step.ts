@@ -25,6 +25,10 @@ export const CRITERION_ACTION: Record<string, { screen: ScreenId; label: string 
   g2_pack: { screen: 'capex-pack', label: 'Complete the engineering pack' },
   g2_permits: { screen: 'capex-permits', label: 'Record the permits' },
   k3_works: { screen: 'capex-execution', label: 'Enter the progress of the works' },
+  g3_rampup: { screen: 'capex-rampup', label: 'See the ramp-up' },
+  g3_mes_delay: { screen: 'capex-rampup', label: 'See the ramp-up' },
+  g3_accounts: { screen: 'capex-execution', label: 'Enter the closure statement' },
+  g3_rex: { screen: 'capex-governance', label: 'Add a lesson' },
 };
 
 /** The first blocking criterion to work on (unmet, in the model's order), or null when none is left. */

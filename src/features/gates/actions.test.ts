@@ -29,6 +29,7 @@ import { createChangeAction, decideChangeAction } from '../changes/actions';
 import { addReferenceAction, freezeVersionAction, saveSectionAction } from '../dossiers/actions';
 import { saveActualAction, savePackItemAction, savePermitAction } from '../delivery/actions';
 import { declareHsAction } from '../safety/actions';
+import { importRampupAction, saveClosureAction, saveLineAction, saveRexAction, startMesAction } from '../startup/actions';
 import { PACK_TEMPLATE } from '@/domain/pack';
 import { actOnStepAction, submitGateAction } from './actions';
 
@@ -251,8 +252,21 @@ describe('delivery 3: a CAPEX through its four gates by the circuits', () => {
     expect(await act('dir_ig', 'K3', 'Ready-to-start visa', { outcome: 'approved', confirm: 'on' })).toEqual({ ok: true });
     expect(await row()).toMatchObject({ phase: 'demarrage' });
 
+    // Delivery 6: commissioning after the PSSR, a line at its nominal capacity for 30 days, the accounting closure, the REX.
+    as('project_lead');
+    expect(await startMesAction(CODE, null, form({ day: '2026-09-01' }))).toEqual({ ok: false, error: 'The PSSR must be passed before the start of commissioning' });
     await hsPassed('PSSR');
     await hsPassed('HS6');
+    as('project_lead');
+    expect(await startMesAction(CODE, null, form({ day: '2026-09-01' }))).toEqual({ ok: true });
+    expect(await saveLineAction(CODE, null, null, form({ name: 'Extrusion line', nominalPerDay: '10', unit: 't', scrapTargetPct: '2' }))).toEqual({ ok: true });
+    const days = Array.from({ length: 30 }, (_, i) => `1;2026-09-${String(i + 1).padStart(2, '0')};10,5;;;;82;1,5;`).join('\n');
+    expect(await importRampupAction(CODE, null, form({ csv: days }))).toEqual({ ok: true });
+    as('controller');
+    const lots = await t.db.select().from(capexLots).where(eq(capexLots.capexId, (await row()).id));
+    expect(await saveClosureAction(CODE, null, form({ afeBalanceKeur: '-40', ...Object.fromEntries(lots.map((l) => [`lot:${l.id}`, l.kind === 'machines' ? '3 450' : '590'])) }))).toEqual({ ok: true });
+    as('project_lead');
+    for (const phase of ['cadrage', 'avant_projet', 'execution', 'demarrage']) expect(await saveRexAction(CODE, null, null, form({ phase, category: 'technical', title: `Lesson of ${phase}`, text: 'What we learned.' }))).toEqual({ ok: true });
     await fillTexts('transfer');
     expect(await freezeVersionAction(CODE, 'transfer')).toEqual({ ok: true });
     expect(await submitGateAction(CODE, null, form({}))).toEqual({ ok: true });
@@ -264,6 +278,8 @@ describe('delivery 3: a CAPEX through its four gates by the circuits', () => {
     expect(await act('project_lead', 'G3', 'Internal client countersignature', { outcome: 'approved', confirm: 'on' })).toEqual({ ok: true });
     expect(await row()).toMatchObject({ status: 'closed' });
     expect(await session('G3')).toMatchObject({ status: 'decided', decision: 'go' });
+    const g3 = Object.fromEntries((await t.db.select().from(gateCriteriaResults).where(eq(gateCriteriaResults.gateId, (await session('G3')).id))).map((c) => [c.criterionCode, c.state]));
+    expect(g3).toMatchObject({ g3_pssr: 'met', g3_hs6: 'met', g3_rampup: 'met', g3_mes_delay: 'met', g3_accounts: 'met', g3_rex: 'met' });
   });
 
   it('signatures are append-only; the circuit is audited', async () => {

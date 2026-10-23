@@ -66,8 +66,8 @@ export const SECTION_LABEL: Record<Exclude<Section, 'fixed'>, string> = {
   admin: 'Administration',
 };
 
-/** Screens built by deliveries 1 to 5 (the others open the "coming soon" page). */
-export const BUILT: ReadonlySet<ScreenId> = new Set(SCREENS.filter((s) => s.delivery !== 'L6').map((s) => s.id));
+/** Screens built (deliveries 1 to 6: every screen of the registry). */
+export const BUILT: ReadonlySet<ScreenId> = new Set(SCREENS.map((s) => s.id));
 
 /** True when the profile has the screen in its workspace. */
 export function canSee(role: RoleKey, id: ScreenId): boolean {

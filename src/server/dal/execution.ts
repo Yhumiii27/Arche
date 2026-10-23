@@ -13,6 +13,7 @@ import { authorizations, capexLots, hsStatuses, lotActuals, packItems } from '@/
 import type { DB, Tx } from '@/server/db/types';
 import { projectsOf, type Epc2iProject } from '@/server/integrations/keystone';
 import { needsOf } from './needs';
+import { startupFacts } from './rampup';
 import { latestValidated, versionsOf } from './cycle';
 
 type Q = DB | Tx;
@@ -113,7 +114,7 @@ export async function packOf(q: Q, c: { id: string; code: string }, projects?: E
   return { items, projects: ps, summary: packSummary(items, epc2iPackOf(ps)) };
 }
 
-/** Facts of the criteria fed by delivery 5: safety milestones, permits, engineering pack and works lots. */
+/** Facts of the criteria fed by deliveries 5 and 6: safety milestones, permits, pack, works lots; ramp-up, closure, REX. */
 export async function deliveryFacts(q: Q, c: { id: string; code: string }, values: ModelValues, today: string): Promise<Record<string, CriterionFact>> {
   const [hs, permits, exec] = await Promise.all([hsOf(q, c.id), permitsOf(q, c.id), executionOf(q, c, today)]);
   const pack = await packOf(q, c, exec.projects);
@@ -123,5 +124,6 @@ export async function deliveryFacts(q: Q, c: { id: string; code: string }, value
     g2_permits: permitsFact(permits as PermitState[]),
     g2_pack: packFact(pack.summary, values.packThresholdPct),
     ...(works ? { k3_works: works } : {}),
+    ...(await startupFacts(q, c, values, today, exec.g2Keur)),
   };
 }

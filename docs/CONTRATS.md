@@ -240,6 +240,6 @@ tant qu’elles n’existent pas. Lecteurs accordés par Matrix (`partage/90-dro
 
 **`pub_rex`** — lecteur : `matrix_app`. Décision D22 de Matrix (22 oct. 2026, option A) : Arche garde le REX des CAPEX,
 Keystone celui des projets (`keystone.pub_rex`) ; Matrix réunit les deux. Contrat commun **à fixer avec Matrix et
-Keystone** avant la livraison 6 ; proposition, sur le modèle du journal unifié : `ref_source` (`rex_entries.id`),
+Keystone** ; la livraison 6 publie la proposition (migration `0014_share_rampup_rex`), sur le modèle du journal unifié : `ref_source` (`rex_entries.id`),
 `capex_code`, `projet_code` (null), `categorie`, `titre`, `texte`, `phase`, `publie_le`, `auteur`. Seules les entrées
 publiées (`published_at` renseignée) y figurent.

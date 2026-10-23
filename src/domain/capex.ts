@@ -178,7 +178,10 @@ export type CapexAction =
   | 'decide_gate'
   | 'suspend'
   | 'safety' // safety milestones declared by the group HSE (N-13)
-  | 'audit'; // cross-functional audit of a Strategic CAPEX (N-19)
+  | 'audit' // cross-functional audit of a Strategic CAPEX (N-19)
+  | 'rampup' // start of commissioning, production lines, daily ramp-up entries (N-16; the operations expert enters days)
+  | 'closure' // accounting closure statement of the subsidiary controller (N-15)
+  | 'rex'; // lessons learned entered by the team
 
 export interface CapexWriteFacts {
   code: string;
@@ -219,6 +222,12 @@ export function canDo(action: CapexAction, role: RoleKey, assignments: readonly 
       return open && on('group_hse');
     case 'audit':
       return c.status === 'active' && (on('dir_ig') || on('epc2i_pmo'));
+    case 'rampup':
+      return c.status === 'active' && (on('project_lead') || (role === 'expert' && assignments.some((a) => a.role === 'expert' && a.speciality === 'operations' && a.scopeKind === 'capex' && a.scopeRef === c.code)));
+    case 'closure':
+      return c.status === 'active' && on('controller');
+    case 'rex':
+      return open && (on('project_lead') || on('sponsor') || on('controller') || on('co_dig') || on('epc2i_pmo'));
   }
 }
 

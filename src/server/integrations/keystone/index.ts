@@ -62,6 +62,8 @@ export interface Epc2iProject {
   deliverables: { number: string; title: string; status: string; type: string | null; acceptedOn: string | null }[];
   /** EPC2i's part of the engineering pack, by family (pub_pack_ingenierie). */
   pack: { family: string; expected: number; validated: number; weight: number }[];
+  /** Machines of the installed base delivered by the project (pub_parc_machines, distinct numbers). */
+  machines: { number: string; name: string; deliveredOn: string | null }[];
 }
 
 const MILESTONE_ORDER = ['commande', 'fin_etudes', 'fat', 'expedition', 'arrivee_site', 'sat', 'pv_reception', 'fin_garantie'];
@@ -77,7 +79,7 @@ export async function projectsOf(q: Q, capexCode: string): Promise<Epc2iProject[
   const codes = [...new Set([...named, ...projects.map((p) => String(p.code))])].sort();
   if (!codes.length) return [];
   const sub = await q.select({ view: keystoneMirror.view, project: keystoneMirror.projectCode, data: keystoneMirror.data }).from(keystoneMirror)
-    .where(and(inArray(keystoneMirror.view, ['pub_jalons_projets', 'pub_avancement_projets', 'pub_avenants', 'pub_reserves', 'pub_livrables', 'pub_pack_ingenierie']), inArray(keystoneMirror.projectCode, codes))).orderBy(asc(keystoneMirror.key));
+    .where(and(inArray(keystoneMirror.view, ['pub_jalons_projets', 'pub_avancement_projets', 'pub_avenants', 'pub_reserves', 'pub_livrables', 'pub_pack_ingenierie', 'pub_parc_machines']), inArray(keystoneMirror.projectCode, codes))).orderBy(asc(keystoneMirror.key));
   const of = (view: string, code: string) => sub.filter((r) => r.view === view && r.project === code).map((r) => r.data);
   return codes.map((code) => {
     const p = projects.find((x) => x.code === code);
@@ -93,6 +95,7 @@ export async function projectsOf(q: Q, capexCode: string): Promise<Epc2iProject[
       amendments: of('pub_avenants', code).map((a) => ({ number: String(a.numero), subject: str(a.objet), amountKeur: num(a.montant_keur), delayDays: num(a.delai_jours), status: String(a.statut ?? ''), signedOn: date(a.signe_le) })),
       reserves: of('pub_reserves', code).map((r) => ({ number: String(r.numero), category: String(r.categorie ?? ''), origin: str(r.origine), status: String(r.statut ?? ''), owner: str(r.responsable), openedOn: date(r.ouverte_le), clearedOn: date(r.levee_le) })),
       deliverables: of('pub_livrables', code).map((d) => ({ number: String(d.number), title: String(d.title ?? ''), status: String(d.status ?? ''), type: str(d.type), acceptedOn: date(d.accepte_le) })),
+      machines: [...new Map(of('pub_parc_machines', code).map((m) => [String(m.number), { number: String(m.number), name: String(m.name ?? m.number), deliveredOn: date(m.livree_le) }])).values()],
       pack: of('pub_pack_ingenierie', code).map((f) => ({ family: String(f.famille ?? ''), expected: num(f.attendues) ?? 0, validated: num(f.validees) ?? 0, weight: num(f.poids) ?? 0 })),
     };
   });
