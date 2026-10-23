@@ -15,6 +15,7 @@ import { businessPlans, changes, circuitSteps, dossiers, dossierVersions, machin
 import { and } from 'drizzle-orm';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import { PACK_TEMPLATE } from '@/domain/pack';
+import { addDaysIso } from '@/lib/dates';
 import { takeSnapshots, weekOf } from '@/server/dal/governance';
 import { recomputeLines } from '@/server/dal/rampup';
 import { readValues } from '@/domain/lifecycle';
@@ -144,6 +145,8 @@ const DEMO_REVENUES = [
 const GATE_DECIDER_KEY: Record<GateCode, string> = { G1: 'dir_ig', G2: 'ceo', K3: 'dir_ig', G3: 'dir_ig' };
 const PHASE_AFTER: Record<GateCode, string> = { G1: 'avant_projet', G2: 'execution', K3: 'demarrage', G3: 'demarrage' };
 const at = (day: string) => new Date(`${day}T10:00:00Z`);
+/** Calendar days between the submission of a demonstration gate and its decision (the C-10 delay indicator reads them). */
+const DEMO_REVIEW_DAYS: Record<GateCode, number> = { G1: 6, G2: 16, K3: 7, G3: 14 };
 
 export async function seedDemo(tx: Tx): Promise<void> {
   await tx.insert(zones).values([...DEMO_ZONES]);
@@ -192,7 +195,7 @@ export async function seedDemo(tx: Tx): Promise<void> {
       const decider = GATE_DECIDER_KEY[code];
       const kind: DossierKind | null = code === 'G1' ? 'business_case' : code === 'G2' ? 'investment' : null;
       const version = kind ? await seedDossier(tx, capexId, c.code, kind, 'approved', on, nameOf(c.lead), idOf(c.lead), { typology: c.typology }) : null;
-      const [g] = await tx.insert(gates).values({ capexId, code, session: 1, status: 'decided', decision: 'go', decidedAt: at(on), decidedByName: nameOf(decider), decidedByUserId: idOf(decider), dossierVersionId: version?.id ?? null }).returning({ id: gates.id });
+      const [g] = await tx.insert(gates).values({ capexId, code, session: 1, status: 'decided', decision: 'go', createdAt: at(addDaysIso(on, -DEMO_REVIEW_DAYS[code])), decidedAt: at(on), decidedByName: nameOf(decider), decidedByUserId: idOf(decider), dossierVersionId: version?.id ?? null }).returning({ id: gates.id });
       await seedCircuit(tx, g.id, code, c.typology, on, version?.hash ?? null, (actor) => actor === 'sponsor' ? c.sponsor : actor, nameOf, idOf, c.code);
       await tx.insert(gateCriteriaResults).values({ gateId: g.id, criterionCode: code === 'G1' ? 'g1_budget_e50' : 'g2_budget_e10', state: 'met', value: code === 'G1' ? 'E50' : 'E10' });
       await tx.insert(phaseTransitions).values({ capexId, fromStatus: 'active', fromPhase: phase, toStatus: 'active', toPhase: PHASE_AFTER[code], gateCode: code, effectiveOn: on, byName: nameOf(decider), byUserId: idOf(decider), occurredAt: at(on) });

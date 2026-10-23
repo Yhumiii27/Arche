@@ -6,7 +6,7 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-23 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 27 faits, 4 en cours, 7 à faire, sur 38 points.
+**Avancement** : 27 faits, 5 en cours, 6 à faire, sur 38 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
@@ -44,7 +44,7 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 Les points « Bloquant production » restants, par domaine. Sans eux, Arche reste une démonstration.
 
 - **Plateforme et mise en production** : AR-014 Arche sur le serveur PostgreSQL commun (Matrix) *(en cours, Livraison 3)* ; AR-015 Hébergement en France et choix du serveur de production.
-- **Tableaux de bord et gouvernance** : AR-034 Pilote sur 1 à 2 CAPEX.
+- **Tableaux de bord et gouvernance** : AR-034 Pilote sur 1 à 2 CAPEX *(en cours, Pilote)*.
 
 ### 1.2 Ce qui attend le responsable produit
 
@@ -193,9 +193,9 @@ Livraison 5 (C-3, N-13).
 
 ### 2.8 Tableaux de bord et gouvernance (1 restants, 3 faits)
 
-**AR-034 · Pilote sur 1 à 2 CAPEX** — *Bloquant production · non commencé · effort M*  
+**AR-034 · Pilote sur 1 à 2 CAPEX** — *Bloquant production · non commencé · effort M* · **en cours (Pilote)**  
 Jeu production, utilisateurs réels, guides par rôle, mesure de référence (C-10).  
-*Sources : docs/PLAN.md*
+*Avancement : 23 oct. 2026 : lot de développement fait — reprise d'un CAPEX en cours par le Sponsor (N-20), écran Objectifs DIG-PRODI et référence de l'existant (C-10), guides par rôle, procédure et journal des retours. Restent les prérequis du responsable produit (hébergement C-13, Entra, D-1 à D-4, relevé de l'existant, choix des CAPEX) et les corrections issues des retours. · Sources : docs/PLAN.md*
 
 **~~AR-008 · Coquille, registre d’écrans, accueil, registre et fiche CAPEX, administration en lecture~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 1)**  
 25 écrans au registre ; ceux des livraisons suivantes affichent « prévu pour la livraison n ».  
@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-23 — Pilote lancé : reprise d'un CAPEX en cours (N-20 : phase, jalons franchis datés, budget validé ; jalons « Repris » sans circuit), écran Objectifs DIG-PRODI (C-10 : délai soumission → décision par jalon, documents statiques par dossier de jalon, décisions tracées ; référence de l'existant saisie par le Dir.IG, cibles −40 % / −50 % / 100 %), guides par rôle, procédure du pilote et journal des retours.
 - 2026-10-23 — REX au contrat commun de Matrix (D22, option 1) : vue pub_rex_v2 (15 colonnes, phase en fin de vue, migration 0016), recommandation facultative d'un REX (migration 0015) ; pub_rex v1 inchangée. Demande de Matrix marquée FAITE, M-13 mise à jour, K-13 retirée (doublon de la demande de Matrix chez Keystone).
 - 2026-10-23 — Demandes déposées (validées par Guillaume) : M-13 chez Matrix (partage de pub_rampup et pub_rex, REX réuni, Yhumiii27/Matrix#21) et K-13 chez Keystone (keystone.pub_rex au contrat commun, Yhumiii27/Keystone#27).
 - 2026-10-23 — Livraison 6 : début de la MES après le PSSR, lignes de production, saisie journalière et import CSV du ramp-up, série de 30 jours conformes, alertes M+5 / M+6, clôture comptable du CDG, REX et bibliothèque, vues pub_rampup et pub_rex, critères du G3 évalués ; CAPEX de démo en démarrage.

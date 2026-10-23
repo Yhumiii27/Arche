@@ -41,7 +41,13 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   production lines and daily ramp-up (`src/domain/rampup.ts`, right `rampup`: project lead or the CAPEX's operations expert;
   line results stored on `production_lines` by `recomputeLines`, read by `pub_rampup`), accounting closure (`src/domain/closure.ts`,
   right `closure`), lessons learned and library `/rex` (right `rex`, published by the lead or sponsor, view `pub_rex_v2`: the common REX contract of Matrix; `pub_rex` v1 kept), G3
-  criteria in `startupFacts`. Every screen of the registry is built. Next: the pilot (`docs/PLAN.md`); L7 after it.
+  criteria in `startupFacts`. Every screen of the registry is built.
+- **The pilot has started** (`docs/PILOTE.md` procedure and prerequisites; `docs/DELIVERY-PILOTE.md` the development lot):
+  takeover of a CAPEX in progress by its sponsor (N-20, `src/domain/takeover.ts`, `takeoverCapexAction`; gates
+  `taken_over`, no circuit), DIG-PRODI objectives `/kpi` (C-10, `src/domain/kpi.ts`, `src/server/dal/kpi.ts`; reference of
+  the existing process `kpi_baselines`, entered by the group industrial director), role guides `docs/guide/`, feedback log
+  `docs/RETOURS-PILOTE.md` (record each user feedback there). Next: the owner's prerequisites (hosting C-13, Entra, D-1 to
+  D-4, survey of the existing process), then corrections from the feedback; L7 after the pilot.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

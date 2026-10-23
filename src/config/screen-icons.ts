@@ -2,7 +2,7 @@
 import type { Icon } from '@phosphor-icons/react';
 import {
   Books, ChartLineUp, CheckSquareOffset, ClipboardText, Factory, FileText, Gauge, Gavel, GearSix, House, Key, ListChecks, MapTrifold,
-  Notebook, Path, PlugsConnected, Scales, ShieldCheck, Stack, Strategy, TrendUp, UsersThree, Warning, Buildings, Wrench, Wallet,
+  Notebook, Path, PlugsConnected, Scales, ShieldCheck, Stack, Strategy, Target, TrendUp, UsersThree, Warning, Buildings, Wrench, Wallet,
 } from '@phosphor-icons/react/dist/ssr';
 import type { ScreenId } from './screens';
 
@@ -13,6 +13,7 @@ export const SCREEN_ICONS: Record<ScreenId, Icon> = {
   map: MapTrifold,
   portfolio: ChartLineUp,
   copil: Gavel,
+  kpi: Target,
   rex: Books,
   'capex-overview': Factory,
   'capex-gates': Path,

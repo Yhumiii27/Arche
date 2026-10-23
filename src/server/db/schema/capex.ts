@@ -37,6 +37,9 @@ export const capex = arche.table('capex', {
   sponsorUserId: uuid('sponsor_user_id').references(() => users.id),
   leadUserId: uuid('lead_user_id').references(() => users.id),
   ...timestamps,
+  /** Takeover of a CAPEX already in progress (N-20, pilot): when and by whom it was opened in its current phase. */
+  takenOverAt: timestamp('taken_over_at', { withTimezone: true }),
+  takenOverByName: text('taken_over_by_name'),
 });
 
 /** Named CAPEX team (docs/spec/02 §3). */
@@ -148,6 +151,8 @@ export const gates = arche.table('gates', {
   /** The frozen dossier version the session decides on (delivery 3; none at K3). */
   dossierVersionId: uuid('dossier_version_id'),
   ...timestamps,
+  /** A gate passed before Arche, recorded at the takeover (N-20): no circuit, no signature; left out of the C-10 indicators. */
+  takenOver: boolean('taken_over').notNull().default(false),
 }, (t) => [unique('gates_session_uq').on(t.capexId, t.code, t.session)]);
 
 /** Snapshot of the criteria when the gate was decided. */
