@@ -103,3 +103,13 @@ qui_role text, action text, objet text, detail text, projet text, qui_matricule 
 Proposition : Matrix ajoute un niveau « société » (ou une table `matrix.societes`) et rattache chaque site à sa société ;
 Arche lit alors `matrix.pub_sites` / `pub_organigramme` au lieu de tenir ses propres tables `zones`, `subsidiaries`, `sites`
 (gardées en attendant, alimentées par l’administrateur d’Arche).
+
+## M-13 · Partager `arche.pub_rampup` et `arche.pub_rex`, réunir le REX (D22)
+
+**Déposée le 23 oct. 2026** dans le `REQUESTS.md` de Matrix (validée par Guillaume, Yhumiii27/Matrix#21), entrée OUVERTE.
+(1) Déclarer dans `partage/70-arche.sql` les deux vues de la livraison 6 : `arche.pub_rampup` (lecteurs `keystone_app`,
+`matrix_app`) et `arche.pub_rex` (lecteur `matrix_app`, déjà accordée dans `90-droits.sql`) ; (2) accorder `arche.pub_rampup`
+dans `90-droits.sql` ; (3) confirmer le contrat commun `pub_rex` (`ref_source`, `capex_code`, `projet_code`, `categorie`,
+`titre`, `texte`, `phase`, `publie_le`, `auteur`, voir [`CONTRATS.md`](CONTRATS.md) §3) et bâtir la vue de Matrix qui réunit
+`arche.pub_rex` et `keystone.pub_rex` (demande K-13 chez Keystone), colonne `outil`. Sans ces droits, les vues existent mais
+ne sont pas lues ; Arche n'est pas bloqué.

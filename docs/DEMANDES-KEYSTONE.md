@@ -21,6 +21,11 @@
 | K-10 | À la commande (passage d’un besoin à `ordered`), créer le projet EPC2i — ou ajouter des équipements à un projet existant — et publier son code dans `pub_reponses_besoins.projet_code` | R-185, R-187 | L4 | haute |
 | K-11 | Index sur `maj_le` (ou colonne source) des vues lues, pour la lecture incrémentale d’Arche | R-189 | L4 | basse |
 | K-12 | Socle partagé `@epc2i/socle` : Arche consommera le paquet à la place de ses copies (liste dans [`SOCLE.md`](SOCLE.md)) | R-194 | après le pilote | basse |
+| K-13 | Publier **`keystone.pub_rex`** au contrat commun du REX (`ref_source`, `capex_code`, `projet_code`, `categorie`, `titre`, `texte`, `phase`, `publie_le`, `auteur` ; correspondance proposée depuis `lessons_learned`) — D22 de Matrix, réuni par Matrix (M-13) | — | après L6 (REX groupe) | moyenne |
+
+> **K-13 déposée le 23 oct. 2026** dans le `REQUESTS.md` de Keystone (validée par Guillaume, Yhumiii27/Keystone#27), entrée
+> OUVERTE « Publier `keystone.pub_rex` au contrat commun du REX (D22) ». `arche.pub_rampup` (lue par K-09) est publiée depuis
+> la livraison 6.
 
 Questions à transmettre en même temps : AC-2 (P-05), AC-4 (catalogue), AC-5 (multi-équipements) — voir
 [`DECISIONS.md`](DECISIONS.md) §3.
