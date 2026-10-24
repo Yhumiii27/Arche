@@ -94,6 +94,10 @@
     {
       "date": "2026-10-24",
       "text": "Démo d'un serveur existant : npm run db:demo-topup complète une base de démonstration créée avant les derniers lots (sites localisés, CAPEX SAI-02 et 03, COPIL GPI, REX, actions, WBS) sans rien modifier ; EXPLOITATION.md § 4.5."
+    },
+    {
+      "date": "2026-10-24",
+      "text": "db:demo-topup couvre aussi les livraisons 4 à 6 (besoins machines, jalons de sécurité, autorisations, pack, réalisé, démarrage et montée en cadence de CPX-APM-2025-01, revues et instantanés) : la base du serveur de démonstration datait d'avant la livraison 4b."
     }
   ],
   "items": [

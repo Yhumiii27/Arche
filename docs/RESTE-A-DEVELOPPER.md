@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-24 — db:demo-topup couvre aussi les livraisons 4 à 6 (besoins machines, jalons de sécurité, autorisations, pack, réalisé, démarrage et montée en cadence de CPX-APM-2025-01, revues et instantanés) : la base du serveur de démonstration datait d'avant la livraison 4b.
 - 2026-10-24 — Démo d'un serveur existant : npm run db:demo-topup complète une base de démonstration créée avant les derniers lots (sites localisés, CAPEX SAI-02 et 03, COPIL GPI, REX, actions, WBS) sans rien modifier ; EXPLOITATION.md § 4.5.
 - 2026-10-24 — Déploiement automatique : workflow GitHub « Deploy » qui appelle le webhook Coolify après une CI verte sur main (ou à la main) ; EXPLOITATION.md § 4.4 (secrets COOLIFY_WEBHOOK et COOLIFY_TOKEN, ou Auto Deploy de Coolify).
 - 2026-10-24 — Sécurité : Next.js 16.4.3 (et eslint-config-next), zod 4.6.7 (GHSA-mrhx-c7xc-m3w5) ; reste l'avertissement « moderate » d'esbuild, embarqué par drizzle-kit (outil de développement, absent de l'image).
