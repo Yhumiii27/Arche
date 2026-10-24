@@ -19,7 +19,7 @@ export interface SiteGroup {
   items: CapexMapPoint[];
 }
 
-export function MapPanels({ points, labels, zone, groups, sitesLabel, emptyText, unlocatedText }: {
+export function MapPanels({ points, labels, zone, groups, sitesLabel, emptyText, unlocated, unlocatedTitle, unlocatedHint }: {
   points: CapexMapPoint[];
   labels: CapexMapLabels;
   zone: { label: string; bounds: GeoBounds } | null;
@@ -27,7 +27,9 @@ export function MapPanels({ points, labels, zone, groups, sitesLabel, emptyText,
   sitesLabel: string;
   emptyText: string;
   /** "1 CAPEX without location: …", or null. */
-  unlocatedText: string | null;
+  unlocated: { code: string; name: string; href: string }[];
+  unlocatedTitle: string;
+  unlocatedHint: string;
 }) {
   const mapRef = useRef<CapexMapHandle>(null);
   const [hl, setHl] = useState<string | null>(null);
@@ -63,7 +65,23 @@ export function MapPanels({ points, labels, zone, groups, sitesLabel, emptyText,
             ))}
           </div>
         ))}
-        {unlocatedText && <span className={s.hint}>{unlocatedText}</span>}
+        {unlocated.length > 0 && (
+          <div className={`card elev-sm ${s.site}`}>
+            <div className={s.siteHead}>
+              <MapPin className={s.pin} aria-hidden />
+              <span className={s.city}>{unlocatedTitle}</span>
+              <span className={s.where}>{unlocated.length}</span>
+            </div>
+            {unlocated.map((u) => (
+              <Link key={u.code} href={u.href} className={s.item}>
+                <span className={s.itemText}>
+                  <span className={s.itemName}>{`${u.code} · ${u.name}`}</span>
+                </span>
+              </Link>
+            ))}
+            <span className={s.hint}>{unlocatedHint}</span>
+          </div>
+        )}
       </div>
     </div>
   );

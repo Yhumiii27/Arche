@@ -86,6 +86,7 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
 
 ```bash
 npm ci && npm run db:local && npm run db:migrate   # .env.local: see .env.example
+npm run db:reset-demo                              # local only: drop schema arche, reseed the current demo data set
 npx next typegen && npm run typecheck && npm run lint && npm test
 npm run dev                                         # http://localhost:3400
 ```

@@ -13,6 +13,7 @@
     "test": "vitest run",
     "remaining:page": "tsx scripts/remaining-work/build.ts",
     "db:local": "tsx scripts/db-local.ts",
+    "db:reset-demo": "tsx scripts/db-local.ts --reset && npm run db:migrate",
     "test:smoke": "tsx tests/smoke/run.ts",
     "questionnaire:page": "tsx scripts/questionnaire/build.ts",
     "worker": "tsx --conditions=react-server scripts/worker.ts",

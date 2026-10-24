@@ -27,8 +27,8 @@ async function main(): Promise<void> {
   check(home.headers.get('x-frame-options') === 'DENY', 'X-Frame-Options: DENY');
 
   const expected: Record<string, string[]> = {
-    ceo: ['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-APM-2026-02', 'CPX-SAI-2026-01'],
-    dir_ig: ['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-SAI-2026-01'],
+    ceo: ['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-APM-2026-02', 'CPX-SAI-2026-01', 'CPX-SAI-2026-02', 'CPX-SAI-2026-03'],
+    dir_ig: ['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-SAI-2026-01', 'CPX-SAI-2026-02', 'CPX-SAI-2026-03'],
     sponsor: ['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-APM-2026-02'],
     zone_director: ['CPX-APM-2025-01', 'CPX-APM-2026-01'],
     epc2i_pmo: ['CPX-SAI-2026-01'],
@@ -93,6 +93,9 @@ async function main(): Promise<void> {
   const rex = await get('/rex', 'sponsor');
   check(rex.status === 200 && rex.body.includes('Associer le directeur d’usine dès le cadrage'), 'lessons learned library');
   check((await get('/rex', 'epc2i_pmo')).body.includes('Associer le directeur d’usine') === false, 'the library follows the subsidiary isolation');
+  const copilAgendaPage = await get('/copil', 'dir_ig');
+  check(copilAgendaPage.status === 200 && copilAgendaPage.body.includes('CPX-SAI-2026-02') && copilAgendaPage.body.includes('CPX-SAI-2026-03'), 'COPIL GPI: a G1 in review and a recent G1 decision');
+  check((await get('/rex', 'dir_ig')).body.includes('Séparer les accès chantier'), 'lessons learned of several CAPEX in the library');
   const kpi = await get('/kpi', 'dir_ig');
   check(kpi.status === 200 && kpi.body.includes('Objectifs DIG-PRODI') && kpi.body.includes('Délai de validation du G1') && kpi.body.includes('Saisir la référence'), 'DIG-PRODI objectives: indicators and the reference form of the group industrial director');
   check((await get('/kpi', 'ceo')).body.includes('Saisir la référence') === false, 'only the group industrial director enters the references');

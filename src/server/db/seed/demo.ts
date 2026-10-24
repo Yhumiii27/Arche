@@ -36,6 +36,7 @@ export const DEMO_SUBSIDIARIES = [
 const DEMO_SITES = [
   { subsidiaryCode: 'APM', name: 'Kénitra plant', city: 'Kénitra', countryIso2: 'MA', latitude: 34.261, longitude: -6.58 },
   { subsidiaryCode: 'SAI', name: 'Thiès site', city: 'Thiès', countryIso2: 'SN', latitude: 14.791, longitude: -16.926 },
+  { subsidiaryCode: 'SAI', name: 'Kaolack plant', city: 'Kaolack', countryIso2: 'SN', latitude: 14.152, longitude: -16.073 },
 ] as const;
 
 interface DemoPerson {
@@ -67,7 +68,7 @@ export const DEMO_PEOPLE: DemoPerson[] = [
   { key: 'expert', name: 'Aminata Diop', email: `a.diop@${SAI}`, title: 'HSE manager', subsidiary: 'SAI', roles: [{ role: 'expert', scope: 'capex', ref: 'CPX-SAI-2026-01', speciality: 'hse' }] },
   { key: 'admin', name: 'Arche administrator', email: `admin.arche@${G}`, title: 'Arche administrator', subsidiary: null, roles: [{ role: 'admin', scope: 'group', ref: null }] },
   { key: 'sai_sponsor', name: 'Moussa Ndiaye', email: `m.ndiaye@${SAI}`, title: 'Managing director', subsidiary: 'SAI', roles: [{ role: 'sponsor', scope: 'subsidiary', ref: 'SAI' }] },
-  { key: 'sai_lead', name: 'Fatou Sarr', email: `f.sarr@${SAI}`, title: 'Dedicated project lead', subsidiary: 'SAI', roles: [{ role: 'project_lead', scope: 'capex', ref: 'CPX-SAI-2026-01' }] },
+  { key: 'sai_lead', name: 'Fatou Sarr', email: `f.sarr@${SAI}`, title: 'Dedicated project lead', subsidiary: 'SAI', roles: [{ role: 'project_lead', scope: 'capex', ref: 'CPX-SAI-2026-01' }, { role: 'project_lead', scope: 'capex', ref: 'CPX-SAI-2026-02' }, { role: 'project_lead', scope: 'capex', ref: 'CPX-SAI-2026-03' }] },
   { key: 'sai_controller', name: 'Ibrahima Fall', email: `i.fall@${SAI}`, title: 'Management controller', subsidiary: 'SAI', roles: [{ role: 'controller', scope: 'subsidiary', ref: 'SAI' }] },
 ];
 
@@ -133,6 +134,24 @@ const DEMO_CAPEX: DemoCapex[] = [
       { title: 'Building permit appeal', category: 'regulatory', p: 1, i: 4, owner: 'sai_lead', response: 'Appeal period expired', status: 'closed' },
     ],
     decisions: [['2026-01-20', 'copil_gpi', 'G1 Go: studies released'], ['2026-07-08', 'ceo', 'G2 Go: CAPEX in force, baseline E10']],
+  },
+  {
+    // COPIL GPI demonstration: a CAPEX in phase 1 whose G1 waits for the committee (its circuit is seeded in seedCopil).
+    code: 'CPX-SAI-2026-02', subsidiary: 'SAI', site: 'Kaolack plant', title: 'Aseptic packaging line', investmentType: 'new_line', status: 'active', phase: 'cadrage', typology: 'light',
+    sponsor: 'sai_sponsor', lead: 'sai_lead', team: [['sai_lead', 'lead'], ['sai_controller', 'controller']], openedOn: '2026-08-17', needDate: '2027-11-01',
+    passed: [], lots: [['civil_works', 'Hall adaptation'], ['machines', 'Aseptic filler (EPC2i)']],
+    versions: [{ cls: 'E50', status: 'validated', amounts: [250, 1900], on: '2026-09-25', basis: 'Ratios and EPC2i catalogue prices' }],
+    risks: [{ title: 'Sterile water quality not demonstrated', category: 'technical', p: 2, i: 3, owner: 'sai_lead', response: 'Water analysis campaign before the G2' }],
+    decisions: [],
+  },
+  {
+    // A G1 decided by the COPIL GPI less than 90 days ago.
+    code: 'CPX-SAI-2026-03', subsidiary: 'SAI', site: 'Thiès site', title: 'Solar power plant for the Thiès site', investmentType: 'other', status: 'active', phase: 'avant_projet', typology: 'light',
+    sponsor: 'sai_sponsor', lead: 'sai_lead', team: [['sai_lead', 'lead'], ['sai_controller', 'controller']], openedOn: '2026-07-06', needDate: '2027-06-01',
+    passed: [['G1', '2026-09-24']], lots: [['civil_works', 'Ground-mounted structures'], ['utilities', 'Panels, inverters and grid connection']],
+    versions: [{ cls: 'E50', status: 'validated', amounts: [400, 1300], on: '2026-09-10', basis: 'Two integrators’ budgetary quotes' }],
+    risks: [{ title: 'Grid operator’s connection study late', category: 'schedule', p: 3, i: 2, owner: 'sai_lead', response: 'Study requested with the G1 dossier', due: '2026-12-01' }],
+    decisions: [['2026-09-24', 'copil_gpi', 'G1 Go: grid connection study to deliver before the preliminary design']],
   },
 ];
 
@@ -221,16 +240,16 @@ const DEMO_SECTION_TEXT: Record<string, string> = {
   schedule: 'Order, works, commissioning, ramp-up and G3 planned.',
 };
 
-async function seedDossier(tx: Tx, capexId: string, code: string, kind: DossierKind, state: 'approved' | 'draft', on: string, by: string, byId: string, facts: { typology: string | null } = { typology: null }) {
+async function seedDossier(tx: Tx, capexId: string, code: string, kind: DossierKind, state: 'approved' | 'frozen' | 'draft', on: string, by: string, byId: string, facts: { typology: string | null } = { typology: null }) {
   const [d] = await tx.insert(dossiers).values({ capexId, kind }).returning({ id: dossiers.id });
   const content = emptyContent(kind);
-  for (const sec of SECTIONS[kind]) if (sec.mode === 'text' && (state === 'approved' || sec.key === 'baseline')) content.sections[sec.key].text = DEMO_SECTION_TEXT[sec.key] ?? 'Done.';
+  for (const sec of SECTIONS[kind]) if (sec.mode === 'text' && (state !== 'draft' || sec.key === 'baseline')) content.sections[sec.key].text = DEMO_SECTION_TEXT[sec.key] ?? 'Done.';
   if (kind === 'business_case' && code === 'CPX-APM-2026-01') {
     content.sections.strategy.refs.push({ id: 'NOT-CPX-APM-2026-01-001', revision: 'B', title: 'Market study — extruded profiles 2027–2031', verified: true });
     content.sections.safety.refs.push({ id: 'NOT-CPX-APM-2026-01-002', revision: 'A', title: 'HazID report — second extrusion line', verified: true });
   }
   if (kind === 'investment' && code === 'CPX-APM-2026-01') content.sections.pack.refs.push({ id: 'PID-CPX-APM-2026-01-001', revision: 'A', title: 'P&ID — extrusion line and cooling', verified: true });
-  const frozen = state === 'approved';
+  const frozen = state !== 'draft';
   const computed = frozen ? await computedSnapshot(tx, { id: capexId, typology: facts.typology, typologySource: facts.typology ? 'computed' : null }) : null;
   const hash = frozen ? createHash('sha256').update(canonicalJson({ kind, number: 1, content, computed })).digest('hex') : null;
   const [v] = await tx.insert(dossierVersions).values({
@@ -292,6 +311,7 @@ async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: s
   await syncKeystone(tx, { now: at('2026-10-22'), mode: 'simulation' });
   await seedStartup(tx, apm25, nameOf);
   await seedGovernance(tx, apm, sai, nameOf);
+  await seedCopil(tx, await id('CPX-SAI-2026-02'), sai, await id('CPX-SAI-2026-03'), idOf, nameOf);
 }
 
 /**
@@ -417,5 +437,40 @@ async function seedDelivery(tx: Tx, apm: string, sai: string, nameOf: (k: string
     row(2, '2026-08', 2400, 240, 10), row(2, '2026-09', 2450, 620, 25), row(2, '2026-10', 2450, 1000, 40),
     row(3, '2026-09', 3200, 0, 0), row(3, '2026-10', 3250, 150, 5),
     row(4, '2026-10', 900, 0, 0),
+  ]);
+}
+
+/**
+ * COPIL GPI demonstration: the G1 of CPX-SAI-2026-02 in review since 15 October (business case frozen, HSE opinion and sponsor
+ * visa given, the COPIL members' review and the decision of its president open, past the 2 working days), and the lessons
+ * learned of the SAI CAPEX for the library.
+ */
+async function seedCopil(tx: Tx, packaging: string, plant: string, solar: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
+  const on = '2026-10-15';
+  const version = await seedDossier(tx, packaging, 'CPX-SAI-2026-02', 'business_case', 'frozen', on, nameOf('sai_lead'), idOf('sai_lead'), { typology: 'light' });
+  const [g] = await tx.insert(gates).values({ capexId: packaging, code: 'G1', session: 1, status: 'in_review', dossierVersionId: version.id, createdAt: at(on) }).returning({ id: gates.id });
+  const tpl = circuitTemplate('G1', 'light');
+  for (const [i, x] of tpl.entries()) {
+    const done = x.group < 3;
+    const key = x.actor === 'expert' ? 'group_hse' : x.actor === 'sponsor' ? 'sai_sponsor' : null;
+    const outcome = x.kind === 'opinion' ? 'favorable' : 'approved';
+    const [st] = await tx.insert(circuitSteps).values({
+      gateId: g.id, position: i + 1, group: x.group, kind: x.kind, actor: x.actor, speciality: x.speciality ?? null, label: x.label, optional: !!x.optional, decides: !!x.decides,
+      status: done ? 'done' : 'open', openedOn: done ? on : '2026-10-16', dueOn: done ? on : '2026-10-20',
+      outcome: done ? outcome : null, comment: x.kind === 'opinion' ? 'HazID done; sterile area to detail at the APS.' : null,
+      actedByName: done && key ? nameOf(key) : null, actedByUserId: done && key ? idOf(key) : null, actedAt: done ? at('2026-10-16') : null,
+    }).returning({ id: circuitSteps.id });
+    if (done && key && x.kind !== 'opinion') {
+      await tx.insert(signatures).values({ circuitStepId: st.id, userId: idOf(key), userName: nameOf(key), signedAt: at('2026-10-16'), contentHash: version.hash, statement: `${x.label} — CPX-SAI-2026-02, G1 session 1, dossier version 1, SHA-256 ${version.hash}: ${outcome}` });
+    }
+  }
+  const lead = nameOf('sai_lead');
+  const rex = (capexId: string, number: number, phase: string, category: string, title: string, text: string, published: string) => ({ capexId, number, phase, category, title, text, authorName: lead, publishedAt: at(published) });
+  await tx.insert(rexEntries).values([
+    rex(plant, 1, 'cadrage', 'cost', 'Budget the servicing of the plot from the framing', 'Water and power servicing of the plot was missing from the E50: four more per cent at the E30.', '2026-02-05'),
+    rex(plant, 2, 'avant_projet', 'regulatory', 'File the environmental permit with the preliminary design', 'Waiting for the detailed design cost six weeks on the environmental permit.', '2026-07-20'),
+    rex(plant, 3, 'avant_projet', 'supplier', 'Align the validity of the EPC2i offer with the G2 date', 'The firm offer expired one week before the G2: EPC2i had to renew it.', '2026-07-20'),
+    rex(plant, 4, 'execution', 'hse', 'Separate the site accesses of trucks and pedestrians', 'Two near misses between trucks and pedestrians in August; separate accesses since then.', '2026-09-05'),
+    rex(solar, 1, 'cadrage', 'technical', 'Check the load capacity of roofs before the E50', 'The roof option was dropped at the G1: structure too weak, ground-mounted panels retained.', '2026-09-30'),
   ]);
 }
