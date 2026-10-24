@@ -4,6 +4,7 @@
 // cancelled (the same, or the owner of the action). Each one reads the CAPEX through the viewer's visibility inside its
 // transaction, validates its input with src/domain/actions.ts and audits the change.
 import { and, eq } from 'drizzle-orm';
+import { revalidatePath } from 'next/cache';
 import { checkAction, checkClosing, type ActionStatus } from '@/domain/actions';
 import { canDo, nextNumber, refOf } from '@/domain/capex';
 import { writeAudit } from '@/server/db/helpers';
@@ -12,7 +13,7 @@ import { auditOf, fieldsOf, onCapex, REFUSED, type ActionResult } from '@/server
 import { actionPeople } from '@/server/dal/actions';
 
 export async function saveActionAction(code: string, actionId: string | null, _prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  return onCapex(code, 'actions', async (tx, c, v) => {
+  const r = await onCapex(code, 'actions', async (tx, c, v) => {
     const people = new Set((await actionPeople(tx, c)).map((p) => p.value));
     const ch = checkAction(fieldsOf(fd), { people });
     if (!ch.ok) return ch;
@@ -29,6 +30,9 @@ export async function saveActionAction(code: string, actionId: string | null, _p
     await writeAudit(tx, auditOf(v, c, `action ${refOf('A', number)} opened: ${ch.value.title}`, { entityType: 'capex_action', entityId: a.id, after: { ...ch.value } }));
     return { ok: true };
   });
+  // "My actions" on Home.
+  if (r.ok) revalidatePath('/');
+  return r;
 }
 
 export async function closeActionAction(code: string, actionId: string, outcome: 'done' | 'cancelled', note: string): Promise<ActionResult> {

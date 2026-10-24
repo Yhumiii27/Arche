@@ -78,6 +78,10 @@
     {
       "date": "2026-10-24",
       "text": "Retours du pilote (4) : WBS et Gantt du CAPEX (tâches sous les lots ou au niveau du CAPEX, jalons, lots à leurs mois prévus, projets EPC2i en une barre de synthèse, jalons du cycle) ; « Planning des CAPEX » dans les portefeuilles groupe et filiale, une barre de synthèse par CAPEX."
+    },
+    {
+      "date": "2026-10-24",
+      "text": "Retours du pilote (5) : « Nouvelle action » sur les pages hors CAPEX avec le choix du CAPEX ; carte : un CAPEX sans site localisé est placé au centre de son pays ; db:reset-demo compatible avec PostgreSQL de Homebrew."
     }
   ],
   "items": [

@@ -1,17 +1,19 @@
 // npm run db:local — creates Arche's database on a developer's PostgreSQL server: database `epc2i` (ARCHE_LOCAL_DATABASE),
 // role arche_app (password ARCHE_LOCAL_PASSWORD, default "arche-dev") and schema `arche`, the layout of the shared EPC2I
 // server (Matrix). Connects with ARCHE_ADMIN_URL (a superuser; default postgres://postgres:postgres@127.0.0.1:5432/postgres)
-// and prints the DATABASE_URL to put in .env.local. Then: npm run db:migrate. Never run it against the shared server: there,
+// — on a Mac with Homebrew's PostgreSQL, whose superuser is the macOS account without password, that account is tried when the
+// default fails — and prints the DATABASE_URL to put in .env.local. Then: npm run db:migrate. Never run it against the shared server: there,
 // Matrix's base layer creates the role and the schema.
 // npm run db:reset-demo (`--reset`) first drops the local schema `arche` with all its data, so that the next migration seeds
 // the current demonstration data set (a database is seeded only once, when empty). Local servers only.
+import { userInfo } from 'node:os';
 import pg from 'pg';
 import { loadEnvFiles } from '@/server/config/env-files';
 import { appUrlOf, provisionDatabase, provisionSchema, withDatabase } from '@/server/db/provision';
 
 async function main(): Promise<void> {
   loadEnvFiles(process.cwd());
-  const adminUrl = process.env.ARCHE_ADMIN_URL || 'postgres://postgres:postgres@127.0.0.1:5432/postgres';
+  const adminUrl = process.env.ARCHE_ADMIN_URL || (await defaultAdminUrl());
   const reset = process.argv.includes('--reset');
   if (reset && !['127.0.0.1', 'localhost', '::1', '[::1]'].includes(new URL(adminUrl).hostname)) throw new Error('--reset only runs against a local PostgreSQL server');
   const database = process.env.ARCHE_LOCAL_DATABASE || 'epc2i';
@@ -35,6 +37,23 @@ async function main(): Promise<void> {
     await inDb.end();
   }
   console.log(`Database "${database}" ready (role arche_app, schema arche).\nDATABASE_URL=${appUrlOf(adminUrl, database, password)}`);
+}
+
+/** postgres:postgres, else the OS account without password (Homebrew), else postgres:postgres again for its error message. */
+async function defaultAdminUrl(): Promise<string> {
+  const candidates = ['postgres://postgres:postgres@127.0.0.1:5432/postgres', `postgres://${encodeURIComponent(userInfo().username)}@127.0.0.1:5432/postgres`];
+  for (const url of candidates) {
+    const c = new pg.Client({ connectionString: url });
+    try {
+      await c.connect();
+      return url;
+    } catch {
+      // next candidate
+    } finally {
+      await c.end().catch(() => undefined);
+    }
+  }
+  return candidates[0];
 }
 
 main().catch((e) => {
