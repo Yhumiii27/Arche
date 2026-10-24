@@ -8,13 +8,14 @@ import { PageHeader } from '@/components/app/shell/page-header';
 import type { CapexMapPoint } from '@/components/charts/capex-map';
 import { canSee, screenHref } from '@/config/screens';
 import { capexMapKpis, capexMarkerStyle, uniq } from '@/domain/capex-map';
-import { PHASE_LABEL, STATUS_LABEL, labelOf } from '@/domain/capex-labels';
+import { PHASE_SHORT, STATUS_LABEL, labelOf } from '@/domain/capex-labels';
 import { NewCapexButton } from '@/features/capex/forms';
 import { newCapexProps } from '@/features/capex/new-capex';
 import { MapPanels, type SiteGroup } from '@/features/map/map-panels';
 import s from '@/features/map/map.module.css';
 import { dataText } from '@/i18n/data-text';
 import { fmtKeur } from '@/lib/format';
+import { locatedSitesOf } from '@/server/dal/capex';
 import { portfolioOf } from '@/server/dal/portfolio';
 import { getI18n, getViewer, getZone } from '@/server/session';
 
@@ -30,19 +31,26 @@ export default async function CapexMapPage() {
       return iso2;
     }
   };
-  const located = p.rows.filter((c) => c.latitude != null && c.longitude != null);
-  const points: CapexMapPoint[] = located.map((c) => {
+  // A CAPEX whose site has no coordinates (or without a site) is placed at the first located site of its subsidiary, marked
+  // "Site to specify"; without any located site of its subsidiary it is listed as not located.
+  const fallback = await locatedSitesOf([...new Set(p.rows.filter((c) => c.latitude == null || c.longitude == null).map((c) => c.subsidiaryCode))]);
+  const placed = p.rows.map((c) => {
+    if (c.latitude != null && c.longitude != null) return { c, lat: c.latitude, lng: c.longitude, city: c.siteCity ?? c.siteName, country: c.siteCountry, approx: false };
+    const f = fallback.get(c.subsidiaryCode);
+    return f ? { c, lat: f.latitude, lng: f.longitude, city: f.city ?? f.name, country: f.countryIso2, approx: true } : null;
+  });
+  const points: CapexMapPoint[] = placed.filter((x) => x !== null).map(({ c, lat, lng, city, country, approx }) => {
     const style = capexMarkerStyle(c.status, c.phase);
     return {
       code: c.code,
       name: `${c.code} · ${dataText(c.title, lang)}`,
-      sub: [c.subsidiaryCode, c.leadName].filter(Boolean).join(' · '),
-      city: dataText(c.siteCity ?? c.siteName, lang) ?? '—',
-      country: countryName(c.siteCountry),
-      lat: c.latitude!,
-      lng: c.longitude!,
+      sub: [c.subsidiaryCode, c.leadName, approx ? t('Site to specify') : null].filter(Boolean).join(' · '),
+      city: dataText(city, lang) ?? '—',
+      country: countryName(country),
+      lat,
+      lng,
       style,
-      status: { label: c.status === 'active' ? t(labelOf(PHASE_LABEL, c.phase)) : t(labelOf(STATUS_LABEL, c.status)), tone: c.status === 'active' ? 'accent' : 'outline' },
+      status: { label: c.status === 'active' ? t(labelOf(PHASE_SHORT, c.phase)) : t(labelOf(STATUS_LABEL, c.status)), tone: c.status === 'active' ? 'accent' : 'outline' },
       health: null,
       href: screenHref('capex-overview', { code: c.code }),
     };
@@ -54,7 +62,7 @@ export default async function CapexMapPage() {
       return { key: k, city: items[0].city, country: items[0].country, focusCode: items[0].code, items };
     })
     .sort((a, b) => b.items.length - a.items.length || a.city.localeCompare(b.city));
-  const unlocated = p.rows.filter((c) => c.latitude == null || c.longitude == null);
+  const unlocated = p.rows.filter((_, i) => placed[i] === null);
   const kpis = capexMapKpis(points, unlocated.length);
   const budget = p.rows.reduce((a, c) => a + (c.validatedKeur ?? 0), 0);
   const newCapex = await newCapexProps(viewer, lang);
@@ -76,7 +84,9 @@ export default async function CapexMapPage() {
           groups={groups}
           sitesLabel={t('Sites')}
           emptyText={t('No CAPEX located in this zone')}
-          unlocatedText={unlocated.length ? t(`Without location: ${unlocated.map((c) => c.code).join(', ')}`) : null}
+          unlocated={unlocated.map((c) => ({ code: c.code, name: dataText(c.title, lang), href: screenHref('capex-overview', { code: c.code }) }))}
+          unlocatedTitle={t('Not on the map')}
+          unlocatedHint={t('No located site in its subsidiary: give the site coordinates in Administration › Subsidiaries, sites, zones, then choose the site in the identity sheet.')}
           labels={{
             world: t('World'), europe: t('Europe'), fit: t('CAPEX'), ontrack: t('Phases 3–4'), risk: t('On hold'), pipeline: t('Phases 1–2'), closed: t('Draft or closed'),
             open: t('Open the CAPEX'), loading: t('Loading the map…'), failed: t('The map could not be loaded'), close: t('Close'), map: t('CAPEX map'), legend: t('Legend'), views: t('Framing'),

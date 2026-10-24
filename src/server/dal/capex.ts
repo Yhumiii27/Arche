@@ -83,6 +83,16 @@ export async function siteOptions(subsidiaryCode: string): Promise<{ value: stri
   return rows.map((s) => ({ value: s.id, label: s.name }));
 }
 
+/** The first located site of each subsidiary (the CAPEX map places a CAPEX without a located site there, marked approximate). */
+export async function locatedSitesOf(subsidiaryCodes: readonly string[]): Promise<Map<string, { name: string; city: string | null; countryIso2: string; latitude: number; longitude: number }>> {
+  if (!subsidiaryCodes.length) return new Map();
+  const db = await getDb();
+  const rows = await db.select().from(sites).where(inArray(sites.subsidiaryCode, [...subsidiaryCodes])).orderBy(asc(sites.name));
+  const out = new Map<string, { name: string; city: string | null; countryIso2: string; latitude: number; longitude: number }>();
+  for (const s of rows) if (s.latitude != null && s.longitude != null && !out.has(s.subsidiaryCode)) out.set(s.subsidiaryCode, { name: s.name, city: s.city, countryIso2: s.countryIso2, latitude: s.latitude, longitude: s.longitude });
+  return out;
+}
+
 /** True when the CAPEX is one of the viewer's own: named on it, its sponsor or its project lead. */
 export function isMine(viewer: Viewer, c: { code: string; leadUserId: string | null; sponsorUserId: string | null }): boolean {
   return c.leadUserId === viewer.userId || c.sponsorUserId === viewer.userId || viewer.assignments.some((a) => a.scopeKind === 'capex' && a.scopeRef === c.code);

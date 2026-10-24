@@ -3,6 +3,8 @@
 // server (Matrix). Connects with ARCHE_ADMIN_URL (a superuser; default postgres://postgres:postgres@127.0.0.1:5432/postgres)
 // and prints the DATABASE_URL to put in .env.local. Then: npm run db:migrate. Never run it against the shared server: there,
 // Matrix's base layer creates the role and the schema.
+// npm run db:reset-demo (`--reset`) first drops the local schema `arche` with all its data, so that the next migration seeds
+// the current demonstration data set (a database is seeded only once, when empty). Local servers only.
 import pg from 'pg';
 import { loadEnvFiles } from '@/server/config/env-files';
 import { appUrlOf, provisionDatabase, provisionSchema, withDatabase } from '@/server/db/provision';
@@ -10,6 +12,8 @@ import { appUrlOf, provisionDatabase, provisionSchema, withDatabase } from '@/se
 async function main(): Promise<void> {
   loadEnvFiles(process.cwd());
   const adminUrl = process.env.ARCHE_ADMIN_URL || 'postgres://postgres:postgres@127.0.0.1:5432/postgres';
+  const reset = process.argv.includes('--reset');
+  if (reset && !['127.0.0.1', 'localhost', '::1', '[::1]'].includes(new URL(adminUrl).hostname)) throw new Error('--reset only runs against a local PostgreSQL server');
   const database = process.env.ARCHE_LOCAL_DATABASE || 'epc2i';
   const password = process.env.ARCHE_LOCAL_PASSWORD || 'arche-dev';
   const admin = new pg.Client({ connectionString: adminUrl });
@@ -22,6 +26,10 @@ async function main(): Promise<void> {
   const inDb = new pg.Client({ connectionString: withDatabase(adminUrl, database) });
   await inDb.connect();
   try {
+    if (reset) {
+      await inDb.query('DROP SCHEMA IF EXISTS arche CASCADE');
+      console.log('Schema "arche" dropped (local reset).');
+    }
     await provisionSchema(inDb);
   } finally {
     await inDb.end();

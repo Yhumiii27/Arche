@@ -107,12 +107,14 @@ describe('delivery 5: dashboards and governance', () => {
     expect((await portfolioDashboard(await getViewer(), null)).rows.map((r) => r.code)).toEqual(['CPX-APM-2025-01', APM]);
     as('dir_ig');
     const p = await portfolioDashboard(await getViewer(), null);
-    expect(p.rows.map((r) => r.code)).toEqual(['CPX-APM-2025-01', APM, SAI]);
+    expect(p.rows.map((r) => r.code)).toEqual(['CPX-APM-2025-01', APM, SAI, 'CPX-SAI-2026-02', 'CPX-SAI-2026-03']);
     expect(p.rows.find((r) => r.code === APM)!.trend.length).toBeGreaterThanOrEqual(12);
     const agenda = await copilAgenda(await getViewer());
-    expect(agenda.running).toEqual([]);
-    expect(await takeSnapshots(t.db, TODAY)).toBe(3);
-    expect(await takeSnapshots(t.db, TODAY)).toBe(3);
-    expect(await t.db.$count(capexSnapshots, eq(capexSnapshots.week, weekOf(TODAY)))).toBe(3);
+    // The demo G1 of CPX-SAI-2026-02 waits for the committee; the G1 of CPX-SAI-2026-03 was decided less than 90 days ago.
+    expect(agenda.running.map((r) => [r.capex.code, r.decision?.status])).toEqual([['CPX-SAI-2026-02', 'open']]);
+    expect(agenda.decided.map((d) => d.capex.code)).toEqual(['CPX-SAI-2026-03']);
+    expect(await takeSnapshots(t.db, TODAY)).toBe(5);
+    expect(await takeSnapshots(t.db, TODAY)).toBe(5);
+    expect(await t.db.$count(capexSnapshots, eq(capexSnapshots.week, weekOf(TODAY)))).toBe(5);
   });
 });
