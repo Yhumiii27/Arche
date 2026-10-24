@@ -33,7 +33,7 @@ export const DEMO_SUBSIDIARIES = [
   { code: 'SAI', name: 'Sahel Agro Industries', countryIso2: 'SN', zoneCode: 'AFO', currency: 'XOF' },
 ] as const;
 
-const DEMO_SITES = [
+export const DEMO_SITES = [
   { subsidiaryCode: 'APM', name: 'Kénitra plant', city: 'Kénitra', countryIso2: 'MA', latitude: 34.261, longitude: -6.58 },
   { subsidiaryCode: 'SAI', name: 'Thiès site', city: 'Thiès', countryIso2: 'SN', latitude: 14.791, longitude: -16.926 },
   { subsidiaryCode: 'SAI', name: 'Kaolack plant', city: 'Kaolack', countryIso2: 'SN', latitude: 14.152, longitude: -16.073 },
@@ -72,7 +72,7 @@ export const DEMO_PEOPLE: DemoPerson[] = [
   { key: 'sai_controller', name: 'Ibrahima Fall', email: `i.fall@${SAI}`, title: 'Management controller', subsidiary: 'SAI', roles: [{ role: 'controller', scope: 'subsidiary', ref: 'SAI' }] },
 ];
 
-interface DemoCapex {
+export interface DemoCapex {
   code: string; subsidiary: string; site: string; title: string; investmentType: 'new_plant' | 'new_line' | 'extension' | 'other';
   status: 'draft' | 'active'; phase: 'cadrage' | 'avant_projet' | 'execution' | 'demarrage'; typology: 'light' | 'strategic' | null;
   sponsor: string; lead: string; team: [string, CapexRole][]; openedOn?: string; needDate?: string;
@@ -85,7 +85,7 @@ interface DemoCapex {
   decisions: [string, string, string][];
 }
 
-const DEMO_CAPEX: DemoCapex[] = [
+export const DEMO_CAPEX: DemoCapex[] = [
   {
     // Delivery 6: a CAPEX in its start-up phase — commissioning started on 1 July 2026, ramp-up of its line.
     code: 'CPX-APM-2025-01', subsidiary: 'APM', site: 'Kénitra plant', title: 'Ageing oven and finishing line', investmentType: 'new_line', status: 'active', phase: 'demarrage', typology: 'light',
@@ -181,50 +181,54 @@ export async function seedDemo(tx: Tx): Promise<void> {
   }))));
   await tx.insert(referenceRevenues).values(DEMO_REVENUES);
   const nameOf = (key: string) => DEMO_PEOPLE.find((p) => p.key === key)!.name;
-  for (const c of DEMO_CAPEX) {
-    const [row] = await tx.insert(capex).values({
-      code: c.code, subsidiaryCode: c.subsidiary, siteId: siteId.get(c.site) ?? null, title: c.title, investmentType: c.investmentType,
-      status: c.status, phase: c.phase, typology: c.typology, typologySource: c.typology ? 'computed' : null, lifecycleModelVersion: c.openedOn ? '4.0' : null,
-      needDate: c.needDate ?? null, openedAt: c.openedOn ? at(c.openedOn) : null, sponsorUserId: idOf(c.sponsor), leadUserId: idOf(c.lead),
-    }).returning({ id: capex.id });
-    const capexId = row.id;
-    await tx.insert(capexMembers).values(c.team.map(([key, capexRole]) => ({ capexId, userId: idOf(key), capexRole })));
-    const lotRows = await tx.insert(capexLots).values(c.lots.map(([kind, title], i) => ({ capexId, number: i + 1, kind, title, epc2i: kind === 'machines' })))
-      .returning({ id: capexLots.id, number: capexLots.number });
-    const lotIds = lotRows.sort((a, b) => a.number - b.number).map((l) => l.id);
-    for (const [i, v] of c.versions.entries()) {
-      const validated = v.status === 'validated' || v.status === 'superseded';
-      const [bv] = await tx.insert(budgetVersions).values({
-        capexId, number: i + 1, estimateClass: v.cls, status: v.status, basis: v.basis, createdByName: nameOf(c.lead), isG2Baseline: !!v.g2,
-        submittedAt: at(v.on), validatedAt: validated ? at(v.on) : null, validatedByName: validated ? nameOf(v.cls === 'E10' ? 'group_cfo' : c.subsidiary === 'APM' ? 'controller' : 'sai_controller') : null,
-        validatedByUserId: validated ? idOf(v.cls === 'E10' ? 'group_cfo' : c.subsidiary === 'APM' ? 'controller' : 'sai_controller') : null,
-      }).returning({ id: budgetVersions.id });
-      await tx.insert(budgetLines).values(v.amounts.map((amountKeur, j) => ({ budgetVersionId: bv.id, lotId: lotIds[j], amountKeur })));
-    }
-    if (c.openedOn) {
-      await tx.insert(phaseTransitions).values({ capexId, fromStatus: 'draft', fromPhase: 'cadrage', toStatus: 'active', toPhase: 'cadrage', effectiveOn: c.openedOn, byName: nameOf(c.sponsor), byUserId: idOf(c.sponsor), occurredAt: at(c.openedOn) });
-    }
-    if (c.risks.length) {
-      await tx.insert(risks).values(c.risks.map((r, i) => ({
-        capexId, number: i + 1, title: r.title, category: r.category, probability: r.p, impact: r.i, ownerUserId: idOf(r.owner), response: r.response, status: r.status ?? 'open', dueOn: r.due ?? null,
-      })));
-    }
-    let phase = 'cadrage';
-    for (const [code, on] of c.passed) {
-      const decider = GATE_DECIDER_KEY[code];
-      const kind: DossierKind | null = code === 'G1' ? 'business_case' : code === 'G2' ? 'investment' : null;
-      const version = kind ? await seedDossier(tx, capexId, c.code, kind, 'approved', on, nameOf(c.lead), idOf(c.lead), { typology: c.typology }) : null;
-      const [g] = await tx.insert(gates).values({ capexId, code, session: 1, status: 'decided', decision: 'go', createdAt: at(addDaysIso(on, -DEMO_REVIEW_DAYS[code])), decidedAt: at(on), decidedByName: nameOf(decider), decidedByUserId: idOf(decider), dossierVersionId: version?.id ?? null }).returning({ id: gates.id });
-      await seedCircuit(tx, g.id, code, c.typology, on, version?.hash ?? null, (actor) => actor === 'sponsor' ? c.sponsor : actor, nameOf, idOf, c.code);
-      await tx.insert(gateCriteriaResults).values({ gateId: g.id, criterionCode: code === 'G1' ? 'g1_budget_e50' : 'g2_budget_e10', state: 'met', value: code === 'G1' ? 'E50' : 'E10' });
-      await tx.insert(phaseTransitions).values({ capexId, fromStatus: 'active', fromPhase: phase, toStatus: 'active', toPhase: PHASE_AFTER[code], gateCode: code, effectiveOn: on, byName: nameOf(decider), byUserId: idOf(decider), occurredAt: at(on) });
-      phase = PHASE_AFTER[code];
-    }
-    if (c.decisions.length) {
-      await tx.insert(decisions).values(c.decisions.map(([takenOn, body, text], i) => ({ capexId, number: i + 1, takenOn, body, text, recordedByName: nameOf(c.lead) })));
-    }
-  }
+  for (const c of DEMO_CAPEX) await seedCapex(tx, c, siteId, idOf, nameOf);
   await seedDemoExtras(tx, idOf, nameOf);
+}
+
+/** One CAPEX of the data set: lots, budget versions, opening, risks, gates passed with their circuits, decisions. */
+export async function seedCapex(tx: Tx, c: DemoCapex, siteId: ReadonlyMap<string, string>, idOf: (k: string) => string, nameOf: (k: string) => string): Promise<string> {
+  const [row] = await tx.insert(capex).values({
+    code: c.code, subsidiaryCode: c.subsidiary, siteId: siteId.get(c.site) ?? null, title: c.title, investmentType: c.investmentType,
+    status: c.status, phase: c.phase, typology: c.typology, typologySource: c.typology ? 'computed' : null, lifecycleModelVersion: c.openedOn ? '4.0' : null,
+    needDate: c.needDate ?? null, openedAt: c.openedOn ? at(c.openedOn) : null, sponsorUserId: idOf(c.sponsor), leadUserId: idOf(c.lead),
+  }).returning({ id: capex.id });
+  const capexId = row.id;
+  await tx.insert(capexMembers).values(c.team.map(([key, capexRole]) => ({ capexId, userId: idOf(key), capexRole })));
+  const lotRows = await tx.insert(capexLots).values(c.lots.map(([kind, title], i) => ({ capexId, number: i + 1, kind, title, epc2i: kind === 'machines' })))
+    .returning({ id: capexLots.id, number: capexLots.number });
+  const lotIds = lotRows.sort((a, b) => a.number - b.number).map((l) => l.id);
+  for (const [i, v] of c.versions.entries()) {
+    const validated = v.status === 'validated' || v.status === 'superseded';
+    const [bv] = await tx.insert(budgetVersions).values({
+      capexId, number: i + 1, estimateClass: v.cls, status: v.status, basis: v.basis, createdByName: nameOf(c.lead), isG2Baseline: !!v.g2,
+      submittedAt: at(v.on), validatedAt: validated ? at(v.on) : null, validatedByName: validated ? nameOf(v.cls === 'E10' ? 'group_cfo' : c.subsidiary === 'APM' ? 'controller' : 'sai_controller') : null,
+      validatedByUserId: validated ? idOf(v.cls === 'E10' ? 'group_cfo' : c.subsidiary === 'APM' ? 'controller' : 'sai_controller') : null,
+    }).returning({ id: budgetVersions.id });
+    await tx.insert(budgetLines).values(v.amounts.map((amountKeur, j) => ({ budgetVersionId: bv.id, lotId: lotIds[j], amountKeur })));
+  }
+  if (c.openedOn) {
+    await tx.insert(phaseTransitions).values({ capexId, fromStatus: 'draft', fromPhase: 'cadrage', toStatus: 'active', toPhase: 'cadrage', effectiveOn: c.openedOn, byName: nameOf(c.sponsor), byUserId: idOf(c.sponsor), occurredAt: at(c.openedOn) });
+  }
+  if (c.risks.length) {
+    await tx.insert(risks).values(c.risks.map((r, i) => ({
+      capexId, number: i + 1, title: r.title, category: r.category, probability: r.p, impact: r.i, ownerUserId: idOf(r.owner), response: r.response, status: r.status ?? 'open', dueOn: r.due ?? null,
+    })));
+  }
+  let phase = 'cadrage';
+  for (const [code, on] of c.passed) {
+    const decider = GATE_DECIDER_KEY[code];
+    const kind: DossierKind | null = code === 'G1' ? 'business_case' : code === 'G2' ? 'investment' : null;
+    const version = kind ? await seedDossier(tx, capexId, c.code, kind, 'approved', on, nameOf(c.lead), idOf(c.lead), { typology: c.typology }) : null;
+    const [g] = await tx.insert(gates).values({ capexId, code, session: 1, status: 'decided', decision: 'go', createdAt: at(addDaysIso(on, -DEMO_REVIEW_DAYS[code])), decidedAt: at(on), decidedByName: nameOf(decider), decidedByUserId: idOf(decider), dossierVersionId: version?.id ?? null }).returning({ id: gates.id });
+    await seedCircuit(tx, g.id, code, c.typology, on, version?.hash ?? null, (actor) => actor === 'sponsor' ? c.sponsor : actor, nameOf, idOf, c.code);
+    await tx.insert(gateCriteriaResults).values({ gateId: g.id, criterionCode: code === 'G1' ? 'g1_budget_e50' : 'g2_budget_e10', state: 'met', value: code === 'G1' ? 'E50' : 'E10' });
+    await tx.insert(phaseTransitions).values({ capexId, fromStatus: 'active', fromPhase: phase, toStatus: 'active', toPhase: PHASE_AFTER[code], gateCode: code, effectiveOn: on, byName: nameOf(decider), byUserId: idOf(decider), occurredAt: at(on) });
+    phase = PHASE_AFTER[code];
+  }
+  if (c.decisions.length) {
+    await tx.insert(decisions).values(c.decisions.map(([takenOn, body, text], i) => ({ capexId, number: i + 1, takenOn, body, text, recordedByName: nameOf(c.lead) })));
+  }
+  return capexId;
 }
 
 /** Demonstration text of a dossier section (English; French in src/i18n/fr/demo.json). */
@@ -447,7 +451,13 @@ async function seedDelivery(tx: Tx, apm: string, sai: string, nameOf: (k: string
  * visa given, the COPIL members' review and the decision of its president open, past the 2 working days), and the lessons
  * learned of the SAI CAPEX for the library.
  */
-async function seedCopil(tx: Tx, packaging: string, plant: string, solar: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
+export async function seedCopil(tx: Tx, packaging: string, plant: string, solar: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
+  await seedCopilGate(tx, packaging, idOf, nameOf);
+  await tx.insert(rexEntries).values(saiRex(plant, solar, nameOf));
+}
+
+/** The G1 of CPX-SAI-2026-02 in front of the COPIL GPI. */
+export async function seedCopilGate(tx: Tx, packaging: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
   const on = '2026-10-15';
   const version = await seedDossier(tx, packaging, 'CPX-SAI-2026-02', 'business_case', 'frozen', on, nameOf('sai_lead'), idOf('sai_lead'), { typology: 'light' });
   const [g] = await tx.insert(gates).values({ capexId: packaging, code: 'G1', session: 1, status: 'in_review', dossierVersionId: version.id, createdAt: at(on) }).returning({ id: gates.id });
@@ -466,19 +476,23 @@ async function seedCopil(tx: Tx, packaging: string, plant: string, solar: string
       await tx.insert(signatures).values({ circuitStepId: st.id, userId: idOf(key), userName: nameOf(key), signedAt: at('2026-10-16'), contentHash: version.hash, statement: `${x.label} — CPX-SAI-2026-02, G1 session 1, dossier version 1, SHA-256 ${version.hash}: ${outcome}` });
     }
   }
+}
+
+/** The published lessons learned of the SAI CAPEX (library). */
+export function saiRex(plant: string, solar: string, nameOf: (k: string) => string) {
   const lead = nameOf('sai_lead');
   const rex = (capexId: string, number: number, phase: string, category: string, title: string, text: string, published: string) => ({ capexId, number, phase, category, title, text, authorName: lead, publishedAt: at(published) });
-  await tx.insert(rexEntries).values([
+  return [
     rex(plant, 1, 'cadrage', 'cost', 'Budget the servicing of the plot from the framing', 'Water and power servicing of the plot was missing from the E50: four more per cent at the E30.', '2026-02-05'),
     rex(plant, 2, 'avant_projet', 'regulatory', 'File the environmental permit with the preliminary design', 'Waiting for the detailed design cost six weeks on the environmental permit.', '2026-07-20'),
     rex(plant, 3, 'avant_projet', 'supplier', 'Align the validity of the EPC2i offer with the G2 date', 'The firm offer expired one week before the G2: EPC2i had to renew it.', '2026-07-20'),
     rex(plant, 4, 'execution', 'hse', 'Separate the site accesses of trucks and pedestrians', 'Two near misses between trucks and pedestrians in August; separate accesses since then.', '2026-09-05'),
     rex(solar, 1, 'cadrage', 'technical', 'Check the load capacity of roofs before the E50', 'The roof option was dropped at the G1: structure too weak, ground-mounted panels retained.', '2026-09-30'),
-  ]);
+  ];
 }
 
 /** Action plans of the demonstration (owner's pilot feedback, 24 Oct 2026): open, late and done actions of APM and SAI. */
-async function seedActions(tx: Tx, apm: string, sai: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
+export async function seedActions(tx: Tx, apm: string, sai: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
   const a = (capexId: string, number: number, title: string, source: string, sourceRef: string | null, owner: string, dueOn: string, status: 'open' | 'done' = 'open', closedOn: string | null = null) => ({
     capexId, number, title, source, sourceRef, ownerUserId: idOf(owner), dueOn, status, closedOn, createdByName: nameOf(owner === 'sai_lead' ? 'sai_lead' : 'project_lead'),
   });
@@ -493,7 +507,7 @@ async function seedActions(tx: Tx, apm: string, sai: string, idOf: (k: string) =
 }
 
 /** WBS of the demonstration (owner's pilot feedback, 24 Oct 2026): studies and lot tasks of APM, works and milestones of SAI. */
-async function seedWbs(tx: Tx, apm: string, sai: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
+export async function seedWbs(tx: Tx, apm: string, sai: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
   const lotOf = async (capexId: string, kind: string) => (await tx.select({ id: capexLots.id }).from(capexLots).where(and(eq(capexLots.capexId, capexId), eq(capexLots.kind, kind))))[0]?.id ?? null;
   const t = (capexId: string, number: number, lotId: string | null, name: string, startOn: string, endOn: string, progressPct: number, owner: string | null, milestone = false) => ({
     capexId, number, lotId, name, startOn, endOn, progressPct, ownerUserId: owner ? idOf(owner) : null, milestone, updatedByName: nameOf('project_lead'),

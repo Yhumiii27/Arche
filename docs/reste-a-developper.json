@@ -90,6 +90,10 @@
     {
       "date": "2026-10-24",
       "text": "Déploiement automatique : workflow GitHub « Deploy » qui appelle le webhook Coolify après une CI verte sur main (ou à la main) ; EXPLOITATION.md § 4.4 (secrets COOLIFY_WEBHOOK et COOLIFY_TOKEN, ou Auto Deploy de Coolify)."
+    },
+    {
+      "date": "2026-10-24",
+      "text": "Démo d'un serveur existant : npm run db:demo-topup complète une base de démonstration créée avant les derniers lots (sites localisés, CAPEX SAI-02 et 03, COPIL GPI, REX, actions, WBS) sans rien modifier ; EXPLOITATION.md § 4.5."
     }
   ],
   "items": [

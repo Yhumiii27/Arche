@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-24 — Démo d'un serveur existant : npm run db:demo-topup complète une base de démonstration créée avant les derniers lots (sites localisés, CAPEX SAI-02 et 03, COPIL GPI, REX, actions, WBS) sans rien modifier ; EXPLOITATION.md § 4.5.
 - 2026-10-24 — Déploiement automatique : workflow GitHub « Deploy » qui appelle le webhook Coolify après une CI verte sur main (ou à la main) ; EXPLOITATION.md § 4.4 (secrets COOLIFY_WEBHOOK et COOLIFY_TOKEN, ou Auto Deploy de Coolify).
 - 2026-10-24 — Sécurité : Next.js 16.4.3 (et eslint-config-next), zod 4.6.7 (GHSA-mrhx-c7xc-m3w5) ; reste l'avertissement « moderate » d'esbuild, embarqué par drizzle-kit (outil de développement, absent de l'image).
 - 2026-10-24 — Retours du pilote (5) : « Nouvelle action » sur les pages hors CAPEX avec le choix du CAPEX ; carte : un CAPEX sans site localisé est placé au centre de son pays ; db:reset-demo compatible avec PostgreSQL de Homebrew.
