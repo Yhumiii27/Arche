@@ -82,6 +82,10 @@
     {
       "date": "2026-10-24",
       "text": "Retours du pilote (5) : « Nouvelle action » sur les pages hors CAPEX avec le choix du CAPEX ; carte : un CAPEX sans site localisé est placé au centre de son pays ; db:reset-demo compatible avec PostgreSQL de Homebrew."
+    },
+    {
+      "date": "2026-10-24",
+      "text": "Sécurité : Next.js 16.4.3 (et eslint-config-next), zod 4.6.7 (GHSA-mrhx-c7xc-m3w5) ; reste l'avertissement « moderate » d'esbuild, embarqué par drizzle-kit (outil de développement, absent de l'image)."
     }
   ],
   "items": [

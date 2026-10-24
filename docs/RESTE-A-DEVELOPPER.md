@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-24 — Sécurité : Next.js 16.4.3 (et eslint-config-next), zod 4.6.7 (GHSA-mrhx-c7xc-m3w5) ; reste l'avertissement « moderate » d'esbuild, embarqué par drizzle-kit (outil de développement, absent de l'image).
 - 2026-10-24 — Retours du pilote (5) : « Nouvelle action » sur les pages hors CAPEX avec le choix du CAPEX ; carte : un CAPEX sans site localisé est placé au centre de son pays ; db:reset-demo compatible avec PostgreSQL de Homebrew.
 - 2026-10-24 — Retours du pilote (4) : WBS et Gantt du CAPEX (tâches sous les lots ou au niveau du CAPEX, jalons, lots à leurs mois prévus, projets EPC2i en une barre de synthèse, jalons du cycle) ; « Planning des CAPEX » dans les portefeuilles groupe et filiale, une barre de synthèse par CAPEX.
 - 2026-10-24 — Retours du pilote (3) : plan d'actions du CAPEX — « Nouvelle action » en haut de chaque page du CAPEX (origine déduite de la page), page Plan d'actions (ouvertes, en retard, faites ; clôture faite ou annulée avec motif), « Mes actions » à l'Accueil, actions du jeu de démo.
