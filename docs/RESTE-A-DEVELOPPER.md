@@ -6,7 +6,7 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-24 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 27 faits, 5 en cours, 6 à faire, sur 38 points.
+**Avancement** : 27 faits, 6 en cours, 5 à faire, sur 38 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
@@ -43,7 +43,7 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 
 Les points « Bloquant production » restants, par domaine. Sans eux, Arche reste une démonstration.
 
-- **Plateforme et mise en production** : AR-014 Arche sur le serveur PostgreSQL commun (Matrix) *(en cours, Livraison 3)* ; AR-015 Hébergement en France et choix du serveur de production.
+- **Plateforme et mise en production** : AR-014 Arche sur le serveur PostgreSQL commun (Matrix) *(en cours, Livraison 3)* ; AR-015 Hébergement en France et choix du serveur de production *(en cours)*.
 - **Tableaux de bord et gouvernance** : AR-034 Pilote sur 1 à 2 CAPEX *(en cours, Pilote)*.
 
 ### 1.2 Ce qui attend le responsable produit
@@ -71,9 +71,9 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 Rôle, schéma, droits, partage, journal unifié, sauvegarde, déclaration des tables.  
 *Avancement : Kit Coolify du serveur commun (deploy/compose.shared.yaml, EXPLOITATION.md § 4.1) essayé en local contre le socle de Matrix : migrations, jeu de démonstration, santé, sauvegarde, partage 70/90/95. Reste : mise en service dans Coolify. · Attend : Matrix (M-1 à M-8) · Sources : docs/DEMANDES-MATRIX.md*
 
-**AR-015 · Hébergement en France et choix du serveur de production** — *Bloquant production · attend le responsable produit · effort S*  
+**AR-015 · Hébergement en France et choix du serveur de production** — *Bloquant production · attend le responsable produit · effort S* · **en cours**  
 D-11 / C-13 ; même décision que Keystone (I-1a).  
-*Attend : Responsable produit et DSI · Sources : docs/DECISIONS.md C-13*
+*Avancement : 24 oct. 2026 : déploiement automatique prêt (workflow Deploy → webhook Coolify, ou Auto Deploy de Coolify ; EXPLOITATION.md § 4.4). Reste le serveur (hébergement en France, C-13). · Attend : Responsable produit et DSI · Sources : docs/DECISIONS.md C-13*
 
 **AR-038 · Socle partagé @epc2i/socle** — *Plus tard · attend un système externe · effort M*  
 Remplacer les copies du socle par le paquet (R-194 de Keystone).  
@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-24 — Déploiement automatique : workflow GitHub « Deploy » qui appelle le webhook Coolify après une CI verte sur main (ou à la main) ; EXPLOITATION.md § 4.4 (secrets COOLIFY_WEBHOOK et COOLIFY_TOKEN, ou Auto Deploy de Coolify).
 - 2026-10-24 — Sécurité : Next.js 16.4.3 (et eslint-config-next), zod 4.6.7 (GHSA-mrhx-c7xc-m3w5) ; reste l'avertissement « moderate » d'esbuild, embarqué par drizzle-kit (outil de développement, absent de l'image).
 - 2026-10-24 — Retours du pilote (5) : « Nouvelle action » sur les pages hors CAPEX avec le choix du CAPEX ; carte : un CAPEX sans site localisé est placé au centre de son pays ; db:reset-demo compatible avec PostgreSQL de Homebrew.
 - 2026-10-24 — Retours du pilote (4) : WBS et Gantt du CAPEX (tâches sous les lots ou au niveau du CAPEX, jalons, lots à leurs mois prévus, projets EPC2i en une barre de synthèse, jalons du cycle) ; « Planning des CAPEX » dans les portefeuilles groupe et filiale, une barre de synthèse par CAPEX.

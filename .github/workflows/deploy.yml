@@ -1,0 +1,42 @@
+# Deployment to Coolify (owner, 24 Oct 2026; docs/EXPLOITATION.md §4.4): once CI is green on main, call the Deploy Webhook of
+# the Arche resource in Coolify, which rebuilds the image, runs the migrations and restarts app and worker. Also runs by hand
+# (Actions › Deploy › Run workflow). Repository secrets: COOLIFY_WEBHOOK (the resource's Webhooks › Deploy Webhook URL) and
+# COOLIFY_TOKEN (Coolify › Keys & Tokens › API tokens, permission "deploy"). Without them the job only says so and succeeds.
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-coolify
+  cancel-in-progress: false
+
+jobs:
+  coolify:
+    name: Deploy to Coolify
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call the Coolify deploy webhook
+        env:
+          COOLIFY_WEBHOOK: ${{ secrets.COOLIFY_WEBHOOK }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          if [ -z "$COOLIFY_WEBHOOK" ] || [ -z "$COOLIFY_TOKEN" ]; then
+            echo "::notice::COOLIFY_WEBHOOK or COOLIFY_TOKEN is not set: nothing deployed (docs/EXPLOITATION.md §4.4)."
+            exit 0
+          fi
+          echo "Deploying $SHA"
+          curl --fail-with-body --silent --show-error --retry 3 --retry-delay 10 --max-time 60 \
+            -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_WEBHOOK"
+          echo
+          echo "::notice::Coolify deployment queued for $SHA"
