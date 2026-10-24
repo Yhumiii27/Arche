@@ -74,6 +74,10 @@
     {
       "date": "2026-10-24",
       "text": "Retours du pilote (3) : plan d'actions du CAPEX — « Nouvelle action » en haut de chaque page du CAPEX (origine déduite de la page), page Plan d'actions (ouvertes, en retard, faites ; clôture faite ou annulée avec motif), « Mes actions » à l'Accueil, actions du jeu de démo."
+    },
+    {
+      "date": "2026-10-24",
+      "text": "Retours du pilote (4) : WBS et Gantt du CAPEX (tâches sous les lots ou au niveau du CAPEX, jalons, lots à leurs mois prévus, projets EPC2i en une barre de synthèse, jalons du cycle) ; « Planning des CAPEX » dans les portefeuilles groupe et filiale, une barre de synthèse par CAPEX."
     }
   ],
   "items": [

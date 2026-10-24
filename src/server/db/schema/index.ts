@@ -7,3 +7,4 @@ export * from './execution';
 export * from './rampup';
 export * from './pilot';
 export * from './actions';
+export * from './schedule';

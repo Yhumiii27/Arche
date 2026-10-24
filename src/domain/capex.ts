@@ -182,7 +182,8 @@ export type CapexAction =
   | 'rampup' // start of commissioning, production lines, daily ramp-up entries (N-16; the operations expert enters days)
   | 'closure' // accounting closure statement of the subsidiary controller (N-15)
   | 'rex' // lessons learned entered by the team
-  | 'actions'; // action plan: open and edit follow-up actions (owner's pilot feedback, 24 Oct 2026)
+  | 'actions' // action plan: open and edit follow-up actions (owner's pilot feedback, 24 Oct 2026)
+  | 'schedule'; // WBS tasks of the CAPEX (owner's pilot feedback, 24 Oct 2026)
 
 export interface CapexWriteFacts {
   code: string;
@@ -229,6 +230,8 @@ export function canDo(action: CapexAction, role: RoleKey, assignments: readonly 
       return c.status === 'active' && on('controller');
     case 'rex':
       return open && (on('project_lead') || on('sponsor') || on('controller') || on('co_dig') || on('epc2i_pmo'));
+    case 'schedule':
+      return open && (on('project_lead') || on('sponsor') || on('co_dig'));
     case 'actions':
       return open && (on('project_lead') || on('sponsor') || on('controller') || on('co_dig') || on('epc2i_pmo') || on('dir_ig'));
   }

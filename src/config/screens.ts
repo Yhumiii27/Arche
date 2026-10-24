@@ -5,7 +5,7 @@ import type { RoleKey } from './roles';
 
 export type ScreenId =
   | 'home' | 'approvals' | 'capex-list' | 'map' | 'portfolio' | 'copil' | 'rex' | 'kpi' | 'subsidiary-portfolio' | 'capex-open'
-  | 'capex-overview' | 'capex-actions' | 'capex-gates' | 'capex-dossiers' | 'capex-budget' | 'capex-execution' | 'capex-changes' | 'capex-machines'
+  | 'capex-overview' | 'capex-actions' | 'capex-gates' | 'capex-dossiers' | 'capex-budget' | 'capex-execution' | 'capex-changes' | 'capex-schedule' | 'capex-machines'
   | 'capex-pack' | 'capex-permits' | 'capex-safety' | 'capex-risks' | 'capex-governance' | 'capex-rampup' | 'capex-journal'
   | 'admin-org' | 'admin-users' | 'admin-model' | 'admin-delegation' | 'admin-connectors';
 
@@ -48,6 +48,7 @@ export const SCREENS: readonly ScreenDef[] = [
   { id: 'capex-budget', path: '/capex/[code]/budget', title: 'Budget & business plan', section: 'capex', group: 'Budget and decisions', roles: BUSINESS, delivery: 'L2' },
   { id: 'capex-changes', path: '/capex/[code]/changes', title: 'Management of change', section: 'capex', group: 'Budget and decisions', roles: BUSINESS, delivery: 'L3' },
   { id: 'capex-governance', path: '/capex/[code]/governance', title: 'Governance', section: 'capex', group: 'Budget and decisions', roles: BUSINESS, delivery: 'L2' },
+  { id: 'capex-schedule', path: '/capex/[code]/schedule', title: 'WBS & Gantt', section: 'capex', group: 'Delivery', roles: BUSINESS, delivery: 'P' },
   { id: 'capex-machines', path: '/capex/[code]/machines', title: 'Machine needs', section: 'capex', group: 'Delivery', roles: BUSINESS, delivery: 'L4' },
   { id: 'capex-pack', path: '/capex/[code]/pack', title: 'Engineering pack', section: 'capex', group: 'Delivery', roles: BUSINESS, delivery: 'L5' },
   { id: 'capex-permits', path: '/capex/[code]/permits', title: 'Permits', section: 'capex', group: 'Delivery', roles: BUSINESS, delivery: 'L5' },

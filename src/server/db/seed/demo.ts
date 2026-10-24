@@ -4,7 +4,7 @@
 import { eq } from 'drizzle-orm';
 import type { RoleKey, ScopeKind, ExpertSpeciality } from '@/config/roles';
 import {
-  authorizations, budgetLines, capexActions, budgetVersions, capex, capexLots, capexSnapshots, hsStatuses, lotActuals, packItems, productionLines, rampupDays, reviews, rexEntries, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
+  authorizations, budgetLines, capexActions, wbsTasks, budgetVersions, capex, capexLots, capexSnapshots, hsStatuses, lotActuals, packItems, productionLines, rampupDays, reviews, rexEntries, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
   roleAssignments, sites, subsidiaries, users, zones, type CapexRole, type EstimateClass, type GateCode,
 } from '../schema';
 import { createHash } from 'node:crypto';
@@ -313,6 +313,7 @@ async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: s
   await seedGovernance(tx, apm, sai, nameOf);
   await seedCopil(tx, await id('CPX-SAI-2026-02'), sai, await id('CPX-SAI-2026-03'), idOf, nameOf);
   await seedActions(tx, apm, sai, idOf, nameOf);
+  await seedWbs(tx, apm, sai, idOf, nameOf);
 }
 
 /**
@@ -488,5 +489,24 @@ async function seedActions(tx: Tx, apm: string, sai: string, idOf: (k: string) =
     a(apm, 4, 'Confirm the cooling variant with production', 'dossier', null, 'co_dig', '2026-09-30', 'done', '2026-09-18'),
     a(sai, 1, 'Book rental generators for the start-up', 'risk', 'R-01', 'sai_lead', '2026-12-15'),
     a(sai, 2, 'Prepare the decision file of MOC-02', 'change', 'MOC-02', 'sai_lead', '2026-10-20'),
+  ]);
+}
+
+/** WBS of the demonstration (owner's pilot feedback, 24 Oct 2026): studies and lot tasks of APM, works and milestones of SAI. */
+async function seedWbs(tx: Tx, apm: string, sai: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
+  const lotOf = async (capexId: string, kind: string) => (await tx.select({ id: capexLots.id }).from(capexLots).where(and(eq(capexLots.capexId, capexId), eq(capexLots.kind, kind))))[0]?.id ?? null;
+  const t = (capexId: string, number: number, lotId: string | null, name: string, startOn: string, endOn: string, progressPct: number, owner: string | null, milestone = false) => ({
+    capexId, number, lotId, name, startOn, endOn, progressPct, ownerUserId: owner ? idOf(owner) : null, milestone, updatedByName: nameOf('project_lead'),
+  });
+  await tx.insert(wbsTasks).values([
+    t(apm, 1, null, 'Preliminary design studies (APS)', '2026-05-18', '2026-09-30', 100, 'project_lead'),
+    t(apm, 2, null, 'Detailed design (APD)', '2026-10-01', '2027-01-29', 20, 'project_lead'),
+    t(apm, 3, null, 'G2 dossier ready', '2027-02-15', '2027-02-15', 0, 'project_lead', true),
+    t(apm, 4, await lotOf(apm, 'civil_works'), 'Soil survey', '2026-10-05', '2026-11-13', 30, 'project_lead'),
+    t(apm, 5, await lotOf(apm, 'machines'), 'EPC2i firm offer and negotiation', '2026-09-01', '2026-12-18', 50, 'co_dig'),
+    t(sai, 1, await lotOf(sai, 'civil_works'), 'Earthworks', '2026-07-15', '2026-11-27', 80, 'sai_lead'),
+    t(sai, 2, await lotOf(sai, 'buildings'), 'Process hall structure', '2026-10-01', '2027-02-26', 15, 'sai_lead'),
+    t(sai, 3, await lotOf(sai, 'utilities'), 'Grid connection', '2026-11-02', '2027-03-31', 0, 'sai_lead'),
+    t(sai, 4, null, 'Mechanical completion', '2027-04-30', '2027-04-30', 0, 'sai_lead', true),
   ]);
 }
