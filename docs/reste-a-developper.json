@@ -98,6 +98,10 @@
     {
       "date": "2026-10-24",
       "text": "db:demo-topup couvre aussi les livraisons 4 à 6 (besoins machines, jalons de sécurité, autorisations, pack, réalisé, démarrage et montée en cadence de CPX-APM-2025-01, revues et instantanés) : la base du serveur de démonstration datait d'avant la livraison 4b."
+    },
+    {
+      "date": "2026-10-24",
+      "text": "Droits : l'administrateur lit tous les CAPEX et toutes les pages métier comme le PDG, sans droit d'écriture métier (N-4 révisée par le responsable produit)."
     }
   ],
   "items": [

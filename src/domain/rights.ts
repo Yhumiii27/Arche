@@ -44,9 +44,10 @@ export function isValidAssignment(a: RoleAssignment): boolean {
 export function capexVisibility(role: RoleKey, assignments: readonly RoleAssignment[]): CapexVisibility {
   const mine = assignments.filter((a) => a.role === role && isValidAssignment(a));
   if (!mine.length) return { kind: 'none' };
-  if (role === 'ceo') return { kind: 'all' };
+  // The CEO and the administrator read every CAPEX, drafts included (owner, 24 Oct 2026, revising N-4: the administrator
+  // reads everything and writes nothing of the business — canDo gives it no write right).
+  if (role === 'ceo' || role === 'admin') return { kind: 'all' };
   if (CROSS_VIEW_ROLES.includes(role)) return { kind: 'cross' };
-  if (role === 'admin') return { kind: 'none' };
   const refs = (kind: ScopeKind) => [...new Set(mine.filter((a) => a.scopeKind === kind).map((a) => a.scopeRef!))].sort();
   return { kind: 'scoped', zones: refs('zone'), subsidiaries: refs('subsidiary'), capex: refs('capex') };
 }
