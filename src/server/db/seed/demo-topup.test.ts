@@ -15,7 +15,7 @@ describe('topUpDemo', () => {
 
   it('adds nothing to the current data set', async () => {
     const r = await t.db.transaction((tx) => topUpDemo(tx));
-    expect(r).toMatchObject({ people: 0, roles: 0, sites: 0, located: 0, capex: [], copil: false, rex: 0, actions: [], wbs: [] });
+    expect(r).toMatchObject({ people: 0, roles: 0, sites: 0, located: 0, capex: [], copil: false, needs: [], delivery: false, startup: false, governance: false, rex: 0, actions: [], wbs: [] });
   });
 
   it('puts back what an older data set lacked, once', async () => {

@@ -1,12 +1,15 @@
 // Completes an existing demonstration database with what later lots added to the data set (owner's pilot feedback, 24 Oct
 // 2026): a database is seeded only once, so one created earlier lacks them. Adds what is missing and changes nothing else —
 // people and their roles, the sites and their coordinates, the CAPEX of the data set (with, for a CAPEX added now, its COPIL
-// GPI circuit), the lessons learned of the SAI CAPEX, the action plans and the WBS. Refused on a database not seeded with
+// GPI circuit), the machine needs, the delivery data (safety milestones, permits, pack, actuals; delivery 5), the start-up of
+// CPX-APM-2025-01 (delivery 6), the reviews and snapshots, the lessons learned of the SAI CAPEX, the action plans and the WBS
+// — each part only where the database has none of it. Refused on a database not seeded with
 // the demonstration data set. `npm run db:demo-topup` (scripts/db-demo-topup.ts).
 import { and, eq, inArray, isNull, or } from 'drizzle-orm';
-import { capex, capexActions, gates, rexEntries, roleAssignments, sites, users, wbsTasks } from '../schema';
+import { authorizations, capex, capexActions, gates, hsStatuses, machineNeeds, packItems, productionLines, reviews, rexEntries, roleAssignments, sites, users, wbsTasks } from '../schema';
+import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import type { Tx } from '../types';
-import { DEMO_CAPEX, DEMO_PEOPLE, DEMO_SITES, DEMO_SUBSIDIARIES, saiRex, seedActions, seedCapex, seedCopilGate, seedWbs } from './demo';
+import { DEMO_CAPEX, DEMO_PEOPLE, DEMO_SITES, DEMO_SUBSIDIARIES, saiRex, seedActions, seedCapex, seedCopilGate, seedDelivery, seedGovernance, seedNeeds, seedStartup, seedWbs } from './demo';
 import { readSeedRecord } from './mode';
 
 export interface TopUpReport {
@@ -16,6 +19,11 @@ export interface TopUpReport {
   located: number;
   capex: string[];
   copil: boolean;
+  /** CAPEX whose machine needs were added. */
+  needs: string[];
+  delivery: boolean;
+  startup: boolean;
+  governance: boolean;
   rex: number;
   actions: string[];
   wbs: string[];
@@ -26,7 +34,7 @@ export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
   if (((await readSeedRecord(tx))?.mode ?? 'demo') !== 'demo') throw new Error('This database was not seeded with the demonstration data set: nothing changed');
   const subs = await tx.select({ code: capex.subsidiaryCode }).from(capex).where(inArray(capex.subsidiaryCode, DEMO_SUBSIDIARIES.map((s) => s.code))).limit(1);
   if (!subs.length) throw new Error('The demonstration subsidiaries have no CAPEX in this database: nothing changed');
-  const report: TopUpReport = { people: 0, roles: 0, sites: 0, located: 0, capex: [], copil: false, rex: 0, actions: [], wbs: [] };
+  const report: TopUpReport = { people: 0, roles: 0, sites: 0, located: 0, capex: [], copil: false, needs: [], delivery: false, startup: false, governance: false, rex: 0, actions: [], wbs: [] };
 
   // People and their roles, by e-mail.
   const known = new Map((await tx.select({ id: users.id, email: users.email }).from(users).where(inArray(users.email, DEMO_PEOPLE.map((p) => p.email)))).map((u) => [u.email, u.id]));
@@ -91,9 +99,44 @@ export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
     report.rex = add.length;
   }
 
-  // Action plans and WBS, only where the CAPEX has none yet.
   const apm = idOfCapex.get('CPX-APM-2026-01');
   const sai = plant;
+  const apm25 = idOfCapex.get('CPX-APM-2025-01');
+  const none = async (rows: Promise<unknown[]>) => !(await rows).length;
+  if (apm && sai && apm25) {
+    // Machine needs (delivery 4), per CAPEX without any; then the Keystone mirror (simulation) for their answers.
+    const ids = { apm, sai, apm25 };
+    const without = new Set<string>();
+    for (const capexId of [apm, sai, apm25]) if (await none(tx.select({ id: machineNeeds.id }).from(machineNeeds).where(eq(machineNeeds.capexId, capexId)).limit(1))) without.add(capexId);
+    if (without.size) {
+      await seedNeeds(tx, ids, nameOf, without);
+      report.needs = [...idOfCapex].filter(([, id]) => without.has(id)).map(([code]) => code);
+    }
+    // Delivery 5a: safety milestones, permits, pack, lot windows and actuals — when neither APM nor SAI has any.
+    const pair = [apm, sai];
+    if (await none(tx.select({ c: hsStatuses.capexId }).from(hsStatuses).where(inArray(hsStatuses.capexId, pair)).limit(1))
+      && await none(tx.select({ id: authorizations.id }).from(authorizations).where(inArray(authorizations.capexId, pair)).limit(1))
+      && await none(tx.select({ c: packItems.capexId }).from(packItems).where(inArray(packItems.capexId, pair)).limit(1))) {
+      await seedDelivery(tx, apm, sai, nameOf);
+      report.delivery = true;
+    }
+    if (report.needs.length) await syncKeystone(tx, { now: new Date('2026-10-22T10:00:00Z'), mode: 'simulation' });
+    // Delivery 6: the start-up of CPX-APM-2025-01, when it has no production line, safety milestone, review nor lesson.
+    if (await none(tx.select({ id: productionLines.id }).from(productionLines).where(eq(productionLines.capexId, apm25)).limit(1))
+      && await none(tx.select({ c: hsStatuses.capexId }).from(hsStatuses).where(eq(hsStatuses.capexId, apm25)).limit(1))
+      && await none(tx.select({ id: reviews.id }).from(reviews).where(eq(reviews.capexId, apm25)).limit(1))
+      && await none(tx.select({ id: rexEntries.id }).from(rexEntries).where(eq(rexEntries.capexId, apm25)).limit(1))) {
+      await seedStartup(tx, apm25, nameOf);
+      report.startup = true;
+    }
+    // Delivery 5b: project reviews and audits, and the weeks of snapshots (existing weeks kept).
+    if (await none(tx.select({ id: reviews.id }).from(reviews).where(inArray(reviews.capexId, pair)).limit(1))) {
+      await seedGovernance(tx, apm, sai, nameOf);
+      report.governance = true;
+    }
+  }
+
+  // Action plans and WBS, only where the CAPEX has none yet.
   if (apm && sai) {
     const noAction = !(await tx.select({ id: capexActions.id }).from(capexActions).where(inArray(capexActions.capexId, [apm, sai])).limit(1)).length;
     const noTask = !(await tx.select({ id: wbsTasks.id }).from(wbsTasks).where(inArray(wbsTasks.capexId, [apm, sai])).limit(1)).length;
