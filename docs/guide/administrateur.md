@@ -6,4 +6,4 @@
 - *Modèle DIG-PRODI* : valeurs ajustables du modèle 4.0 (délais cibles des jalons, seuils).
 - *Matrice de délégation* : décideurs des modifications par montant et typologie.
 - *Connecteurs* : état des connecteurs Keystone et Codex, dernière synchronisation.
-- L'administrateur ne voit pas les CAPEX (séparation des tâches). Exploitation technique : [`../EXPLOITATION.md`](../EXPLOITATION.md).
+- L'administrateur **lit tous les CAPEX** et toutes les pages métier, brouillons compris, comme le PDG (décision du 24/10/2026, N-4 révisée). Il n'y écrit rien : ni saisie, ni signature, ni décision de jalon. Pour agir sur un CAPEX, il faut un rôle métier sur ce CAPEX. Exploitation technique : [`../EXPLOITATION.md`](../EXPLOITATION.md).

@@ -32,8 +32,8 @@ describe('capex visibility', () => {
     expect(seen('zone_director', [{ role: 'zone_director', scopeKind: 'zone', scopeRef: 'AFN' }])).toEqual([apm1.code]);
   });
 
-  it('the administrator sees no business data; no assignment means nothing', () => {
-    expect(seen('admin', [{ role: 'admin', scopeKind: 'group', scopeRef: null }])).toEqual([]);
+  it('the administrator reads every CAPEX like the CEO (owner, 24 Oct 2026); no assignment means nothing', () => {
+    expect(seen('admin', [{ role: 'admin', scopeKind: 'group', scopeRef: null }])).toEqual(seen('ceo', [{ role: 'ceo', scopeKind: 'group', scopeRef: null }]));
     expect(seen('sponsor', [])).toEqual([]);
   });
 

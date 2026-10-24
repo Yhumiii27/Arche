@@ -30,12 +30,13 @@ describe('sidebar model', () => {
     expect(elsewhere.sections[2].groups[1].entries[0].href).toBe('/capex/CPX-SAI-2026-01/budget');
   });
 
-  it('the administrator: Home and the administration only, by theme', () => {
+  it('the administrator: every business section to read, and the administration by theme', () => {
     const nav = buildNav('admin', '/admin/users');
-    expect(nav.fixed.map((e) => e.id)).toEqual(['home']);
-    expect(nav.sections.map((s) => s.key)).toEqual(['admin']);
-    expect(nav.sections[0].groups.map((g) => g.label)).toEqual(['Reference data', 'Access', 'Method', 'Integrations']);
-    expect(nav.sections[0].groups.flatMap((g) => g.entries).find((e) => e.active)?.id).toBe('admin-users');
+    expect(nav.fixed.map((e) => e.id)).toEqual(['home', 'approvals']);
+    expect(nav.sections.map((s) => s.key)).toEqual(['group', 'subsidiary', 'capex', 'admin']);
+    const admin = nav.sections.find((s) => s.key === 'admin')!;
+    expect(admin.groups.map((g) => g.label)).toEqual(['Reference data', 'Access', 'Method', 'Integrations']);
+    expect(admin.groups.flatMap((g) => g.entries).find((e) => e.active)?.id).toBe('admin-users');
   });
 
   it('reads and swaps the CAPEX code of a path', () => {

@@ -79,7 +79,7 @@ type du pack, définitions RSPDI / ASPD, relevé de l’existant).
 | N-1 | Nom du schéma et du rôle (le prompt dit « `capex`, nom à confirmer ») | schéma **`arche`**, rôle **`arche_app`** (le nom de l’outil, comme `keystone`) — appliqué en livraison 1 — **confirmé** | L1 |
 | N-2 | Devise des filiales hors zone euro | v1 en **k€** seulement ; le montant en devise locale et le taux de référence groupe viennent plus tard — **confirmé** | L2 |
 | N-3 | Comptes des filiales | même locataire Entra si les filiales y sont, sinon **invités B2B** ; rôles et portées attribués dans Arche par l’admin — **confirmé** | L1 |
-| N-4 | Administrateur *(hors CDC)* | profil `admin` (PMO groupe ou DSI) : référentiels, utilisateurs, paramètres ; aucune donnée métier — **confirmé** | L1 |
+| N-4 | Administrateur *(hors CDC)* | profil `admin` (PMO groupe ou DSI) : référentiels, utilisateurs, paramètres ; ~~aucune donnée métier~~ **révisé le 24/10/2026 par le responsable produit : lit tous les CAPEX et toutes les pages métier, comme le PDG, sans aucun droit d'écriture métier** (ni saisie, ni signature, ni décision de jalon) | L1 |
 | N-5 | Les fonctions centrales voient-elles les brouillons ? | **non** : un brouillon reste dans la filiale jusqu’à l’ouverture — **confirmé** | L1 |
 | N-6 | Composition du COPIL GPI et qui enregistre sa décision | membres nommés par l’admin ; **président = Dir.IG**, qui enregistre la décision au nom du comité — **confirmé** | L3 |
 | N-7 | Que mesure le délai « 2 jours maximum » du G1 ? | **2 jours ouvrés** entre la mise à la décision (visa Sponsor) et la décision ; examen en ligne par les membres, sans attendre la séance mensuelle ; la séance suivante en prend acte — **confirmé** | L3 |

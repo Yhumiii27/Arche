@@ -27,16 +27,17 @@ export interface ScreenDef {
   delivery: 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6' | 'P';
 }
 
-const BUSINESS: readonly RoleKey[] = ['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'epc2i_pmo', 'expert'];
-const STEERING: readonly RoleKey[] = ['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'epc2i_pmo'];
+// The administrator reads every business screen (owner, 24 Oct 2026, revising N-4); its writes stay refused by canDo.
+const BUSINESS: readonly RoleKey[] = ['admin', 'ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'epc2i_pmo', 'expert'];
+const STEERING: readonly RoleKey[] = ['admin', 'ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'epc2i_pmo'];
 
 export const SCREENS: readonly ScreenDef[] = [
   { id: 'home', path: '/', title: 'Home', section: 'fixed', roles: 'all', delivery: 'L1' },
   { id: 'approvals', path: '/my/approvals', title: 'My approvals', section: 'fixed', roles: BUSINESS, delivery: 'L3' },
   { id: 'map', path: '/map', title: 'CAPEX map', section: 'group', roles: STEERING, delivery: 'L4' },
   { id: 'portfolio', path: '/portfolio', title: 'Group portfolio', section: 'group', roles: STEERING, delivery: 'L5' },
-  { id: 'copil', path: '/copil', title: 'COPIL GPI', section: 'group', roles: ['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'sponsor', 'project_lead'], delivery: 'L5' },
-  { id: 'kpi', path: '/kpi', title: 'DIG-PRODI objectives', section: 'group', roles: ['ceo', 'dir_ig', 'group_cfo', 'copil_member'], delivery: 'P' },
+  { id: 'copil', path: '/copil', title: 'COPIL GPI', section: 'group', roles: ['admin', 'ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'sponsor', 'project_lead'], delivery: 'L5' },
+  { id: 'kpi', path: '/kpi', title: 'DIG-PRODI objectives', section: 'group', roles: ['admin', 'ceo', 'dir_ig', 'group_cfo', 'copil_member'], delivery: 'P' },
   { id: 'rex', path: '/rex', title: 'Lessons learned library', section: 'group', roles: BUSINESS, delivery: 'L6' },
   { id: 'capex-list', path: '/capex', title: 'CAPEX register', section: 'subsidiary', roles: STEERING, delivery: 'L1' },
   { id: 'subsidiary-portfolio', path: '/portfolio/subsidiary', title: 'Subsidiary portfolio', section: 'subsidiary', roles: STEERING, delivery: 'P' },

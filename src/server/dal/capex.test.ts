@@ -44,9 +44,10 @@ describe('capex visibility in SQL', () => {
     expect((await visibleCapex(saiSponsor)).map((c) => c.code)).toEqual(['CPX-SAI-2026-01', 'CPX-SAI-2026-02', 'CPX-SAI-2026-03']);
   });
 
-  it('central functions see no draft; the administrator sees no CAPEX', async () => {
+  it('central functions see no draft; the administrator reads every CAPEX, drafts included, like the CEO', async () => {
     expect((await visibleCapex(await viewerOf('group_cfo'))).map((c) => c.code)).toEqual(['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-SAI-2026-01', 'CPX-SAI-2026-02', 'CPX-SAI-2026-03']);
-    expect(await visibleCapex(await viewerOf('admin'))).toEqual([]);
+    expect((await visibleCapex(await viewerOf('admin'))).map((c) => c.code)).toEqual((await visibleCapex(await viewerOf('ceo'))).map((c) => c.code));
+    expect(await capexForViewer(await viewerOf('admin'), 'CPX-APM-2026-02')).not.toBeNull();
     expect(await capexForViewer(await viewerOf('dir_ig'), 'CPX-APM-2026-02')).toBeNull();
   });
 });

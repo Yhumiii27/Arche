@@ -71,3 +71,12 @@ describe('write rights (spec 01 §3)', () => {
     expect(creatableSubsidiaries('dir_ig', dirIg, null)).toEqual([]);
   });
 });
+
+describe('the administrator reads, never writes the business (owner, 24 Oct 2026)', () => {
+  it('has no write right on a CAPEX, open or draft', () => {
+    const actions = ['edit', 'open', 'budget', 'needs', 'force_typology', 'confirm_typology', 'decide_gate', 'suspend', 'safety', 'audit', 'rampup', 'closure', 'rex', 'actions', 'schedule'] as const;
+    for (const status of ['active', 'draft']) {
+      for (const action of actions) expect(canDo(action, 'admin', [a('admin', 'group', null)], { ...C, status })).toBe(false);
+    }
+  });
+});

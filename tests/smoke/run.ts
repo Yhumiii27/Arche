@@ -74,7 +74,10 @@ async function main(): Promise<void> {
   check((await get('/', 'dir_ig')).body.includes('>FR<'), 'language toggle in the page header');
   const map = await get('/map', 'dir_ig');
   check(map.status === 200 && map.body.includes('Carte des CAPEX') && map.body.includes('Kénitra'), 'CAPEX map with the sites of the CAPEX');
-  check((await get('/map', 'admin')).status === 404, 'the CAPEX map is not in the administrator\u2019s workspace');
+  const adminMap = await get('/map', 'admin');
+  check(adminMap.status === 200 && adminMap.body.includes('Kénitra') && !adminMap.body.includes('Lecture seule'), 'the administrator reads the CAPEX map (owner, 24 Oct 2026)');
+  const adminDraft = await get('/capex/CPX-APM-2026-02', 'admin');
+  check(adminDraft.status === 200 && !adminDraft.body.includes('Nouvelle action'), 'the administrator reads a draft CAPEX, without any business action');
   const overview2 = await get('/capex/CPX-APM-2026-01', 'project_lead');
   check(overview2.status === 200 && overview2.body.includes('Prochaine étape') && overview2.body.includes('Soumettre au jalon G2'), 'CAPEX overview: next step and gate action');
   const exec = await get('/capex/CPX-SAI-2026-01/execution', 'dir_ig');
