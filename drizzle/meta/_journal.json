@@ -127,6 +127,13 @@
       "when": 1792765585012,
       "tag": "0017_pilot",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792841709730,
+      "tag": "0018_capex_actions",
+      "breakpoints": true
     }
   ]
 }

@@ -5,7 +5,7 @@ import type { RoleKey } from './roles';
 
 export type ScreenId =
   | 'home' | 'approvals' | 'capex-list' | 'map' | 'portfolio' | 'copil' | 'rex' | 'kpi' | 'subsidiary-portfolio' | 'capex-open'
-  | 'capex-overview' | 'capex-gates' | 'capex-dossiers' | 'capex-budget' | 'capex-execution' | 'capex-changes' | 'capex-machines'
+  | 'capex-overview' | 'capex-actions' | 'capex-gates' | 'capex-dossiers' | 'capex-budget' | 'capex-execution' | 'capex-changes' | 'capex-machines'
   | 'capex-pack' | 'capex-permits' | 'capex-safety' | 'capex-risks' | 'capex-governance' | 'capex-rampup' | 'capex-journal'
   | 'admin-org' | 'admin-users' | 'admin-model' | 'admin-delegation' | 'admin-connectors';
 
@@ -42,6 +42,7 @@ export const SCREENS: readonly ScreenDef[] = [
   { id: 'subsidiary-portfolio', path: '/portfolio/subsidiary', title: 'Subsidiary portfolio', section: 'subsidiary', roles: STEERING, delivery: 'P' },
   { id: 'capex-open', path: '/open', title: 'Open a CAPEX', section: 'subsidiary', roles: ['sponsor', 'project_lead'], delivery: 'P' },
   { id: 'capex-overview', path: '/capex/[code]', title: 'CAPEX overview', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'L1' },
+  { id: 'capex-actions', path: '/capex/[code]/actions', title: 'Action plan', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'P' },
   { id: 'capex-gates', path: '/capex/[code]/gates', title: 'Gates & circuits', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'L3' },
   { id: 'capex-dossiers', path: '/capex/[code]/dossiers', title: 'Living dossiers', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'L3' },
   { id: 'capex-budget', path: '/capex/[code]/budget', title: 'Budget & business plan', section: 'capex', group: 'Budget and decisions', roles: BUSINESS, delivery: 'L2' },

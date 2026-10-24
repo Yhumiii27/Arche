@@ -16,6 +16,10 @@ import { alertDetail } from '@/features/governance/alert-detail';
 import { dataText } from '@/i18n/data-text';
 import { fmtDate } from '@/lib/format';
 import { approvalsOf } from '@/server/dal/approvals';
+import { myActions } from '@/server/dal/actions';
+import { isLate } from '@/domain/actions';
+import { refOf } from '@/domain/capex';
+import { businessToday } from '@/server/clock';
 import { isMine, visibleCapex } from '@/server/dal/capex';
 import { alertsForViewer } from '@/server/dal/governance';
 import { getI18n, getViewer } from '@/server/session';
@@ -30,6 +34,7 @@ export default async function HomePage() {
   const scopes = viewer.assignments.filter((a) => a.role === viewer.role).map((a) => a.scopeRef ?? t('Whole group'));
   const gates = followed.rows.filter((r) => r.dash.nextGate).sort((a, b) => Number(!!b.dash.running?.late) - Number(!!a.dash.running?.late));
   const alerts = followed.alerts.filter((a) => a.level === 'alert');
+  const [actions, today] = await Promise.all([canSee(viewer.role, 'capex-actions') ? myActions(viewer) : Promise.resolve([]), businessToday()]);
   return (
     <>
       <PageHeader screen="home" title={`${t('Hello')} ${viewer.name.split(' ')[0]}`} primary={<OpenGuidedLink viewer={viewer} />} />
@@ -73,6 +78,21 @@ export default async function HomePage() {
                   <Td nowrap>{`${r.dash.nextGate} · ${t(GATE_LABEL[r.dash.nextGate!])}`}</Td>
                   <Td nowrap>{r.dash.running ? <Tag tone={r.dash.running.late ? 'accent' : 'outline'} size="xs">{t(r.dash.running.late ? 'Late' : 'In progress')}</Tag> : t('To submit')}</Td>
                   <Td nowrap>{r.dash.running?.targetOn ? fmtDate(r.dash.running.targetOn, lang) : '—'}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </SectionCard>
+      )}
+      {actions.length > 0 && (
+        <SectionCard title={t('My actions')} hint={`${actions.filter((a) => isLate(a, today)).length} ${t('late')}`} scroll>
+          <Table>
+            <tbody>
+              {actions.map((a) => (
+                <tr key={a.id}>
+                  <Td nowrap><Link href={screenHref('capex-actions', { code: a.capex.code })}>{`${a.capex.code} · ${refOf('A', a.number)}`}</Link></Td>
+                  <Td>{dataText(a.title, lang)}</Td>
+                  <Td nowrap>{fmtDate(a.dueOn, lang) || '—'}{isLate(a, today) && <> <Tag tone="accent" size="xs">{t('Late')}</Tag></>}</Td>
                 </tr>
               ))}
             </tbody>

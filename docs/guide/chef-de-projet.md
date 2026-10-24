@@ -3,6 +3,13 @@
 Le chef de projet tient le CAPEX à jour : fiche, lots, équipe, budget, risques, dossiers vivants, besoins machines, suivi
 d'exécution et montée en puissance.
 
+## Plan d'actions
+
+**Nouvelle action** en haut de chaque page du CAPEX : action de suivi (titre, responsable de l'équipe, échéance, origine —
+déduite de la page — et élément, ex. R-02). *Plan d'actions* : actions ouvertes (les retards sont signalés), modifier,
+**clôturer** (faite, ou annulée avec un motif). Le responsable d'une action peut la clôturer ; ses actions ouvertes sont dans
+*Mes actions* sur l'Accueil.
+
 ## Préparer un jalon
 
 1. *Synthèse du CAPEX* : la bannière **Prochaine étape** indique le premier critère bloquant non atteint et la page où le

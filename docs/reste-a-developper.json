@@ -70,6 +70,10 @@
     {
       "date": "2026-10-24",
       "text": "Retours du pilote (1) : jeu de démo enrichi (COPIL GPI, REX), carte des CAPEX (position au site de la filiale, liste « Hors de la carte »), commande npm run db:reset-demo. (2) Assistant « Ouvrir un CAPEX » (identité, lots, budget E50, équipe, risques, dossier, ou reprise d'un CAPEX en cours), menus Portefeuille groupe / Portefeuille filiale (sélecteur de filiale) / Pilotage, choix de langue en haut à droite. Plan d'actions, WBS et Gantt retenus pour les lots suivants."
+    },
+    {
+      "date": "2026-10-24",
+      "text": "Retours du pilote (3) : plan d'actions du CAPEX — « Nouvelle action » en haut de chaque page du CAPEX (origine déduite de la page), page Plan d'actions (ouvertes, en retard, faites ; clôture faite ou annulée avec motif), « Mes actions » à l'Accueil, actions du jeu de démo."
     }
   ],
   "items": [

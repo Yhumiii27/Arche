@@ -18,6 +18,7 @@ export const SCREEN_ICONS: Record<ScreenId, Icon> = {
   'capex-open': PlusCircle,
   rex: Books,
   'capex-overview': Factory,
+  'capex-actions': ListChecks,
   'capex-gates': Path,
   'capex-dossiers': FileText,
   'capex-budget': Wallet,
