@@ -102,6 +102,10 @@ async function main(): Promise<void> {
   const copilAgendaPage = await get('/copil', 'dir_ig');
   check(copilAgendaPage.status === 200 && copilAgendaPage.body.includes('CPX-SAI-2026-02') && copilAgendaPage.body.includes('CPX-SAI-2026-03'), 'COPIL GPI: a G1 in review and a recent G1 decision');
   check((await get('/rex', 'dir_ig')).body.includes('Séparer les accès chantier'), 'lessons learned of several CAPEX in the library');
+  const plan = await get('/capex/CPX-APM-2026-01/actions', 'project_lead');
+  check(plan.status === 200 && plan.body.includes('Plan d’actions') && plan.body.includes('Commander l’étude de sol') && plan.body.includes('En retard'), 'action plan of a CAPEX: open and late actions');
+  check((await get('/capex/CPX-APM-2026-01/risks', 'project_lead')).body.includes('Nouvelle action'), '"New action" in the header of a CAPEX page');
+  check((await get('/', 'project_lead')).body.includes('Mes actions'), 'my actions on the home page');
   const kpi = await get('/kpi', 'dir_ig');
   check(kpi.status === 200 && kpi.body.includes('Objectifs DIG-PRODI') && kpi.body.includes('Délai de validation du G1') && kpi.body.includes('Saisir la référence'), 'DIG-PRODI objectives: indicators and the reference form of the group industrial director');
   check((await get('/kpi', 'ceo')).body.includes('Saisir la référence') === false, 'only the group industrial director enters the references');

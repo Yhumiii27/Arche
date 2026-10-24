@@ -4,7 +4,7 @@
 import { eq } from 'drizzle-orm';
 import type { RoleKey, ScopeKind, ExpertSpeciality } from '@/config/roles';
 import {
-  authorizations, budgetLines, budgetVersions, capex, capexLots, capexSnapshots, hsStatuses, lotActuals, packItems, productionLines, rampupDays, reviews, rexEntries, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
+  authorizations, budgetLines, capexActions, budgetVersions, capex, capexLots, capexSnapshots, hsStatuses, lotActuals, packItems, productionLines, rampupDays, reviews, rexEntries, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
   roleAssignments, sites, subsidiaries, users, zones, type CapexRole, type EstimateClass, type GateCode,
 } from '../schema';
 import { createHash } from 'node:crypto';
@@ -312,6 +312,7 @@ async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: s
   await seedStartup(tx, apm25, nameOf);
   await seedGovernance(tx, apm, sai, nameOf);
   await seedCopil(tx, await id('CPX-SAI-2026-02'), sai, await id('CPX-SAI-2026-03'), idOf, nameOf);
+  await seedActions(tx, apm, sai, idOf, nameOf);
 }
 
 /**
@@ -472,5 +473,20 @@ async function seedCopil(tx: Tx, packaging: string, plant: string, solar: string
     rex(plant, 3, 'avant_projet', 'supplier', 'Align the validity of the EPC2i offer with the G2 date', 'The firm offer expired one week before the G2: EPC2i had to renew it.', '2026-07-20'),
     rex(plant, 4, 'execution', 'hse', 'Separate the site accesses of trucks and pedestrians', 'Two near misses between trucks and pedestrians in August; separate accesses since then.', '2026-09-05'),
     rex(solar, 1, 'cadrage', 'technical', 'Check the load capacity of roofs before the E50', 'The roof option was dropped at the G1: structure too weak, ground-mounted panels retained.', '2026-09-30'),
+  ]);
+}
+
+/** Action plans of the demonstration (owner's pilot feedback, 24 Oct 2026): open, late and done actions of APM and SAI. */
+async function seedActions(tx: Tx, apm: string, sai: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
+  const a = (capexId: string, number: number, title: string, source: string, sourceRef: string | null, owner: string, dueOn: string, status: 'open' | 'done' = 'open', closedOn: string | null = null) => ({
+    capexId, number, title, source, sourceRef, ownerUserId: idOf(owner), dueOn, status, closedOn, createdByName: nameOf(owner === 'sai_lead' ? 'sai_lead' : 'project_lead'),
+  });
+  await tx.insert(capexActions).values([
+    a(apm, 1, 'Order the soil survey of the extension', 'risk', 'R-02', 'project_lead', '2026-10-15'),
+    a(apm, 2, 'Send the E30 version to the controller with the EPC2i quote', 'budget', 'v2', 'project_lead', '2026-11-05'),
+    a(apm, 3, 'Hold the overdue project review', 'governance', null, 'sponsor', '2026-10-30'),
+    a(apm, 4, 'Confirm the cooling variant with production', 'dossier', null, 'co_dig', '2026-09-30', 'done', '2026-09-18'),
+    a(sai, 1, 'Book rental generators for the start-up', 'risk', 'R-01', 'sai_lead', '2026-12-15'),
+    a(sai, 2, 'Prepare the decision file of MOC-02', 'change', 'MOC-02', 'sai_lead', '2026-10-20'),
   ]);
 }

@@ -6,6 +6,7 @@ import { SCREEN_BY_ID, canSee, type ScreenId } from '@/config/screens';
 import { getI18n, getViewer } from '@/server/session';
 import styles from './header.module.css';
 import { LangToggle } from './lang-toggle';
+import { NewActionHeaderButton } from '@/features/actions/header-button';
 
 export interface PageHeaderProps {
   screen: ScreenId;
@@ -52,6 +53,7 @@ export async function PageHeader({ screen, title, crumbs = [], crumbData, primar
         </div>
         <div className={styles.actions}>
           {!outside && primary}
+          {!outside && def.section === 'capex' && crumbData && <NewActionHeaderButton screen={screen} code={crumbData} />}
           <LangToggle lang={lang} label={t('Language')} />
         </div>
       </header>
