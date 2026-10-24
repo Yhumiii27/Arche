@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-22",
-  "updated": "2026-10-23",
+  "updated": "2026-10-24",
   "branch": "claude/brave-curie-chxbck",
   "history": [
     {
@@ -66,6 +66,10 @@
     {
       "date": "2026-10-23",
       "text": "Pilote lancé : reprise d'un CAPEX en cours (N-20 : phase, jalons franchis datés, budget validé ; jalons « Repris » sans circuit), écran Objectifs DIG-PRODI (C-10 : délai soumission → décision par jalon, documents statiques par dossier de jalon, décisions tracées ; référence de l'existant saisie par le Dir.IG, cibles −40 % / −50 % / 100 %), guides par rôle, procédure du pilote et journal des retours."
+    },
+    {
+      "date": "2026-10-24",
+      "text": "Retours du pilote (1) : jeu de démo enrichi (COPIL GPI, REX), carte des CAPEX (position au site de la filiale, liste « Hors de la carte »), commande npm run db:reset-demo. (2) Assistant « Ouvrir un CAPEX » (identité, lots, budget E50, équipe, risques, dossier, ou reprise d'un CAPEX en cours), menus Portefeuille groupe / Portefeuille filiale (sélecteur de filiale) / Pilotage, choix de langue en haut à droite. Plan d'actions, WBS et Gantt retenus pour les lots suivants."
     }
   ],
   "items": [
@@ -775,7 +779,7 @@
       "progress": {
         "state": "en_cours",
         "delivery": "Pilote",
-        "note": "23 oct. 2026 : lot de développement fait — reprise d'un CAPEX en cours par le Sponsor (N-20), écran Objectifs DIG-PRODI et référence de l'existant (C-10), guides par rôle, procédure et journal des retours. Restent les prérequis du responsable produit (hébergement C-13, Entra, D-1 à D-4, relevé de l'existant, choix des CAPEX) et les corrections issues des retours."
+        "note": "23 oct. 2026 : lot de développement fait — reprise d'un CAPEX en cours par le Sponsor (N-20), écran Objectifs DIG-PRODI et référence de l'existant (C-10), guides par rôle, procédure et journal des retours. Restent les prérequis du responsable produit (hébergement C-13, Entra, D-1 à D-4, relevé de l'existant, choix des CAPEX) et les corrections issues des retours. 24 oct. 2026 : premiers retours du responsable produit traités (assistant d'ouverture, menus, carte, données de démo, langue) ; plan d'actions et WBS / Gantt à venir."
       }
     },
     {

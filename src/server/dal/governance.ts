@@ -93,10 +93,11 @@ async function snapshotsOf(q: Q, ids: string[], since: string) {
 }
 
 /** The portfolio dashboard (spec 06 §5): the viewer's CAPEX on the zone of the session, each with its dashboard and trend. */
-export async function portfolioDashboard(viewer: Viewer, zone: string | null) {
+export async function portfolioDashboard(viewer: Viewer, zone: string | null, subsidiary: string | null = null) {
   const db = await getDb();
   const today = await businessToday(db);
-  const p = await portfolioOf(viewer, zone);
+  const all = await portfolioOf(viewer, zone);
+  const p = subsidiary ? { ...all, rows: all.rows.filter((r) => r.subsidiaryCode === subsidiary) } : all;
   const full = new Map((await fullRows(db, p.rows.map((r) => r.id))).map((r) => [r.id, r]));
   const since = new Date(Date.parse(`${today}T12:00:00Z`) - 12 * 7 * 86_400_000).toISOString().slice(0, 10);
   const snaps = await snapshotsOf(db, p.rows.map((r) => r.id), since);

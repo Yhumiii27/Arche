@@ -20,8 +20,9 @@
 - **Cloisonnement** : on ne voit que les CAPEX de son périmètre (sa filiale, ses CAPEX nommés ; les fonctions centrales
   voient tous les CAPEX ouverts, jamais les brouillons). Un CAPEX hors périmètre « n'existe pas » (page introuvable).
 - **Navigation** : *Accueil* (ce qui vous attend), *Mes validations* (étapes de circuit, budgets, typologies, modifications
-  à traiter), section *Pilotage* (registre, carte, portefeuille, COPIL GPI, objectifs DIG-PRODI, bibliothèque REX), section
-  *CAPEX* (toutes les pages du CAPEX choisi dans le sélecteur). ⌘K (Ctrl+K) cherche une page.
+  à traiter), *Portefeuille groupe* (carte, portefeuille groupe par zone, COPIL GPI, objectifs DIG-PRODI, bibliothèque REX),
+  *Portefeuille filiale* (sélecteur de filiale : registre des CAPEX, portefeuille de la filiale, ouvrir un CAPEX), *Pilotage*
+  (toutes les pages du CAPEX choisi dans le sélecteur). ⌘K (Ctrl+K) cherche une page. Langue FR / EN en haut à droite.
 - **Documents** : Arche ne stocke aucun fichier. On cite une référence **Codex** (identifiant et révision) ; Arche vérifie
   qu'elle existe et ouvre le document dans Codex.
 - **Traçabilité** : chaque modification est écrite au *Journal* du CAPEX (qui, quand, quoi), sans effacement possible.

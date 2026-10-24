@@ -5,14 +5,20 @@ les retours d'expérience.
 
 ## Créer et ouvrir un CAPEX
 
-1. *Registre des CAPEX* › **Nouveau CAPEX** : titre, type d'investissement, site, date de besoin ; nommer le chef de projet
-   (une personne de la filiale ou du groupe). Le CAPEX est un **brouillon**, visible de la filiale seulement.
-2. Le chef de projet complète la fiche, les lots et l'équipe.
-3. *Synthèse du CAPEX* › **Ouvrir le CAPEX (phase 1)** : le CAPEX passe en phase 1 (Cadrage) et devient visible du groupe.
+**Ouvrir un CAPEX** (Accueil, Registre des CAPEX, carte, ou section *Portefeuille filiale*) lance l'assistant : démarrage
+(nouveau CAPEX ou reprise d'un CAPEX en cours), identité (titre, type, site, date de besoin, chef de projet), lots, budget E50
+indicatif par lot, équipe, risques initiaux, sections du business case, puis le récapitulatif de ce qui reste à compléter.
+Seuls le titre et le type sont obligatoires ; tout le reste se complète ensuite dans les pages du CAPEX.
+
+- **Créer le brouillon** : le CAPEX reste visible de la filiale seulement.
+- **Créer et ouvrir (phase 1)** : le chef de projet doit être nommé ; le CAPEX devient visible du groupe.
+- Ouvrir plus tard un brouillon : *Synthèse du CAPEX* › **Ouvrir le CAPEX (phase 1)**.
 
 ## Reprendre un CAPEX déjà en cours (pilote, N-20)
 
-Pour un CAPEX commencé avant Arche, à la place de l'ouverture : *Synthèse du CAPEX* › **Reprendre un CAPEX en cours**.
+Pour un CAPEX commencé avant Arche : dans l'assistant **Ouvrir un CAPEX**, choisir « Reprendre un CAPEX en cours » (les jalons
+et le budget validé se saisissent à l'étape Budget, puis **Créer et reprendre**), ou, sur un brouillon existant, *Synthèse du
+CAPEX* › **Reprendre un CAPEX en cours**.
 
 - Avant : le chef de projet est nommé et **les lots sont saisis** (le budget validé se saisit lot par lot).
 - Saisir : la **phase en cours** (2, 3 ou 4), la date d'ouverture, pour chaque jalon déjà franchi (G1, G2, K3) **sa date et qui

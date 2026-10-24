@@ -578,3 +578,12 @@
 .capexMenu {
   z-index: 70;
 }
+
+/* Subsidiary selector of the "Subsidiary portfolio" section: the look of the CAPEX switcher over a native select. */
+.subSelect {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}

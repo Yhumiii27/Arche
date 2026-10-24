@@ -22,6 +22,7 @@ export const COOKIE = {
   role: 'arche-role',
   lang: 'arche-lang',
   zone: 'arche-zone',
+  subsidiary: 'arche-subsidiary',
 } as const;
 
 /** Default "View as" profile of the demo mode. */
@@ -60,6 +61,12 @@ export const getI18n = cache(async (): Promise<{ lang: Lang; t: T }> => {
 });
 
 /** The zone the viewer filters the portfolio views on (register, map), null = every zone. Checked against the zones list. */
+/** The subsidiary chosen in the sidebar (Subsidiary portfolio); checked against the viewer's choice by subsidiaryChoice(). */
+export const getSubsidiaryCookie = cache(async (): Promise<string | null> => {
+  const v = (await cookies()).get(COOKIE.subsidiary)?.value;
+  return v && /^[A-Z]{3}$/.test(v) ? v : null;
+});
+
 export const getZone = cache(async (): Promise<string | null> => {
   const v = (await cookies()).get(COOKIE.zone)?.value;
   return v && /^[A-Z0-9]{2,8}$/.test(v) ? v : null;

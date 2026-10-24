@@ -1,10 +1,9 @@
 'use client';
-// Sidebar (derived from Keystone's shell, docs/spec/08): brand, page search (⌘K), fixed entries, then the Steering, CAPEX and
-// Administration sections — collapsible, their entries grouped by theme. The CAPEX section is always there with the CAPEX
+// Sidebar (derived from Keystone's shell, docs/spec/08): brand, page search (⌘K), fixed entries, then the Group portfolio, Subsidiary portfolio (subsidiary
+// selector), Steering (the selected CAPEX) and Administration sections — collapsible, their entries grouped by theme. The CAPEX section is always there with the CAPEX
 // switcher (Keystone's project switcher: my CAPEX / my whole scope, search); its entries point at the CAPEX of the URL, else
-// the last one used (cookie arche-capex). At the bottom the "View as" switcher (demo mode) or the account menu (Entra mode),
-// then the language toggle.
-import { CaretDown, CaretRight, CaretUpDown, Check, Eye, FolderOpen, MagnifyingGlass, Polygon, SignOut, Translate } from '@phosphor-icons/react/dist/ssr';
+// the last one used (cookie arche-capex). At the bottom the "View as" switcher (demo mode) or the account menu (Entra mode); the language toggle is in the page header, top right.
+import { Buildings, CaretDown, CaretRight, CaretUpDown, Check, Eye, FolderOpen, MagnifyingGlass, Polygon, SignOut } from '@phosphor-icons/react/dist/ssr';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition, type CSSProperties, type KeyboardEvent } from 'react';
@@ -15,7 +14,7 @@ import { ROLE_LABEL, type RoleKey } from '@/config/roles';
 import { SCREEN_ICONS } from '@/config/screen-icons';
 import { AUTH_PATHS } from '@/domain/auth';
 import { useI18n } from '@/i18n/client';
-import { setLang, setViewAs, switchRole } from '@/server/actions/preferences';
+import { setSubsidiary, setViewAs, switchRole } from '@/server/actions/preferences';
 import { buildNav, swapCapexInPath, type NavEntry } from './nav-model';
 import picker from './header.module.css';
 import styles from './sidebar.module.css';
@@ -57,6 +56,9 @@ export interface SidebarProps {
   lastCapex: string | null;
   /** Sections folded by the viewer (cookie arche-nav). */
   folded: string[];
+  /** Subsidiaries of the "Subsidiary portfolio" selector and the one chosen (cookie arche-subsidiary). */
+  subsidiaries: { code: string; name: string }[];
+  subsidiary: string | null;
 }
 
 const YEAR = 60 * 60 * 24 * 365;
@@ -83,15 +85,14 @@ function useDismiss(open: boolean, setOpen: (v: boolean) => void) {
   return ref;
 }
 
-export function Sidebar({ role, personas, account, capex, lastCapex, folded: initialFolded }: SidebarProps) {
-  const { t, lang } = useI18n();
+export function Sidebar({ role, personas, account, capex, lastCapex, folded: initialFolded, subsidiaries, subsidiary }: SidebarProps) {
+  const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
   const known = new Set(capex.map((c) => c.code));
   // Without a CAPEX in the URL: the last one used, else the viewer's first own CAPEX, else the first one they see.
   const fallback = (lastCapex && known.has(lastCapex) ? lastCapex : null) ?? capex.find((c) => c.mine)?.code ?? capex[0]?.code ?? null;
   const nav = buildNav(role, pathname, fallback);
-  const [, startTransition] = useTransition();
   const [folded, setFolded] = useState<string[]>(initialFolded);
   const [q, setQ] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
@@ -202,6 +203,7 @@ export function Sidebar({ role, personas, account, capex, lastCapex, folded: ini
                     {!open && <span className={styles.secCount}>{sec.groups.reduce((n, g) => n + g.entries.length, 0)}</span>}
                   </button>
                   {open && sec.key === 'capex' && <CapexSwitcher options={capex} current={nav.capex} />}
+                  {open && sec.key === 'subsidiary' && subsidiaries.length > 0 && <SubsidiarySwitcher options={subsidiaries} current={subsidiary} />}
                   {open &&
                     sec.groups.map((g) => (
                       <div key={g.label ?? '-'} className={styles.groupBlock}>
@@ -220,21 +222,48 @@ export function Sidebar({ role, personas, account, capex, lastCapex, folded: ini
           </div>
         </>
       )}
-      <button
-        type="button"
-        className={cx(styles.entry)}
-        onClick={() => startTransition(() => setLang(lang === 'fr' ? 'en' : 'fr'))}
-        aria-label={t('Switch language')}
-      >
-        <Translate size={16} className={styles.icon} />
-        <span className={styles.label}>{lang === 'fr' ? 'English' : 'Français'}</span>
-      </button>
       {account ? <AccountMenu account={account} /> : <ViewAs role={role} personas={personas} />}
     </aside>
   );
 }
 
 /** CAPEX switcher (Keystone's project switcher): my CAPEX or my whole scope, search, the same page of the chosen CAPEX. */
+/** Subsidiary of the "Subsidiary portfolio" pages (register, subsidiary portfolio, opening a CAPEX). */
+function SubsidiarySwitcher({ options, current }: { options: { code: string; name: string }[]; current: string | null }) {
+  const { t } = useI18n();
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  const cur = options.find((o) => o.code === current) ?? options[0];
+  return (
+    <div className={styles.capexPick}>
+      <div className={styles.capexBtn}>
+        <Buildings size={14} className={picker.accentIcon} />
+        <span className={styles.capexWho}>
+          <span className={styles.capexCode}>{cur.code}</span>
+          <span className={styles.capexTitle}>{cur.name}</span>
+        </span>
+        <CaretDown size={12} className={picker.mutedIcon} />
+      </div>
+      <select
+        className={styles.subSelect}
+        value={cur.code}
+        aria-label={t('Subsidiary')}
+        onChange={(e) => {
+          const code = e.target.value;
+          startTransition(async () => {
+            await setSubsidiary(code);
+            router.refresh();
+          });
+        }}
+      >
+        {options.map((o) => (
+          <option key={o.code} value={o.code}>{`${o.code} · ${o.name}`}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function CapexSwitcher({ options, current }: { options: CapexOption[]; current: string | null }) {
   const { t } = useI18n();
   const router = useRouter();

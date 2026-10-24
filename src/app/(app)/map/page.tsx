@@ -9,8 +9,7 @@ import type { CapexMapPoint } from '@/components/charts/capex-map';
 import { canSee, screenHref } from '@/config/screens';
 import { capexMapKpis, capexMarkerStyle, uniq } from '@/domain/capex-map';
 import { PHASE_SHORT, STATUS_LABEL, labelOf } from '@/domain/capex-labels';
-import { NewCapexButton } from '@/features/capex/forms';
-import { newCapexProps } from '@/features/capex/new-capex';
+import { OpenGuidedLink } from '@/features/capex/open-link';
 import { MapPanels, type SiteGroup } from '@/features/map/map-panels';
 import s from '@/features/map/map.module.css';
 import { dataText } from '@/i18n/data-text';
@@ -65,11 +64,10 @@ export default async function CapexMapPage() {
   const unlocated = p.rows.filter((_, i) => placed[i] === null);
   const kpis = capexMapKpis(points, unlocated.length);
   const budget = p.rows.reduce((a, c) => a + (c.validatedKeur ?? 0), 0);
-  const newCapex = await newCapexProps(viewer, lang);
   const zoneLabel = p.zoneName ? dataText(p.zoneName, lang) : null;
   return (
     <>
-      <PageHeader screen="map" crumbs={['Steering']} primary={newCapex ? <NewCapexButton {...newCapex} /> : undefined} />
+      <PageHeader screen="map" crumbs={['Group portfolio']} primary={<OpenGuidedLink viewer={viewer} />} />
       <div className={s.body}>
         <ZoneSeg zone={p.zone} options={p.zones.map((z) => ({ code: z.code, label: z.code ? dataText(z.name!, lang) : t('All zones'), count: z.count }))} />
         <KpiGrid>

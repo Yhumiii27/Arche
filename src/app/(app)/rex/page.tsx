@@ -25,7 +25,7 @@ export default async function RexLibraryPage({ searchParams }: PageProps<'/rex'>
   const rows = all.filter((r) => (!phase || r.phase === phase) && (!category || r.category === category) && (!q || `${r.title} ${r.text} ${dataText(r.title, lang)} ${dataText(r.text, lang)} ${r.capex.code}`.toLowerCase().includes(q)));
   return (
     <>
-      <PageHeader screen="rex" crumbs={['Steering']} />
+      <PageHeader screen="rex" crumbs={['Group portfolio']} />
       <form role="search" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <input className="input" type="search" name="q" defaultValue={q} placeholder={t('Search the lessons')} aria-label={t('Search')} />
         <select className="input" name="phase" defaultValue={phase} aria-label={t('Phase')}>

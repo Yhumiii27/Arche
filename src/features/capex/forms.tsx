@@ -1,12 +1,8 @@
 'use client';
 // CAPEX forms (client islands of the CAPEX pages, delivery 2). They collect the input; the Server Functions of ./actions.ts
 // check the rights and the input again.
-import { Plus } from '@phosphor-icons/react/dist/ssr';
-import { useRouter } from 'next/navigation';
-import { Fragment, useActionState, useState } from 'react';
-import { ActionButton, ActionForm, Folded, Result, type ActionResult } from '@/components/app/ActionForm';
-import { Button } from '@/components/ds/Button';
-import { Dialog } from '@/components/ds/Dialog';
+import { Fragment, useState } from 'react';
+import { ActionButton, ActionForm, Folded } from '@/components/app/ActionForm';
 import styles from './forms.module.css';
 import { Field, Input, Select, Textarea } from '@/components/ds/Field';
 import { ESTIMATE_CLASSES } from '@/domain/budget';
@@ -14,7 +10,7 @@ import { DECISION_BODIES, DECISION_BODY_LABEL, INVESTMENT_TYPES, LOT_KINDS, LOT_
 import { INVESTMENT_TYPE_LABEL } from '@/domain/capex-labels';
 import { useI18n } from '@/i18n/client';
 import {
-  addDecisionAction, addLotAction, addMemberAction, confirmTypologyAction, createCapexAction, deleteDraftVersionAction, forceTypologyAction,
+  addDecisionAction, addLotAction, addMemberAction, confirmTypologyAction, deleteDraftVersionAction, forceTypologyAction,
   openCapexAction, removeLotAction, saveBusinessPlanAction, validateBusinessPlanAction, removeMemberAction, reviewVersionAction, saveBudgetVersionAction, saveRiskAction, submitVersionAction, suspendAction,
   takeoverCapexAction, updateSheetAction,
 } from './actions';
@@ -39,70 +35,6 @@ function useOptions() {
  * "New CAPEX": the page's main action, a dialog with the identity of the draft (title, subsidiary, site, investment type,
  * need date, description and, for a sponsor, the project lead) and the code it will get; once created, its overview opens.
  */
-export function NewCapexButton({ subsidiaries, sites, leads }: {
-  subsidiaries: (Opt & { nextCode: string })[];
-  sites: (Opt & { subsidiary: string })[];
-  /** People a sponsor may name project lead (empty: the creator is the lead, or none). */
-  leads: (Opt & { subsidiary: string | null })[];
-}) {
-  const { t } = useI18n();
-  const o = useOptions();
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [sub, setSub] = useState(subsidiaries[0]?.value ?? '');
-  const [state, run, pending] = useActionState(async (prev: ActionResult | null, fd: FormData) => {
-    const r = await createCapexAction(prev, fd);
-    if (r.ok && r.code) {
-      setOpen(false);
-      router.push(`/capex/${encodeURIComponent(r.code)}`);
-    }
-    return r;
-  }, null);
-  const next = subsidiaries.find((x) => x.value === sub)?.nextCode;
-  return (
-    <>
-      <Button variant="primary" icon={Plus} onClick={() => setOpen(true)} aria-haspopup="dialog">
-        {t('New CAPEX')}
-      </Button>
-      <Dialog open={open} onClose={() => setOpen(false)} title={t('New CAPEX')} subtitle={t('Created as a draft in your subsidiary. The sponsor opens it once the project lead is named.')}>
-        <form action={run} className={styles.dialogForm}>
-          <Field label={t('Title')} htmlFor="nc-title" required span="full">
-            <Input id="nc-title" name="title" required minLength={3} />
-          </Field>
-          <Field label={t('Subsidiary')} htmlFor="nc-sub" required>
-            <Select id="nc-sub" name="subsidiaryCode" value={sub} onChange={(e) => setSub(e.target.value)} options={subsidiaries.map(({ value, label }) => ({ value, label }))} />
-          </Field>
-          <Field label={t('Site')} htmlFor="nc-site">
-            <Select id="nc-site" name="siteId" options={[{ value: '', label: '—' }, ...sites.filter((x) => x.subsidiary === sub)]} />
-          </Field>
-          <Field label={t('Investment type')} htmlFor="nc-type" required>
-            <Select id="nc-type" name="investmentType" options={o.investment} />
-          </Field>
-          <Field label={t('Need date')} htmlFor="nc-need">
-            <Input id="nc-need" name="needDate" type="date" />
-          </Field>
-          {leads.length > 0 && (
-            <Field label={t('Project lead')} htmlFor="nc-lead" span="full" hint={t('Needed to open the CAPEX')}>
-              <Select id="nc-lead" name="leadUserId" options={[{ value: '', label: t('To name later') }, ...leads.filter((x) => !x.subsidiary || x.subsidiary === sub)]} />
-            </Field>
-          )}
-          <Field label={t('Description')} htmlFor="nc-desc" span="full">
-            <Textarea id="nc-desc" name="description" rows={3} />
-          </Field>
-          {next && <div className={styles.dialogNote}>{t(`Code given when saved: ${next}`)}</div>}
-          <div className={styles.dialogActions}>
-            <Result state={state?.ok ? null : state} done="Draft created" />
-            <Button onClick={() => setOpen(false)}>{t('Cancel')}</Button>
-            <Button type="submit" variant="primary" disabled={pending}>
-              {t('Create the draft')}
-            </Button>
-          </div>
-        </form>
-      </Dialog>
-    </>
-  );
-}
-
 export interface SheetValues {
   title: string;
   description: string | null;

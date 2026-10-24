@@ -19,6 +19,7 @@ import { approvalsOf } from '@/server/dal/approvals';
 import { isMine, visibleCapex } from '@/server/dal/capex';
 import { alertsForViewer } from '@/server/dal/governance';
 import { getI18n, getViewer } from '@/server/session';
+import { OpenGuidedLink } from '@/features/capex/open-link';
 
 export default async function HomePage() {
   const [{ t, lang }, viewer] = await Promise.all([getI18n(), getViewer()]);
@@ -31,7 +32,7 @@ export default async function HomePage() {
   const alerts = followed.alerts.filter((a) => a.level === 'alert');
   return (
     <>
-      <PageHeader screen="home" title={`${t('Hello')} ${viewer.name.split(' ')[0]}`} />
+      <PageHeader screen="home" title={`${t('Hello')} ${viewer.name.split(' ')[0]}`} primary={<OpenGuidedLink viewer={viewer} />} />
       <KpiGrid>
         <KpiTile label={t('Active profile')} value={t(ROLE_LABEL[viewer.role])} sub={scopes.join(' · ')} size="lg" />
         <KpiTile label={t('Visible CAPEX')} value={capex.length} sub={t(`${capex.length} visible CAPEX`)} size="lg" />

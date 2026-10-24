@@ -1,6 +1,6 @@
 # Arche — reste à développer
 
-Inventaire initial du 2026-10-22, mis à jour le 2026-10-23 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
+Inventaire initial du 2026-10-22, mis à jour le 2026-10-24 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
 
 **Lecture.** Priorité : Bloquant production, Prochaine étape, À décider (il faut d'abord trancher), Plus tard. Effort, pour un développeur qui connaît le code : S < 2 jours, M ≤ 1 semaine, L ≤ 3 semaines, XL > 3 semaines. Les identifiants entre parenthèses renvoient aux décisions (`docs/DECISIONS.md`) et aux demandes (`docs/DEMANDES-*.md`).
 
@@ -195,7 +195,7 @@ Livraison 5 (C-3, N-13).
 
 **AR-034 · Pilote sur 1 à 2 CAPEX** — *Bloquant production · non commencé · effort M* · **en cours (Pilote)**  
 Jeu production, utilisateurs réels, guides par rôle, mesure de référence (C-10).  
-*Avancement : 23 oct. 2026 : lot de développement fait — reprise d'un CAPEX en cours par le Sponsor (N-20), écran Objectifs DIG-PRODI et référence de l'existant (C-10), guides par rôle, procédure et journal des retours. Restent les prérequis du responsable produit (hébergement C-13, Entra, D-1 à D-4, relevé de l'existant, choix des CAPEX) et les corrections issues des retours. · Sources : docs/PLAN.md*
+*Avancement : 23 oct. 2026 : lot de développement fait — reprise d'un CAPEX en cours par le Sponsor (N-20), écran Objectifs DIG-PRODI et référence de l'existant (C-10), guides par rôle, procédure et journal des retours. Restent les prérequis du responsable produit (hébergement C-13, Entra, D-1 à D-4, relevé de l'existant, choix des CAPEX) et les corrections issues des retours. 24 oct. 2026 : premiers retours du responsable produit traités (assistant d'ouverture, menus, carte, données de démo, langue) ; plan d'actions et WBS / Gantt à venir. · Sources : docs/PLAN.md*
 
 **~~AR-008 · Coquille, registre d’écrans, accueil, registre et fiche CAPEX, administration en lecture~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 1)**  
 25 écrans au registre ; ceux des livraisons suivantes affichent « prévu pour la livraison n ».  
@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-24 — Retours du pilote (1) : jeu de démo enrichi (COPIL GPI, REX), carte des CAPEX (position au site de la filiale, liste « Hors de la carte »), commande npm run db:reset-demo. (2) Assistant « Ouvrir un CAPEX » (identité, lots, budget E50, équipe, risques, dossier, ou reprise d'un CAPEX en cours), menus Portefeuille groupe / Portefeuille filiale (sélecteur de filiale) / Pilotage, choix de langue en haut à droite. Plan d'actions, WBS et Gantt retenus pour les lots suivants.
 - 2026-10-23 — Pilote lancé : reprise d'un CAPEX en cours (N-20 : phase, jalons franchis datés, budget validé ; jalons « Repris » sans circuit), écran Objectifs DIG-PRODI (C-10 : délai soumission → décision par jalon, documents statiques par dossier de jalon, décisions tracées ; référence de l'existant saisie par le Dir.IG, cibles −40 % / −50 % / 100 %), guides par rôle, procédure du pilote et journal des retours.
 - 2026-10-23 — REX au contrat commun de Matrix (D22, option 1) : vue pub_rex_v2 (15 colonnes, phase en fin de vue, migration 0016), recommandation facultative d'un REX (migration 0015) ; pub_rex v1 inchangée. Demande de Matrix marquée FAITE, M-13 mise à jour, K-13 retirée (doublon de la demande de Matrix chez Keystone).
 - 2026-10-23 — Demandes déposées (validées par Guillaume) : M-13 chez Matrix (partage de pub_rampup et pub_rex, REX réuni, Yhumiii27/Matrix#21) et K-13 chez Keystone (keystone.pub_rex au contrat commun, Yhumiii27/Keystone#27).
