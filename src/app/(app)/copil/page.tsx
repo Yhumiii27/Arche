@@ -26,7 +26,7 @@ export default async function CopilPage() {
   const late = a.running.filter((r) => r.decision?.dueOn && r.decision.dueOn < a.today);
   return (
     <>
-      <PageHeader screen="copil" crumbs={['Steering']} />
+      <PageHeader screen="copil" crumbs={['Group portfolio']} />
       <KpiGrid>
         <KpiTile label={t('Dossiers submitted to G1')} value={a.running.length} />
         <KpiTile label={t('Decisions past the 2 working days')} value={late.length} tone={late.length ? 'alert' : 'default'} />

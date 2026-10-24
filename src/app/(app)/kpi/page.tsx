@@ -24,7 +24,7 @@ export default async function KpiPage() {
   const pct = (n: number | null) => (n == null ? '—' : `${n > 0 ? '+' : ''}${fmtNum(n, lang)} %`);
   return (
     <>
-      <PageHeader screen="kpi" crumbs={['Steering']} />
+      <PageHeader screen="kpi" crumbs={['Group portfolio']} />
       <SectionCard
         title={t('Indicators of the objectives')}
         hint={t('Measured on the gate sessions decided in Arche; gates taken over at a takeover are left out')}

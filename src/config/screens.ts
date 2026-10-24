@@ -4,12 +4,14 @@
 import type { RoleKey } from './roles';
 
 export type ScreenId =
-  | 'home' | 'approvals' | 'capex-list' | 'map' | 'portfolio' | 'copil' | 'rex' | 'kpi'
+  | 'home' | 'approvals' | 'capex-list' | 'map' | 'portfolio' | 'copil' | 'rex' | 'kpi' | 'subsidiary-portfolio' | 'capex-open'
   | 'capex-overview' | 'capex-gates' | 'capex-dossiers' | 'capex-budget' | 'capex-execution' | 'capex-changes' | 'capex-machines'
   | 'capex-pack' | 'capex-permits' | 'capex-safety' | 'capex-risks' | 'capex-governance' | 'capex-rampup' | 'capex-journal'
   | 'admin-org' | 'admin-users' | 'admin-model' | 'admin-delegation' | 'admin-connectors';
 
-export type Section = 'fixed' | 'steering' | 'capex' | 'admin';
+/** Sidebar sections (owner, 24 Oct 2026): group portfolio, subsidiary portfolio (subsidiary selector), steering of the
+ * selected CAPEX (CAPEX switcher), administration. */
+export type Section = 'fixed' | 'group' | 'subsidiary' | 'capex' | 'admin';
 
 export interface ScreenDef {
   id: ScreenId;
@@ -31,12 +33,14 @@ const STEERING: readonly RoleKey[] = ['ceo', 'dir_ig', 'group_cfo', 'group_hse',
 export const SCREENS: readonly ScreenDef[] = [
   { id: 'home', path: '/', title: 'Home', section: 'fixed', roles: 'all', delivery: 'L1' },
   { id: 'approvals', path: '/my/approvals', title: 'My approvals', section: 'fixed', roles: BUSINESS, delivery: 'L3' },
-  { id: 'capex-list', path: '/capex', title: 'CAPEX register', section: 'steering', group: 'Portfolio', roles: STEERING, delivery: 'L1' },
-  { id: 'map', path: '/map', title: 'CAPEX map', section: 'steering', group: 'Portfolio', roles: STEERING, delivery: 'L4' },
-  { id: 'portfolio', path: '/portfolio', title: 'Portfolio', section: 'steering', group: 'Portfolio', roles: STEERING, delivery: 'L5' },
-  { id: 'copil', path: '/copil', title: 'COPIL GPI', section: 'steering', group: 'Bodies and lessons learned', roles: ['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'sponsor', 'project_lead'], delivery: 'L5' },
-  { id: 'kpi', path: '/kpi', title: 'DIG-PRODI objectives', section: 'steering', group: 'Bodies and lessons learned', roles: ['ceo', 'dir_ig', 'group_cfo', 'copil_member'], delivery: 'P' },
-  { id: 'rex', path: '/rex', title: 'Lessons learned library', section: 'steering', group: 'Bodies and lessons learned', roles: BUSINESS, delivery: 'L6' },
+  { id: 'map', path: '/map', title: 'CAPEX map', section: 'group', roles: STEERING, delivery: 'L4' },
+  { id: 'portfolio', path: '/portfolio', title: 'Group portfolio', section: 'group', roles: STEERING, delivery: 'L5' },
+  { id: 'copil', path: '/copil', title: 'COPIL GPI', section: 'group', roles: ['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'sponsor', 'project_lead'], delivery: 'L5' },
+  { id: 'kpi', path: '/kpi', title: 'DIG-PRODI objectives', section: 'group', roles: ['ceo', 'dir_ig', 'group_cfo', 'copil_member'], delivery: 'P' },
+  { id: 'rex', path: '/rex', title: 'Lessons learned library', section: 'group', roles: BUSINESS, delivery: 'L6' },
+  { id: 'capex-list', path: '/capex', title: 'CAPEX register', section: 'subsidiary', roles: STEERING, delivery: 'L1' },
+  { id: 'subsidiary-portfolio', path: '/portfolio/subsidiary', title: 'Subsidiary portfolio', section: 'subsidiary', roles: STEERING, delivery: 'P' },
+  { id: 'capex-open', path: '/open', title: 'Open a CAPEX', section: 'subsidiary', roles: ['sponsor', 'project_lead'], delivery: 'P' },
   { id: 'capex-overview', path: '/capex/[code]', title: 'CAPEX overview', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'L1' },
   { id: 'capex-gates', path: '/capex/[code]/gates', title: 'Gates & circuits', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'L3' },
   { id: 'capex-dossiers', path: '/capex/[code]/dossiers', title: 'Living dossiers', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'L3' },
@@ -62,8 +66,9 @@ export const SCREEN_BY_ID = Object.fromEntries(SCREENS.map((s) => [s.id, s])) as
 
 /** Section titles (EN source strings). */
 export const SECTION_LABEL: Record<Exclude<Section, 'fixed'>, string> = {
-  steering: 'Steering',
-  capex: 'CAPEX',
+  group: 'Group portfolio',
+  subsidiary: 'Subsidiary portfolio',
+  capex: 'Steering',
   admin: 'Administration',
 };
 

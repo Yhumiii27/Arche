@@ -34,8 +34,8 @@ async function main(): Promise<void> {
     epc2i_pmo: ['CPX-SAI-2026-01'],
   };
   for (const [role, want] of Object.entries(expected)) {
-    const r = await get('/capex', role);
-    check(r.status === 200 && JSON.stringify(codes(r.body)) === JSON.stringify(want), `CAPEX register of ${role}: ${want.join(', ')}`);
+    const r = await get('/portfolio', role);
+    check(r.status === 200 && JSON.stringify(codes(r.body)) === JSON.stringify(want), `group portfolio of ${role}: ${want.join(', ')}`);
   }
 
   check((await get('/capex/CPX-SAI-2026-01', 'sponsor')).status === 404, 'a subsidiary sponsor gets 404 on another subsidiary’s CAPEX');
@@ -65,7 +65,13 @@ async function main(): Promise<void> {
   check(epc2i.status === 200 && epc2i.body.includes('SAI-26011') && epc2i.body.includes('Fin des études'), 'machine needs: the EPC2i projects and their milestones');
   check((await get('/admin/connectors', 'admin')).status === 200, 'connectors page for the administrator');
   const register = await get('/capex', 'sponsor');
-  check(register.status === 200 && register.body.includes('Nouveau CAPEX') && register.body.includes('Toutes les zones'), 'register: "New CAPEX" action and zone selector for a sponsor');
+  check(register.status === 200 && register.body.includes('Ouvrir un CAPEX') && register.body.includes('Atlas Process Maroc') && !register.body.includes('href="/capex/CPX-SAI-'), 'register of the subsidiary chosen, with "Open a CAPEX", for a sponsor');
+  const sub = await fetch(BASE + '/capex', { headers: { cookie: 'arche-role=dir_ig; arche-subsidiary=SAI' } }).then((x) => x.text());
+  check(sub.includes('href="/capex/CPX-SAI-2026-02"') && !sub.includes('href="/capex/CPX-APM-2026-01"'), 'the subsidiary selector filters the register');
+  const open = await get('/open', 'sponsor');
+  check(open.status === 200 && open.body.includes('Reprendre un CAPEX en cours') && open.body.includes('Récapitulatif'), 'guided opening of a CAPEX for a sponsor');
+  check((await get('/', 'sponsor')).body.includes('Ouvrir un CAPEX'), '"Open a CAPEX" on the home page of a sponsor');
+  check((await get('/', 'dir_ig')).body.includes('>FR<'), 'language toggle in the page header');
   const map = await get('/map', 'dir_ig');
   check(map.status === 200 && map.body.includes('Carte des CAPEX') && map.body.includes('Kénitra'), 'CAPEX map with the sites of the CAPEX');
   check((await get('/map', 'admin')).status === 404, 'the CAPEX map is not in the administrator\u2019s workspace');

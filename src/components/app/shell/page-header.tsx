@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { SCREEN_BY_ID, canSee, type ScreenId } from '@/config/screens';
 import { getI18n, getViewer } from '@/server/session';
 import styles from './header.module.css';
+import { LangToggle } from './lang-toggle';
 
 export interface PageHeaderProps {
   screen: ScreenId;
@@ -18,7 +19,7 @@ export interface PageHeaderProps {
 }
 
 export async function PageHeader({ screen, title, crumbs = [], crumbData, primary }: PageHeaderProps) {
-  const [{ t }, viewer] = await Promise.all([getI18n(), getViewer()]);
+  const [{ t, lang }, viewer] = await Promise.all([getI18n(), getViewer()]);
   const def = SCREEN_BY_ID[screen];
   const outside = !canSee(viewer.role, screen);
   return (
@@ -49,7 +50,10 @@ export async function PageHeader({ screen, title, crumbs = [], crumbData, primar
             )}
           </div>
         </div>
-        {!outside && primary}
+        <div className={styles.actions}>
+          {!outside && primary}
+          <LangToggle lang={lang} label={t('Language')} />
+        </div>
       </header>
       {outside && (
         <div className="tag tag-outline" role="note" style={{ alignSelf: 'flex-start' }}>

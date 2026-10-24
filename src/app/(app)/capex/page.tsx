@@ -1,13 +1,12 @@
-// CAPEX register (docs/spec/08): the CAPEX of the viewer's scope only (subsidiary isolation in the data layer), on the zone
-// chosen for the portfolio views, searched and filtered by status and phase (URL), with their DIG-PRODI cycle, next gate and
-// validated budget. Main action: "New CAPEX" (a sponsor or a project lead, in their subsidiary). A sponsor opens a draft from
-// its row.
+// CAPEX register (docs/spec/08; "Subsidiary portfolio" section, owner 24 Oct 2026): the CAPEX of the subsidiary chosen in the
+// sidebar, within the viewer's scope (subsidiary isolation in the data layer), searched and filtered by status and phase
+// (URL), with their DIG-PRODI cycle, next gate and validated budget. Main action: "Open a CAPEX" (the guided opening, a sponsor
+// or a project lead). A sponsor opens a draft from its row.
 import Link from 'next/link';
 import { EmptyState } from '@/components/app/EmptyState';
 import { KpiGrid, KpiTile } from '@/components/app/Kpi';
 import { PhaseBar } from '@/components/app/PhaseBar';
 import { SectionCard } from '@/components/app/SectionCard';
-import { ZoneSeg } from '@/components/app/ZoneSeg';
 import { PageHeader } from '@/components/app/shell/page-header';
 import { ButtonLink } from '@/components/ds/Button';
 import { Table, Td, Th } from '@/components/ds/Table';
@@ -16,26 +15,27 @@ import { screenHref } from '@/config/screens';
 import { canDo } from '@/domain/capex';
 import { PHASE_LABEL, STATUS_LABEL, labelOf } from '@/domain/capex-labels';
 import { GATE_LABEL, PHASES, type GateCode } from '@/domain/lifecycle';
-import { NewCapexButton, OpenCapexButton } from '@/features/capex/forms';
-import { newCapexProps } from '@/features/capex/new-capex';
+import { OpenCapexButton } from '@/features/capex/forms';
+import { OpenGuidedLink } from '@/features/capex/open-link';
 import { dataText } from '@/i18n/data-text';
 import { fmtKeur } from '@/lib/format';
 import { approvalsOf } from '@/server/dal/approvals';
-import { portfolioOf } from '@/server/dal/portfolio';
-import { getI18n, getViewer, getZone } from '@/server/session';
+import { portfolioOf, subsidiaryChoice } from '@/server/dal/portfolio';
+import { getI18n, getSubsidiaryCookie, getViewer } from '@/server/session';
 import s from './register.module.css';
 
 const STATUS_TONE: Record<string, 'accent' | 'outline' | 'neutral'> = { active: 'accent', draft: 'outline', on_hold: 'neutral', closed: 'neutral', abandoned: 'neutral' };
 
 export default async function CapexRegisterPage({ searchParams }: PageProps<'/capex'>) {
-  const [{ t, lang }, viewer, zone, sp] = await Promise.all([getI18n(), getViewer(), getZone(), searchParams]);
-  const p = await portfolioOf(viewer, zone);
+  const [{ t, lang }, viewer, sp] = await Promise.all([getI18n(), getViewer(), searchParams]);
+  const [all, subs] = await Promise.all([portfolioOf(viewer, null), subsidiaryChoice(viewer, await getSubsidiaryCookie())]);
+  const p = { all: all.all, rows: all.rows.filter((c) => !subs.current || c.subsidiaryCode === subs.current) };
+  const subName = subs.options.find((o) => o.code === subs.current)?.name ?? null;
   const q = typeof sp.q === 'string' ? sp.q.trim() : '';
   const status = typeof sp.status === 'string' ? sp.status : '';
   const phase = typeof sp.phase === 'string' ? sp.phase : '';
   const rows = p.rows.filter((c) => (!q || `${c.code} ${dataText(c.title, lang)} ${c.siteName ?? ''}`.toLowerCase().includes(q.toLowerCase())) && (!status || c.status === status) && (!phase || (c.status !== 'draft' && c.phase === phase)));
 
-  const newCapex = await newCapexProps(viewer, lang);
   const approvals = await approvalsOf(viewer);
 
   const active = p.rows.filter((c) => c.status === 'active').length;
@@ -46,11 +46,11 @@ export default async function CapexRegisterPage({ searchParams }: PageProps<'/ca
     <>
       <PageHeader
         screen="capex-list"
-        crumbs={['Steering']}
-        primary={newCapex ? <NewCapexButton {...newCapex} /> : undefined}
+        crumbs={['Subsidiary portfolio']}
+        primary={<OpenGuidedLink viewer={viewer} />}
       />
       <div className={s.toolbar}>
-        <ZoneSeg zone={p.zone} options={p.zones.map((z) => ({ code: z.code, label: z.code ? dataText(z.name!, lang) : t('All zones'), count: z.count }))} />
+        {subs.current && <Tag tone="outline" size="sm">{`${subs.current} · ${dataText(subName, lang) ?? ''}`}</Tag>}
         <form className={s.filters} role="search">
           <input className="input" type="search" name="q" defaultValue={q} placeholder={t('Code, title, site…')} aria-label={t('Search')} />
           <select className="input" name="status" defaultValue={status} aria-label={t('Status')}>

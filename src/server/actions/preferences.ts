@@ -9,7 +9,7 @@ import { authMode, sessionConfig } from '@/server/auth/config';
 import { cookieOptions, readSession, sealSession } from '@/server/auth/session-cookie';
 import { getDb } from '@/server/db/client';
 import { writeAudit } from '@/server/db/helpers';
-import { zones } from '@/server/db/schema';
+import { subsidiaries, zones } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { COOKIE, getViewer } from '@/server/session';
 
@@ -45,6 +45,14 @@ export async function setLang(lang: string): Promise<void> {
 }
 
 /** The zone of the portfolio views (register, map); null = every zone. */
+/** The subsidiary of the Subsidiary portfolio pages (register, subsidiary portfolio, opening a CAPEX). */
+export async function setSubsidiary(code: string): Promise<void> {
+  const [s] = await (await getDb()).select({ code: subsidiaries.code }).from(subsidiaries).where(eq(subsidiaries.code, String(code)));
+  if (!s) return;
+  (await cookies()).set(COOKIE.subsidiary, s.code, { path: '/', maxAge: YEAR, sameSite: 'lax' });
+  revalidatePath('/', 'layout');
+}
+
 export async function setZone(zone: string | null): Promise<void> {
   const jar = await cookies();
   if (zone === null) jar.delete(COOKIE.zone);

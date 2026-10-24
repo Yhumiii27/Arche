@@ -48,6 +48,12 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   the existing process `kpi_baselines`, entered by the group industrial director), role guides `docs/guide/`, feedback log
   `docs/RETOURS-PILOTE.md` (record each user feedback there). Next: the owner's prerequisites (hosting C-13, Entra, D-1 to
   D-4, survey of the existing process), then corrections from the feedback; L7 after the pilot.
+- **Pilot feedback (owner, 24 Oct 2026; `docs/RETOURS-PILOTE.md`)**: guided opening `/open` (`src/domain/guided.ts`,
+  `openGuidedAction`, `src/features/capex/guided-form.tsx`; writes in one transaction through `src/server/capex/cycle-writes.ts`),
+  sidebar sections Group portfolio / Subsidiary portfolio (subsidiary selector, cookie `arche-subsidiary`, `subsidiaryChoice`)
+  / Steering (the selected CAPEX), FR / EN toggle in the page header, richer demo data, `npm run db:reset-demo`. Next (agreed,
+  `DECISIONS.md` §5): the CAPEX action plan, then the WBS and Gantt (EPC2i project and CAPEX as summary bars at subsidiary
+  and group level).
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.
