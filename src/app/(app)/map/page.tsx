@@ -7,6 +7,7 @@ import { ZoneSeg } from '@/components/app/ZoneSeg';
 import { PageHeader } from '@/components/app/shell/page-header';
 import type { CapexMapPoint } from '@/components/charts/capex-map';
 import { canSee, screenHref } from '@/config/screens';
+import { countryCentre } from '@/domain/country-centres';
 import { capexMapKpis, capexMarkerStyle, uniq } from '@/domain/capex-map';
 import { PHASE_SHORT, STATUS_LABEL, labelOf } from '@/domain/capex-labels';
 import { OpenGuidedLink } from '@/features/capex/open-link';
@@ -30,13 +31,17 @@ export default async function CapexMapPage() {
       return iso2;
     }
   };
-  // A CAPEX whose site has no coordinates (or without a site) is placed at the first located site of its subsidiary, marked
-  // "Site to specify"; without any located site of its subsidiary it is listed as not located.
+  // A CAPEX whose site has no coordinates (or without a site) is placed at the first located site of its subsidiary, else at the
+  // centre of its site's (or subsidiary's) country, marked "Site to specify"; a country too small for the map is listed as not
+  // located.
   const fallback = await locatedSitesOf([...new Set(p.rows.filter((c) => c.latitude == null || c.longitude == null).map((c) => c.subsidiaryCode))]);
   const placed = p.rows.map((c) => {
     if (c.latitude != null && c.longitude != null) return { c, lat: c.latitude, lng: c.longitude, city: c.siteCity ?? c.siteName, country: c.siteCountry, approx: false };
     const f = fallback.get(c.subsidiaryCode);
-    return f ? { c, lat: f.latitude, lng: f.longitude, city: f.city ?? f.name, country: f.countryIso2, approx: true } : null;
+    if (f) return { c, lat: f.latitude, lng: f.longitude, city: f.city ?? f.name, country: f.countryIso2, approx: true };
+    const country = c.siteCountry ?? c.subsidiaryCountry;
+    const centre = countryCentre(country);
+    return centre ? { c, lat: centre.latitude, lng: centre.longitude, city: c.siteCity ?? c.siteName ?? c.subsidiaryName, country, approx: true } : null;
   });
   const points: CapexMapPoint[] = placed.filter((x) => x !== null).map(({ c, lat, lng, city, country, approx }) => {
     const style = capexMarkerStyle(c.status, c.phase);

@@ -45,6 +45,8 @@ export interface CapexRow {
   leadName: string | null;
   leadUserId: string | null;
   sponsorUserId: string | null;
+  /** Country of the subsidiary (the CAPEX map's last fallback). */
+  subsidiaryCountry: string;
 }
 
 async function selectCapex(viewer: Viewer, extra?: SQL): Promise<CapexRow[]> {
@@ -56,6 +58,7 @@ async function selectCapex(viewer: Viewer, extra?: SQL): Promise<CapexRow[]> {
       id: capex.id, code: capex.code, title: capex.title, subsidiaryCode: capex.subsidiaryCode, subsidiaryName: subsidiaries.name,
       zoneCode: subsidiaries.zoneCode, zoneName: zones.name, siteName: sites.name, siteCity: sites.city, siteCountry: sites.countryIso2, latitude: sites.latitude, longitude: sites.longitude, status: capex.status, phase: capex.phase,
       typology: capex.typology, leadName: users.displayName, leadUserId: capex.leadUserId, sponsorUserId: capex.sponsorUserId,
+      subsidiaryCountry: subsidiaries.countryIso2,
     })
     .from(capex)
     .innerJoin(subsidiaries, eq(subsidiaries.code, capex.subsidiaryCode))

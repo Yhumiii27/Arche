@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-24 — Retours du pilote (5) : « Nouvelle action » sur les pages hors CAPEX avec le choix du CAPEX ; carte : un CAPEX sans site localisé est placé au centre de son pays ; db:reset-demo compatible avec PostgreSQL de Homebrew.
 - 2026-10-24 — Retours du pilote (4) : WBS et Gantt du CAPEX (tâches sous les lots ou au niveau du CAPEX, jalons, lots à leurs mois prévus, projets EPC2i en une barre de synthèse, jalons du cycle) ; « Planning des CAPEX » dans les portefeuilles groupe et filiale, une barre de synthèse par CAPEX.
 - 2026-10-24 — Retours du pilote (3) : plan d'actions du CAPEX — « Nouvelle action » en haut de chaque page du CAPEX (origine déduite de la page), page Plan d'actions (ouvertes, en retard, faites ; clôture faite ou annulée avec motif), « Mes actions » à l'Accueil, actions du jeu de démo.
 - 2026-10-24 — Retours du pilote (1) : jeu de démo enrichi (COPIL GPI, REX), carte des CAPEX (position au site de la filiale, liste « Hors de la carte »), commande npm run db:reset-demo. (2) Assistant « Ouvrir un CAPEX » (identité, lots, budget E50, équipe, risques, dossier, ou reprise d'un CAPEX en cours), menus Portefeuille groupe / Portefeuille filiale (sélecteur de filiale) / Pilotage, choix de langue en haut à droite. Plan d'actions, WBS et Gantt retenus pour les lots suivants.
