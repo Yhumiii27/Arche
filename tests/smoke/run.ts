@@ -106,6 +106,9 @@ async function main(): Promise<void> {
   check(plan.status === 200 && plan.body.includes('Plan d’actions') && plan.body.includes('Commander l’étude de sol') && plan.body.includes('En retard'), 'action plan of a CAPEX: open and late actions');
   check((await get('/capex/CPX-APM-2026-01/risks', 'project_lead')).body.includes('Nouvelle action'), '"New action" in the header of a CAPEX page');
   check((await get('/', 'project_lead')).body.includes('Mes actions'), 'my actions on the home page');
+  const wbs = await get('/capex/CPX-SAI-2026-01/schedule', 'dir_ig');
+  check(wbs.status === 200 && wbs.body.includes('Gantt du CAPEX') && wbs.body.includes('Terrassements') && wbs.body.includes('Projet EPC2i'), 'WBS & Gantt of a CAPEX with an EPC2i summary bar');
+  check((await get('/portfolio', 'dir_ig')).body.includes('Planning des CAPEX'), 'group portfolio: one summary bar per CAPEX');
   const kpi = await get('/kpi', 'dir_ig');
   check(kpi.status === 200 && kpi.body.includes('Objectifs DIG-PRODI') && kpi.body.includes('Délai de validation du G1') && kpi.body.includes('Saisir la référence'), 'DIG-PRODI objectives: indicators and the reference form of the group industrial director');
   check((await get('/kpi', 'ceo')).body.includes('Saisir la référence') === false, 'only the group industrial director enters the references');

@@ -20,6 +20,10 @@ import { dataText } from '@/i18n/data-text';
 import { fmtDate, fmtKeur, fmtNum, fmtRatio } from '@/lib/format';
 import { portfolioDashboard } from '@/server/dal/governance';
 import { subsidiaryChoice } from '@/server/dal/portfolio';
+import { CapexGantt } from '@/components/charts/capex-gantt';
+import { portfolioGantt } from '@/features/schedule/gantt-rows';
+import { getDb } from '@/server/db/client';
+import { portfolioSchedule } from '@/server/dal/schedule';
 import { getI18n, getSubsidiaryCookie, getViewer, getZone } from '@/server/session';
 
 const pct = (n: number | null | undefined, lang: 'fr' | 'en') => (n == null ? '—' : `${fmtNum(n, lang)} %`);
@@ -29,6 +33,9 @@ export async function PortfolioView({ level }: { level: 'group' | 'subsidiary' }
   const choice = level === 'subsidiary' ? await subsidiaryChoice(viewer, await getSubsidiaryCookie()) : null;
   const p = await portfolioDashboard(viewer, level === 'group' ? zone : null, choice?.current ?? null);
   const subName = choice?.options.find((o) => o.code === choice.current)?.name ?? null;
+  const ganttRows = p.rows.filter((r) => r.status !== 'draft');
+  const summaries = new Map((await portfolioSchedule(await getDb(), ganttRows)).map((x) => [x.id, x.summary]));
+  const gantt = portfolioGantt(ganttRows.map((r) => ({ code: r.code, title: dataText(r.title, lang), sub: [r.subsidiaryCode, t(labelOf(PHASE_LABEL, r.phase))].join(' · '), summary: summaries.get(r.id) ?? null })), p.today, lang, t);
   const k = (n: number | null | undefined) => fmtKeur(n, lang);
   const open = p.rows.filter((r) => r.status === 'active' || r.status === 'on_hold');
   const afterG2 = open.filter((r) => r.phase === 'execution' || r.phase === 'demarrage');
@@ -56,6 +63,12 @@ export async function PortfolioView({ level }: { level: 'group' | 'subsidiary' }
         <KpiTile label={t('Reviews late')} value={lateReviews.length} tone={lateReviews.length ? 'alert' : 'default'} />
         <KpiTile label={t('Alerts')} value={alerts.filter((a) => a.level === 'alert').length} sub={`${alerts.filter((a) => a.level === 'watch').length} ${t('to watch')}`} tone={alerts.some((a) => a.level === 'alert') ? 'alert' : 'default'} />
       </KpiGrid>
+
+      {ganttRows.length > 0 && (
+        <SectionCard title={t('Schedule of the CAPEX')} hint={t('One summary bar per CAPEX: duration and progress (detail on its WBS & Gantt page)')} scroll>
+          <CapexGantt {...gantt} />
+        </SectionCard>
+      )}
 
       <SectionCard title={t('CAPEX')} hint={t('Cumulative figures at the end of the current month')} scroll>
         {p.rows.length ? (

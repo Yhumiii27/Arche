@@ -10,6 +10,13 @@ déduite de la page — et élément, ex. R-02). *Plan d'actions* : actions ouve
 **clôturer** (faite, ou annulée avec un motif). Le responsable d'une action peut la clôturer ; ses actions ouvertes sont dans
 *Mes actions* sur l'Accueil.
 
+## WBS et Gantt
+
+*WBS et Gantt* : **Ajouter une tâche** (lot ou CAPEX, dates, avancement, responsable ; case « Jalon » pour une date clé).
+Le Gantt montre le CAPEX en synthèse, ses lots (leurs tâches, ou leurs mois prévus de la page *Exécution*), chaque projet
+EPC2i en une barre de synthèse (le détail reste dans Keystone) et les jalons du cycle. Les portefeuilles groupe et filiale
+montrent une barre de synthèse par CAPEX.
+
 ## Préparer un jalon
 
 1. *Synthèse du CAPEX* : la bannière **Prochaine étape** indique le premier critère bloquant non atteint et la page où le
