@@ -23,7 +23,8 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
 - **Delivery 4 (machine needs, Keystone connector) is done** (`docs/DELIVERY-4.md`): needs `src/domain/needs.ts`,
   `src/features/needs/`, view `pub_besoins_machines`; Keystone connector `src/server/integrations/keystone/` — the mirror
   (`keystone_mirror`, written only by `mirror.ts`), modes `ARCHE_KEYSTONE` off / simulation / views (a missing view is
-  simulated on the demo data set only), job `keystone-sync`; G2 Go orders the needs covered by a valid firm offer. The CI runs
+  simulated on the demo data set only; the simulation serves Keystone's own demo rows for the needs it knows,
+  `keystone-demo.ts`), job `keystone-sync`; G2 Go orders the needs covered by a valid firm offer. The CI runs
   the Coolify kit end to end (`docs/EXPLOITATION.md` §4).
 - **Delivery 4b (interface) is done** (`docs/DELIVERY-4b.md`, mockups validated by the owner): sidebar sections grouped by
   theme (`group` in `src/config/screens.ts`), CAPEX section always visible with the CAPEX switcher, ⌘K page search; `Folded`

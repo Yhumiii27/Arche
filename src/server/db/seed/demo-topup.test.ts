@@ -3,8 +3,8 @@
 import { eq, inArray } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { testDatabase, type TestDatabase } from '@/test/db';
-import { capex, capexActions, rexEntries, sites, wbsTasks } from '../schema';
-import { topUpDemo } from './demo-topup';
+import { capex, capexActions, machineNeeds, rexEntries, sites, wbsTasks } from '../schema';
+import { isEarlierDemoSet, topUpDemo } from './demo-topup';
 
 describe('topUpDemo', () => {
   let t: TestDatabase;
@@ -36,6 +36,33 @@ describe('topUpDemo', () => {
 
     const again = await t.db.transaction((tx) => topUpDemo(tx));
     expect(again).toMatchObject({ located: 0, rex: 0, actions: [], wbs: [], capex: [] });
+  });
+});
+
+describe('the machine needs of the earlier data set (owner, 25 Oct 2026: aligned with Keystone)', () => {
+  let t: TestDatabase;
+  beforeAll(async () => {
+    t = await testDatabase({ seed: 'demo' });
+  });
+  afterAll(() => t.close());
+
+  it('are recognised only when untouched', () => {
+    expect(isEarlierDemoSet([{ number: 2, code: 'PRC-CAN', label: null, status: 'ordered' }, { number: 1, code: 'PRC-TOM', label: null, status: 'ordered' }])).toBe(true);
+    expect(isEarlierDemoSet([{ number: 1, code: 'PRC-TOM', label: null, status: 'ordered' }])).toBe(false);
+    expect(isEarlierDemoSet([{ number: 1, code: 'MEMU-16', label: null, status: 'ordered' }])).toBe(false);
+  });
+
+  it('are replaced by the needs Keystone knows; edited ones are kept', async () => {
+    const [sai] = await t.db.select().from(capex).where(eq(capex.code, 'CPX-SAI-2026-01'));
+    const [apm] = await t.db.select().from(capex).where(eq(capex.code, 'CPX-APM-2026-01'));
+    await t.db.delete(machineNeeds).where(inArray(machineNeeds.capexId, [sai.id, apm.id]));
+    const old = (capexId: string, number: number, catalogueCode: string, status: 'ordered' | 'submitted') => ({ capexId, number, catalogueCode, catalogueVersion: 1, status, createdByName: 'Test' });
+    await t.db.insert(machineNeeds).values([old(sai.id, 1, 'PRC-TOM', 'ordered'), old(sai.id, 2, 'PRC-CAN', 'ordered'), old(apm.id, 1, 'EXT-9MN', 'submitted')]);
+    const r = await t.db.transaction((tx) => topUpDemo(tx));
+    expect(r.needs).toEqual(['CPX-SAI-2026-01']);
+    const codes = async (capexId: string) => (await t.db.select({ n: machineNeeds.number, c: machineNeeds.catalogueCode }).from(machineNeeds).where(eq(machineNeeds.capexId, capexId))).sort((x, y) => x.n - y.n).map((x) => x.c);
+    expect(await codes(sai.id)).toEqual(['MEMU-16', 'SPUR-2X', 'EMP-40T']);
+    expect(await codes(apm.id)).toEqual(['EXT-9MN']);
   });
 });
 

@@ -1,10 +1,13 @@
 // Simulation of Keystone (docs/spec/07 §2), for the demonstration data set while Keystone does not share a view yet. Pure and
-// deterministic: from the needs Arche publishes (pub_besoins_machines) and the instant, it gives what EPC2i would answer — a
+// deterministic. For the needs Keystone's own demo knows, it returns Keystone's demo rows (keystone-demo.ts: catalogue, answers,
+// project RCF-019). For the others, from the needs Arche publishes (pub_besoins_machines) and the instant, it gives what EPC2i
+// would answer — a
 // qualification two hours after the submission, an indicative answer (E50) the next day, a budgetary quote (E30) after 30
 // days and a firm offer (E10) after 60 — and, for a need ordered at the G2, the EPC2i project with its milestones, progress,
 // amendments, reservations, deliverables, EPC2i's part of the engineering pack and, once delivered on site, the machines of
 // the installed base. Rows have the columns of the contract (French names, ISO dates).
 import { rangeOf, round1 } from '@/domain/budget';
+import { KEYSTONE_DEMO, KEYSTONE_DEMO_NEEDS } from './keystone-demo';
 import type { KeystoneRow, KeystoneViewName } from './views';
 
 /** A row of arche.pub_besoins_machines, as the simulation reads it. */
@@ -24,33 +27,17 @@ export interface PublishedNeed {
   maj_le: string;
 }
 
-const T0 = '2026-01-05T08:00:00.000Z';
+/**
+ * EPC2i's catalogue: Keystone's demo catalogue (EMP-40T, MEMU-16, SPUR-2X retired; src/server/integrations/keystone/keystone-demo.ts),
+ * so that a need entered in Arche's demo chooses the machines Keystone knows.
+ */
+export const SIMULATED_CATALOGUE: readonly KeystoneRow[] = KEYSTONE_DEMO.pub_catalogue_machines ?? [];
 
-/** The simulated catalogue of EPC2i (one retired sheet, to show that it is not offered). */
-export const SIMULATED_CATALOGUE: readonly KeystoneRow[] = [
-  {
-    code: 'EXT-9MN', version: 3, type_code: 'EXT', type_libelle: 'Extrusion press', variante: '9 MN', libelle: 'Aluminium extrusion press 9 MN',
-    description: 'Press, billet heater, run-out table and stretcher.', capacite_nominale: 1.8, unite_capacite: 't/h', prix_indicatif_keur: 4200, delai_type_semaines: 40, statut: 'publie',
-    options: [{ code: 'PULLER', libelle: 'Double puller', prix_indicatif_keur: 180 }, { code: 'QUENCH', libelle: 'Water quench', prix_indicatif_keur: 120 }], maj_le: T0,
-  },
-  {
-    code: 'EXT-AGE', version: 1, type_code: 'EXT', type_libelle: 'Extrusion press', variante: 'Oven', libelle: 'Ageing oven 2 × 6 m',
-    description: 'Gas-fired ageing oven with loading trolleys.', capacite_nominale: 2, unite_capacite: 't/h', prix_indicatif_keur: 650, delai_type_semaines: 26, statut: 'publie', options: [], maj_le: T0,
-  },
-  {
-    code: 'PRC-TOM', version: 2, type_code: 'PRC', type_libelle: 'Processing line', variante: '40 t/h', libelle: 'Tomato paste line 40 t/h',
-    description: 'Reception, washing, hot break, refining and concentration.', capacite_nominale: 40, unite_capacite: 't/h', prix_indicatif_keur: 6800, delai_type_semaines: 52, statut: 'publie',
-    options: [{ code: 'EVAP3', libelle: 'Triple-effect evaporator', prix_indicatif_keur: 900 }, { code: 'ASEPT', libelle: 'Aseptic filler', prix_indicatif_keur: 750 }], maj_le: T0,
-  },
-  {
-    code: 'PRC-CAN', version: 1, type_code: 'PRC', type_libelle: 'Processing line', variante: '300/min', libelle: 'Canning line 300 cans/min',
-    description: 'Filler, seamer, sterilizer and labeller.', capacite_nominale: 300, unite_capacite: 'cans/min', prix_indicatif_keur: 2100, delai_type_semaines: 36, statut: 'publie', options: [], maj_le: T0,
-  },
-  {
-    code: 'CON-BLT', version: 1, type_code: 'CON', type_libelle: 'Conveying', variante: '20 m', libelle: 'Belt conveyor 20 m',
-    description: 'Replaced by the modular range.', capacite_nominale: null, unite_capacite: null, prix_indicatif_keur: 90, delai_type_semaines: 12, statut: 'retire', options: [], maj_le: T0,
-  },
-];
+/**
+ * Needs of the demo outside Keystone's catalogue (a free label), with the price and lead time the simulation answers with:
+ * the ageing oven of CPX-APM-2025-01, ordered before Arche (Keystone's demo does not know that CAPEX yet, DEMANDES-KEYSTONE K-14).
+ */
+const FREE_LABEL_PRICES: Record<string, { keur: number; weeks: number }> = { 'Ageing oven 2 × 6 m': { keur: 650, weeks: 26 } };
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
@@ -74,6 +61,8 @@ export function simulatedMachineNumber(project: string, rank: number): string {
 
 function priceOf(n: PublishedNeed): { keur: number | null; weeks: number; label: string } {
   const sheet = SIMULATED_CATALOGUE.find((c) => c.code === n.catalogue_code && c.version === n.catalogue_version);
+  const free = n.libelle_libre ? FREE_LABEL_PRICES[n.libelle_libre] : undefined;
+  if (free) return { keur: free.keur * n.quantite, weeks: free.weeks, label: n.libelle_libre! };
   if (!sheet) return { keur: null, weeks: 30, label: n.libelle_libre ?? n.ligne };
   const opts = (sheet.options as { code: string; prix_indicatif_keur: number }[]).filter((o) => n.options.includes(o.code)).reduce((a, o) => a + o.prix_indicatif_keur, 0);
   return { keur: ((sheet.prix_indicatif_keur as number) + opts) * n.quantite, weeks: sheet.delai_type_semaines as number, label: sheet.libelle as string };
@@ -84,14 +73,26 @@ const PACK_FAMILIES_EPC2I: readonly (readonly [string, number])[] = [['pid', 6],
 
 const MILESTONES: [string, number][] = [['commande', 0], ['fin_etudes', 0.25], ['fat', 0.7], ['expedition', 0.75], ['arrivee_site', 0.85], ['sat', 1]];
 
-/** Every simulated view, from the published needs and the instant `now`. */
+/**
+ * Every simulated view, from the published needs and the instant `now`: Keystone's own demo rows for the needs it knows (its
+ * answers given by `now`, and the projects they name with their milestones, progress, deliverables and pack), generated rows
+ * for the others.
+ */
 export function simulateKeystone(needs: readonly PublishedNeed[], now: Date): Record<KeystoneViewName, KeystoneRow[]> {
   const t = now.getTime();
   const out: Record<KeystoneViewName, KeystoneRow[]> = {
     pub_catalogue_machines: [...SIMULATED_CATALOGUE], pub_reponses_besoins: [], pub_projets: [], pub_jalons_projets: [], pub_avancement_projets: [], pub_avenants: [], pub_reserves: [], pub_livrables: [], pub_pack_ingenierie: [], pub_parc_machines: [],
   };
+  const published = new Set(needs.filter((n) => n.soumis_le).map((n) => n.besoin_ref));
+  const answers = (KEYSTONE_DEMO.pub_reponses_besoins ?? []).filter((r) => published.has(String(r.besoin_ref)) && Date.parse(String(r.repondu_le)) <= t);
+  out.pub_reponses_besoins.push(...answers.map((r) => ({ ...r })));
+  const projects = new Set(answers.map((r) => r.projet_code).filter((c): c is string => typeof c === 'string'));
+  const of = (r: KeystoneRow) => String(r.projet_code ?? r.project_code ?? r.code);
+  for (const view of ['pub_projets', 'pub_jalons_projets', 'pub_avancement_projets', 'pub_avenants', 'pub_reserves', 'pub_livrables', 'pub_pack_ingenierie', 'pub_parc_machines'] as const) {
+    out[view].push(...(KEYSTONE_DEMO[view] ?? []).filter((r) => projects.has(of(r))).map((r) => ({ ...r })));
+  }
   for (const n of needs) {
-    if (!n.soumis_le) continue;
+    if (!n.soumis_le || KEYSTONE_DEMO_NEEDS.has(n.besoin_ref)) continue;
     const s0 = Date.parse(n.soumis_le);
     const stop = n.statut === 'withdrawn' ? Math.min(t, Date.parse(n.maj_le)) : t;
     const { keur, weeks, label } = priceOf(n);

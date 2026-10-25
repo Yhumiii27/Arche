@@ -60,9 +60,9 @@ async function main(): Promise<void> {
   check((await get('/capex/CPX-SAI-2026-01/changes', 'dir_ig')).status === 200, 'management of change page');
   check((await get('/admin/delegation', 'admin')).status === 200, 'delegation matrix page for the administrator');
   const machines = await get('/capex/CPX-APM-2026-01/machines', 'project_lead');
-  check(machines.status === 200 && machines.body.includes('CPX-APM-2026-01/B02') && machines.body.includes('Offre ferme'), 'machine needs: the latest answer of EPC2i (simulation)');
+  check(machines.status === 200 && machines.body.includes('CPX-APM-2026-01/B02') && machines.body.includes('Devis budgétaire') && machines.body.includes('DEV-CPX-APM-2026-01-001'), 'machine needs: the latest answer of EPC2i (simulation)');
   const epc2i = await get('/capex/CPX-SAI-2026-01/machines', 'epc2i_pmo');
-  check(epc2i.status === 200 && epc2i.body.includes('SAI-26011') && epc2i.body.includes('Fin des études'), 'machine needs: the EPC2i projects and their milestones');
+  check(epc2i.status === 200 && epc2i.body.includes('RCF-019') && epc2i.body.includes('Fin des études'), 'machine needs: the EPC2i projects and their milestones');
   check((await get('/admin/connectors', 'admin')).status === 200, 'connectors page for the administrator');
   const register = await get('/capex', 'sponsor');
   check(register.status === 200 && register.body.includes('Ouvrir un CAPEX') && register.body.includes('Atlas Process Maroc') && !register.body.includes('href="/capex/CPX-SAI-'), 'register of the subsidiary chosen, with "Open a CAPEX", for a sponsor');

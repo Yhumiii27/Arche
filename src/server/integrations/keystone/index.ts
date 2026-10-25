@@ -106,10 +106,19 @@ export async function syncState(q: Q) {
   return q.select().from(keystoneSync).orderBy(asc(keystoneSync.view));
 }
 
-/** Deep link to a project in Keystone; null without NEXT_PUBLIC_KEYSTONE_URL. */
+/**
+ * Deep link to a project in Keystone: its Contract page, which shows the CAPEX the project delivers (Keystone has no page at
+ * /projects/<code> itself); null without NEXT_PUBLIC_KEYSTONE_URL.
+ */
 export function keystoneProjectUrl(code: string): string | null {
   const base = process.env.NEXT_PUBLIC_KEYSTONE_URL;
-  return base ? `${base.replace(/\/+$/, '')}/projects/${encodeURIComponent(code)}` : null;
+  return base ? `${base.replace(/\/+$/, '')}/projects/${encodeURIComponent(code)}/contract` : null;
+}
+
+/** Deep link to Keystone's machine catalogue; null without NEXT_PUBLIC_KEYSTONE_URL. */
+export function keystoneCatalogueUrl(): string | null {
+  const base = process.env.NEXT_PUBLIC_KEYSTONE_URL;
+  return base ? `${base.replace(/\/+$/, '')}/catalogue/machines` : null;
 }
 
 export { syncKeystone } from './mirror';

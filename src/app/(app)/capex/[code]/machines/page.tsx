@@ -1,6 +1,7 @@
 // Machine needs and EPC2i projects (docs/spec/07): the needs of the CAPEX with the latest answer of EPC2i (the one that is
 // authoritative), and the follow-up of the projects EPC2i opened for them — milestones, progress, amendments, reservations,
 // acceptance reports — read in the Keystone mirror, with links to Keystone. Arche never writes to Keystone.
+import { ActionLink } from '@/components/app/ActionForm';
 import { EmptyState } from '@/components/app/EmptyState';
 import { KpiGrid, KpiTile } from '@/components/app/Kpi';
 import { SectionCard } from '@/components/app/SectionCard';
@@ -15,14 +16,14 @@ import { fmtDate, fmtInstant, fmtKeur, fmtNum, fmtRatio } from '@/lib/format';
 import { businessToday } from '@/server/clock';
 import { capexLots } from '@/server/db/schema';
 import { needsOf } from '@/server/dal/needs';
-import { answersOf, catalogue, keystoneProjectUrl, projectsOf, syncState } from '@/server/integrations/keystone';
+import { answersOf, catalogue, keystoneCatalogueUrl, keystoneProjectUrl, projectsOf, syncState } from '@/server/integrations/keystone';
 import { codexDocumentUrl } from '@/server/integrations/codex';
 import { and, asc, eq } from 'drizzle-orm';
 
 const STATUS_TONE: Record<NeedStatus, 'neutral' | 'accent' | 'outline'> = { draft: 'outline', submitted: 'accent', withdrawn: 'outline', ordered: 'neutral' };
 const RESERVE_STATUS: Record<string, string> = { open: 'Open', in_progress: 'In progress', closed: 'Cleared' };
 const AMENDMENT_STATUS: Record<string, string> = { propose: 'Proposed', signe: 'Signed', refuse: 'Refused' };
-const DELIVERABLE_STATUS: Record<string, string> = { planned: 'Planned', accepted: 'Accepted', rejected: 'Rejected' };
+const DELIVERABLE_STATUS: Record<string, string> = { planned: 'Planned', in_progress: 'In progress', internal_review: 'Internal review', submitted: 'Submitted to the client', accepted: 'Accepted', rejected: 'Rejected' };
 
 export default async function MachinesPage({ params }: PageProps<'/capex/[code]/machines'>) {
   const { t, lang, db, c, can } = await loadCapexPage(params);
@@ -45,7 +46,9 @@ export default async function MachinesPage({ params }: PageProps<'/capex/[code]/
   const sheetOf = (code: string | null, version: number | null) => sheets.find((s) => s.code === code && s.version === version);
   return (
     <>
-      <PageHeader screen="capex-machines" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} primary={edit ? <NeedForm code={c.code} sheets={choices} lots={lotChoices} primary /> : undefined} />
+      <PageHeader screen="capex-machines" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} primary={edit ? <NeedForm code={c.code} sheets={choices} lots={lotChoices} primary /> : undefined}
+        actions={keystoneCatalogueUrl() ? <ActionLink href={keystoneCatalogueUrl()!} newTab label={t('Machine catalogue in Keystone')} /> : null}
+      />
       <KpiGrid>
         <KpiTile label={t('Machine needs')} value={String(needs.filter((n) => n.status !== 'withdrawn').length)} sub={`${needs.filter((n) => n.status === 'draft').length} ${t('draft(s)')}`} />
         <KpiTile label={t('Firm offers')} value={offers.value} sub={t('valid E10 offers / submitted needs')} tone={offers.met ? 'default' : 'alert'} />
