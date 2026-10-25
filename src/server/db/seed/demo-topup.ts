@@ -104,10 +104,18 @@ export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
   const apm25 = idOfCapex.get('CPX-APM-2025-01');
   const none = async (rows: Promise<unknown[]>) => !(await rows).length;
   if (apm && sai && apm25) {
-    // Machine needs (delivery 4), per CAPEX without any; then the Keystone mirror (simulation) for their answers.
+    // Machine needs (delivery 4), per CAPEX without any, or still holding the needs of the earlier data set exactly (never
+    // edited: replaced by the needs Keystone's demo knows, owner 25 Oct 2026); then the Keystone mirror (simulation).
     const ids = { apm, sai, apm25 };
     const without = new Set<string>();
-    for (const capexId of [apm, sai, apm25]) if (await none(tx.select({ id: machineNeeds.id }).from(machineNeeds).where(eq(machineNeeds.capexId, capexId)).limit(1))) without.add(capexId);
+    for (const capexId of [apm, sai, apm25]) {
+      const rows = await tx.select({ number: machineNeeds.number, code: machineNeeds.catalogueCode, label: machineNeeds.freeLabel, status: machineNeeds.status }).from(machineNeeds).where(eq(machineNeeds.capexId, capexId));
+      if (!rows.length) without.add(capexId);
+      else if (isEarlierDemoSet(rows)) {
+        await tx.delete(machineNeeds).where(eq(machineNeeds.capexId, capexId));
+        without.add(capexId);
+      }
+    }
     if (without.size) {
       await seedNeeds(tx, ids, nameOf, without);
       report.needs = [...idOfCapex].filter(([, id]) => without.has(id)).map(([code]) => code);
@@ -150,6 +158,14 @@ export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
     }
   }
   return report;
+}
+
+/** The machine needs of a CAPEX in the data set before 25 Oct 2026, untouched (catalogue of Arche's former simulation). */
+const EARLIER_NEEDS = ['1:EXT-9MN:submitted|2:EXT-AGE:submitted|3:Billet saw with automatic loader:draft', '1:PRC-TOM:ordered|2:PRC-CAN:ordered', '1:EXT-AGE:ordered'];
+
+export function isEarlierDemoSet(rows: readonly { number: number; code: string | null; label: string | null; status: string }[]): boolean {
+  const key = [...rows].sort((a, b) => a.number - b.number).map((r) => `${r.number}:${r.code ?? r.label}:${r.status}`).join('|');
+  return EARLIER_NEEDS.includes(key);
 }
 
 /** Sites still without coordinates (reported, not changed: they are not part of the data set). */

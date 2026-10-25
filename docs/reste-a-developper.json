@@ -106,6 +106,10 @@
     {
       "date": "2026-10-25",
       "text": "Retours du pilote : toutes les actions d'une page dans son en-tête (selon les droits), liste « Actions » au-delà de trois ; étape de circuit à traiter en tête de la page Jalons et circuits."
+    },
+    {
+      "date": "2026-10-25",
+      "text": "Démo alignée sur Keystone : catalogue machines, réponses RB-001 à RB-005 et projet RCF-019 de la démo Keystone ; besoins de démo réécrits ; liens profonds vers Keystone corrigés ; demande K-14 (à valider)."
     }
   ],
   "items": [

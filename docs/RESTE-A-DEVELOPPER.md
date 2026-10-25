@@ -241,6 +241,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-25 — Démo alignée sur Keystone : catalogue machines, réponses RB-001 à RB-005 et projet RCF-019 de la démo Keystone ; besoins de démo réécrits ; liens profonds vers Keystone corrigés ; demande K-14 (à valider).
 - 2026-10-25 — Retours du pilote : toutes les actions d'une page dans son en-tête (selon les droits), liste « Actions » au-delà de trois ; étape de circuit à traiter en tête de la page Jalons et circuits.
 - 2026-10-24 — Droits : l'administrateur lit tous les CAPEX et toutes les pages métier comme le PDG, sans droit d'écriture métier (N-4 révisée par le responsable produit).
 - 2026-10-24 — db:demo-topup couvre aussi les livraisons 4 à 6 (besoins machines, jalons de sécurité, autorisations, pack, réalisé, démarrage et montée en cadence de CPX-APM-2025-01, revues et instantanés) : la base du serveur de démonstration datait d'avant la livraison 4b.

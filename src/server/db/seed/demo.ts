@@ -310,21 +310,24 @@ async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: s
 }
 
 /**
- * Machine needs (delivery 4): APM in phase 2 — a quote, a firm offer, a draft —; SAI ordered at its G2 with two EPC2i
- * projects; the ageing oven of CPX-APM-2025-01. The answers and the projects come from the simulation of Keystone
- * (src/server/integrations/keystone). `only`: the CAPEX to seed (all three by default).
+ * Machine needs (delivery 4), aligned with Keystone's demo (owner, 25 Oct 2026): APM in phase 2 — a gantry answered with an
+ * indicative price then a quote, a free need waiting —; SAI ordered at its G2 — a mobile unit delivered by Keystone's project
+ * RCF-019, two gantries whose project is still to be created, a need withdrawn —; the ageing oven of CPX-APM-2025-01. The
+ * answers and projects come from the Keystone simulation (keystone-demo.ts). `only`: the CAPEX to seed (all three by default).
  */
 export async function seedNeeds(tx: Tx, ids: { apm: string; sai: string; apm25: string }, nameOf: (k: string) => string, only?: ReadonlySet<string>) {
   const { apm, sai, apm25 } = ids;
   const lot = async (capexId: string) => (await tx.select({ id: capexLots.id }).from(capexLots).where(and(eq(capexLots.capexId, capexId), eq(capexLots.kind, 'machines'))))[0]?.id ?? null;
   const [apmLot, saiLot, apm25Lot] = [await lot(apm), await lot(sai), await lot(apm25)];
   const all: (typeof machineNeeds.$inferInsert)[] = [
-    { capexId: apm, number: 1, catalogueCode: 'EXT-9MN', catalogueVersion: 3, quantity: 1, options: ['PULLER'], targetCapacity: 1.8, capacityUnit: 't/h', needDate: '2027-09-01', status: 'submitted', submittedAt: at('2026-09-10'), lotId: apmLot, createdByName: nameOf('project_lead') },
-    { capexId: apm, number: 2, catalogueCode: 'EXT-AGE', catalogueVersion: 1, quantity: 1, needDate: '2027-09-01', status: 'submitted', submittedAt: at('2026-08-10'), lotId: apmLot, createdByName: nameOf('project_lead') },
-    { capexId: apm, number: 3, freeLabel: 'Billet saw with automatic loader', quantity: 1, needDate: '2027-10-01', status: 'draft', lotId: apmLot, comment: 'To size with the process team', createdByName: nameOf('project_lead') },
-    { capexId: apm25, number: 1, catalogueCode: 'EXT-AGE', catalogueVersion: 1, quantity: 1, targetCapacity: 2, capacityUnit: 't/h', needDate: '2026-07-01', status: 'ordered', submittedAt: at('2025-06-02'), orderedOn: '2025-09-15', lotId: apm25Lot, createdByName: nameOf('project_lead') },
-    { capexId: sai, number: 1, catalogueCode: 'PRC-TOM', catalogueVersion: 2, quantity: 1, options: ['EVAP3'], targetCapacity: 40, capacityUnit: 't/h', needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-03-02'), orderedOn: '2026-07-08', lotId: saiLot, createdByName: nameOf('sai_lead') },
-    { capexId: sai, number: 2, catalogueCode: 'PRC-CAN', catalogueVersion: 1, quantity: 1, needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-03-02'), orderedOn: '2026-07-08', lotId: saiLot, createdByName: nameOf('sai_lead') },
+    // Keystone's demo expects exactly these needs (its simulation of Arche, R-187) and answers them (RB-001 to RB-005, RCF-019).
+    { capexId: apm, number: 1, catalogueCode: 'EMP-40T', catalogueVersion: 1, quantity: 1, options: ['TELE'], targetCapacity: 40, capacityUnit: 't', needDate: '2027-09-01', status: 'submitted', submittedAt: at('2026-09-01'), lotId: apmLot, comment: 'Portique de manutention des filières, hall extrusion', createdByName: nameOf('project_lead') },
+    { capexId: apm, number: 2, freeLabel: 'Ligne de refroidissement en ligne des profilés', quantity: 1, targetCapacity: 1.2, capacityUnit: 't/h', needDate: '2027-09-01', status: 'submitted', submittedAt: at('2026-09-20'), lotId: apmLot, comment: 'Variante B retenue au COPIL du 18 sept.', createdByName: nameOf('project_lead') },
+    { capexId: sai, number: 1, catalogueCode: 'MEMU-16', catalogueVersion: 1, quantity: 1, options: ['GEN'], targetCapacity: 16, capacityUnit: 't/h', needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-06-29'), orderedOn: '2026-07-08', lotId: saiLot, createdByName: nameOf('sai_lead') },
+    { capexId: sai, number: 2, catalogueCode: 'SPUR-2X', catalogueVersion: 1, quantity: 1, needDate: '2027-06-01', status: 'withdrawn', submittedAt: at('2026-03-10'), lotId: saiLot, comment: 'Remplacé par la station de traitement des eaux du lot utilités', createdByName: nameOf('sai_lead'), updatedAt: at('2026-07-30') },
+    { capexId: sai, number: 3, catalogueCode: 'EMP-40T', catalogueVersion: 1, quantity: 2, options: ['TELE'], targetCapacity: 40, capacityUnit: 't', needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-06-01'), orderedOn: '2026-07-08', lotId: saiLot, comment: 'Portiques du hall de conditionnement', createdByName: nameOf('sai_lead') },
+    // CPX-APM-2025-01 is not in Keystone's demo yet (DEMANDES-KEYSTONE K-14): its oven is a free need, answered by the simulation.
+    { capexId: apm25, number: 1, freeLabel: 'Ageing oven 2 × 6 m', quantity: 1, targetCapacity: 2, capacityUnit: 't/h', needDate: '2026-07-01', status: 'ordered', submittedAt: at('2025-06-02'), orderedOn: '2025-09-15', lotId: apm25Lot, createdByName: nameOf('project_lead') },
   ];
   const rows = all.filter((r) => !only || only.has(r.capexId));
   if (rows.length) await tx.insert(machineNeeds).values(rows);
