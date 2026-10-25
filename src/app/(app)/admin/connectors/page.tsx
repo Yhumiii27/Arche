@@ -34,8 +34,8 @@ export default async function ConnectorsPage() {
   const codexShared = !!(codex.rows[0] as { ok?: boolean } | undefined)?.ok;
   return (
     <>
-      <PageHeader screen="admin-connectors" crumbs={['Administration']} />
-      <SectionCard title="Keystone" subtitle={`${t('Mode')}: ${t(MODE[cfg.mode])} · ${t('every')} ${cfg.syncEveryMin} min`} actions={viewer.role === 'admin' ? <ActionButton run={syncKeystoneAction} label="Synchronise now" done="Synchronised" /> : undefined} scroll>
+      <PageHeader screen="admin-connectors" crumbs={['Administration']} actions={viewer.role === 'admin' && <ActionButton run={syncKeystoneAction} label="Synchronise now" done="Synchronised" />} />
+      <SectionCard title="Keystone" subtitle={`${t('Mode')}: ${t(MODE[cfg.mode])} · ${t('every')} ${cfg.syncEveryMin} min`} scroll>
         <Table>
           <thead>
             <tr>

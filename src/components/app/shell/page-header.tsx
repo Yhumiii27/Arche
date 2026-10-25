@@ -5,8 +5,9 @@ import type { ReactNode } from 'react';
 import { SCREEN_BY_ID, canSee, type ScreenId } from '@/config/screens';
 import { getI18n, getViewer } from '@/server/session';
 import styles from './header.module.css';
+import { HeaderActions } from './header-actions';
 import { LangToggle } from './lang-toggle';
-import { NewActionAnyCapexButton, NewActionHeaderButton } from '@/features/actions/header-button';
+import { newActionAnyCapexButton, newActionHeaderButton } from '@/features/actions/header-button';
 
 export interface PageHeaderProps {
   screen: ScreenId;
@@ -17,12 +18,18 @@ export interface PageHeaderProps {
   /** Typed breadcrumb item shown as is (a CAPEX code). */
   crumbData?: string;
   primary?: ReactNode;
+  /**
+   * The other actions the viewer may take on the page (owner's pilot feedback, 25 Oct 2026): Folded panels, ActionButtons,
+   * ActionLinks — the page renders only those its viewer may take. Shown as buttons, or in the "Actions" list when many.
+   */
+  actions?: ReactNode;
 }
 
-export async function PageHeader({ screen, title, crumbs = [], crumbData, primary }: PageHeaderProps) {
+export async function PageHeader({ screen, title, crumbs = [], crumbData, primary, actions }: PageHeaderProps) {
   const [{ t, lang }, viewer] = await Promise.all([getI18n(), getViewer()]);
   const def = SCREEN_BY_ID[screen];
   const outside = !canSee(viewer.role, screen);
+  const newAction = outside ? null : def.section === 'capex' && crumbData ? await newActionHeaderButton(screen, crumbData) : def.section !== 'admin' ? await newActionAnyCapexButton() : null;
   return (
     <>
       <header className={styles.header}>
@@ -52,8 +59,13 @@ export async function PageHeader({ screen, title, crumbs = [], crumbData, primar
           </div>
         </div>
         <div className={styles.actions}>
-          {!outside && primary}
-          {!outside && (def.section === 'capex' && crumbData ? <NewActionHeaderButton screen={screen} code={crumbData} /> : def.section !== 'admin' && <NewActionAnyCapexButton />)}
+          {!outside && (
+            <HeaderActions>
+              {primary}
+              {actions}
+              {newAction}
+            </HeaderActions>
+          )}
           <LangToggle lang={lang} label={t('Language')} />
         </div>
       </header>

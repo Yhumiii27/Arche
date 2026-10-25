@@ -2,6 +2,7 @@
 // Matrix owns it (N-22); the reference revenue of each subsidiary, entered by the group CFO (typology, C-5).
 import { notFound } from 'next/navigation';
 import { SectionCard } from '@/components/app/SectionCard';
+import { Folded } from '@/components/app/ActionForm';
 import { PageHeader } from '@/components/app/shell/page-header';
 import { Table, Td, Th } from '@/components/ds/Table';
 import { canSee } from '@/config/screens';
@@ -20,10 +21,20 @@ export default async function OrganisationPage() {
   const subs = org.subsidiaries.map((x) => ({ code: x.code, name: dataText(x.name, lang) }));
   return (
     <>
-      <PageHeader screen="admin-org" crumbs={['Administration']} />
+      <PageHeader
+        screen="admin-org"
+        crumbs={['Administration']}
+        actions={
+          <>
+            {admin && <Folded summary="Add a site"><NewSiteForm subsidiaries={subs} /></Folded>}
+            {admin && <Folded summary="Add a subsidiary"><NewSubsidiaryForm zones={org.zones.map((z) => ({ code: z.code, name: z.name }))} /></Folded>}
+            {admin && <Folded summary="Add a zone"><NewZoneForm /></Folded>}
+            <Folded summary="Enter the reference revenue"><RevenueForm subsidiaries={subs} year={+today.slice(0, 4)} /></Folded>
+          </>
+        }
+      />
       <SectionCard title={t('Zones')}>
         <span className="text-muted">{org.zones.map((z) => `${z.code} · ${dataText(z.name, lang)}`).join(' — ')}</span>
-        {admin && <NewZoneForm />}
       </SectionCard>
       <SectionCard title={t('Subsidiaries')} scroll>
         <Table>
@@ -48,7 +59,6 @@ export default async function OrganisationPage() {
             ))}
           </tbody>
         </Table>
-        {admin && <NewSubsidiaryForm zones={org.zones.map((z) => ({ code: z.code, name: z.name }))} />}
       </SectionCard>
       <SectionCard title={t('Sites')} scroll>
         <Table>
@@ -69,7 +79,6 @@ export default async function OrganisationPage() {
             ))}
           </tbody>
         </Table>
-        {admin && <NewSiteForm subsidiaries={subs} />}
       </SectionCard>
       <SectionCard title={t('Reference revenue')} subtitle={t('Entered by the group CFO; used for the typology (20 % threshold).')} scroll>
         {org.revenues.length ? (
@@ -98,7 +107,6 @@ export default async function OrganisationPage() {
         ) : (
           <span className="text-muted">{t('No reference revenue entered yet.')}</span>
         )}
-        <RevenueForm subsidiaries={subs} year={+today.slice(0, 4)} />
       </SectionCard>
     </>
   );

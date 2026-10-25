@@ -56,7 +56,9 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `PageHeader`, page `/capex/[code]/actions`, "My actions" on Home). WBS and Gantt: `wbs_tasks`, `src/domain/schedule.ts`,
   `src/server/dal/schedule.ts`, right `schedule`, page `/capex/[code]/schedule`, `src/components/charts/capex-gantt.tsx`
   (Keystone's Gantt look, origin `5b425d5`); an EPC2i project and, at subsidiary and group level, each CAPEX are one
-  summary bar.
+  summary bar. Page actions (owner, 25 Oct 2026): every page passes the actions its viewer may take to `PageHeader`
+  (`primary`, `actions`: client elements only, so that they can be counted); beyond 3 they go in the "Actions" list
+  (`src/components/app/shell/header-actions.tsx`; `Folded`, `ActionButton`, `ActionLink` render as menu rows there).
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

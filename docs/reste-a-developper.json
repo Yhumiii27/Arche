@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-22",
-  "updated": "2026-10-24",
+  "updated": "2026-10-25",
   "branch": "claude/brave-curie-chxbck",
   "history": [
     {
@@ -102,6 +102,10 @@
     {
       "date": "2026-10-24",
       "text": "Droits : l'administrateur lit tous les CAPEX et toutes les pages métier comme le PDG, sans droit d'écriture métier (N-4 révisée par le responsable produit)."
+    },
+    {
+      "date": "2026-10-25",
+      "text": "Retours du pilote : toutes les actions d'une page dans son en-tête (selon les droits), liste « Actions » au-delà de trois ; étape de circuit à traiter en tête de la page Jalons et circuits."
     }
   ],
   "items": [
