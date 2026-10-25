@@ -32,7 +32,21 @@ export default async function BudgetPage({ params }: PageProps<'/capex/[code]/bu
   const used = new Set(versions.flatMap((v) => Object.keys(v.lines)));
   return (
     <>
-      <PageHeader screen="capex-budget" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} />
+      <PageHeader
+        screen="capex-budget"
+        title={dataText(c.title, lang)}
+        crumbs={['CAPEX register']}
+        crumbData={c.code}
+        actions={
+          <>
+            {budget && lots.length > 0 && !inProgress && <VersionForm code={c.code} lots={lots} />}
+            {budget && lots.length > 0 && versions.filter((v) => v.status === 'draft').map((v) => <VersionForm key={v.id} code={c.code} lots={lots} version={v} />)}
+            {edit && <LotForm code={c.code} />}
+            {budget && <BusinessPlanForm code={c.code} horizon={BP_HORIZON} rate={bp?.discountRatePct ?? null} flows={bp?.flows ?? []} />}
+            {bp && !bp.validatedAt && cfo && <ValidateBusinessPlanButton code={c.code} />}
+          </>
+        }
+      />
       <SectionCard title={t('Lots')} hint={t(`${lots.length} lots`)} scroll>
         {lots.length ? (
           <Table>
@@ -75,7 +89,6 @@ export default async function BudgetPage({ params }: PageProps<'/capex/[code]/bu
         ) : (
           <EmptyState>{t('No lot yet.')}</EmptyState>
         )}
-        {edit && <LotForm code={c.code} />}
       </SectionCard>
 
       <SectionCard title={t('Budget versions')} hint={t('E50 at G1 · E30 mid preliminary design · E10 at G2 (validated by the group CFO)')} scroll>
@@ -124,8 +137,6 @@ export default async function BudgetPage({ params }: PageProps<'/capex/[code]/bu
         ) : (
           <EmptyState>{t('No budget version yet.')}</EmptyState>
         )}
-        {budget && lots.length > 0 && versions.filter((v) => v.status === 'draft').map((v) => <VersionForm key={v.id} code={c.code} lots={lots} version={v} />)}
-        {budget && lots.length > 0 && !inProgress && <VersionForm code={c.code} lots={lots} />}
       </SectionCard>
 
       <SectionCard title={t('Business plan')} hint={t('Prepared by the controller, validated by the group CFO')}>
@@ -142,8 +153,6 @@ export default async function BudgetPage({ params }: PageProps<'/capex/[code]/bu
         ) : (
           <EmptyState>{t('No business plan yet')}</EmptyState>
         )}
-        {bp && !bp.validatedAt && cfo && <ValidateBusinessPlanButton code={c.code} />}
-        {budget && <BusinessPlanForm code={c.code} horizon={BP_HORIZON} rate={bp?.discountRatePct ?? null} flows={bp?.flows ?? []} />}
       </SectionCard>
     </>
   );

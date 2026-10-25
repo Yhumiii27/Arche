@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { KeyValueList } from '@/components/app/KeyValueList';
 import { KpiGrid, KpiTile } from '@/components/app/Kpi';
 import { SectionCard } from '@/components/app/SectionCard';
+import { ActionLink } from '@/components/app/ActionForm';
 import { PageHeader } from '@/components/app/shell/page-header';
 import { Table, Td, Th } from '@/components/ds/Table';
 import { Tag } from '@/components/ds/Tag';
@@ -41,7 +42,18 @@ export default async function DossierPage({ params, searchParams }: PageProps<'/
   const base = `/capex/${encodeURIComponent(c.code)}/dossiers/${kind}`;
   return (
     <>
-      <PageHeader screen="capex-dossiers" title={`${t(DOSSIER_LABEL[kind])} — ${dataText(c.title, lang)}`} crumbs={['CAPEX register']} crumbData={c.code} />
+      <PageHeader
+        screen="capex-dossiers"
+        title={`${t(DOSSIER_LABEL[kind])} — ${dataText(c.title, lang)}`}
+        crumbs={['CAPEX register']}
+        crumbData={c.code}
+        actions={
+          <>
+            {edit && v?.state === 'draft' && <FreezeButton code={c.code} kind={kind} />}
+            {v && <ActionLink href={`/print/capex/${encodeURIComponent(c.code)}/dossiers/${kind}?v=${v.number}`} newTab icon="print" label={t('Print view')} />}
+          </>
+        }
+      />
       <KpiGrid>
         <KpiTile label={t('Version')} value={v ? `v${v.number}` : '—'} sub={v ? t(VERSION_STATE_LABEL[v.state]) : t('Not started')} />
         <KpiTile label={t('Completeness')} value={`${comp.pct} %`} tone={comp.pct < 100 ? 'alert' : 'default'} />
@@ -49,7 +61,6 @@ export default async function DossierPage({ params, searchParams }: PageProps<'/
       </KpiGrid>
       <SectionCard
         title={t('Versions')}
-        actions={v ? <Link href={`/print/capex/${encodeURIComponent(c.code)}/dossiers/${kind}?v=${v.number}`} target="_blank">{t('Print view')}</Link> : undefined}
       >
         <span>
           {versions.length
@@ -61,7 +72,6 @@ export default async function DossierPage({ params, searchParams }: PageProps<'/
             : t('No version yet: the first saved section starts version 1.')}
         </span>
         {v && !draft && <span className="text-muted">{`${t('Frozen by')} ${v.frozenByName ?? '—'} · ${v.frozenAt ? fmtInstant(v.frozenAt, lang) : ''} · SHA-256 ${v.contentHash}`}</span>}
-        {edit && v?.state === 'draft' && <FreezeButton code={c.code} kind={kind} />}
         {edit && v && !draft && <span className="text-muted">{t('Editing a section starts the next version; a circuit running on this version is then cancelled.')}</span>}
       </SectionCard>
       {SECTIONS[kind].map((s) => {

@@ -50,10 +50,35 @@ export default async function GatesPage({ params }: PageProps<'/capex/[code]/gat
   const forcible = ev ? ev.results.filter((r) => r.state === 'unmet' && r.forcible).map((r) => ({ code: r.code, label: r.label })) : [];
   const actorLabel = (a: string, spec: string | null) => (a === 'internal_client' ? t('Internal client') : a === 'expert' && spec ? `${t('Expert')} ${t(SPECIALITY_LABEL[spec as ExpertSpeciality])}` : isRoleKey(a) ? t(ROLE_LABEL[a]) : a);
   const returnTo = `/capex/${encodeURIComponent(c.code)}/gates`;
+  // The circuit steps the viewer may act on now: their forms go in the page header (owner's pilot feedback, 25 Oct 2026).
+  const isMine = (s: (typeof runningSteps)[number]) => s.status === 'open' && canActOn({ actor: s.actor as StepActor, speciality: s.speciality, assigneeUserId: s.assigneeUserId }, actor, c);
+  const myStepForms = running
+    ? runningSteps.filter(isMine).map((s) => (
+        <StepForm
+          key={s.id}
+          code={c.code}
+          stepId={s.id}
+          outcomes={OUTCOMES_OF[s.kind as StepKind]}
+          signed={isSigned(s.kind as StepKind)}
+          statement={`${s.label} — ${c.code}, ${running.code} session ${running.session}${runningVersion ? `, v${runningVersion.number}, SHA-256 ${runningVersion.contentHash}` : ''}`}
+          decides={s.decides}
+          forcible={forcible}
+          proposed={proposed}
+          returnTo={returnTo}
+        />
+      ))
+    : [];
 
   return (
     <>
-      <PageHeader screen="capex-gates" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} />
+      <PageHeader
+        screen="capex-gates"
+        title={dataText(c.title, lang)}
+        crumbs={['CAPEX register']}
+        crumbData={c.code}
+        primary={gate && !running && can('edit') && (!kind || (latest?.state === 'frozen' && latest.completenessPct === 100)) ? <SubmitGateForm code={c.code} gate={gate} experts={experts} /> : null}
+        actions={myStepForms}
+      />
       <SectionCard title={gate ? `${gate} · ${t(GATE_LABEL[gate])}` : t('No gate to pass')} subtitle={kind ? `${t('Dossier')}${lang === 'fr' ? ' : ' : ': '}${t(DOSSIER_LABEL[kind])} — ${latest ? `v${latest.number} · ${latest.completenessPct} %` : t('Not started')}` : undefined}>
         {kind && <Link href={`/capex/${encodeURIComponent(c.code)}/dossiers/${kind}`}>{t('Open the dossier')}</Link>}
         {ev && (
@@ -84,7 +109,6 @@ export default async function GatesPage({ params }: PageProps<'/capex/[code]/gat
         {gate && !running && can('edit') && kind && !(latest?.state === 'frozen' && latest.completenessPct === 100) && (
           <span className="text-muted">{t('Freeze the dossier, complete at 100 %, before submitting the gate.')}</span>
         )}
-        {gate && !running && can('edit') && (!kind || (latest?.state === 'frozen' && latest.completenessPct === 100)) && <SubmitGateForm code={c.code} gate={gate} experts={experts} />}
       </SectionCard>
 
       {running && (
@@ -101,26 +125,14 @@ export default async function GatesPage({ params }: PageProps<'/capex/[code]/gat
             </thead>
             <tbody>
               {runningSteps.map((s) => {
-                const mine = s.status === 'open' && canActOn({ actor: s.actor as StepActor, speciality: s.speciality, assigneeUserId: s.assigneeUserId }, actor, c);
+                const mine = isMine(s);
                 const late = s.status === 'open' && s.dueOn && s.dueOn < today;
                 return (
                   <tr key={s.id}>
                     <Td>
                       <div>{`${t(s.label)}${s.optional ? ` (${t('optional')})` : ''}`}</div>
                       <div className="text-muted">{t(STEP_KIND_LABEL[s.kind as StepKind])}</div>
-                      {mine && (
-                        <StepForm
-                          code={c.code}
-                          stepId={s.id}
-                          outcomes={OUTCOMES_OF[s.kind as StepKind]}
-                          signed={isSigned(s.kind as StepKind)}
-                          statement={`${s.label} — ${c.code}, ${running.code} session ${running.session}${runningVersion ? `, v${runningVersion.number}, SHA-256 ${runningVersion.contentHash}` : ''}`}
-                          decides={s.decides}
-                          forcible={forcible}
-                          proposed={proposed}
-                          returnTo={returnTo}
-                        />
-                      )}
+                      {mine && <Tag tone="accent" size="xs">{t('Your turn: see the header')}</Tag>}
                     </Td>
                     <Td tone="secondary">{s.assigneeName ?? actorLabel(s.actor, s.speciality)}</Td>
                     <Td nowrap>{late ? <Tag tone="accent" size="sm">{t('Late')}</Tag> : t(STATUS_LABEL[s.status])}</Td>

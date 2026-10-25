@@ -5,9 +5,9 @@
 import { EmptyState } from '@/components/app/EmptyState';
 import { KeyValueList } from '@/components/app/KeyValueList';
 import { SectionCard } from '@/components/app/SectionCard';
+import { ActionLink } from '@/components/app/ActionForm';
 import { PageHeader } from '@/components/app/shell/page-header';
 import { Table, Td, Th } from '@/components/ds/Table';
-import { ButtonLink } from '@/components/ds/Button';
 import { Tag } from '@/components/ds/Tag';
 import { missingStaff, STAFFING } from '@/domain/budget';
 import { DECISION_BODY_LABEL, refOf, TEAM_ROLE_LABEL, type DecisionBody } from '@/domain/capex';
@@ -39,7 +39,23 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
   const missing = missingStaff(c.typology, team.map((m) => m.capexRole));
   return (
     <>
-      <PageHeader screen="capex-governance" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} />
+      <PageHeader
+        screen="capex-governance"
+        title={dataText(c.title, lang)}
+        crumbs={['CAPEX register']}
+        crumbData={c.code}
+        actions={
+          <>
+            {reviewKinds.length > 0 && <ReviewForm code={c.code} kinds={reviewKinds} today={today} />}
+            {edit && <DecisionForm code={c.code} today={today} />}
+            {edit && <MemberForm code={c.code} candidates={candidates.map((p) => ({ value: p.id, label: p.name }))} />}
+            {can('rex') && <RexForm code={c.code} phase={c.phase} />}
+            {c.typologyProposed && can('confirm_typology') && <ConfirmTypologyButton code={c.code} />}
+            {can('force_typology') && <ForceTypologyForm code={c.code} />}
+            <ActionLink href={`/print/capex/${encodeURIComponent(c.code)}/report`} newTab icon="print" label={t('Copil report')} />
+          </>
+        }
+      />
       <SectionCard
         title={t('Team')}
         hint={`${t('Staffing template')} (${c.typology ? t(labelOf(TYPOLOGY_LABEL, c.typology)) : t('Light')})${lang === 'fr' ? ' : ' : ': '}${template.map((r) => t(TEAM_ROLE_LABEL[r])).join(', ')}`}
@@ -76,7 +92,6 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
         ) : (
           <EmptyState>{t('Nobody is named yet.')}</EmptyState>
         )}
-        {edit && <MemberForm code={c.code} candidates={candidates.map((p) => ({ value: p.id, label: p.name }))} />}
       </SectionCard>
 
       <SectionCard title={t('Typology')}>
@@ -95,8 +110,6 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
             <Tag tone="accent" size="sm">{t('New typology to confirm')}</Tag> {t(labelOf(TYPOLOGY_LABEL, c.typologyProposed))}
           </span>
         )}
-        {c.typologyProposed && can('confirm_typology') && <ConfirmTypologyButton code={c.code} />}
-        {can('force_typology') && <ForceTypologyForm code={c.code} />}
       </SectionCard>
 
       <SectionCard
@@ -141,10 +154,6 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
         ) : (
           <EmptyState>{t('No review recorded.')}</EmptyState>
         )}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {reviewKinds.length > 0 && <ReviewForm code={c.code} kinds={reviewKinds} today={today} />}
-          <ButtonLink href={`/print/capex/${encodeURIComponent(c.code)}/report`} variant="secondary" size="sm" target="_blank">{t('Copil report')}</ButtonLink>
-        </div>
       </SectionCard>
 
       <SectionCard title={t('Lessons learned')} hint={`${t('Phases covered')} ${rexCover.value} · ${t('G3 needs a lesson for every phase')}`} scroll>
@@ -185,7 +194,6 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
         ) : (
           <EmptyState>{t('No lesson recorded.')}</EmptyState>
         )}
-        {can('rex') && <RexForm code={c.code} phase={c.phase} />}
       </SectionCard>
 
       <SectionCard title={t('Decisions')} hint={t(`${decisions.length} decisions`)} scroll>
@@ -215,7 +223,6 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
         ) : (
           <EmptyState>{t('No decision recorded.')}</EmptyState>
         )}
-        {edit && <DecisionForm code={c.code} today={today} />}
       </SectionCard>
     </>
   );

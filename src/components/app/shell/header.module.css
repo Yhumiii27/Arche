@@ -519,3 +519,11 @@
     top: 13px;
   }
 }
+
+/* "Actions" drop-down list of the page header (owner's pilot feedback, 25 Oct 2026) */
+.actionsMenu {
+  white-space: nowrap;
+}
+.actionsMenu[hidden] {
+  display: none;
+}

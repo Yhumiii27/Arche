@@ -2,12 +2,16 @@
 // Client islands of the Server Functions: a form, a button and a "reason" form, each showing the translated result. The
 // Server Functions do every check again; these only collect the input. A form placed in a panel (`Folded`: a button that
 // opens a side panel) closes it once its Server Function succeeds.
-import { NotePencil, Plus } from '@phosphor-icons/react/dist/ssr';
+import { Flag, NotePencil, Plus, PlusCircle, Printer } from '@phosphor-icons/react/dist/ssr';
 import { createContext, useActionState, useContext, useEffect, useState, useTransition, type ReactNode } from 'react';
-import { Button, type ButtonSize, type ButtonVariant } from '@/components/ds/Button';
+import type { Icon } from '@phosphor-icons/react';
+import { Button, ButtonLink, type ButtonSize, type ButtonVariant } from '@/components/ds/Button';
 import { Drawer } from '@/components/ds/Drawer';
+import { MenuItem } from '@/components/ds/Menu';
+import { useMenuMode } from './menu-mode';
 import { showToast } from '@/components/ds/Toast';
 import { useI18n } from '@/i18n/client';
+import pop from '@/components/ds/Popover.module.css';
 import s from './ActionForm.module.css';
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -49,6 +53,19 @@ export function ActionButton({ run, label, done, variant = 'secondary' }: { run:
   const { t } = useI18n();
   const [state, setState] = useState<ActionResult | null>(null);
   const [pending, start] = useTransition();
+  const menu = useMenuMode();
+  if (menu) {
+    // In the header's "Actions" list: the result comes as a toast (the list closes).
+    return (
+      <MenuItem disabled={pending} onClick={() => start(async () => {
+        const r = await run();
+        menu.close();
+        showToast(r.ok ? t(done) : t(r.error));
+      })}>
+        {t(label)}
+      </MenuItem>
+    );
+  }
   return (
     <span className={s.inline}>
       <Button variant={variant} size="sm" disabled={pending} onClick={() => start(async () => setState(await run()))}>
@@ -74,15 +91,35 @@ export function Folded({ summary, children, open, variant = 'secondary', size = 
 }) {
   const { t } = useI18n();
   const [isOpen, setOpen] = useState(!!open);
+  const menu = useMenuMode();
   const icon = CREATE.test(summary) ? Plus : /^Edit\b/.test(summary) ? NotePencil : undefined;
   return (
     <>
-      <Button variant={variant} size={size} icon={icon} onClick={() => setOpen(true)} aria-haspopup="dialog">
-        {t(summary)}
-      </Button>
+      {menu ? (
+        <MenuItem icon={icon} onClick={() => { setOpen(true); menu.close(); }}>
+          {t(summary)}
+        </MenuItem>
+      ) : (
+        <Button variant={variant} size={size} icon={icon} onClick={() => setOpen(true)} aria-haspopup="dialog">
+          {t(summary)}
+        </Button>
+      )}
       <Drawer open={isOpen} onClose={() => setOpen(false)} title={t(title ?? summary)}>
         <PanelCtx.Provider value={() => setOpen(false)}>{children}</PanelCtx.Provider>
       </Drawer>
     </>
   );
+}
+
+const LINK_ICONS: Record<string, Icon> = { plus: Plus, 'plus-circle': PlusCircle, print: Printer, flag: Flag };
+
+/**
+ * A link to another page among a page's actions (a button, or a row of the header's "Actions" list). Label translated; the
+ * icon is named (a component cannot cross from a Server Component).
+ */
+export function ActionLink({ href, label, icon, variant = 'secondary', newTab }: { href: string; label: string; icon?: keyof typeof LINK_ICONS; variant?: ButtonVariant; newTab?: boolean }) {
+  const menu = useMenuMode();
+  const I = icon ? LINK_ICONS[icon] : undefined;
+  if (menu) return newTab ? <a href={href} target="_blank" rel="noreferrer" className={pop.item} onClick={menu.close}>{I && <I aria-hidden />}{label}</a> : <MenuItem href={href} icon={I}>{label}</MenuItem>;
+  return <ButtonLink href={href} variant={variant} icon={I} target={newTab ? '_blank' : undefined}>{label}</ButtonLink>;
 }

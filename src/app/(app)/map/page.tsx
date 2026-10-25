@@ -10,7 +10,7 @@ import { canSee, screenHref } from '@/config/screens';
 import { countryCentre } from '@/domain/country-centres';
 import { capexMapKpis, capexMarkerStyle, uniq } from '@/domain/capex-map';
 import { PHASE_SHORT, STATUS_LABEL, labelOf } from '@/domain/capex-labels';
-import { OpenGuidedLink } from '@/features/capex/open-link';
+import { openGuidedLink } from '@/features/capex/open-link';
 import { MapPanels, type SiteGroup } from '@/features/map/map-panels';
 import s from '@/features/map/map.module.css';
 import { dataText } from '@/i18n/data-text';
@@ -72,7 +72,7 @@ export default async function CapexMapPage() {
   const zoneLabel = p.zoneName ? dataText(p.zoneName, lang) : null;
   return (
     <>
-      <PageHeader screen="map" crumbs={['Group portfolio']} primary={<OpenGuidedLink viewer={viewer} />} />
+      <PageHeader screen="map" crumbs={['Group portfolio']} primary={await openGuidedLink(viewer)} />
       <div className={s.body}>
         <ZoneSeg zone={p.zone} options={p.zones.map((z) => ({ code: z.code, label: z.code ? dataText(z.name!, lang) : t('All zones'), count: z.count }))} />
         <KpiGrid>

@@ -23,7 +23,7 @@ import { businessToday } from '@/server/clock';
 import { isMine, visibleCapex } from '@/server/dal/capex';
 import { alertsForViewer } from '@/server/dal/governance';
 import { getI18n, getViewer } from '@/server/session';
-import { OpenGuidedLink } from '@/features/capex/open-link';
+import { openGuidedLink } from '@/features/capex/open-link';
 
 export default async function HomePage() {
   const [{ t, lang }, viewer] = await Promise.all([getI18n(), getViewer()]);
@@ -37,7 +37,7 @@ export default async function HomePage() {
   const [actions, today] = await Promise.all([canSee(viewer.role, 'capex-actions') ? myActions(viewer) : Promise.resolve([]), businessToday()]);
   return (
     <>
-      <PageHeader screen="home" title={`${t('Hello')} ${viewer.name.split(' ')[0]}`} primary={<OpenGuidedLink viewer={viewer} />} />
+      <PageHeader screen="home" title={`${t('Hello')} ${viewer.name.split(' ')[0]}`} primary={await openGuidedLink(viewer)} />
       <KpiGrid>
         <KpiTile label={t('Active profile')} value={t(ROLE_LABEL[viewer.role])} sub={scopes.join(' · ')} size="lg" />
         <KpiTile label={t('Visible CAPEX')} value={capex.length} sub={t(`${capex.length} visible CAPEX`)} size="lg" />

@@ -12,8 +12,9 @@ import { Tag } from '@/components/ds/Tag';
 import { rangeOf } from '@/domain/budget';
 import { INVESTMENT_TYPE_LABEL, PHASE_LABEL, STATUS_LABEL, TYPOLOGY_LABEL, labelOf } from '@/domain/capex-labels';
 import { DECISION_LABEL, GATE_LABEL, GATE_OF_PHASE, PHASES, currentGate, type CriterionState } from '@/domain/lifecycle';
+import { ActionLink } from '@/components/app/ActionForm';
 import { ButtonLink } from '@/components/ds/Button';
-import { ArrowRight, Flag } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { CRITERION_ACTION, nextCriterion } from '@/features/capex/next-step';
 import hs from '@/components/app/shell/header.module.css';
 import { screenHref } from '@/config/screens';
@@ -51,16 +52,14 @@ export default async function CapexOverviewPage({ params }: PageProps<'/capex/[c
         title={dataText(c.title, lang)}
         crumbs={['CAPEX register']}
         crumbData={c.code}
-        primary={
-          <div className={hs.actions}>
+        primary={gate && can('edit') ? <ActionLink href={screenHref('capex-gates', { code: c.code })} variant="primary" icon="flag" label={t(`Submit to gate ${gate}`)} /> : null}
+        actions={
+          <>
+            {can('open') && <OpenCapexButton code={c.code} />}
+            {can('open') && <TakeoverForm code={c.code} today={today} lots={lots.map((l) => ({ id: l.id, label: `${l.number}. ${dataText(l.title, lang)}` }))} />}
             {can('edit') && <SheetForm code={c.code} sheet={c} sites={sites} />}
             {can('suspend') && <SuspendForm code={c.code} outcome={c.status === 'on_hold' ? 'resume' : 'suspend'} />}
-            {can('open') && <TakeoverForm code={c.code} today={today} lots={lots.map((l) => ({ id: l.id, label: `${l.number}. ${dataText(l.title, lang)}` }))} />}
-            {can('open') && <OpenCapexButton code={c.code} />}
-            {gate && can('edit') && (
-              <ButtonLink href={screenHref('capex-gates', { code: c.code })} variant="primary" icon={Flag}>{t(`Submit to gate ${gate}`)}</ButtonLink>
-            )}
-          </div>
+          </>
         }
       />
       {next && (

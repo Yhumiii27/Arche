@@ -2,6 +2,7 @@
 // gives and removes roles, deactivates accounts (src/features/admin/actions.ts checks each one again).
 import { notFound } from 'next/navigation';
 import { SectionCard } from '@/components/app/SectionCard';
+import { Folded } from '@/components/app/ActionForm';
 import { PageHeader } from '@/components/app/shell/page-header';
 import { Table, Td, Th } from '@/components/ds/Table';
 import { ROLE_LABEL, SPECIALITY_LABEL } from '@/config/roles';
@@ -18,10 +19,16 @@ export default async function UsersPage() {
   const [rows, refs] = await Promise.all([usersWithAssignments(), referenceLists()]);
   return (
     <>
-      <PageHeader screen="admin-users" crumbs={['Administration']} />
-      <SectionCard title={t('New account')} subtitle={t('The person signs in with their Microsoft account; give them a role below.')}>
-        <NewUserForm subsidiaries={refs.subsidiaries.map((x) => ({ code: x.code, name: dataText(x.name, lang) }))} />
-      </SectionCard>
+      <PageHeader
+        screen="admin-users"
+        crumbs={['Administration']}
+        actions={
+          <Folded summary="New account">
+            <span className="text-muted">{t('The person signs in with their Microsoft account; give them a role below.')}</span>
+            <NewUserForm subsidiaries={refs.subsidiaries.map((x) => ({ code: x.code, name: dataText(x.name, lang) }))} />
+          </Folded>
+        }
+      />
       <SectionCard title={t('Accounts')} hint={String(rows.length)} scroll>
         <Table>
           <thead>

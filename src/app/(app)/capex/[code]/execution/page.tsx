@@ -39,7 +39,11 @@ export default async function ExecutionPage({ params }: PageProps<'/capex/[code]
   const low = (r: number | null) => r != null && r < 0.9;
   return (
     <>
-      <PageHeader screen="capex-execution" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} primary={edit ? <ImportActualsForm code={c.code} /> : undefined} />
+      <PageHeader screen="capex-execution" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} primary={edit ? <ImportActualsForm code={c.code} /> : undefined}
+        actions={can('closure') && c.phase === 'demarrage' && (
+          <ClosureForm code={c.code} statement={closure.statement ? { afeBalanceKeur: closure.statement.afeBalanceKeur, note: closure.statement.note } : null} lots={closure.lots.map((l) => ({ id: l.id, label: `${l.number}. ${dataText(l.title, lang)}`, finalKeur: l.finalKeur }))} />
+        )}
+      />
       <KpiGrid>
         <KpiTile label={t('Budget at completion')} value={k(i.bacKeur)} sub={t(x.budgetSource === 'g2_baseline' ? 'G2 baseline' : x.budgetSource === 'latest_validated' ? 'Latest validated version (indicative)' : 'No validated budget')} />
         <KpiTile label={t('Earned value')} value={k(i.evKeur)} sub={`${t('Planned')} ${k(i.pvKeur)}`} />
@@ -167,9 +171,6 @@ export default async function ExecutionPage({ params }: PageProps<'/capex/[code]
             </Table>
           )}
           {closure.statement?.note && <span className="text-muted">{dataText(closure.statement.note, lang)}</span>}
-          {can('closure') && c.phase === 'demarrage' && (
-            <ClosureForm code={c.code} statement={closure.statement ? { afeBalanceKeur: closure.statement.afeBalanceKeur, note: closure.statement.note } : null} lots={closure.lots.map((l) => ({ id: l.id, label: `${l.number}. ${dataText(l.title, lang)}`, finalKeur: l.finalKeur }))} />
-          )}
         </SectionCard>
       )}
 
