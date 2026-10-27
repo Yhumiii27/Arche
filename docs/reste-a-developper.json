@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-22",
-  "updated": "2026-10-25",
+  "updated": "2026-10-26",
   "branch": "claude/brave-curie-chxbck",
   "history": [
     {
@@ -110,6 +110,10 @@
     {
       "date": "2026-10-25",
       "text": "Démo alignée sur Keystone : catalogue machines, réponses RB-001 à RB-005 et projet RCF-019 de la démo Keystone ; besoins de démo réécrits ; liens profonds vers Keystone corrigés ; demande K-14 (à valider)."
+    },
+    {
+      "date": "2026-10-26",
+      "text": "Analyse comparative avec les solutions du commerce (25 oct. 2026) : 14 items ajoutés (AR-039 à AR-052), 10 items annotés."
     }
   ],
   "items": [
@@ -137,7 +141,7 @@
     {
       "id": "AR-002",
       "title": "Réponses du responsable produit aux questions de DECISIONS.md",
-      "description": "Restent ouvertes : N-26 à N-35 ; données à fournir D-1 à D-8.",
+      "description": "Restent ouvertes : N-26 à N-35 ; données à fournir D-1 à D-8. Analyse comparative du 25 oct. 2026 : les décisions N-2 (devise des filiales), N-33 (provision pour aléas), N-34 (jours fériés dans les échéances) et N-35 (relances par e-mail) correspondent à des fonctions standard des logiciels CAPEX du commerce (CapEx360, eCapEx, SAP IM) ; la provision pour aléas et les calendriers de jours fériés des filiales sont attendus dès la mise en production (priorité suggérée : à décider avant le pilote élargi), la devise et les relances font l’objet des points AR-039 et AR-041.",
       "category": "cadrage_decisions",
       "kind": "decision",
       "priority": "a_decider",
@@ -156,7 +160,7 @@
     {
       "id": "AR-003",
       "title": "Données de référence des filiales",
-      "description": "Liste des filiales (code, pays, zone, devise), sites, CA de référence par exercice (C-5).",
+      "description": "Liste des filiales (code, pays, zone, devise), sites, CA de référence par exercice (C-5). Analyse comparative du 25 oct. 2026 : prérequis bloquant du pilote avec AR-014, AR-015 et AR-034 ; la liste des filiales avec leur devise conditionne aussi le multi-devises (AR-039). Priorité suggérée : bloquant, inchangée.",
       "category": "cadrage_decisions",
       "kind": "donnees",
       "priority": "a_decider",
@@ -376,7 +380,7 @@
     {
       "id": "AR-014",
       "title": "Arche sur le serveur PostgreSQL commun (Matrix)",
-      "description": "Rôle, schéma, droits, partage, journal unifié, sauvegarde, déclaration des tables.",
+      "description": "Rôle, schéma, droits, partage, journal unifié, sauvegarde, déclaration des tables. Analyse comparative du 25 oct. 2026 : le serveur PostgreSQL commun est un prérequis d’échelle que les solutions du commerce apportent en SaaS ; sans lui, Arche reste une démonstration. Priorité suggérée : bloquant, inchangée.",
       "category": "plateforme_production",
       "kind": "integration",
       "priority": "bloquant_production",
@@ -396,7 +400,7 @@
     {
       "id": "AR-015",
       "title": "Hébergement en France et choix du serveur de production",
-      "description": "D-11 / C-13 ; même décision que Keystone (I-1a).",
+      "description": "D-11 / C-13 ; même décision que Keystone (I-1a). Analyse comparative du 25 oct. 2026 : l’hébergement en France est le prérequis de tout déploiement réel (les solutions du commerce sont hébergées en SaaS, souvent hors UE) ; à trancher avant toute autre évolution. Priorité suggérée : bloquant, inchangée.",
       "category": "plateforme_production",
       "kind": "decision",
       "priority": "bloquant_production",
@@ -613,7 +617,7 @@
     {
       "id": "AR-025",
       "title": "Connecteur codex : références de documents, vérification, dépôt des dossiers figés",
-      "description": "Tous les documents d’Arche dans Codex (N-17) ; simulation tant que l’API manque.",
+      "description": "Tous les documents d’Arche dans Codex (N-17) ; simulation tant que l’API manque. Analyse comparative du 25 oct. 2026 : le dépôt réel des dossiers figés dans Codex (aujourd’hui simulé) fait partie des intégrations attendues en standard (gestion documentaire intégrée chez Unifier, Finario, CapEx360). Priorité suggérée : prochaine étape, inchangée.",
       "category": "documents_codex",
       "kind": "integration",
       "priority": "prochaine_etape",
@@ -635,7 +639,7 @@
     {
       "id": "AR-026",
       "title": "API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants",
-      "description": "CX-01 à CX-07.",
+      "description": "CX-01 à CX-07. Analyse comparative du 25 oct. 2026 : les pièces jointes et devis fournisseurs sur la demande d’investissement sont un standard du marché ; Arche les délègue à Codex, mais le lien de dépôt depuis Arche n’est pas branché tant que CX-03 et CX-07 manquent. Priorité suggérée : prochaine étape, haute pour CX-03.",
       "category": "documents_codex",
       "kind": "integration",
       "priority": "prochaine_etape",
@@ -693,7 +697,7 @@
     {
       "id": "AR-029",
       "title": "Vues Keystone pour Arche (catalogue, réponses, jalons, avancement, avenants, réserves, pack)",
-      "description": "K-01 à K-11.",
+      "description": "K-01 à K-11. Analyse comparative du 25 oct. 2026 : les intégrations réelles (vues Keystone publiées à la place de la simulation, dépôt Codex, jalons HS lus dans Vigie, données Cursus pour les formations du transfert, CU-02) sont le niveau standard des logiciels CAPEX ; tant qu’elles manquent, Arche fonctionne en mode simulé. Priorité suggérée : prochaine étape, inchangée.",
       "category": "besoins_machines",
       "kind": "integration",
       "priority": "prochaine_etape",
@@ -788,7 +792,7 @@
     {
       "id": "AR-033",
       "title": "Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite",
-      "description": "VG-01 à VG-05 ; Vigie ne les modélise pas aujourd’hui.",
+      "description": "VG-01 à VG-05 ; Vigie ne les modélise pas aujourd’hui. Analyse comparative du 25 oct. 2026 : les jalons HS lus depuis Vigie (aujourd’hui déclarés à la main avec un champ texte de référence) relèvent des intégrations standard attendues ; l’arbitrage AC-3 conditionne le périmètre. Priorité suggérée : à décider, inchangée.",
       "category": "securite_vigie",
       "kind": "integration",
       "priority": "a_decider",
@@ -806,7 +810,7 @@
     {
       "id": "AR-034",
       "title": "Pilote sur 1 à 2 CAPEX",
-      "description": "Jeu production, utilisateurs réels, guides par rôle, mesure de référence (C-10).",
+      "description": "Jeu production, utilisateurs réels, guides par rôle, mesure de référence (C-10). Analyse comparative du 25 oct. 2026 : le pilote sur des données réelles des filiales est le prérequis de toute comparaison utile avec les solutions du commerce ; les écarts fonctionnels relevés (AR-039 à AR-052) seront priorisés sur ses retours. Priorité suggérée : bloquant, inchangée.",
       "category": "pilotage_gouvernance",
       "kind": "deploiement",
       "priority": "bloquant_production",
@@ -875,7 +879,7 @@
     {
       "id": "AR-037",
       "title": "Aide à la décision (règles puis IA conforme) et signature avancée G2 / AFE",
-      "description": "Livraison 7 (C-7, C-13).",
+      "description": "Livraison 7 (C-7, C-13). Analyse comparative du 25 oct. 2026 : la signature électronique qualifiée (DocuSign, Adobe Sign, Yousign) pour le G2 / AFE est un niveau avancé du marché (Unifier) ; l’IA de prévision de dérive des coûts et des délais et le benchmark d’une demande contre les CAPEX passés (Finario Predict) sont également avancés. Arche n’a qu’une signature simple par empreinte et des alertes à règles. Priorité suggérée : plus tard (après le pilote, livraison 7), inchangée.",
       "category": "ia_signature",
       "kind": "fonction",
       "priority": "plus_tard",
@@ -906,6 +910,333 @@
       "evidence": [],
       "progress": {
         "state": "a_faire"
+      }
+    },
+    {
+      "id": "AR-039",
+      "title": "Multi-devises : devise par filiale, taux de change datés, consolidation en euros",
+      "description": "Montants des budgets, de l’engagé et du réalisé saisis dans la devise de la filiale (`subsidiaries.currency`, stockée mais inutilisée), table des taux de change datés tenue par la DAF groupe (taux de référence par exercice ou par mois), conversion et consolidation en k€ dans les portefeuilles, les dossiers et les vues `pub_`. Arche ne connaît aujourd’hui que le k€ (N-2). Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Anaplan, CapEx360) mais indispensable pour un groupe multi-pays ; priorité suggérée : prochaine étape.",
+      "category": "capex_cycle",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026",
+        "docs/DECISIONS.md N-2"
+      ],
+      "evidence": [
+        "src/server/db/schema/organisation.ts",
+        "src/domain/budget.ts",
+        "src/domain/execution.ts"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+      }
+    },
+    {
+      "id": "AR-040",
+      "title": "Enveloppes budgétaires annuelles et pluriannuelles par filiale, zone et catégorie ; contrôle de disponibilité, reports et réallocations",
+      "description": "Enveloppe CAPEX votée par exercice (et plan pluriannuel) par filiale, zone et catégorie (typologie Light / Stratégique, nature), consommation par les CAPEX ouverts, contrôle de disponibilité à l’ouverture et au G2 (alerte ou blocage hors enveloppe selon un seuil), reports d’un exercice à l’autre et réallocations tracées entre filiales. Arche ne connaît que le budget de chaque CAPEX (versions E50 / E30 / E10) ; aucune enveloppe ni blocage hors budget. Analyse comparative du 25 oct. 2026 : standard du marché (CapEx360, eCapEx, SAP IM) ; priorité suggérée : prochaine étape.",
+      "category": "pilotage_gouvernance",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "L",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026",
+        "docs/spec/06-gouvernance-pilotage.md"
+      ],
+      "evidence": [
+        "src/domain/budget.ts",
+        "src/server/dal/portfolio.ts",
+        "src/server/dal/governance.ts"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+      }
+    },
+    {
+      "id": "AR-041",
+      "title": "Notifications e-mail aux étapes des circuits, relances, escalade automatique et délégation d’absence",
+      "description": "Envoi d’un e-mail à l’ouverture d’une étape de circuit, relances des étapes dues et en retard par le worker, escalade automatique au niveau supérieur après un délai paramétrable, délégation d’absence (un suppléant pour une période) ; préférences par utilisateur. Aucune notification aujourd’hui : les étapes dues n’apparaissent que dans « Mes validations » et sur la page du jalon (N-35). Analyse comparative du 25 oct. 2026 : standard du marché ; priorité suggérée : prochaine étape, dès le choix du transport.",
+      "category": "dossiers_circuits",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "Responsable produit / DSI : choix du transport (SMTP ou Microsoft Graph, N-35)",
+      "effort": "M",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026",
+        "docs/DECISIONS.md N-35",
+        "docs/spec/05-circuits.md"
+      ],
+      "evidence": [
+        "src/server/dal/approvals.ts",
+        "src/server/jobs/registry.ts",
+        "src/domain/delegation.ts"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+      }
+    },
+    {
+      "id": "AR-042",
+      "title": "Exports CSV / XLSX / PDF des registres, portefeuilles et dossiers ; connecteur Power BI",
+      "description": "Export CSV et XLSX du registre des CAPEX, des portefeuilles, du suivi engagé / réalisé et des alertes (colonnes du contrat `pub_capex`) ; export PDF serveur des dossiers figés et du rapport Copil (aujourd’hui des vues imprimables HTML seulement) ; connecteur Power BI (lecture des vues `pub_` par un compte dédié, ou flux OData). Analyse comparative du 25 oct. 2026 : standard du marché ; priorité suggérée : prochaine étape.",
+      "category": "pilotage_gouvernance",
+      "kind": "fonction",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026",
+        "docs/CONTRATS.md"
+      ],
+      "evidence": [
+        "src/app/print/capex/[code]/report/page.tsx",
+        "src/app/print/capex/[code]/dossiers/[kind]/page.tsx",
+        "src/server/dal/portfolio.ts"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+      }
+    },
+    {
+      "id": "AR-043",
+      "title": "Scénarios what-if de portefeuille sous contrainte d’enveloppe groupe (base, contraint, croissance)",
+      "description": "Scénarios de portefeuille nommés (base, contraint, croissance) : sélection et décalage de CAPEX, enveloppe groupe par exercice, comparaison des scénarios (dépense, retour, risques) et retenue d’un scénario pour le COPIL GPI. Dépend des enveloppes (AR-040). Absent d’Arche. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Planisware, Finario, Board) ; priorité suggérée : à décider.",
+      "category": "pilotage_gouvernance",
+      "kind": "fonction",
+      "priority": "a_decider",
+      "status": "non_commence",
+      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "effort": "L",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026"
+      ],
+      "evidence": [
+        "src/server/dal/portfolio.ts",
+        "src/server/dal/governance.ts"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+      }
+    },
+    {
+      "id": "AR-044",
+      "title": "Scoring multicritère de priorisation (valeur, risque, alignement stratégique) et classement inter-pays",
+      "description": "Grille de critères pondérés tenue par le groupe (valeur financière du BP, risque, alignement stratégique, urgence, sécurité), note de chaque CAPEX saisie ou calculée, classement des CAPEX entre filiales et zones sur le portefeuille groupe et au COPIL GPI. Arche n’a que la typologie Light / Stratégique et les alertes à règles. Analyse comparative du 25 oct. 2026 : standard des outils de gestion de portefeuille ; priorité suggérée : à décider.",
+      "category": "pilotage_gouvernance",
+      "kind": "fonction",
+      "priority": "a_decider",
+      "status": "non_commence",
+      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "effort": "M",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026"
+      ],
+      "evidence": [
+        "src/domain/budget.ts",
+        "src/domain/alerts.ts",
+        "src/server/dal/portfolio.ts"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+      }
+    },
+    {
+      "id": "AR-045",
+      "title": "Cash-flow prévisionnel phasé par mois et comparé à la baseline G2",
+      "description": "Phasage mensuel prévisionnel des décaissements de chaque lot saisi par le chef de projet ou le CDG (et non une répartition uniforme sur la fenêtre du lot), re-prévision à chaque mois (reste à dépenser), comparaison de la prévision à la baseline G2 et au réalisé sur la courbe en S, consolidation par filiale et par exercice pour la trésorerie du groupe. Arche saisit l’engagé et le réalisé mensuels mais ne phase pas la prévision. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Unifier, Board) ; priorité suggérée : à décider.",
+      "category": "capex_cycle",
+      "kind": "fonction",
+      "priority": "a_decider",
+      "status": "non_commence",
+      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "effort": "M",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026",
+        "docs/spec/06-gouvernance-pilotage.md"
+      ],
+      "evidence": [
+        "src/domain/execution.ts",
+        "src/server/dal/execution.ts"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+      }
+    },
+    {
+      "id": "AR-046",
+      "title": "Bénéfices réalisés contre le business plan approuvé ; post-audit automatique N mois après la mise en service",
+      "description": "Suivi des gains du BP approuvé au G2 (chiffre d’affaires, économies, productivité) contre les gains constatés après la mise en service, saisis par le CDG ou le sponsor ; post-audit programmé automatiquement N mois (6, 12, 24) après la MES avec son circuit et son compte rendu ; VAN et TRI recalculés sur le réalisé. Arche a le ramp-up et la clôture des coûts, mais aucun suivi des gains du BP. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Finario, eCapEx) ; priorité suggérée : à décider.",
+      "category": "demarrage_transfert",
+      "kind": "fonction",
+      "priority": "a_decider",
+      "status": "non_commence",
+      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "effort": "M",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026",
+        "docs/spec/03-cycle-dig-prodi.md"
+      ],
+      "evidence": [
+        "src/domain/bp.ts",
+        "src/domain/closure.ts",
+        "src/domain/rampup.ts",
+        "src/domain/governance.ts"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+      }
+    },
+    {
+      "id": "AR-047",
+      "title": "Import des réalisés et des engagements depuis l’ERP (Sage) par API",
+      "description": "Rapprochement automatique de l’engagé (commandes) et du réalisé (factures) des lots hors EPC2i depuis Sage, par API ou extraction planifiée, avec une table de correspondance compte / lot et un journal des rejets ; l’import CSV manuel du CDG reste disponible. Arche n’a aujourd’hui que l’import CSV manuel (N-14). Analyse comparative du 25 oct. 2026 : standard du marché par fichier, avancé par connecteur ; priorité suggérée : à décider.",
+      "category": "capex_cycle",
+      "kind": "integration",
+      "priority": "a_decider",
+      "status": "bloque_systeme_externe",
+      "waiting_on": "DSI (accès à Sage : API ou extraction planifiée) ; N-14",
+      "effort": "M",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026",
+        "docs/DECISIONS.md N-14",
+        "docs/DECISIONS.md C-12"
+      ],
+      "evidence": [
+        "src/features/delivery/actions.ts",
+        "src/domain/execution.ts"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+      }
+    },
+    {
+      "id": "AR-048",
+      "title": "API REST métier et webhooks",
+      "description": "API REST authentifiée par clé signée (comme `POST /api/import` de Codex) exposant les CAPEX, les jalons, les budgets et les besoins en lecture, et la création ou mise à jour de quelques objets (réalisé mensuel, action) ; webhooks sur les événements (décision de jalon, ouverture, alerte) pour Keystone, Codex et les outils du groupe. Seule `/api/health` existe ; les autres applications lisent les vues `pub_`. Analyse comparative du 25 oct. 2026 : standard du marché (Unifier, Finario) ; priorité suggérée : à décider.",
+      "category": "plateforme_production",
+      "kind": "integration",
+      "priority": "a_decider",
+      "status": "non_commence",
+      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "effort": "M",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026",
+        "docs/CONTRATS.md"
+      ],
+      "evidence": [
+        "src/app/api/health/route.ts",
+        "src/server/http/"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+      }
+    },
+    {
+      "id": "AR-049",
+      "title": "Verrouillage optimiste (champ version) et performance des vues de portefeuille",
+      "description": "Champ `version` sur les objets modifiés par plusieurs profils (CAPEX, budget, dossiers, étapes de circuit) vérifié par chaque Server Function pour refuser une écriture sur une version périmée ; lecture des portefeuilles et des alertes en une requête par vue au lieu d’une par CAPEX (`portfolioDashboard`, `alertsForViewer` : N+1), avec un test de charge sur un jeu de 200 CAPEX. Analyse comparative du 25 oct. 2026 : prérequis d’échelle avant un déploiement à toutes les filiales ; priorité suggérée : à décider (avant le pilote élargi).",
+      "category": "plateforme_production",
+      "kind": "socle",
+      "priority": "a_decider",
+      "status": "non_commence",
+      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "effort": "M",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026"
+      ],
+      "evidence": [
+        "src/server/dal/governance.ts",
+        "src/features/capex/actions.ts",
+        "src/server/db/schema/"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+      }
+    },
+    {
+      "id": "AR-050",
+      "title": "Dépréciation simulée, durée de vie par classe d’actif, transfert en immobilisation",
+      "description": "Classes d’actifs avec durée de vie et méthode d’amortissement, simulation de la dépréciation dès le BP (charge annuelle, impact résultat), transfert des lots en immobilisations à la clôture comptable avec date de mise en service et export vers la comptabilité (Sage FI-AA). Absent d’Arche. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Jedox, SAP FI-AA) ; priorité suggérée : plus tard.",
+      "category": "demarrage_transfert",
+      "kind": "fonction",
+      "priority": "plus_tard",
+      "status": "non_commence",
+      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "effort": "M",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026"
+      ],
+      "evidence": [
+        "src/domain/closure.ts",
+        "src/domain/bp.ts"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+      }
+    },
+    {
+      "id": "AR-051",
+      "title": "Backlog d’idées d’investissement en amont de la demande formelle",
+      "description": "Idées d’investissement saisies par n’importe quel utilisateur de la filiale (titre, enjeu, ordre de grandeur), qualifiées par le sponsor ou le zone coordinator, retenues, écartées ou transformées en brouillon de CAPEX par l’assistant « Ouvrir un CAPEX » ; file d’idées visible au portefeuille filiale. Absent d’Arche, dont le cycle commence au brouillon. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (CapEx360) ; priorité suggérée : plus tard.",
+      "category": "capex_cycle",
+      "kind": "fonction",
+      "priority": "plus_tard",
+      "status": "non_commence",
+      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "effort": "M",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026"
+      ],
+      "evidence": [
+        "src/domain/guided.ts",
+        "src/domain/capex.ts"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+      }
+    },
+    {
+      "id": "AR-052",
+      "title": "Concepteur no-code de formulaires et de circuits par l’administrateur",
+      "description": "Édition par l’administrateur, sans code, des sections et champs des dossiers vivants et des étapes des circuits (acteurs, délais, parallélisme, conditions), avec versions et prévisualisation. Le modèle DIG-PRODI d’Arche est paramétrable en valeurs (phases, critères, délais) mais sa structure est codée (`src/domain/dossiers.ts`, `src/domain/circuits.ts`). Analyse comparative du 25 oct. 2026 : différenciant du marché (Unifier uDesigner) ; priorité suggérée : plus tard.",
+      "category": "dossiers_circuits",
+      "kind": "fonction",
+      "priority": "plus_tard",
+      "status": "non_commence",
+      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "effort": "L",
+      "sources": [
+        "Analyse comparative avec les solutions du commerce, 25 oct. 2026"
+      ],
+      "evidence": [
+        "src/domain/dossiers.ts",
+        "src/domain/circuits.ts",
+        "src/domain/lifecycle.ts"
+      ],
+      "progress": {
+        "state": "a_faire",
+        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
       }
     }
   ]
