@@ -7,7 +7,7 @@ export type ScreenId =
   | 'home' | 'approvals' | 'capex-list' | 'map' | 'portfolio' | 'copil' | 'rex' | 'kpi' | 'subsidiary-portfolio' | 'capex-open'
   | 'capex-overview' | 'capex-actions' | 'capex-gates' | 'capex-dossiers' | 'capex-budget' | 'capex-execution' | 'capex-changes' | 'capex-schedule' | 'capex-machines'
   | 'capex-pack' | 'capex-permits' | 'capex-safety' | 'capex-risks' | 'capex-governance' | 'capex-rampup' | 'capex-journal'
-  | 'admin-org' | 'admin-users' | 'admin-model' | 'admin-delegation' | 'admin-connectors';
+  | 'admin-org' | 'admin-users' | 'admin-model' | 'admin-delegation' | 'admin-connectors' | 'admin-api';
 
 /** Sidebar sections (owner, 24 Oct 2026): group portfolio, subsidiary portfolio (subsidiary selector), steering of the
  * selected CAPEX (CAPEX switcher), administration. */
@@ -24,7 +24,7 @@ export interface ScreenDef {
   /** Profiles that see it; the others get "outside my workspace" (read-only) or nothing (§2 of spec 08). */
   roles: readonly RoleKey[] | 'all';
   /** Delivery that builds it (docs/PLAN.md). */
-  delivery: 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6' | 'P';
+  delivery: 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6' | 'P' | 'L7';
 }
 
 // The administrator reads every business screen (owner, 24 Oct 2026, revising N-4); its writes stay refused by canDo.
@@ -63,6 +63,7 @@ export const SCREENS: readonly ScreenDef[] = [
   { id: 'admin-model', path: '/admin/model', title: 'DIG-PRODI model', section: 'admin', group: 'Method', roles: ['admin', 'group_hse'], delivery: 'L2' },
   { id: 'admin-delegation', path: '/admin/delegation', title: 'Delegation matrix', section: 'admin', group: 'Method', roles: ['admin'], delivery: 'L3' },
   { id: 'admin-connectors', path: '/admin/connectors', title: 'Connectors', section: 'admin', group: 'Integrations', roles: ['admin'], delivery: 'L4' },
+  { id: 'admin-api', path: '/admin/api', title: 'API and webhooks', section: 'admin', group: 'Integrations', roles: ['admin'], delivery: 'L7' },
 ];
 
 export const SCREEN_BY_ID = Object.fromEntries(SCREENS.map((s) => [s.id, s])) as Record<ScreenId, ScreenDef>;

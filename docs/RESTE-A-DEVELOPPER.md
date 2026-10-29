@@ -6,35 +6,35 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-29 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 28 faits, 19 en cours, 5 à faire, sur 52 points.
+**Avancement** : 30 faits, 17 en cours, 5 à faire, sur 52 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
 | Bloquant production | 3 | ≈ 7 |
-| Prochaine étape | 16 | ≈ 96 |
+| Prochaine étape | 14 | ≈ 88 |
 | À décider | 3 | ≈ 15 |
 | Plus tard | 2 | ≈ 8 |
-| **Total** | **24** | **≈ 126** |
+| **Total** | **22** | **≈ 118** |
 
 L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il ne compte ni l'attente des décisions et des données, ni les développements à faire côté Keystone, Codex, Vigie, Cursus ou Matrix, ni la recette.
 
 | Statut (points restants) | Points |
 |---|---:|
-| Non commencé | 15 |
+| Non commencé | 13 |
 | Partiel | 0 |
 | Attend le responsable produit | 3 |
 | Attend un système externe | 6 |
 
 | Domaine | Bloquant production | Prochaine étape | À décider | Plus tard | Restants | Faits |
 |---|---:|---:|---:|---:|---:|---:|
-| Plateforme et mise en production | 2 | 1 | 0 | 1 | 4 | 6 |
+| Plateforme et mise en production | 2 | 0 | 0 | 1 | 3 | 7 |
 | Connexion, profils et isolation par filiale | 0 | 0 | 0 | 0 | 0 | 4 |
 | CAPEX et cycle DIG-PRODI | 0 | 4 | 0 | 0 | 4 | 4 |
 | Dossiers vivants et circuits de décision | 0 | 2 | 0 | 0 | 2 | 4 |
 | Besoins machines et Keystone | 0 | 1 | 0 | 0 | 1 | 3 |
 | Documents (Codex) | 0 | 2 | 0 | 0 | 2 | 0 |
 | Jalons de sécurité (Vigie) | 0 | 0 | 1 | 0 | 1 | 1 |
-| Tableaux de bord et gouvernance | 1 | 4 | 0 | 0 | 5 | 3 |
+| Tableaux de bord et gouvernance | 1 | 3 | 0 | 0 | 4 | 4 |
 | Démarrage, montée en puissance et transfert | 0 | 2 | 0 | 0 | 2 | 2 |
 | Aide à la décision et signature avancée | 0 | 0 | 0 | 1 | 1 | 0 |
 | Cadrage, décisions et données attendues | 0 | 0 | 2 | 0 | 2 | 1 |
@@ -66,7 +66,7 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 
 ## 2. Liste détaillée par domaine
 
-### 2.1 Plateforme et mise en production (4 restants, 6 faits)
+### 2.1 Plateforme et mise en production (3 restants, 7 faits)
 
 **AR-014 · Arche sur le serveur PostgreSQL commun (Matrix)** — *Bloquant production · attend un système externe · effort S* · **en cours (Livraison 3)**  
 Rôle, schéma, droits, partage, journal unifié, sauvegarde, déclaration des tables. Analyse comparative du 25 oct. 2026 : le serveur PostgreSQL commun est un prérequis d’échelle que les solutions du commerce apportent en SaaS ; sans lui, Arche reste une démonstration. Priorité suggérée : bloquant, inchangée.  
@@ -75,10 +75,6 @@ Rôle, schéma, droits, partage, journal unifié, sauvegarde, déclaration des t
 **AR-015 · Hébergement en France et choix du serveur de production** — *Bloquant production · attend le responsable produit · effort S* · **en cours**  
 D-11 / C-13 ; même décision que Keystone (I-1a). Analyse comparative du 25 oct. 2026 : l’hébergement en France est le prérequis de tout déploiement réel (les solutions du commerce sont hébergées en SaaS, souvent hors UE) ; à trancher avant toute autre évolution. Priorité suggérée : bloquant, inchangée.  
 *Avancement : 24 oct. 2026 : déploiement automatique prêt (workflow Deploy → webhook Coolify, ou Auto Deploy de Coolify ; EXPLOITATION.md § 4.4). Reste le serveur (hébergement en France, C-13). · Attend : Responsable produit et DSI · Sources : docs/DECISIONS.md C-13*
-
-**AR-048 · API REST métier et webhooks** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 7)**  
-API REST authentifiée par clé signée (comme `POST /api/import` de Codex) exposant les CAPEX, les jalons, les budgets et les besoins en lecture, et la création ou mise à jour de quelques objets (réalisé mensuel, action) ; webhooks sur les événements (décision de jalon, ouverture, alerte) pour Keystone, Codex et les outils du groupe. Seule `/api/health` existe ; les autres applications lisent les vues `pub_`. Analyse comparative du 25 oct. 2026 : standard du marché (Unifier, Finario) ; priorité suggérée : à décider.  
-*Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/CONTRATS.md*
 
 **AR-038 · Socle partagé @epc2i/socle** — *Plus tard · attend un système externe · effort M*  
 Remplacer les copies du socle par le paquet (R-194 de Keystone).  
@@ -103,6 +99,10 @@ Image (port 3400), compose (PostgreSQL créé comme le serveur commun, migration
 **~~AR-010 · Tâches planifiées et worker~~** — *Prochaine étape · non commencé · effort S* · **fait (Livraison 1b)**  
 Relances, revues en retard, synchronisations, instantanés hebdomadaires (moteur de Keystone).  
 *Avancement : docs/DELIVERY-1b.md · Sources : docs/SOCLE.md*
+
+**~~AR-048 · API REST métier et webhooks~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7a)**  
+API REST authentifiée par clé signée (comme `POST /api/import` de Codex) exposant les CAPEX, les jalons, les budgets et les besoins en lecture, et la création ou mise à jour de quelques objets (réalisé mensuel, action) ; webhooks sur les événements (décision de jalon, ouverture, alerte) pour Keystone, Codex et les outils du groupe. Seule `/api/health` existe ; les autres applications lisent les vues `pub_`. Analyse comparative du 25 oct. 2026 : standard du marché (Unifier, Finario) ; priorité suggérée : à décider.  
+*Avancement : API /api/v1 (clé par application créée par l'administrateur, empreinte seule ; périmètre de filiales) : CAPEX, détail, réalisés ; écritures signées (HMAC, anti-rejeu) des réalisés et des actions ; webhooks capex.opened, gate.decided, alert.raised signés, envoyés par le worker avec reprises ; écran Administration › API et webhooks (docs/API.md). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/CONTRATS.md*
 
 **~~AR-049 · Verrouillage optimiste (champ version) et performance des vues de portefeuille~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7a)**  
 Champ `version` sur les objets modifiés par plusieurs profils (CAPEX, budget, dossiers, étapes de circuit) vérifié par chaque Server Function pour refuser une écriture sur une version périmée ; lecture des portefeuilles et des alertes en une requête par vue au lieu d’une par CAPEX (`portfolioDashboard`, `alertsForViewer` : N+1), avec un test de charge sur un jeu de 200 CAPEX. Analyse comparative du 25 oct. 2026 : prérequis d’échelle avant un déploiement à toutes les filiales ; priorité suggérée : à décider (avant le pilote élargi).  
@@ -224,7 +224,7 @@ VG-01 à VG-05 ; Vigie ne les modélise pas aujourd’hui. Analyse comparative d
 Livraison 5 (C-3, N-13).  
 *Avancement : Lot 5a : jalons HS déclarés par le SSE groupe (N-13) avec preuve, quitus PSSR par le circuit du G3, registre des autorisations, critères g1_hs2, g2_hs3, g2_permits, k3_hs4, g3_pssr, g3_hs6. · Sources : docs/spec/03 §4*
 
-### 2.8 Tableaux de bord et gouvernance (5 restants, 3 faits)
+### 2.8 Tableaux de bord et gouvernance (4 restants, 4 faits)
 
 **AR-034 · Pilote sur 1 à 2 CAPEX** — *Bloquant production · non commencé · effort M* · **en cours (Pilote)**  
 Jeu production, utilisateurs réels, guides par rôle, mesure de référence (C-10). Analyse comparative du 25 oct. 2026 : le pilote sur des données réelles des filiales est le prérequis de toute comparaison utile avec les solutions du commerce ; les écarts fonctionnels relevés (AR-039 à AR-052) seront priorisés sur ses retours. Priorité suggérée : bloquant, inchangée.  
@@ -233,10 +233,6 @@ Jeu production, utilisateurs réels, guides par rôle, mesure de référence (C-
 **AR-040 · Enveloppes budgétaires annuelles et pluriannuelles par filiale, zone et catégorie ; contrôle de disponibilité, reports et réallocations** — *Prochaine étape · non commencé · effort L* · **en cours (Livraison 7)**  
 Enveloppe CAPEX votée par exercice (et plan pluriannuel) par filiale, zone et catégorie (typologie Light / Stratégique, nature), consommation par les CAPEX ouverts, contrôle de disponibilité à l’ouverture et au G2 (alerte ou blocage hors enveloppe selon un seuil), reports d’un exercice à l’autre et réallocations tracées entre filiales. Arche ne connaît que le budget de chaque CAPEX (versions E50 / E30 / E10) ; aucune enveloppe ni blocage hors budget. Analyse comparative du 25 oct. 2026 : standard du marché (CapEx360, eCapEx, SAP IM) ; priorité suggérée : prochaine étape.  
 *Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/spec/06-gouvernance-pilotage.md*
-
-**AR-042 · Exports CSV / XLSX / PDF des registres, portefeuilles et dossiers ; connecteur Power BI** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 7)**  
-Export CSV et XLSX du registre des CAPEX, des portefeuilles, du suivi engagé / réalisé et des alertes (colonnes du contrat `pub_capex`) ; export PDF serveur des dossiers figés et du rapport Copil (aujourd’hui des vues imprimables HTML seulement) ; connecteur Power BI (lecture des vues `pub_` par un compte dédié, ou flux OData). Analyse comparative du 25 oct. 2026 : standard du marché ; priorité suggérée : prochaine étape.  
-*Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/CONTRATS.md*
 
 **AR-043 · Scénarios what-if de portefeuille sous contrainte d’enveloppe groupe (base, contraint, croissance)** — *Prochaine étape · non commencé · effort L* · **en cours (Livraison 7)**  
 Scénarios de portefeuille nommés (base, contraint, croissance) : sélection et décalage de CAPEX, enveloppe groupe par exercice, comparaison des scénarios (dépense, retour, risques) et retenue d’un scénario pour le COPIL GPI. Dépend des enveloppes (AR-040). Absent d’Arche. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Planisware, Finario, Board) ; priorité suggérée : à décider.  
@@ -257,6 +253,10 @@ Livraison 5.
 **~~AR-031 · Revues, rapport Copil, audits ; écran COPIL GPI ; alertes à règles~~** — *Prochaine étape · non commencé · effort M* · **fait (L5)**  
 Livraison 5 (N-19).  
 *Avancement : Revues projet (cadence par typologie, retard, signalement au Dir.IG), audits transversaux par phase (N-19), rapport Copil imprimable, écran COPIL GPI, alertes à règles, instantanés hebdomadaires. · Sources : docs/spec/06 §2, §7*
+
+**~~AR-042 · Exports CSV / XLSX / PDF des registres, portefeuilles et dossiers ; connecteur Power BI~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7a)**  
+Export CSV et XLSX du registre des CAPEX, des portefeuilles, du suivi engagé / réalisé et des alertes (colonnes du contrat `pub_capex`) ; export PDF serveur des dossiers figés et du rapport Copil (aujourd’hui des vues imprimables HTML seulement) ; connecteur Power BI (lecture des vues `pub_` par un compte dédié, ou flux OData). Analyse comparative du 25 oct. 2026 : standard du marché ; priorité suggérée : prochaine étape.  
+*Avancement : Exports Excel et CSV du registre, des portefeuilles groupe et filiale, des alertes et de l'engagé / réalisé (en-tête de chaque page, mêmes droits) ; PDF du rapport Copil et des versions de dossier écrit par le serveur ; Power BI par l'API en lecture (docs/API.md §7), rôle de lecture des vues pub_ demandé à Matrix (M-14). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/CONTRATS.md*
 
 ### 2.9 Démarrage, montée en puissance et transfert (2 restants, 2 faits)
 
@@ -298,6 +298,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-29 — Lot 7a : exports Excel / CSV / PDF (AR-042) ; API métier et webhooks (AR-048).
 - 2026-10-29 — AR-039 à AR-052 retenus par le responsable produit (livraison 7). Lot 7a : verrouillage optimiste et lecture des portefeuilles en un nombre fixe de requêtes (AR-049).
 - 2026-10-26 — Analyse comparative avec les solutions du commerce (25 oct. 2026) : 14 items ajoutés (AR-039 à AR-052), 10 items annotés.
 - 2026-10-25 — Démo alignée sur Keystone : catalogue machines, réponses RB-001 à RB-005 et projet RCF-019 de la démo Keystone ; besoins de démo réécrits ; liens profonds vers Keystone corrigés ; demande K-14 (à valider).

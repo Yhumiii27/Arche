@@ -9,6 +9,7 @@ import { KpiGrid, KpiTile } from '@/components/app/Kpi';
 import { SectionCard } from '@/components/app/SectionCard';
 import { ZoneSeg } from '@/components/app/ZoneSeg';
 import { PageHeader } from '@/components/app/shell/page-header';
+import { exportLinks } from '@/features/export/links';
 import { Sparkline } from '@/components/charts/primitives/Sparkline';
 import { Table, Td, Th } from '@/components/ds/Table';
 import { Tag } from '@/components/ds/Tag';
@@ -49,7 +50,9 @@ export async function PortfolioView({ level }: { level: 'group' | 'subsidiary' }
   const link = (code: string) => (href(code) ? <Link href={href(code)!}>{code}</Link> : code);
   return (
     <>
-      {level === 'group' ? <PageHeader screen="portfolio" crumbs={['Group portfolio']} /> : <PageHeader screen="subsidiary-portfolio" crumbs={['Subsidiary portfolio']} />}
+      {level === 'group'
+        ? <PageHeader screen="portfolio" crumbs={['Group portfolio']} actions={exportLinks(t, 'portfolio-group')} />
+        : <PageHeader screen="subsidiary-portfolio" crumbs={['Subsidiary portfolio']} actions={exportLinks(t, 'portfolio-subsidiary')} />}
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <Tag tone="outline" size="sm">{scope ? t(scope) : `${choice?.current ?? '—'} · ${dataText(subName, lang) ?? ''}`}</Tag>
         {level === 'group' && <ZoneSeg zone={p.zone} options={p.zones.map((z) => ({ code: z.code, label: z.code ? dataText(z.name!, lang) : t('All zones'), count: z.count }))} />}

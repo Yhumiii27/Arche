@@ -64,6 +64,10 @@ async function main(): Promise<void> {
   const epc2i = await get('/capex/CPX-SAI-2026-01/machines', 'epc2i_pmo');
   check(epc2i.status === 200 && epc2i.body.includes('RCF-019') && epc2i.body.includes('Fin des études'), 'machine needs: the EPC2i projects and their milestones');
   check((await get('/admin/connectors', 'admin')).status === 200, 'connectors page for the administrator');
+  check((await get('/admin/api', 'admin')).status === 200 && (await get('/admin/api', 'sponsor')).status === 404, 'API and webhooks page for the administrator only (AR-048)');
+  check((await fetch(BASE + '/api/v1/capex')).status === 401, 'the business API needs a key (AR-048)');
+  const xlsx = await fetch(BASE + '/export/register?format=xlsx', { headers: { cookie: 'arche-role=sponsor' } });
+  check(xlsx.status === 200 && (xlsx.headers.get('content-type') ?? '').includes('spreadsheetml'), 'register exported for Excel (AR-042)');
   const register = await get('/capex', 'sponsor');
   check(register.status === 200 && register.body.includes('Ouvrir un CAPEX') && register.body.includes('Atlas Process Maroc') && !register.body.includes('href="/capex/CPX-SAI-'), 'register of the subsidiary chosen, with "Open a CAPEX", for a sponsor');
   const sub = await fetch(BASE + '/capex', { headers: { cookie: 'arche-role=dir_ig; arche-subsidiary=SAI' } }).then((x) => x.text());

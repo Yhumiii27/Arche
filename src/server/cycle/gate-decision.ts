@@ -10,6 +10,7 @@ import { recordActivity, writeAudit } from '@/server/db/helpers';
 import { budgetVersions, capex, decisions, machineNeeds, gateConditions, gateCriteriaResults, gates, phaseTransitions } from '@/server/db/schema';
 import type { Tx } from '@/server/db/types';
 import { auditOf } from '@/server/capex/write';
+import { enqueueEvent } from '@/server/api/events';
 import { businessNow } from '@/server/clock';
 import { answersOf } from '@/server/integrations/keystone';
 
@@ -59,4 +60,8 @@ export async function applyGateDecision(
   const label = next.status === 'closed' ? 'closed' : next.status === 'abandoned' ? 'abandoned' : `phase ${PHASE_NO[next.phase]}`;
   await writeAudit(tx, auditOf(actor, c, `${g.code} session ${g.session}: ${decision} → ${label}`, { entityType: 'gate', entityId: g.id, reason }));
   await recordActivity(tx, { actorName: actor.name, actorUserId: actor.userId, kind: 'gate.decided', text: `${c.code}: ${g.code} ${decision}`, capexId: c.id });
+  await enqueueEvent(tx, 'gate.decided', c.id, {
+    gate: g.code, session: g.session, decision, reason, conditions: decision === 'go_with_conditions' ? conditions : [], decidedOn: today, decidedBy: actor.name,
+    status: next.status, phase: next.phase,
+  }, decidedAt);
 }

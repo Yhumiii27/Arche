@@ -2,7 +2,7 @@
 // Client islands of the Server Functions: a form, a button and a "reason" form, each showing the translated result. The
 // Server Functions do every check again; these only collect the input. A form placed in a panel (`Folded`: a button that
 // opens a side panel) closes it once its Server Function succeeds.
-import { Flag, NotePencil, Plus, PlusCircle, Printer } from '@phosphor-icons/react/dist/ssr';
+import { DownloadSimple, Flag, NotePencil, Plus, PlusCircle, Printer } from '@phosphor-icons/react/dist/ssr';
 import { createContext, useActionState, useContext, useEffect, useState, useTransition, type ReactNode } from 'react';
 import type { Icon } from '@phosphor-icons/react';
 import { Button, ButtonLink, type ButtonSize, type ButtonVariant } from '@/components/ds/Button';
@@ -111,15 +111,16 @@ export function Folded({ summary, children, open, variant = 'secondary', size = 
   );
 }
 
-const LINK_ICONS: Record<string, Icon> = { plus: Plus, 'plus-circle': PlusCircle, print: Printer, flag: Flag };
+const LINK_ICONS: Record<string, Icon> = { plus: Plus, 'plus-circle': PlusCircle, print: Printer, flag: Flag, download: DownloadSimple };
 
 /**
  * A link to another page among a page's actions (a button, or a row of the header's "Actions" list). Label translated; the
- * icon is named (a component cannot cross from a Server Component).
+ * icon is named (a component cannot cross from a Server Component). `download`: a file (an export, AR-042), never prefetched.
  */
-export function ActionLink({ href, label, icon, variant = 'secondary', newTab }: { href: string; label: string; icon?: keyof typeof LINK_ICONS; variant?: ButtonVariant; newTab?: boolean }) {
+export function ActionLink({ href, label, icon, variant = 'secondary', newTab, download }: { href: string; label: string; icon?: keyof typeof LINK_ICONS; variant?: ButtonVariant; newTab?: boolean; download?: boolean }) {
   const menu = useMenuMode();
   const I = icon ? LINK_ICONS[icon] : undefined;
-  if (menu) return newTab ? <a href={href} target="_blank" rel="noreferrer" className={pop.item} onClick={menu.close}>{I && <I aria-hidden />}{label}</a> : <MenuItem href={href} icon={I}>{label}</MenuItem>;
-  return <ButtonLink href={href} variant={variant} icon={I} target={newTab ? '_blank' : undefined}>{label}</ButtonLink>;
+  if (menu && (newTab || download)) return <a href={href} target={newTab ? '_blank' : undefined} rel={newTab ? 'noreferrer' : undefined} download={download || undefined} className={pop.item} onClick={menu.close}>{I && <I aria-hidden />}{label}</a>;
+  if (menu) return <MenuItem href={href} icon={I}>{label}</MenuItem>;
+  return <ButtonLink href={href} variant={variant} icon={I} target={newTab ? '_blank' : undefined} prefetch={download ? false : undefined} download={download || undefined}>{label}</ButtonLink>;
 }

@@ -51,6 +51,7 @@ export default async function DossierPage({ params, searchParams }: PageProps<'/
           <>
             {edit && v?.state === 'draft' && <FreezeButton code={c.code} kind={kind} />}
             {v && <ActionLink href={`/print/capex/${encodeURIComponent(c.code)}/dossiers/${kind}?v=${v.number}`} newTab icon="print" label={t('Print view')} />}
+            {v && <ActionLink href={`/print/capex/${encodeURIComponent(c.code)}/dossiers/${kind}/pdf?v=${v.number}`} download icon="download" label={t('Download as PDF')} />}
           </>
         }
       />

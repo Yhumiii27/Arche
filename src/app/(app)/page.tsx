@@ -20,16 +20,17 @@ import { myActions } from '@/server/dal/actions';
 import { isLate } from '@/domain/actions';
 import { refOf } from '@/domain/capex';
 import { businessToday } from '@/server/clock';
-import { isMine, visibleCapex } from '@/server/dal/capex';
-import { alertsForViewer } from '@/server/dal/governance';
+import { visibleCapex } from '@/server/dal/capex';
+import { alertsForViewer, followedBy } from '@/server/dal/governance';
 import { getI18n, getViewer } from '@/server/session';
 import { openGuidedLink } from '@/features/capex/open-link';
+import { exportLinks } from '@/features/export/links';
 
 export default async function HomePage() {
   const [{ t, lang }, viewer] = await Promise.all([getI18n(), getViewer()]);
   const capex = await visibleCapex(viewer);
   const broad = viewer.role === 'ceo' || viewer.role === 'zone_director' || CROSS_VIEW_ROLES.includes(viewer.role);
-  const followed = canSee(viewer.role, 'capex-overview') ? await alertsForViewer(viewer, (c) => broad || isMine(viewer, c)) : { alerts: [], rows: [] };
+  const followed = canSee(viewer.role, 'capex-overview') ? await alertsForViewer(viewer, followedBy(viewer)) : { alerts: [], rows: [] };
   const approvals = canSee(viewer.role, 'approvals') ? await approvalsOf(viewer) : [];
   const scopes = viewer.assignments.filter((a) => a.role === viewer.role).map((a) => a.scopeRef ?? t('Whole group'));
   const gates = followed.rows.filter((r) => r.dash.nextGate).sort((a, b) => Number(!!b.dash.running?.late) - Number(!!a.dash.running?.late));
@@ -37,7 +38,9 @@ export default async function HomePage() {
   const [actions, today] = await Promise.all([canSee(viewer.role, 'capex-actions') ? myActions(viewer) : Promise.resolve([]), businessToday()]);
   return (
     <>
-      <PageHeader screen="home" title={`${t('Hello')} ${viewer.name.split(' ')[0]}`} primary={await openGuidedLink(viewer)} />
+      <PageHeader screen="home" title={`${t('Hello')} ${viewer.name.split(' ')[0]}`} primary={await openGuidedLink(viewer)}
+        actions={followed.alerts.length > 0 ? exportLinks(t, 'alerts') : undefined}
+      />
       <KpiGrid>
         <KpiTile label={t('Active profile')} value={t(ROLE_LABEL[viewer.role])} sub={scopes.join(' · ')} size="lg" />
         <KpiTile label={t('Visible CAPEX')} value={capex.length} sub={t(`${capex.length} visible CAPEX`)} size="lg" />

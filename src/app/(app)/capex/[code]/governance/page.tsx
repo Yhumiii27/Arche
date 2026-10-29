@@ -53,6 +53,7 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
             {c.typologyProposed && can('confirm_typology') && <ConfirmTypologyButton code={c.code} />}
             {can('force_typology') && <ForceTypologyForm code={c.code} />}
             <ActionLink href={`/print/capex/${encodeURIComponent(c.code)}/report`} newTab icon="print" label={t('Copil report')} />
+            <ActionLink href={`/print/capex/${encodeURIComponent(c.code)}/report/pdf`} download icon="download" label={t('Copil report (PDF)')} />
           </>
         }
       />
