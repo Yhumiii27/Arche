@@ -1,7 +1,7 @@
 // Phosphor icons of the screens (kept out of ./screens.ts so that server code and scripts load the registry without React).
 import type { Icon } from '@phosphor-icons/react';
 import {
-  Books, ChartBar, GitBranch, PencilRuler, Code, Vault, ChartLineUp, CheckSquareOffset, ClipboardText, Factory, FileText, Gauge, Gavel, GearSix, House, Key, ListChecks, MapTrifold,
+  Books, ChartBar, CoinVertical, DownloadSimple, GitBranch, Lightbulb, PencilRuler, Code, Vault, ChartLineUp, CheckSquareOffset, ClipboardText, Factory, FileText, Gauge, Gavel, GearSix, House, Key, ListChecks, MapTrifold,
   Notebook, Path, PlugsConnected, Scales, ShieldCheck, Stack, Strategy, PlusCircle, Target, TrendUp, UsersThree, Warning, Buildings, Wrench, Wallet,
 } from '@phosphor-icons/react/dist/ssr';
 import type { ScreenId } from './screens';
@@ -16,6 +16,8 @@ export const SCREEN_ICONS: Record<ScreenId, Icon> = {
   kpi: Target,
   'subsidiary-portfolio': Buildings,
   'capex-open': PlusCircle,
+  ideas: Lightbulb,
+  sage: DownloadSimple,
   rex: Books,
   'capex-overview': Factory,
   'capex-actions': ListChecks,
@@ -32,6 +34,7 @@ export const SCREEN_ICONS: Record<ScreenId, Icon> = {
   'capex-risks': Warning,
   'capex-governance': UsersThree,
   'capex-rampup': Gauge,
+  'capex-benefits': CoinVertical,
   'capex-journal': Notebook,
   'admin-org': Buildings,
   'admin-users': UsersThree,

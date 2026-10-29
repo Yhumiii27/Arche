@@ -60,7 +60,7 @@ export const lotActuals = arche.table('lot_actuals', {
   committedKeur: keur('committed_keur'),
   spentKeur: keur('spent_keur'),
   physicalPct: keur('physical_pct'),
-  source: text('source').$type<'manual' | 'import' | 'keystone'>().notNull().default('manual'),
+  source: text('source').$type<'manual' | 'import' | 'keystone' | 'sage'>().notNull().default('manual'),
   enteredByName: text('entered_by_name').notNull(),
   enteredAt: timestamp('entered_at', { withTimezone: true }).notNull().defaultNow(),
   /** As typed in the subsidiary's currency (AR-039): the amounts in thousands, the currency and the month's rate; null when typed in k€. */

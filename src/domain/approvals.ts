@@ -2,9 +2,9 @@
 // decisions, signatures, countersignatures, discharges, attestations), budget versions to validate, typologies to confirm,
 // changes to decide. Pure: the item shape the server builds and the inbox figures. EN strings.
 
-export type ApprovalKind = 'step' | 'budget' | 'typology' | 'change';
+export type ApprovalKind = 'step' | 'budget' | 'typology' | 'change' | 'post_audit';
 export const APPROVAL_KIND_LABEL: Record<ApprovalKind, string> = {
-  step: 'Gate circuit', budget: 'Budget version', typology: 'Typology to confirm', change: 'Change to decide',
+  step: 'Gate circuit', budget: 'Budget version', typology: 'Typology to confirm', change: 'Change to decide', post_audit: 'Post-audit',
 };
 
 export interface ApprovalItem {

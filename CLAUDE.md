@@ -81,7 +81,11 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   of" through `standInsOf` / `standInFor` and reads the CAPEX of the step, `src/server/dal/absences.ts`) and the no-code designer
   (AR-052: `designs`, `src/domain/designer.ts`, page `/admin/designer`; `circuitFor` and `currentSections` / `sectionsFor` in
   `src/server/dal/designs.ts`, `dossier_versions.template_version`; never read `SECTIONS` or `circuitTemplate` directly for a
-  CAPEX). Lot 7e follows.
+  CAPEX). Lot 7e: ideas backlog (AR-051: `ideas`, `src/domain/ideas.ts`, page `/ideas`, `/open?idea=` converts a retained idea),
+  benefits and post-audits (AR-046: `benefit_actuals`, `post_audits`, `src/domain/benefits.ts`, page `/capex/[code]/benefits`,
+  rights `benefits` / `post_audit` also on a closed CAPEX) and the Sage connector (AR-047: `capex_lots.sage_code`, `sage_imports`,
+  `sage_lines`, `sage_rejects`, `src/domain/sage.ts`, `src/server/integrations/sage/`, page `/sage`, job `sage-import` on
+  `ARCHE_SAGE_DIR`). Delivery 7's 14 points are delivered.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

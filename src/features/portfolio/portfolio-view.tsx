@@ -29,6 +29,8 @@ import { phasedCapex } from '@/server/dal/finance';
 import { prioritiesOf, weightsOf } from '@/server/dal/priority';
 import { ranked } from '@/domain/scoring';
 import { WeightsForm } from './forms';
+import { ideasOf } from '@/server/dal/ideas';
+import { ideaRef, IDEA_STATUS_LABEL, type IdeaStatus } from '@/domain/ideas';
 import { getI18n, getSubsidiaryCookie, getViewer, getZone } from '@/server/session';
 
 const pct = (n: number | null | undefined, lang: 'fr' | 'en') => (n == null ? '—' : `${fmtNum(n, lang)} %`);
@@ -54,6 +56,8 @@ export async function PortfolioView({ level }: { level: 'group' | 'subsidiary' }
   const prio = await prioritiesOf(await getDb(), prioRows.map((r) => ({ id: r.id, bacKeur: r.dash.indicators.bacKeur })));
   const rankedRows = ranked(prioRows.map((r) => ({ ...r, ...prio.get(r.id)! })));
   const weights = level === 'group' && viewer.role === 'dir_ig' ? await weightsOf(await getDb()) : null;
+  // The subsidiary's queue of ideas (AR-051): those not set aside nor converted yet.
+  const ideaQueue = level === 'subsidiary' && choice?.current ? (await ideasOf(await getDb(), [choice.current])).filter((i) => i.status === 'new' || i.status === 'qualified' || i.status === 'retained') : [];
   const afterG2 = open.filter((r) => r.phase === 'execution' || r.phase === 'demarrage');
   const alerts = p.rows.flatMap((r) => r.dash.alerts);
   const lateGates = open.filter((r) => r.dash.running?.late);
@@ -251,6 +255,27 @@ export async function PortfolioView({ level }: { level: 'group' | 'subsidiary' }
           <EmptyState>{t('No CAPEX with a phased budget yet.')}</EmptyState>
         )}
       </SectionCard>
+
+      {level === 'subsidiary' && canSee(viewer.role, 'ideas') && (
+        <SectionCard title={t('Ideas queue')} hint={t('Investment ideas not decided or retained, before the formal request')} actions={<Link href="/ideas">{t('Investment ideas')}</Link>} scroll>
+          {ideaQueue.length ? (
+            <Table>
+              <tbody>
+                {ideaQueue.map((i) => (
+                  <tr key={i.id}>
+                    <Td nowrap>{ideaRef(i.subsidiaryCode, i.number)}</Td>
+                    <Td>{dataText(i.title, lang)}</Td>
+                    <Td align="right" numeric>{i.sizeKeur == null ? '—' : k(i.sizeKeur)}</Td>
+                    <Td><Tag tone={i.status === 'retained' ? 'accent' : 'outline'} size="xs">{t(IDEA_STATUS_LABEL[i.status as IdeaStatus])}</Tag></Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          ) : (
+            <EmptyState>{t('No idea waiting.')}</EmptyState>
+          )}
+        </SectionCard>
+      )}
 
       <SectionCard title={t('Alerts')} hint={t('Rule-based alerts, always on')} scroll>
         {alerts.length ? (
