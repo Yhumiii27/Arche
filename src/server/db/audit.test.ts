@@ -41,7 +41,7 @@ describe('pub_capex (contract v1, docs/CONTRATS.md §3)', () => {
     const cols = await t.handle.pool.query(`select column_name from information_schema.columns where table_schema = 'arche' and table_name = 'pub_capex' order by ordinal_position`);
     expect(cols.rows.map((r) => r.column_name)).toEqual([
       'code', 'filiale_code', 'filiale', 'zone', 'site', 'pays_iso2', 'intitule', 'type_investissement', 'statut', 'phase_code', 'typologie',
-      'sponsor_nom', 'sponsor_email', 'chef_projet_nom', 'chef_projet_email', 'g1_le', 'g2_le', 'g3_le', 'debut_mes_le', 'maj_le',
+      'sponsor_nom', 'sponsor_email', 'chef_projet_nom', 'chef_projet_email', 'g1_le', 'g2_le', 'g3_le', 'debut_mes_le', 'maj_le', 'devise',
     ]);
   });
 });

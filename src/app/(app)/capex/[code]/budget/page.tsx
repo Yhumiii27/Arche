@@ -15,13 +15,20 @@ import { fmtDate, fmtKeur, fmtNum } from '@/lib/format';
 import { lotsOf, versionsOf } from '@/server/dal/cycle';
 import { businessPlanOf } from '@/server/dal/dossiers';
 import { BP_HORIZON } from '@/domain/bp';
+import { depreciationOf } from '@/server/dal/finance';
+import { LotClassForm } from '@/features/finance/forms';
+import { entryCurrencies, unitOf } from '@/domain/currency';
+import { subsidiaryCurrency } from '@/server/dal/currency';
 import { KeyValueList } from '@/components/app/KeyValueList';
 
 const VERSION_STATUS: Record<string, string> = { draft: 'Draft', submitted: 'Submitted', validated: 'Validated', superseded: 'Superseded' };
 
 export default async function BudgetPage({ params }: PageProps<'/capex/[code]/budget'>) {
   const { t, lang, viewer, db, c, can } = await loadCapexPage(params);
-  const [lots, versions, bp] = await Promise.all([lotsOf(db, c.id), versionsOf(db, c.id), businessPlanOf(db, c.id)]);
+  const [lots, versions, bp, currency] = await Promise.all([lotsOf(db, c.id), versionsOf(db, c.id), businessPlanOf(db, c.id), subsidiaryCurrency(db, c.subsidiaryCode)]);
+  const currencies = entryCurrencies(currency);
+  const dep = await depreciationOf(db, c, BP_HORIZON);
+  const classOptions = dep.classes.map((x) => ({ value: x.code, label: `${x.code} · ${dataText(x.label, lang)} (${x.lifeYears} ${t('years')})` }));
   const cfo = viewer.role === 'group_cfo' && holdsOn(viewer.assignments, 'group_cfo', c) && (c.status === 'active' || c.status === 'draft');
   const edit = can('edit');
   const budget = can('budget');
@@ -39,8 +46,8 @@ export default async function BudgetPage({ params }: PageProps<'/capex/[code]/bu
         crumbData={c.code}
         actions={
           <>
-            {budget && lots.length > 0 && !inProgress && <VersionForm code={c.code} lots={lots} />}
-            {budget && lots.length > 0 && versions.filter((v) => v.status === 'draft').map((v) => <VersionForm key={v.id} code={c.code} lots={lots} version={v} />)}
+            {budget && lots.length > 0 && !inProgress && <VersionForm code={c.code} lots={lots} currencies={currencies} />}
+            {budget && lots.length > 0 && versions.filter((v) => v.status === 'draft').map((v) => <VersionForm key={v.id} code={c.code} lots={lots} version={v} currencies={currencies} />)}
             {edit && <LotForm code={c.code} />}
             {budget && <BusinessPlanForm code={c.code} horizon={BP_HORIZON} rate={bp?.discountRatePct ?? null} flows={bp?.flows ?? []} />}
             {bp && !bp.validatedAt && cfo && <ValidateBusinessPlanButton code={c.code} />}
@@ -55,6 +62,7 @@ export default async function BudgetPage({ params }: PageProps<'/capex/[code]/bu
                 <Th>{t('No.')}</Th>
                 <Th>{t('Lot')}</Th>
                 <Th>{t('Kind')}</Th>
+                <Th>{t('Asset class')}</Th>
                 {shown.map((v) => (
                   <Th key={v.id} align="right">{`V${v.number} · ${v.estimateClass}`}</Th>
                 ))}
@@ -69,8 +77,15 @@ export default async function BudgetPage({ params }: PageProps<'/capex/[code]/bu
                     {dataText(l.title, lang)} {l.epc2i && <Tag size="xs">EPC2i</Tag>}
                   </Td>
                   <Td tone="secondary">{t(labelOf(LOT_KIND_LABEL, l.kind as LotKind))}</Td>
+                  <Td tone="secondary" nowrap>
+                    {dep.rows.find((r) => r.lot.id === l.id)?.cls?.code ?? '—'}
+                    {budget && classOptions.length > 0 && <> <LotClassForm code={c.code} lotId={l.id} label={dataText(l.title, lang)} value={l.assetClassCode} classes={classOptions} /></>}
+                  </Td>
                   {shown.map((v) => (
-                    <Td key={v.id} align="right" numeric>{fmtKeur(v.lines[l.id] ?? 0, lang)}</Td>
+                    <Td key={v.id} align="right" numeric>
+                      {fmtKeur(v.lines[l.id] ?? 0, lang)}
+                      {v.entry && v.entry.lines[l.id] != null && <div className="text-muted">{`${fmtNum(v.entry.lines[l.id], lang)} ${unitOf(v.entry.currency)}`}</div>}
+                    </Td>
                   ))}
                   {edit && <Td align="right">{!used.has(l.id) && <RemoveLotButton code={c.code} lotId={l.id} />}</Td>}
                 </tr>
@@ -78,6 +93,7 @@ export default async function BudgetPage({ params }: PageProps<'/capex/[code]/bu
               <tr>
                 <Td />
                 <Td><strong>{t('Total (central)')}</strong></Td>
+                <Td />
                 <Td />
                 {shown.map((v) => (
                   <Td key={v.id} align="right" numeric><strong>{fmtKeur(v.centralKeur, lang)}</strong></Td>
@@ -88,6 +104,39 @@ export default async function BudgetPage({ params }: PageProps<'/capex/[code]/bu
           </Table>
         ) : (
           <EmptyState>{t('No lot yet.')}</EmptyState>
+        )}
+      </SectionCard>
+
+      <SectionCard title={t('Simulated depreciation')} hint={dep.month ? `${t('From')} ${dep.month} · ${t('reference budget by asset class, over the business plan horizon')}` : t('Plan the lots or start the commissioning to simulate the depreciation')} scroll>
+        {dep.simulation && dep.simulation.classes.length ? (
+          <>
+            <Table>
+              <thead>
+                <tr>
+                  <Th>{t('Asset class')}</Th>
+                  <Th align="right">{t('Amount')}</Th>
+                  {dep.simulation.years.map((y) => <Th key={y.year} align="right">{y.year}</Th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {dep.simulation.classes.map((x) => (
+                  <tr key={x.cls.code}>
+                    <Td nowrap>{`${x.cls.code} · ${x.cls.lifeYears} ${t('years')}`}</Td>
+                    <Td align="right" numeric>{fmtKeur(x.amountKeur, lang)}</Td>
+                    {x.charges.map((ch, i) => <Td key={i} align="right" numeric>{fmtNum(ch, lang)}</Td>)}
+                  </tr>
+                ))}
+                <tr>
+                  <Td><strong>{t('Charge on the result')}</strong></Td>
+                  <Td />
+                  {dep.simulation.years.map((y) => <Td key={y.year} align="right" numeric><strong>{fmtNum(-y.charge, lang)}</strong></Td>)}
+                </tr>
+              </tbody>
+            </Table>
+            {dep.unclassed.length > 0 && <span className="text-muted">{`${t('Without an asset class (not depreciated)')}: ${dep.unclassed.map((r) => `${r.lot.number} · ${dataText(r.lot.title, lang)}`).join(', ')}`}</span>}
+          </>
+        ) : (
+          <EmptyState>{t('No depreciation to simulate yet: a validated budget and the asset classes are needed.')}</EmptyState>
         )}
       </SectionCard>
 

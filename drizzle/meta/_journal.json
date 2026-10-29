@@ -162,6 +162,34 @@
       "when": 1793287551044,
       "tag": "0022_api",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793288385425,
+      "tag": "0023_currencies",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793288399231,
+      "tag": "0024_share_capex_currency",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793288990793,
+      "tag": "0025_finance",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793289589434,
+      "tag": "0026_fixed_assets",
+      "breakpoints": true
     }
   ]
 }

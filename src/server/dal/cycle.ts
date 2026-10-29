@@ -40,6 +40,8 @@ export interface VersionView {
   createdAt: Date;
   /** Optimistic lock (AR-049). */
   rowVersion: number;
+  /** The amounts as typed when they were typed in the subsidiary's currency (AR-039): its code and the line amounts. */
+  entry: { currency: string; lines: Record<string, number> } | null;
 }
 
 /** Budget versions, newest first, with their lines (lot id → k€) and central amount. */
@@ -60,6 +62,8 @@ export async function versionsOfMany(q: Q, capexIds: readonly string[]): Promise
       id: v.id, number: v.number, estimateClass: v.estimateClass, status: v.status, basis: v.basis, centralKeur: centralOf(mine),
       lines: Object.fromEntries(mine.map((l) => [l.lotId, l.amountKeur])), validatedByName: v.validatedByName, validatedAt: v.validatedAt,
       isG2Baseline: v.isG2Baseline, createdByName: v.createdByName, createdAt: v.createdAt, rowVersion: v.rowVersion,
+      entry: mine.length && mine.every((l) => l.currency && l.amountLocal != null && l.currency === mine[0].currency)
+        ? { currency: mine[0].currency!, lines: Object.fromEntries(mine.map((l) => [l.lotId, l.amountLocal!])) } : null,
     });
   }
   return out;

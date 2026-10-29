@@ -14,6 +14,7 @@ import { getDb } from '@/server/db/client';
 import { writeAudit } from '@/server/db/helpers';
 import { capex, capexActions, capexLots, gates, lotActuals, machineNeeds, sites, subsidiaries, users, zones } from '@/server/db/schema';
 import { actionPeople } from '@/server/dal/actions';
+import { convertActual, converterFor } from '@/server/dal/currency';
 import { latestValidated, versionsOfMany } from '@/server/dal/cycle';
 import { capexDashboard } from '@/server/dal/governance';
 import type { ApiClient } from './auth';
@@ -114,15 +115,17 @@ export async function writeActual(client: ApiClient, code: string, input: Record
     // JSON numbers are read like the typed values of the form.
     const ch = checkActual(Object.fromEntries(Object.entries(input).map(([k, v]) => [k, typeof v === 'number' ? String(v) : v])), monthOf(today));
     if (!ch.ok) return { ok: false, status: 422, error: 'invalid', message: ch.error };
-    const values = { ...ch.value, source: 'import' as const, enteredByName: `API · ${client.name}`, enteredAt: new Date() };
+    const conv = await converterFor(tx, c.subsidiaryCode, input.currency, ch.value.month);
+    if (!conv.ok) return { ok: false, status: 422, error: 'invalid', message: conv.error };
+    const values = { month: ch.value.month, ...convertActual(ch.value, conv.value), source: 'import' as const, enteredByName: `API · ${client.name}`, enteredAt: new Date() };
     const [before] = await tx.select().from(lotActuals).where(and(eq(lotActuals.lotId, lot.id), eq(lotActuals.month, ch.value.month)));
     await tx.insert(lotActuals).values({ lotId: lot.id, ...values }).onConflictDoUpdate({ target: [lotActuals.lotId, lotActuals.month], set: values });
     await writeAudit(tx, {
       ...actorOf(client), objectRef: c.code, area: 'CAPEX', capexId: c.id, change: `lot ${lot.number}, ${ch.value.month}: actuals entered (API)`, entityType: 'lot_actual', entityId: lot.id,
       before: before ? { committedKeur: before.committedKeur, spentKeur: before.spentKeur, physicalPct: before.physicalPct } : undefined,
-      after: { committedKeur: ch.value.committedKeur, spentKeur: ch.value.spentKeur, physicalPct: ch.value.physicalPct },
+      after: { committedKeur: values.committedKeur, spentKeur: values.spentKeur, physicalPct: values.physicalPct, ...(values.currency ? { currency: values.currency, rate: values.rate } : {}) },
     });
-    return { ok: true, value: { lot: lot.number, ...ch.value } };
+    return { ok: true, value: { lot: lot.number, month: ch.value.month, committedKeur: values.committedKeur, spentKeur: values.spentKeur, physicalPct: values.physicalPct, currency: conv.value.currency, rate: conv.value.rate } };
   });
 }
 

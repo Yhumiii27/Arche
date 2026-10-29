@@ -11,6 +11,7 @@ import { recordActivity, writeAudit } from '@/server/db/helpers';
 import { authorizations, capexLots, lotActuals, packItems } from '@/server/db/schema';
 import { auditOf, fieldsOf, onCapex, type ActionResult } from '@/server/capex/write';
 import type { Tx } from '@/server/db/types';
+import { convertActual, converterFor, type Converter } from '@/server/dal/currency';
 
 export async function savePermitAction(code: string, permitId: string | null, _prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
   return onCapex(code, 'edit', async (tx, c, v, today) => {
@@ -74,15 +75,19 @@ export async function saveActualAction(code: string, lotId: string, _prev: Actio
     const lot = await lotOf(tx, c.id, lotId);
     if (!lot) return { ok: false, error: 'Unknown lot' };
     if (lot.epc2i) return { ok: false, error: 'EPC2i lots come from Keystone' };
-    const ch = checkActual(fieldsOf(fd), monthOf(today));
+    const f = fieldsOf(fd);
+    const ch = checkActual(f, monthOf(today));
     if (!ch.ok) return ch;
-    const values = { ...ch.value, source: 'manual' as const, enteredByName: v.name, enteredAt: new Date() };
+    // Typed in the subsidiary's currency (or in euros), converted at the month's reference rate (AR-039).
+    const conv = await converterFor(tx, c.subsidiaryCode, f.currency, ch.value.month);
+    if (!conv.ok) return conv;
+    const values = { month: ch.value.month, ...convertActual(ch.value, conv.value), source: 'manual' as const, enteredByName: v.name, enteredAt: new Date() };
     const [before] = await tx.select().from(lotActuals).where(and(eq(lotActuals.lotId, lot.id), eq(lotActuals.month, ch.value.month)));
     await tx.insert(lotActuals).values({ lotId: lot.id, ...values }).onConflictDoUpdate({ target: [lotActuals.lotId, lotActuals.month], set: values });
     await writeAudit(tx, auditOf(v, c, `lot ${lot.number}, ${ch.value.month}: actuals entered`, {
       entityType: 'lot_actual', entityId: lot.id,
       before: before ? { committedKeur: before.committedKeur, spentKeur: before.spentKeur, physicalPct: before.physicalPct } : undefined,
-      after: { committedKeur: ch.value.committedKeur, spentKeur: ch.value.spentKeur, physicalPct: ch.value.physicalPct },
+      after: { committedKeur: values.committedKeur, spentKeur: values.spentKeur, physicalPct: values.physicalPct, ...(values.currency ? { currency: values.currency, rate: values.rate } : {}) },
     }));
     return { ok: true };
   });
@@ -96,9 +101,16 @@ export async function importActualsAction(code: string, _prev: ActionResult | nu
     const lots = await tx.select({ id: capexLots.id, number: capexLots.number, epc2i: capexLots.epc2i }).from(capexLots).where(eq(capexLots.capexId, c.id));
     const r = parseActualsCsv(csv, lots, monthOf(today));
     if (!r.ok) return { ok: false, error: r.line ? `Line ${r.line} — ${r.error}` : r.error };
+    // Every line in the currency chosen for the file, each at its month's reference rate (AR-039).
+    const convs = new Map<string, Converter>();
+    for (const m of new Set(r.value.map((x) => x.month))) {
+      const conv = await converterFor(tx, c.subsidiaryCode, fd.get('currency'), m);
+      if (!conv.ok) return conv;
+      convs.set(m, conv.value);
+    }
     const at = new Date();
     for (const row of r.value) {
-      const values = { committedKeur: row.committedKeur, spentKeur: row.spentKeur, physicalPct: row.physicalPct, source: 'import' as const, enteredByName: v.name, enteredAt: at };
+      const values = { ...convertActual(row, convs.get(row.month)!), source: 'import' as const, enteredByName: v.name, enteredAt: at };
       await tx.insert(lotActuals).values({ lotId: row.lotId, month: row.month, ...values }).onConflictDoUpdate({ target: [lotActuals.lotId, lotActuals.month], set: values });
     }
     await writeAudit(tx, auditOf(v, c, `actuals imported: ${r.value.length} line(s)`, { entityType: 'lot_actual', after: { lines: r.value.length } }));

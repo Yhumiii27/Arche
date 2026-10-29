@@ -122,6 +122,10 @@
     {
       "date": "2026-10-29",
       "text": "Lot 7a : exports Excel / CSV / PDF (AR-042) ; API métier et webhooks (AR-048)."
+    },
+    {
+      "date": "2026-10-29",
+      "text": "Lot 7b : multi-devises (AR-039), enveloppes (AR-040), cash-flow phasé (AR-045), amortissement et immobilisations (AR-050)."
     }
   ],
   "items": [
@@ -940,9 +944,9 @@
         "src/domain/execution.ts"
       ],
       "progress": {
-        "state": "en_cours",
-        "delivery": "Livraison 7",
-        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7b",
+        "note": "Taux de référence (mois, sinon exercice) tenus par la DAF groupe ; budgets, réalisés, prévisions et API saisis en devise de la filiale et convertis en k€ (montant saisi et taux conservés) ; pub_capex.devise."
       }
     },
     {
@@ -965,9 +969,9 @@
         "src/server/dal/governance.ts"
       ],
       "progress": {
-        "state": "en_cours",
-        "delivery": "Livraison 7",
-        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7b",
+        "note": "Enveloppes par exercice (groupe, zone, filiale ; tous CAPEX ou une typologie), consommation par les décaissements phasés, reports et réallocations tracés, alerte au dépassement, critère G2 forçable au-delà de la tolérance ; page Enveloppes CAPEX."
       }
     },
     {
@@ -1087,9 +1091,9 @@
         "src/server/dal/execution.ts"
       ],
       "progress": {
-        "state": "en_cours",
-        "delivery": "Livraison 7",
-        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7b",
+        "note": "Prévision mensuelle des décaissements par lot (en devise de la filiale), répartition du reste à dépenser à défaut, comparaison baseline G2 / réalisé (page Exécution), cash-flow par filiale et par exercice dans les portefeuilles."
       }
     },
     {
@@ -1209,9 +1213,9 @@
         "src/domain/bp.ts"
       ],
       "progress": {
-        "state": "en_cours",
-        "delivery": "Livraison 7",
-        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7b",
+        "note": "Classes d'actifs (durée, méthode, natures de lots) ; amortissement simulé sur l'horizon du BP (page Budget et BP) ; transfert en immobilisations à la clôture et export pour Sage FI-AA."
       }
     },
     {

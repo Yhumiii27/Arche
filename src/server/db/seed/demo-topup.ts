@@ -6,10 +6,10 @@
 // — each part only where the database has none of it. Refused on a database not seeded with
 // the demonstration data set. `npm run db:demo-topup` (scripts/db-demo-topup.ts).
 import { and, eq, inArray, isNull, or } from 'drizzle-orm';
-import { authorizations, capex, capexActions, gates, hsStatuses, machineNeeds, packItems, productionLines, reviews, rexEntries, roleAssignments, sites, users, wbsTasks } from '../schema';
+import { assetClasses, authorizations, capex, envelopes, exchangeRates, capexActions, gates, hsStatuses, machineNeeds, packItems, productionLines, reviews, rexEntries, roleAssignments, sites, users, wbsTasks } from '../schema';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import type { Tx } from '../types';
-import { DEMO_CAPEX, DEMO_PEOPLE, DEMO_SITES, DEMO_SUBSIDIARIES, saiRex, seedActions, seedCapex, seedCopilGate, seedDelivery, seedGovernance, seedNeeds, seedStartup, seedWbs } from './demo';
+import { DEMO_ASSET_CLASSES, DEMO_CAPEX, DEMO_PEOPLE, DEMO_RATES, DEMO_SITES, DEMO_SUBSIDIARIES, saiRex, seedActions, seedCapex, seedCopilGate, seedDelivery, seedEnvelopes, seedGovernance, seedNeeds, seedStartup, seedWbs } from './demo';
 import { readSeedRecord } from './mode';
 
 export interface TopUpReport {
@@ -27,6 +27,10 @@ export interface TopUpReport {
   rex: number;
   actions: string[];
   wbs: string[];
+  /** Reference exchange rates added (AR-039). */
+  rates: number;
+  /** The demo's envelopes (AR-040), when the database has none. */
+  envelopes: boolean;
 }
 
 export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
@@ -34,7 +38,7 @@ export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
   if (((await readSeedRecord(tx))?.mode ?? 'demo') !== 'demo') throw new Error('This database was not seeded with the demonstration data set: nothing changed');
   const subs = await tx.select({ code: capex.subsidiaryCode }).from(capex).where(inArray(capex.subsidiaryCode, DEMO_SUBSIDIARIES.map((s) => s.code))).limit(1);
   if (!subs.length) throw new Error('The demonstration subsidiaries have no CAPEX in this database: nothing changed');
-  const report: TopUpReport = { people: 0, roles: 0, sites: 0, located: 0, capex: [], copil: false, needs: [], delivery: false, startup: false, governance: false, rex: 0, actions: [], wbs: [] };
+  const report: TopUpReport = { people: 0, roles: 0, sites: 0, located: 0, capex: [], copil: false, needs: [], delivery: false, startup: false, governance: false, rex: 0, actions: [], wbs: [], rates: 0, envelopes: false };
 
   // People and their roles, by e-mail.
   const known = new Map((await tx.select({ id: users.id, email: users.email }).from(users).where(inArray(users.email, DEMO_PEOPLE.map((p) => p.email)))).map((u) => [u.email, u.id]));
@@ -63,6 +67,12 @@ export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
       report.located++;
     }
   }
+  // The group's reference exchange rates (AR-039), by currency and period.
+  const haveRates = await tx.select({ currency: exchangeRates.currency, period: exchangeRates.period }).from(exchangeRates);
+  const newRates = DEMO_RATES.filter((r) => !haveRates.some((h) => h.currency === r.currency && h.period === r.period));
+  if (newRates.length) await tx.insert(exchangeRates).values(newRates.map((r) => ({ ...r, enteredByName: 'Paul Renaud', note: 'Group reference rate' })));
+  report.rates = newRates.length;
+
   const siteId = new Map((await tx.select({ id: sites.id, name: sites.name }).from(sites).where(inArray(sites.subsidiaryCode, DEMO_SUBSIDIARIES.map((s) => s.code)))).map((s) => [s.name, s.id]));
 
   // CAPEX of the data set that the database lacks (a code already taken is left as it is).
@@ -156,6 +166,13 @@ export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
       await seedWbs(tx, apm, sai, idOf, nameOf);
       report.wbs.push('CPX-APM-2026-01', 'CPX-SAI-2026-01');
     }
+  }
+  // Asset classes (AR-050), when the database has none.
+  if (!(await tx.select({ code: assetClasses.code }).from(assetClasses).limit(1)).length) await tx.insert(assetClasses).values(DEMO_ASSET_CLASSES);
+  // Envelopes (AR-040), when the database has none.
+  if (!(await tx.select({ id: envelopes.id }).from(envelopes).limit(1)).length) {
+    await seedEnvelopes(tx, nameOf);
+    report.envelopes = true;
   }
   return report;
 }

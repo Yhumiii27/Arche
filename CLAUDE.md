@@ -68,7 +68,11 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   XLSX and a PDF writer without dependency, tables `src/server/export/datasets.ts` served by `/export/[dataset]`, header links
   `exportLinks`, printable documents `src/features/print/documents.ts` shown as HTML or PDF); business API and webhooks (AR-048,
   `docs/API.md`: `/api/v1/` by API client key, signed writes, outbox `webhook_deliveries` sent by the job `webhooks`, page
-  `/admin/api`). Lots 7b to 7e follow.
+  `/admin/api`). Lot 7b: currencies (AR-039: `exchange_rates`, `src/domain/currency.ts`, `converterFor`; amounts typed in the
+  subsidiary's currency, consolidated in k€), envelopes (AR-040: `envelopes`, `envelope_movements`, `src/domain/envelopes.ts`,
+  page `/envelopes`, G2 criterion `g2_envelope`, alert `envelope_over`), phased cash-flow (AR-045: `lot_forecasts`,
+  `src/domain/cashflow.ts`, `phasedCapex`), depreciation (AR-050: `asset_classes`, `fixed_asset_transfers`,
+  `src/domain/depreciation.ts`; export `fixed-assets`). Lots 7c to 7e follow.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

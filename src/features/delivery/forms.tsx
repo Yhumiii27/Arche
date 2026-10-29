@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { ActionForm, Folded } from '@/components/app/ActionForm';
 import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { unitOf } from '@/domain/currency';
 import { ACTUALS_CSV_HEADER } from '@/domain/execution';
 import { PACK_ITEM_STATUSES, PACK_ITEM_STATUS_LABEL, type PackItemStatus } from '@/domain/pack';
 import { PERMIT_KINDS, PERMIT_KIND_LABEL, PERMIT_STATUSES, PERMIT_STATUS_LABEL, type PermitKind, type PermitStatus } from '@/domain/permits';
@@ -93,7 +94,7 @@ export function LotWindowForm({ code, lotId, start, end, label }: { code: string
   );
 }
 
-export function ActualForm({ code, lotId, month, label }: { code: string; lotId: string; month: string; label: string }) {
+export function ActualForm({ code, lotId, month, label, currencies }: { code: string; lotId: string; month: string; label: string; currencies: string[] }) {
   const { t } = useI18n();
   return (
     <Folded summary="Enter the month" title={label}>
@@ -101,10 +102,13 @@ export function ActualForm({ code, lotId, month, label }: { code: string; lotId:
         <Field label={t('Month')} htmlFor={`ac-m-${lotId}`} required>
           <Input id={`ac-m-${lotId}`} name="month" type="month" defaultValue={month} max={month} required />
         </Field>
-        <Field label={t('Committed to date (k€)')} htmlFor={`ac-c-${lotId}`}>
+        <Field label={t('Amounts in')} htmlFor={`ac-cur-${lotId}`} hint={t('Converted to k€ at the month’s reference rate')}>
+          <Select id={`ac-cur-${lotId}`} name="currency" defaultValue={currencies[0]} options={currencies.map((c) => ({ value: c, label: unitOf(c) }))} />
+        </Field>
+        <Field label={t('Committed to date')} htmlFor={`ac-c-${lotId}`}>
           <Input id={`ac-c-${lotId}`} name="committedKeur" inputMode="decimal" />
         </Field>
-        <Field label={t('Spent to date (k€)')} htmlFor={`ac-s-${lotId}`}>
+        <Field label={t('Spent to date')} htmlFor={`ac-s-${lotId}`}>
           <Input id={`ac-s-${lotId}`} name="spentKeur" inputMode="decimal" />
         </Field>
         <Field label={t('Physical progress (%)')} htmlFor={`ac-p-${lotId}`}>
@@ -116,12 +120,15 @@ export function ActualForm({ code, lotId, month, label }: { code: string; lotId:
 }
 
 /** Import: the CSV file is read in the browser and sent as text (Arche stores no file). */
-export function ImportActualsForm({ code }: { code: string }) {
+export function ImportActualsForm({ code, currencies }: { code: string; currencies: string[] }) {
   const { t } = useI18n();
   const [csv, setCsv] = useState('');
   return (
     <Folded summary="Import a CSV file" title="Import actuals">
       <ActionForm action={(prev, fd) => importActualsAction(code, prev, fd)} submit="Import" done="Imported">
+        <Field label={t('Amounts in')} htmlFor="ac-imp-cur" hint={t('Converted to k€ at each month’s reference rate')}>
+          <Select id="ac-imp-cur" name="currency" defaultValue={currencies[0]} options={currencies.map((c) => ({ value: c, label: unitOf(c) }))} />
+        </Field>
         <Field label={t('File')} htmlFor="ac-file" span="full" hint={`${t('Arche template, one line per lot and month')} — ${ACTUALS_CSV_HEADER}`}>
           <input
             id="ac-file"

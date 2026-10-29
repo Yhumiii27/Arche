@@ -79,9 +79,9 @@ describe('delivery 5: dashboards and governance', () => {
     jar.set('arche-role', 'project_lead');
     // The demo project lead persona leads the APM CAPEX.
     const civil = await lot(APM, 1);
-    expect(await importActualsAction(APM, null, form({ csv: 'lot;month;committed_keur;spent_keur;physical_pct\n1;2026-10;300;50;5\n3;2026-10;1;1;1' }))).toEqual({ ok: false, error: 'Line 3 — EPC2i lots come from Keystone' });
+    expect(await importActualsAction(APM, null, form({ currency: 'EUR', csv: 'lot;month;committed_keur;spent_keur;physical_pct\n1;2026-10;300;50;5\n3;2026-10;1;1;1' }))).toEqual({ ok: false, error: 'Line 3 — EPC2i lots come from Keystone' });
     expect(await t.db.$count(lotActuals, eq(lotActuals.lotId, civil.id))).toBe(0);
-    expect(await importActualsAction(APM, null, form({ csv: '1;2026-09;300;20;2\n1;2026-10;300;50;5' }))).toEqual({ ok: true });
+    expect(await importActualsAction(APM, null, form({ currency: 'EUR', csv: '1;2026-09;300;20;2\n1;2026-10;300;50;5' }))).toEqual({ ok: true });
     expect((await t.db.select().from(lotActuals).where(eq(lotActuals.lotId, civil.id))).map((r) => [r.month, r.spentKeur, r.source])).toEqual([['2026-09', 20, 'import'], ['2026-10', 50, 'import']]);
   });
 

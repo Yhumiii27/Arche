@@ -1,6 +1,6 @@
 // Group organisation (docs/spec/02-objets.md §1–2): zones, subsidiaries, their sites and reference revenue, users and their
 // role assignments with a scope (docs/spec/01 §2).
-import { boolean, date, doublePrecision, index, integer, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
+import { boolean, date, doublePrecision, index, integer, numeric, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import type { ExpertSpeciality, RoleKey, ScopeKind } from '@/config/roles';
 import { arche } from './_schema';
 import { id, keur, timestamps } from './_common';
@@ -22,7 +22,7 @@ export const subsidiaries = arche.table('subsidiaries', {
   name: text('name').notNull(),
   countryIso2: text('country_iso2').notNull(),
   zoneCode: text('zone_code').notNull().references(() => zones.code),
-  /** ISO 4217 code of the subsidiary's books (amounts are in k€ in v1, N-2). */
+  /** ISO 4217 code of the subsidiary's books: its amounts are typed in it and consolidated in k€ (AR-039). */
   currency: text('currency').notNull().default('EUR'),
   active: boolean('active').notNull().default(true),
   ...timestamps,
@@ -39,6 +39,17 @@ export const sites = arche.table('sites', {
   longitude: doublePrecision('longitude'),
   ...timestamps,
 }, (t) => [unique('sites_subsidiary_name_uq').on(t.subsidiaryCode, t.name)]);
+
+/** Reference exchange rates of the group (AR-039), entered by the group CFO: units of a currency for one euro, for a month or a fiscal year. */
+export const exchangeRates = arche.table('exchange_rates', {
+  currency: text('currency').notNull(),
+  /** "2026-10" (a month) or "2026" (the fiscal year's reference rate). */
+  period: text('period').notNull(),
+  unitsPerEur: numeric('units_per_eur', { mode: 'number' }).notNull(),
+  note: text('note'),
+  enteredByName: text('entered_by_name').notNull(),
+  enteredAt: timestamp('entered_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [unique('exchange_rates_uq').on(t.currency, t.period)]);
 
 /** Reference revenue of a subsidiary for one fiscal year (typology, C-5), entered by the group CFO. */
 export const referenceRevenues = arche.table('reference_revenues', {

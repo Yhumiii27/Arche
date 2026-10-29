@@ -12,6 +12,8 @@ import type { CriterionFact, ModelValues } from '@/domain/lifecycle';
 import { authorizations, capexLots, hsStatuses, lotActuals, packItems } from '@/server/db/schema';
 import type { DB, Tx } from '@/server/db/types';
 import { projectsOf, type Epc2iProject } from '@/server/integrations/keystone';
+import { envelopeFact } from '@/domain/envelopes';
+import { capexEnvelopeCheck } from './finance';
 import { needsOf } from './needs';
 import { startupFacts } from './rampup';
 import { latestValidated, versionsOf, type VersionView } from './cycle';
@@ -130,6 +132,12 @@ export async function packOf(q: Q, c: { id: string; code: string }, projects?: E
   return { items, projects: ps, summary: packSummary(items, epc2iPackOf(ps)) };
 }
 
+/** The G2 envelope criterion (AR-040): absent while no envelope covers the CAPEX. */
+async function envelopeFactOf(q: Q, c: { id: string }, values: ModelValues, today: string): Promise<Record<string, CriterionFact>> {
+  const fact = envelopeFact(await capexEnvelopeCheck(q, c, values.envelopeBlockPct, today));
+  return fact ? { g2_envelope: fact } : {};
+}
+
 /** Facts of the criteria fed by deliveries 5 and 6: safety milestones, permits, pack, works lots; ramp-up, closure, REX. */
 export async function deliveryFacts(q: Q, c: { id: string; code: string }, values: ModelValues, today: string): Promise<Record<string, CriterionFact>> {
   const [hs, permits, exec] = await Promise.all([hsOf(q, c.id), permitsOf(q, c.id), executionOf(q, c, today)]);
@@ -141,5 +149,6 @@ export async function deliveryFacts(q: Q, c: { id: string; code: string }, value
     g2_pack: packFact(pack.summary, values.packThresholdPct),
     ...(works ? { k3_works: works } : {}),
     ...(await startupFacts(q, c, values, today, exec.g2Keur)),
+    ...(await envelopeFactOf(q, c, values, today)),
   };
 }

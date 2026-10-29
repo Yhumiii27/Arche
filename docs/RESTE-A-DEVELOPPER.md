@@ -6,21 +6,21 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-29 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 30 faits, 17 en cours, 5 à faire, sur 52 points.
+**Avancement** : 34 faits, 13 en cours, 5 à faire, sur 52 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
 | Bloquant production | 3 | ≈ 7 |
-| Prochaine étape | 14 | ≈ 88 |
+| Prochaine étape | 10 | ≈ 64 |
 | À décider | 3 | ≈ 15 |
 | Plus tard | 2 | ≈ 8 |
-| **Total** | **22** | **≈ 118** |
+| **Total** | **18** | **≈ 94** |
 
 L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il ne compte ni l'attente des décisions et des données, ni les développements à faire côté Keystone, Codex, Vigie, Cursus ou Matrix, ni la recette.
 
 | Statut (points restants) | Points |
 |---|---:|
-| Non commencé | 13 |
+| Non commencé | 9 |
 | Partiel | 0 |
 | Attend le responsable produit | 3 |
 | Attend un système externe | 6 |
@@ -29,13 +29,13 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 |---|---:|---:|---:|---:|---:|---:|
 | Plateforme et mise en production | 2 | 0 | 0 | 1 | 3 | 7 |
 | Connexion, profils et isolation par filiale | 0 | 0 | 0 | 0 | 0 | 4 |
-| CAPEX et cycle DIG-PRODI | 0 | 4 | 0 | 0 | 4 | 4 |
+| CAPEX et cycle DIG-PRODI | 0 | 2 | 0 | 0 | 2 | 6 |
 | Dossiers vivants et circuits de décision | 0 | 2 | 0 | 0 | 2 | 4 |
 | Besoins machines et Keystone | 0 | 1 | 0 | 0 | 1 | 3 |
 | Documents (Codex) | 0 | 2 | 0 | 0 | 2 | 0 |
 | Jalons de sécurité (Vigie) | 0 | 0 | 1 | 0 | 1 | 1 |
-| Tableaux de bord et gouvernance | 1 | 3 | 0 | 0 | 4 | 4 |
-| Démarrage, montée en puissance et transfert | 0 | 2 | 0 | 0 | 2 | 2 |
+| Tableaux de bord et gouvernance | 1 | 2 | 0 | 0 | 3 | 5 |
+| Démarrage, montée en puissance et transfert | 0 | 1 | 0 | 0 | 1 | 3 |
 | Aide à la décision et signature avancée | 0 | 0 | 0 | 1 | 1 | 0 |
 | Cadrage, décisions et données attendues | 0 | 0 | 2 | 0 | 2 | 1 |
 
@@ -126,15 +126,7 @@ Routes de connexion, cookie de session scellé, rôles et portées lus dans Arch
 Fournisseur OpenID simulé (src/test/mock-entra.ts) : connexion, refus, compte administrateur créé, déconnexion.  
 *Avancement : docs/DELIVERY-1b.md · Sources : src/server/auth/*
 
-### 2.3 CAPEX et cycle DIG-PRODI (4 restants, 4 faits)
-
-**AR-039 · Multi-devises : devise par filiale, taux de change datés, consolidation en euros** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 7)**  
-Montants des budgets, de l’engagé et du réalisé saisis dans la devise de la filiale (`subsidiaries.currency`, stockée mais inutilisée), table des taux de change datés tenue par la DAF groupe (taux de référence par exercice ou par mois), conversion et consolidation en k€ dans les portefeuilles, les dossiers et les vues `pub_`. Arche ne connaît aujourd’hui que le k€ (N-2). Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Anaplan, CapEx360) mais indispensable pour un groupe multi-pays ; priorité suggérée : prochaine étape.  
-*Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/DECISIONS.md N-2*
-
-**AR-045 · Cash-flow prévisionnel phasé par mois et comparé à la baseline G2** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 7)**  
-Phasage mensuel prévisionnel des décaissements de chaque lot saisi par le chef de projet ou le CDG (et non une répartition uniforme sur la fenêtre du lot), re-prévision à chaque mois (reste à dépenser), comparaison de la prévision à la baseline G2 et au réalisé sur la courbe en S, consolidation par filiale et par exercice pour la trésorerie du groupe. Arche saisit l’engagé et le réalisé mensuels mais ne phase pas la prévision. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Unifier, Board) ; priorité suggérée : à décider.  
-*Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/spec/06-gouvernance-pilotage.md*
+### 2.3 CAPEX et cycle DIG-PRODI (2 restants, 6 faits)
 
 **AR-047 · Import des réalisés et des engagements depuis l’ERP (Sage) par API** — *Prochaine étape · attend un système externe · effort M* · **en cours (Livraison 7)**  
 Rapprochement automatique de l’engagé (commandes) et du réalisé (factures) des lots hors EPC2i depuis Sage, par API ou extraction planifiée, avec une table de correspondance compte / lot et un journal des rejets ; l’import CSV manuel du CDG reste disponible. Arche n’a aujourd’hui que l’import CSV manuel (N-14). Analyse comparative du 25 oct. 2026 : standard du marché par fichier, avancé par connecteur ; priorité suggérée : à décider.  
@@ -159,6 +151,14 @@ Calcul sur le CA de référence, forçage, confirmation (C-5).
 **~~AR-019 · Cycle DIG-PRODI paramétré : phases, K3, critères des jalons~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 2)**  
 Livraison 2 (C-1).  
 *Avancement : Modèle 4.0, moteur des critères et des transitions, décision directe du décideur en attendant les circuits (N-27) ; valeurs réglables. · Sources : docs/spec/03*
+
+**~~AR-039 · Multi-devises : devise par filiale, taux de change datés, consolidation en euros~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7b)**  
+Montants des budgets, de l’engagé et du réalisé saisis dans la devise de la filiale (`subsidiaries.currency`, stockée mais inutilisée), table des taux de change datés tenue par la DAF groupe (taux de référence par exercice ou par mois), conversion et consolidation en k€ dans les portefeuilles, les dossiers et les vues `pub_`. Arche ne connaît aujourd’hui que le k€ (N-2). Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Anaplan, CapEx360) mais indispensable pour un groupe multi-pays ; priorité suggérée : prochaine étape.  
+*Avancement : Taux de référence (mois, sinon exercice) tenus par la DAF groupe ; budgets, réalisés, prévisions et API saisis en devise de la filiale et convertis en k€ (montant saisi et taux conservés) ; pub_capex.devise. · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/DECISIONS.md N-2*
+
+**~~AR-045 · Cash-flow prévisionnel phasé par mois et comparé à la baseline G2~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7b)**  
+Phasage mensuel prévisionnel des décaissements de chaque lot saisi par le chef de projet ou le CDG (et non une répartition uniforme sur la fenêtre du lot), re-prévision à chaque mois (reste à dépenser), comparaison de la prévision à la baseline G2 et au réalisé sur la courbe en S, consolidation par filiale et par exercice pour la trésorerie du groupe. Arche saisit l’engagé et le réalisé mensuels mais ne phase pas la prévision. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Unifier, Board) ; priorité suggérée : à décider.  
+*Avancement : Prévision mensuelle des décaissements par lot (en devise de la filiale), répartition du reste à dépenser à défaut, comparaison baseline G2 / réalisé (page Exécution), cash-flow par filiale et par exercice dans les portefeuilles. · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/spec/06-gouvernance-pilotage.md*
 
 ### 2.4 Dossiers vivants et circuits de décision (2 restants, 4 faits)
 
@@ -224,15 +224,11 @@ VG-01 à VG-05 ; Vigie ne les modélise pas aujourd’hui. Analyse comparative d
 Livraison 5 (C-3, N-13).  
 *Avancement : Lot 5a : jalons HS déclarés par le SSE groupe (N-13) avec preuve, quitus PSSR par le circuit du G3, registre des autorisations, critères g1_hs2, g2_hs3, g2_permits, k3_hs4, g3_pssr, g3_hs6. · Sources : docs/spec/03 §4*
 
-### 2.8 Tableaux de bord et gouvernance (4 restants, 4 faits)
+### 2.8 Tableaux de bord et gouvernance (3 restants, 5 faits)
 
 **AR-034 · Pilote sur 1 à 2 CAPEX** — *Bloquant production · non commencé · effort M* · **en cours (Pilote)**  
 Jeu production, utilisateurs réels, guides par rôle, mesure de référence (C-10). Analyse comparative du 25 oct. 2026 : le pilote sur des données réelles des filiales est le prérequis de toute comparaison utile avec les solutions du commerce ; les écarts fonctionnels relevés (AR-039 à AR-052) seront priorisés sur ses retours. Priorité suggérée : bloquant, inchangée.  
 *Avancement : 23 oct. 2026 : lot de développement fait — reprise d'un CAPEX en cours par le Sponsor (N-20), écran Objectifs DIG-PRODI et référence de l'existant (C-10), guides par rôle, procédure et journal des retours. Restent les prérequis du responsable produit (hébergement C-13, Entra, D-1 à D-4, relevé de l'existant, choix des CAPEX) et les corrections issues des retours. 24 oct. 2026 : premiers retours du responsable produit traités (assistant d'ouverture, menus, carte, données de démo, langue) ; plan d'actions et WBS / Gantt à venir. · Sources : docs/PLAN.md*
-
-**AR-040 · Enveloppes budgétaires annuelles et pluriannuelles par filiale, zone et catégorie ; contrôle de disponibilité, reports et réallocations** — *Prochaine étape · non commencé · effort L* · **en cours (Livraison 7)**  
-Enveloppe CAPEX votée par exercice (et plan pluriannuel) par filiale, zone et catégorie (typologie Light / Stratégique, nature), consommation par les CAPEX ouverts, contrôle de disponibilité à l’ouverture et au G2 (alerte ou blocage hors enveloppe selon un seuil), reports d’un exercice à l’autre et réallocations tracées entre filiales. Arche ne connaît que le budget de chaque CAPEX (versions E50 / E30 / E10) ; aucune enveloppe ni blocage hors budget. Analyse comparative du 25 oct. 2026 : standard du marché (CapEx360, eCapEx, SAP IM) ; priorité suggérée : prochaine étape.  
-*Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/spec/06-gouvernance-pilotage.md*
 
 **AR-043 · Scénarios what-if de portefeuille sous contrainte d’enveloppe groupe (base, contraint, croissance)** — *Prochaine étape · non commencé · effort L* · **en cours (Livraison 7)**  
 Scénarios de portefeuille nommés (base, contraint, croissance) : sélection et décalage de CAPEX, enveloppe groupe par exercice, comparaison des scénarios (dépense, retour, risques) et retenue d’un scénario pour le COPIL GPI. Dépend des enveloppes (AR-040). Absent d’Arche. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Planisware, Finario, Board) ; priorité suggérée : à décider.  
@@ -254,19 +250,23 @@ Livraison 5.
 Livraison 5 (N-19).  
 *Avancement : Revues projet (cadence par typologie, retard, signalement au Dir.IG), audits transversaux par phase (N-19), rapport Copil imprimable, écran COPIL GPI, alertes à règles, instantanés hebdomadaires. · Sources : docs/spec/06 §2, §7*
 
+**~~AR-040 · Enveloppes budgétaires annuelles et pluriannuelles par filiale, zone et catégorie ; contrôle de disponibilité, reports et réallocations~~** — *Prochaine étape · non commencé · effort L* · **fait (Livraison 7, lot 7b)**  
+Enveloppe CAPEX votée par exercice (et plan pluriannuel) par filiale, zone et catégorie (typologie Light / Stratégique, nature), consommation par les CAPEX ouverts, contrôle de disponibilité à l’ouverture et au G2 (alerte ou blocage hors enveloppe selon un seuil), reports d’un exercice à l’autre et réallocations tracées entre filiales. Arche ne connaît que le budget de chaque CAPEX (versions E50 / E30 / E10) ; aucune enveloppe ni blocage hors budget. Analyse comparative du 25 oct. 2026 : standard du marché (CapEx360, eCapEx, SAP IM) ; priorité suggérée : prochaine étape.  
+*Avancement : Enveloppes par exercice (groupe, zone, filiale ; tous CAPEX ou une typologie), consommation par les décaissements phasés, reports et réallocations tracés, alerte au dépassement, critère G2 forçable au-delà de la tolérance ; page Enveloppes CAPEX. · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/spec/06-gouvernance-pilotage.md*
+
 **~~AR-042 · Exports CSV / XLSX / PDF des registres, portefeuilles et dossiers ; connecteur Power BI~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7a)**  
 Export CSV et XLSX du registre des CAPEX, des portefeuilles, du suivi engagé / réalisé et des alertes (colonnes du contrat `pub_capex`) ; export PDF serveur des dossiers figés et du rapport Copil (aujourd’hui des vues imprimables HTML seulement) ; connecteur Power BI (lecture des vues `pub_` par un compte dédié, ou flux OData). Analyse comparative du 25 oct. 2026 : standard du marché ; priorité suggérée : prochaine étape.  
 *Avancement : Exports Excel et CSV du registre, des portefeuilles groupe et filiale, des alertes et de l'engagé / réalisé (en-tête de chaque page, mêmes droits) ; PDF du rapport Copil et des versions de dossier écrit par le serveur ; Power BI par l'API en lecture (docs/API.md §7), rôle de lecture des vues pub_ demandé à Matrix (M-14). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/CONTRATS.md*
 
-### 2.9 Démarrage, montée en puissance et transfert (2 restants, 2 faits)
+### 2.9 Démarrage, montée en puissance et transfert (1 restants, 3 faits)
 
 **AR-046 · Bénéfices réalisés contre le business plan approuvé ; post-audit automatique N mois après la mise en service** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 7)**  
 Suivi des gains du BP approuvé au G2 (chiffre d’affaires, économies, productivité) contre les gains constatés après la mise en service, saisis par le CDG ou le sponsor ; post-audit programmé automatiquement N mois (6, 12, 24) après la MES avec son circuit et son compte rendu ; VAN et TRI recalculés sur le réalisé. Arche a le ramp-up et la clôture des coûts, mais aucun suivi des gains du BP. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Finario, eCapEx) ; priorité suggérée : à décider.  
 *Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/spec/03-cycle-dig-prodi.md*
 
-**AR-050 · Dépréciation simulée, durée de vie par classe d’actif, transfert en immobilisation** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 7)**  
+**~~AR-050 · Dépréciation simulée, durée de vie par classe d’actif, transfert en immobilisation~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7b)**  
 Classes d’actifs avec durée de vie et méthode d’amortissement, simulation de la dépréciation dès le BP (charge annuelle, impact résultat), transfert des lots en immobilisations à la clôture comptable avec date de mise en service et export vers la comptabilité (Sage FI-AA). Absent d’Arche. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Jedox, SAP FI-AA) ; priorité suggérée : plus tard.  
-*Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026*
+*Avancement : Classes d'actifs (durée, méthode, natures de lots) ; amortissement simulé sur l'horizon du BP (page Budget et BP) ; transfert en immobilisations à la clôture et export pour Sage FI-AA. · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026*
 
 **~~AR-035 · Ramp-up : saisie journalière, TRS, 30 jours continus, 6 mois ; vue pub_rampup~~** — *Plus tard · non commencé · effort M* · **fait (L6)**  
 Livraison 6 (N-16).  
@@ -298,6 +298,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-29 — Lot 7b : multi-devises (AR-039), enveloppes (AR-040), cash-flow phasé (AR-045), amortissement et immobilisations (AR-050).
 - 2026-10-29 — Lot 7a : exports Excel / CSV / PDF (AR-042) ; API métier et webhooks (AR-048).
 - 2026-10-29 — AR-039 à AR-052 retenus par le responsable produit (livraison 7). Lot 7a : verrouillage optimiste et lecture des portefeuilles en un nombre fixe de requêtes (AR-049).
 - 2026-10-26 — Analyse comparative avec les solutions du commerce (25 oct. 2026) : 14 items ajoutés (AR-039 à AR-052), 10 items annotés.

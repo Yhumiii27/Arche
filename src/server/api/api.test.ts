@@ -73,7 +73,7 @@ describe('business API (AR-048)', () => {
     const [c] = await t.db.select().from(capex).where(eq(capex.code, 'CPX-APM-2026-01'));
     const [lot] = (await t.db.select().from(capexLots).where(eq(capexLots.capexId, c.id))).filter((l) => !l.epc2i);
     const path = '/api/v1/capex/CPX-APM-2026-01/actuals';
-    const body = { lot: lot.number, month: '2026-09', committedKeur: 120, spentKeur: 80 };
+    const body = { lot: lot.number, month: '2026-09', currency: 'EUR', committedKeur: 120, spentKeur: 80 };
     const first = signed(apmKey, path, body);
     const again = first.clone();
     const r = await actualsPost(first, params({ code: 'CPX-APM-2026-01' }));
