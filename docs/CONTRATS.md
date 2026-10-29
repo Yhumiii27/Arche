@@ -194,6 +194,7 @@ tant qu’elles n’existent pas. Lecteurs accordés par Matrix (`partage/90-dro
 | `g1_le`, `g2_le`, `g3_le` | date | dates des décisions Go (null si non passées) |
 | `debut_mes_le` | date | début de la MES |
 | `maj_le` | timestamptz | |
+| `devise` | text | devise de la filiale (ISO 4217) ; les montants d'Arche restent consolidés en k€ (AR-039, ajoutée le 29 oct. 2026) |
 
 **`pub_besoins_machines`** — lecteurs : `keystone_app`, `matrix_app`. Les brouillons ne sont pas publiés.
 

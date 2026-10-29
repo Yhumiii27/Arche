@@ -10,7 +10,8 @@ import { recordActivity, writeAudit } from '@/server/db/helpers';
 import { budgetLines, budgetVersions, capex, gates, phaseTransitions } from '@/server/db/schema';
 import type { Tx } from '@/server/db/types';
 import { enqueueEvent } from '@/server/api/events';
-import { computedTypologyOf } from '@/server/dal/cycle';
+import { computedTypologyOf, modelValues } from '@/server/dal/cycle';
+import { capexEnvelopeCheck } from '@/server/dal/finance';
 import type { Viewer } from '@/server/session';
 import { auditOf, type ActionResult, type CapexRowFull } from './write';
 
@@ -25,6 +26,13 @@ export async function applyOpen(tx: Tx, c: Row, v: Viewer, today: string): Promi
   await writeAudit(tx, auditOf(v, c, 'status: Draft → Active (phase 1)', { entityType: 'capex', entityId: c.id }));
   await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'capex.opened', text: `${c.code} opened: phase 1`, capexId: c.id });
   await enqueueEvent(tx, 'capex.opened', c.id, { openedOn: today, takenOver: false });
+  // Envelope control at the opening (AR-040): over its envelope, the opening is recorded with the overrun (an alert follows).
+  const env = await capexEnvelopeCheck(tx, c, (await modelValues(tx)).envelopeBlockPct, today);
+  if (env.over.length) {
+    const over = env.over.map((r) => `${r.year} +${r.overKeur} k€`).join(', ');
+    await writeAudit(tx, auditOf(v, c, `opened over its envelope: ${over}`, { entityType: 'capex', entityId: c.id }));
+    await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'capex.envelope_over', text: `${c.code} over its envelope: ${over}`, capexId: c.id });
+  }
   return { ok: true };
 }
 

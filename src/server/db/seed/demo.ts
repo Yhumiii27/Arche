@@ -4,14 +4,14 @@
 import { eq } from 'drizzle-orm';
 import type { RoleKey, ScopeKind, ExpertSpeciality } from '@/config/roles';
 import {
-  authorizations, budgetLines, capexActions, wbsTasks, budgetVersions, capex, capexLots, capexSnapshots, hsStatuses, lotActuals, packItems, productionLines, rampupDays, reviews, rexEntries, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
+  assetClasses, authorizations, exchangeRates, budgetLines, capexActions, wbsTasks, budgetVersions, capex, capexLots, capexSnapshots, hsStatuses, lotActuals, packItems, productionLines, rampupDays, reviews, rexEntries, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
   roleAssignments, sites, subsidiaries, users, zones, type CapexRole, type EstimateClass, type GateCode,
 } from '../schema';
 import { createHash } from 'node:crypto';
 import { circuitTemplate } from '@/domain/circuits';
 import { canonicalJson, emptyContent, SECTIONS, type DossierKind } from '@/domain/dossiers';
 import { computedSnapshot } from '@/server/dal/dossiers';
-import { businessPlans, changes, circuitSteps, dossiers, dossierVersions, machineNeeds, signatures } from '../schema';
+import { businessPlans, changes, circuitSteps, dossiers, dossierVersions, envelopeMovements, envelopes, machineNeeds, signatures } from '../schema';
 import { and, isNull } from 'drizzle-orm';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import { PACK_TEMPLATE } from '@/domain/pack';
@@ -32,6 +32,23 @@ export const DEMO_SUBSIDIARIES = [
   { code: 'APM', name: 'Atlas Process Maroc', countryIso2: 'MA', zoneCode: 'AFN', currency: 'MAD' },
   { code: 'SAI', name: 'Sahel Agro Industries', countryIso2: 'SN', zoneCode: 'AFO', currency: 'XOF' },
 ] as const;
+
+/** The group's reference rates of the demo (AR-039): units for one euro, by fiscal year, and October 2026 for the dirham. */
+export const DEMO_RATES = [
+  { currency: 'MAD', period: '2025', unitsPerEur: 10.85 },
+  { currency: 'MAD', period: '2026', unitsPerEur: 10.9 },
+  { currency: 'MAD', period: '2026-10', unitsPerEur: 10.95 },
+  { currency: 'XOF', period: '2025', unitsPerEur: 655.957 },
+  { currency: 'XOF', period: '2026', unitsPerEur: 655.957 },
+] as const;
+
+/** Asset classes of the demo (AR-050): the group CFO adjusts them; land and recruitment are not depreciated. */
+export const DEMO_ASSET_CLASSES = [
+  { code: 'BUILD', label: 'Buildings and civil works', lifeYears: 20, method: 'linear' as const, factor: null, lotKinds: ['buildings', 'civil_works', 'vrd'] },
+  { code: 'UTIL', label: 'Utilities and networks', lifeYears: 15, method: 'linear' as const, factor: null, lotKinds: ['utilities'] },
+  { code: 'MACH', label: 'Industrial machinery', lifeYears: 10, method: 'declining' as const, factor: 2.25, lotKinds: ['machines'] },
+  { code: 'EQUIP', label: 'Other equipment', lifeYears: 5, method: 'linear' as const, factor: null, lotKinds: ['other'] },
+];
 
 export const DEMO_SITES = [
   { subsidiaryCode: 'APM', name: 'Kénitra plant', city: 'Kénitra', countryIso2: 'MA', latitude: 34.261, longitude: -6.58 },
@@ -180,6 +197,8 @@ export async function seedDemo(tx: Tx): Promise<void> {
     userId: userId.get(p.email)!, role: r.role, scopeKind: r.scope, scopeRef: r.ref, speciality: r.speciality ?? null, createdByName: 'System',
   }))));
   await tx.insert(referenceRevenues).values(DEMO_REVENUES);
+  await tx.insert(exchangeRates).values(DEMO_RATES.map((r) => ({ ...r, enteredByName: 'Paul Renaud', note: 'Group reference rate' })));
+  await tx.insert(assetClasses).values(DEMO_ASSET_CLASSES);
   const nameOf = (key: string) => DEMO_PEOPLE.find((p) => p.key === key)!.name;
   for (const c of DEMO_CAPEX) await seedCapex(tx, c, siteId, idOf, nameOf);
   await seedDemoExtras(tx, idOf, nameOf);
@@ -304,6 +323,7 @@ async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: s
   await syncKeystone(tx, { now: at('2026-10-22'), mode: 'simulation' });
   await seedStartup(tx, apm25, nameOf);
   await seedGovernance(tx, apm, sai, nameOf);
+  await seedEnvelopes(tx, nameOf);
   await seedCopil(tx, await id('CPX-SAI-2026-02'), sai, await id('CPX-SAI-2026-03'), idOf, nameOf);
   await seedActions(tx, apm, sai, idOf, nameOf);
   await seedWbs(tx, apm, sai, idOf, nameOf);
@@ -394,6 +414,26 @@ export async function seedStartup(tx: Tx, capexId: string, nameOf: (k: string) =
  * Lot 5b demonstration: project reviews (APM, Light, quarterly: its last review is more than 15 days late; SAI, Strategic,
  * monthly, with the audit of phase 1 — the audit of phase 2 is missing), and twelve weeks of snapshots for the trends.
  */
+/**
+ * The envelopes of the demo (AR-040), voted by the group CFO: the group, APM and the strategic CAPEX of West Africa for 2026,
+ * APM and the group for 2027 and 2028 (multi-year plan), with a reallocation of the group's 2026 envelope to APM. CPX-SAI-2026-01
+ * goes slightly over its zone envelope (a watch alert), CPX-APM-2026-01 slightly over APM's 2027 one.
+ */
+export async function seedEnvelopes(tx: Tx, nameOf: (k: string) => string) {
+  const by = nameOf('group_cfo');
+  const rows = await tx.insert(envelopes).values([
+    { fiscalYear: 2026, zoneCode: null, subsidiaryCode: null, category: 'all' as const, amountKeur: 20_000, note: 'Group CAPEX budget 2026', createdByName: by },
+    { fiscalYear: 2026, zoneCode: null, subsidiaryCode: 'APM', category: 'all' as const, amountKeur: 2_500, note: 'APM plan 2026', createdByName: by },
+    { fiscalYear: 2026, zoneCode: 'AFO', subsidiaryCode: null, category: 'strategic' as const, amountKeur: 7_000, note: 'West Africa — strategic projects', createdByName: by },
+    { fiscalYear: 2027, zoneCode: null, subsidiaryCode: null, category: 'all' as const, amountKeur: 25_000, note: 'Group CAPEX plan 2027', createdByName: by },
+    { fiscalYear: 2027, zoneCode: null, subsidiaryCode: 'APM', category: 'all' as const, amountKeur: 3_700, note: 'APM plan 2027', createdByName: by },
+    { fiscalYear: 2028, zoneCode: null, subsidiaryCode: null, category: 'all' as const, amountKeur: 25_000, note: 'Group CAPEX plan 2028', createdByName: by },
+  ]).returning({ id: envelopes.id, year: envelopes.fiscalYear, sub: envelopes.subsidiaryCode, zone: envelopes.zoneCode });
+  const group26 = rows.find((r) => r.year === 2026 && !r.sub && !r.zone)!;
+  const apm26 = rows.find((r) => r.year === 2026 && r.sub === 'APM')!;
+  await tx.insert(envelopeMovements).values({ kind: 'reallocation', fromEnvelopeId: group26.id, toEnvelopeId: apm26.id, amountKeur: 500, reason: 'Extrusion line 3: early engineering in 2026', byName: by, occurredAt: new Date('2026-09-15T09:00:00Z') });
+}
+
 export async function seedGovernance(tx: Tx, apm: string, sai: string, nameOf: (k: string) => string) {
   const r = (capexId: string, number: number, kind: 'copil_projet' | 'audit', heldOn: string, phase: string, attendees: string, summary: string, by: string) =>
     ({ capexId, number, kind, heldOn, phase, attendees, summary, recordedByName: nameOf(by) });

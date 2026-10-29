@@ -79,6 +79,8 @@ export const capexLots = arche.table('capex_lots', {
   plannedStart: text('planned_start'),
   plannedEnd: text('planned_end'),
   ...timestamps,
+  /** Asset class of the lot (AR-050); null: the class of its kind. */
+  assetClassCode: text('asset_class_code'),
 }, (t) => [unique('capex_lots_number_uq').on(t.capexId, t.number)]);
 
 /** Budget versions: the precision funnel E50 → E30 → E10 (spec 03 §5); a validated version is frozen. */
@@ -105,6 +107,10 @@ export const budgetLines = arche.table('budget_lines', {
   budgetVersionId: uuid('budget_version_id').notNull().references(() => budgetVersions.id, { onDelete: 'cascade' }),
   lotId: uuid('lot_id').notNull().references(() => capexLots.id),
   amountKeur: keur('amount_keur').notNull(),
+  /** As typed in the subsidiary's currency (AR-039): thousands, the currency and the rate applied (units per euro); null when typed in k€. */
+  amountLocal: keur('amount_local'),
+  currency: text('currency'),
+  rate: keur('rate'),
 }, (t) => [unique('budget_lines_uq').on(t.budgetVersionId, t.lotId)]);
 
 export const risks = arche.table('risks', {

@@ -4,7 +4,7 @@
 import type { RoleKey } from './roles';
 
 export type ScreenId =
-  | 'home' | 'approvals' | 'capex-list' | 'map' | 'portfolio' | 'copil' | 'rex' | 'kpi' | 'subsidiary-portfolio' | 'capex-open'
+  | 'home' | 'approvals' | 'capex-list' | 'map' | 'portfolio' | 'copil' | 'rex' | 'kpi' | 'envelopes' | 'subsidiary-portfolio' | 'capex-open'
   | 'capex-overview' | 'capex-actions' | 'capex-gates' | 'capex-dossiers' | 'capex-budget' | 'capex-execution' | 'capex-changes' | 'capex-schedule' | 'capex-machines'
   | 'capex-pack' | 'capex-permits' | 'capex-safety' | 'capex-risks' | 'capex-governance' | 'capex-rampup' | 'capex-journal'
   | 'admin-org' | 'admin-users' | 'admin-model' | 'admin-delegation' | 'admin-connectors' | 'admin-api';
@@ -37,6 +37,7 @@ export const SCREENS: readonly ScreenDef[] = [
   { id: 'map', path: '/map', title: 'CAPEX map', section: 'group', roles: STEERING, delivery: 'L4' },
   { id: 'portfolio', path: '/portfolio', title: 'Group portfolio', section: 'group', roles: STEERING, delivery: 'L5' },
   { id: 'copil', path: '/copil', title: 'COPIL GPI', section: 'group', roles: ['admin', 'ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'sponsor', 'project_lead'], delivery: 'L5' },
+  { id: 'envelopes', path: '/envelopes', title: 'CAPEX envelopes', section: 'group', roles: ['admin', 'ceo', 'dir_ig', 'group_cfo', 'copil_member', 'zone_director', 'sponsor', 'controller'], delivery: 'L7' },
   { id: 'kpi', path: '/kpi', title: 'DIG-PRODI objectives', section: 'group', roles: ['admin', 'ceo', 'dir_ig', 'group_cfo', 'copil_member'], delivery: 'P' },
   { id: 'rex', path: '/rex', title: 'Lessons learned library', section: 'group', roles: BUSINESS, delivery: 'L6' },
   { id: 'capex-list', path: '/capex', title: 'CAPEX register', section: 'subsidiary', roles: STEERING, delivery: 'L1' },

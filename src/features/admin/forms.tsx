@@ -10,7 +10,7 @@ import { LEVEL_LABEL, type DelegationMatrix } from '@/domain/delegation';
 import { GATES, VALUE_BOUNDS, type ModelValues } from '@/domain/lifecycle';
 import { useI18n } from '@/i18n/client';
 import {
-  addRoleAction, createSiteAction, createSubsidiaryAction, createUserAction, createZoneAction, removeRoleAction, setRevenueAction, setUserActiveAction, updateMatrixAction, updateModelValuesAction,
+  addRoleAction, createSiteAction, createSubsidiaryAction, createUserAction, createZoneAction, removeRoleAction, setRateAction, setRevenueAction, setUserActiveAction, updateMatrixAction, updateModelValuesAction,
 } from './actions';
 import s from './forms.module.css';
 
@@ -176,6 +176,26 @@ export function RevenueForm({ subsidiaries, year }: { subsidiaries: { code: stri
   );
 }
 
+export function RateForm({ currencies, month }: { currencies: string[]; month: string }) {
+  const { t } = useI18n();
+  return (
+    <ActionForm action={setRateAction} submit="Save the rate" done="Rate saved">
+      <Field label={t('Currency')} htmlFor="rt-cur" required>
+        <Select id="rt-cur" name="currency" options={currencies.map((c) => ({ value: c, label: c }))} />
+      </Field>
+      <Field label={t('Month or fiscal year')} htmlFor="rt-period" required hint={t('YYYY-MM for a month, YYYY for the fiscal year’s reference rate')}>
+        <Input id="rt-period" name="period" required defaultValue={month} />
+      </Field>
+      <Field label={t('Units for one euro')} htmlFor="rt-rate" required>
+        <Input id="rt-rate" name="unitsPerEur" required inputMode="decimal" />
+      </Field>
+      <Field label={t('Source')} htmlFor="rt-note">
+        <Input id="rt-note" name="note" />
+      </Field>
+    </ActionForm>
+  );
+}
+
 export function ModelValuesForm({ values }: { values: ModelValues }) {
   const { t } = useI18n();
   const n = (name: string, label: string, value: number, [lo, hi]: readonly [number, number]) => (
@@ -191,6 +211,7 @@ export function ModelValuesForm({ values }: { values: ModelValues }) {
       {n('worksThresholdPct', 'Works lots at K3 (%)', values.worksThresholdPct, VALUE_BOUNDS.worksThresholdPct)}
       {n('rampupDays', 'Days at nominal capacity for G3', values.rampupDays, VALUE_BOUNDS.rampupDays)}
       {n('mesMaxMonths', 'Months after commissioning for G3', values.mesMaxMonths, VALUE_BOUNDS.mesMaxMonths)}
+      {n('envelopeBlockPct', 'Envelope overrun tolerated at G2 (%)', values.envelopeBlockPct, VALUE_BOUNDS.envelopeBlockPct)}
     </ActionForm>
   );
 }

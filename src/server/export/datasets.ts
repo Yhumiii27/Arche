@@ -12,12 +12,15 @@ import { businessToday } from '@/server/clock';
 import { getDb } from '@/server/db/client';
 import { capexForViewer } from '@/server/dal/capex';
 import { executionOf } from '@/server/dal/execution';
+import { transfersOf } from '@/server/dal/finance';
+import { capexLots } from '@/server/db/schema';
+import { eq } from 'drizzle-orm';
 import { canSee } from '@/config/screens';
 import { alertsForViewer, followedBy, portfolioDashboard } from '@/server/dal/governance';
 import { portfolioOf, subsidiaryChoice } from '@/server/dal/portfolio';
 import type { Viewer } from '@/server/viewer';
 
-export const DATASETS = ['register', 'portfolio-group', 'portfolio-subsidiary', 'alerts', 'execution'] as const;
+export const DATASETS = ['register', 'portfolio-group', 'portfolio-subsidiary', 'alerts', 'execution', 'fixed-assets'] as const;
 export type Dataset = (typeof DATASETS)[number];
 export const isDataset = (v: string): v is Dataset => (DATASETS as readonly string[]).includes(v);
 
@@ -70,6 +73,22 @@ export async function exportTable(d: Dataset, x: ExportCtx): Promise<ExportTable
         title: t('Alerts'),
         head: [t('Level'), t('CAPEX'), t('Alert'), t('Detail')],
         rows: alerts.map((a) => [a.level === 'alert' ? t('Alert') : t('Watch'), a.capexCode, t(a.text), a.detail ? alertDetail(a.detail, t, lang) : '']),
+      };
+    }
+    case 'fixed-assets': {
+      // The lots transferred into fixed assets at the closure (AR-050), one line per asset, for Sage FI-AA.
+      const code = query.get('capex') ?? '';
+      const c = code ? await capexForViewer(viewer, code) : null;
+      if (!c) return null;
+      const db = await getDb();
+      const [rows, lots] = await Promise.all([transfersOf(db, c.id), db.select().from(capexLots).where(eq(capexLots.capexId, c.id))]);
+      return {
+        title: `${c.code} ${t('Fixed assets')}`,
+        head: [t('Asset'), t('Description'), t('Subsidiary'), t('Site'), t('Asset class'), t('Useful life (years)'), t('Method'), t('Coefficient'), t('Acquisition value (k€)'), t('In service on'), 'CAPEX'],
+        rows: rows.map((f) => {
+          const l = lots.find((x) => x.id === f.lotId);
+          return [`${c.code}-${l?.number ?? ''}`, text(l?.title), c.subsidiaryCode, text(c.siteName), f.assetClassCode, f.lifeYears, f.method, f.factor, f.amountKeur, f.inServiceOn, c.code];
+        }),
       };
     }
     case 'execution': {

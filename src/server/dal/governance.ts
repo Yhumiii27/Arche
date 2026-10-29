@@ -27,6 +27,8 @@ import { modelValues, versionsOfMany } from './cycle';
 import { epc2iPackOf, executionFrom, lotPlansFrom } from './execution';
 import { portfolioOf } from './portfolio';
 import { daysOf, rampupFrom } from './rampup';
+import { envelopeData, phasedCapex } from './finance';
+import { envelopeCheck } from '@/domain/envelopes';
 
 type Q = DB | Tx;
 
@@ -69,11 +71,19 @@ async function dashboardData(q: Q, cs: readonly { id: string; code: string }[], 
   ]);
   const lotIds = lots.map((l) => l.id);
   const sessionIds = running.map((g) => g.id);
-  const [stored, days, steps] = await Promise.all([
+  const [stored, days, steps, env, phased] = await Promise.all([
     lotIds.length ? q.select().from(lotActuals).where(inArray(lotActuals.lotId, lotIds)).orderBy(asc(lotActuals.month)) : [],
     daysOf(q, lines.map((l) => l.id)),
     sessionIds.length ? q.select().from(circuitSteps).where(and(inArray(circuitSteps.gateId, sessionIds), eq(circuitSteps.status, 'open'))) : [],
+    envelopeData(q),
+    none ? Promise.resolve([]) : phasedCapex(q, today, ids),
   ]);
+  // Envelope control of each CAPEX (AR-040), against every CAPEX of the group.
+  const envelopeOverOf = (id: string, tolerancePct: number) => {
+    const mine = phased.find((p) => p.id === id);
+    if (!mine || !env.envelopes.length) return [];
+    return envelopeCheck(env.envelopes, env.movements, phased, mine, tolerancePct).over.map((r) => ({ year: r.year, overKeur: r.overKeur, blocked: !!r.state && (r.state.totalKeur <= 0 || (r.overKeur / r.state.totalKeur) * 100 > tolerancePct) }));
+  };
   const lotCapex = new Map(lots.map((l) => [l.id, l.capexId]));
   const lineCapex = new Map(lines.map((l) => [l.id, l.capexId]));
   const by = {
@@ -101,6 +111,7 @@ async function dashboardData(q: Q, cs: readonly { id: string; code: string }[], 
     lines: by.lines.get(c.id) ?? [],
     days: by.days.get(c.id) ?? [],
     steps: (g: string) => by.steps.get(g) ?? [],
+    envelopeOver: (tolerancePct: number) => envelopeOverOf(c.id, tolerancePct),
   });
 }
 
@@ -140,6 +151,7 @@ function dashboardFrom(c: CapexFull, d: DashboardData, values: ModelValues, toda
     g2Keur: exec.g2Keur, missingStaff: c.status === 'active' ? missingStaff(c.typology as 'light' | 'strategic' | null, d.team.map((m) => m.capexRole)) : [],
     lateConditions: d.lateConditions,
     rampup: c.phase === 'demarrage' && startup.result.mesStartedOn ? { alertOn: startup.result.alertOn, limitOn: startup.result.limitOn, reached: !!startup.result.reachedOn } : null,
+    envelopeOver: d.envelopeOver(values.envelopeBlockPct),
   }, today));
   const board = hsBoard(d.hs);
   return {

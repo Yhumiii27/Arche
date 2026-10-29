@@ -14,6 +14,8 @@ import { BP_HORIZON, checkBusinessPlan } from '@/domain/bp';
 import { resume, suspend, type CycleState } from '@/domain/lifecycle';
 import { checkTakeover } from '@/domain/takeover';
 import { isStale, ROW_VERSION_FIELD, STALE_MSG } from '@/domain/concurrency';
+import { EUR } from '@/domain/currency';
+import { converterFor, type Converter } from '@/server/dal/currency';
 import { businessToday } from '@/server/clock';
 import { getDb } from '@/server/db/client';
 import { recordActivity, writeAudit } from '@/server/db/helpers';
@@ -134,14 +136,20 @@ function readClass(raw: unknown): EstimateClass | null {
   return (ESTIMATE_CLASSES as readonly string[]).includes(String(raw)) ? (raw as EstimateClass) : null;
 }
 
-async function writeLines(tx: Tx, versionId: string, lines: { lotId: string; amountKeur: number }[]) {
+/** Writes a version's lines, typed in `conv`'s currency: k€ for every reading, the amount as typed and the rate beside it (AR-039). */
+async function writeLines(tx: Tx, versionId: string, lines: { lotId: string; amountKeur: number }[], conv: Converter) {
   await tx.delete(budgetLines).where(eq(budgetLines.budgetVersionId, versionId));
-  if (lines.length) await tx.insert(budgetLines).values(lines.map((l) => ({ budgetVersionId: versionId, ...l })));
+  if (lines.length) {
+    await tx.insert(budgetLines).values(lines.map((l) => ({
+      budgetVersionId: versionId, lotId: l.lotId, amountKeur: conv.keur(l.amountKeur),
+      ...(conv.currency === EUR ? {} : { amountLocal: l.amountKeur, currency: conv.currency, rate: conv.rate }),
+    })));
+  }
 }
 
 /** Creates a draft version (one version in progress at a time), or updates the draft `versionId`. */
 export async function saveBudgetVersionAction(code: string, versionId: string | null, _prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  return onCapex(code, 'budget', async (tx, c, v) => {
+  return onCapex(code, 'budget', async (tx, c, v, today) => {
     const f = fieldsOf(fd);
     const cls = readClass(f.estimateClass);
     if (!cls) return { ok: false, error: 'Choose the estimate class' };
@@ -149,6 +157,8 @@ export async function saveBudgetVersionAction(code: string, versionId: string | 
     if (!lots.length) return { ok: false, error: 'Add the lots of the CAPEX first' };
     const ch = checkBudgetLines(f, lots.map((l) => l.id));
     if (!ch.ok) return ch;
+    const conv = await converterFor(tx, c.subsidiaryCode, f.currency, today.slice(0, 7));
+    if (!conv.ok) return conv;
     const basis = (f.basis ?? '').trim().slice(0, 1000) || null;
     const versions = await versionsOf(tx, c.id);
     if (versionId) {
@@ -157,15 +167,15 @@ export async function saveBudgetVersionAction(code: string, versionId: string | 
       if (cur.status !== 'draft') return { ok: false, error: 'Only a draft version can be changed' };
       if (isStale(f[ROW_VERSION_FIELD], cur.rowVersion)) return { ok: false, error: STALE_MSG };
       await tx.update(budgetVersions).set({ estimateClass: cls, basis, updatedAt: new Date() }).where(eq(budgetVersions.id, cur.id));
-      await writeLines(tx, cur.id, ch.value);
-      await writeAudit(tx, auditOf(v, c, `budget version ${cur.number} updated (${cls})`, { entityType: 'budget_version', entityId: cur.id, after: { estimateClass: cls, lines: ch.value } }));
+      await writeLines(tx, cur.id, ch.value, conv.value);
+      await writeAudit(tx, auditOf(v, c, `budget version ${cur.number} updated (${cls})`, { entityType: 'budget_version', entityId: cur.id, after: { estimateClass: cls, currency: conv.value.currency, rate: conv.value.rate, lines: ch.value } }));
       return { ok: true };
     }
     if (versions.some((x) => x.status === 'draft' || x.status === 'submitted')) return { ok: false, error: 'Finish the version in progress first' };
     const number = nextNumber(versions.map((x) => x.number));
     const [bv] = await tx.insert(budgetVersions).values({ capexId: c.id, number, estimateClass: cls, basis, createdByName: v.name }).returning({ id: budgetVersions.id });
-    await writeLines(tx, bv.id, ch.value);
-    await writeAudit(tx, auditOf(v, c, `budget version ${number} created (${cls})`, { entityType: 'budget_version', entityId: bv.id, after: { estimateClass: cls, lines: ch.value } }));
+    await writeLines(tx, bv.id, ch.value, conv.value);
+    await writeAudit(tx, auditOf(v, c, `budget version ${number} created (${cls})`, { entityType: 'budget_version', entityId: bv.id, after: { estimateClass: cls, currency: conv.value.currency, rate: conv.value.rate, lines: ch.value } }));
     return { ok: true };
   });
 }

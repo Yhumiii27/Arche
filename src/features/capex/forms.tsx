@@ -16,6 +16,7 @@ import {
 } from './actions';
 import { PHASE_LABEL } from '@/domain/capex-labels';
 import { ROW_VERSION_FIELD } from '@/domain/concurrency';
+import { unitOf } from '@/domain/currency';
 import { gatesPassedBefore, takeoverClasses, TAKEOVER_PHASES } from '@/domain/takeover';
 import type { Phase } from '@/domain/lifecycle';
 
@@ -163,14 +164,19 @@ export function RemoveLotButton({ code, lotId }: { code: string; lotId: string }
   return <ActionButton run={() => removeLotAction(code, lotId)} label="Remove" done="Removed" variant="ghost" />;
 }
 
-export function VersionForm({ code, lots, version }: {
+export function VersionForm({ code, lots, version, currencies }: {
   code: string;
   lots: { id: string; number: number; title: string }[];
-  version?: { id: string; number: number; estimateClass: string; basis: string | null; lines: Record<string, number>; rowVersion: number };
+  version?: { id: string; number: number; estimateClass: string; basis: string | null; lines: Record<string, number>; rowVersion: number; entry: { currency: string; lines: Record<string, number> } | null };
+  /** The currencies the amounts may be typed in: the subsidiary's first, then the euro (AR-039). */
+  currencies: string[];
 }) {
   const { t } = useI18n();
   const o = useOptions();
   const id = version?.id ?? 'new';
+  // A draft shows its amounts as they were typed: in the subsidiary's currency, or in k€.
+  const typedIn = version ? version.entry?.currency ?? 'EUR' : currencies[0];
+  const amounts = version ? version.entry?.lines ?? version.lines : {};
   return (
     <Folded summary={version ? `Edit version ${version.number}` : 'New budget version'}>
       <ActionForm action={(p, fd) => saveBudgetVersionAction(code, version?.id ?? null, p, fd)} submit={version ? 'Save the version' : 'Create the version'} done="Saved">
@@ -181,9 +187,12 @@ export function VersionForm({ code, lots, version }: {
         <Field label={t('Basis of the estimate')} htmlFor={`bv-${id}-basis`}>
           <Input id={`bv-${id}-basis`} name="basis" defaultValue={version?.basis ?? ''} />
         </Field>
+        <Field label={t('Amounts in')} htmlFor={`bv-${id}-cur`} hint={t('Converted to k€ at the group’s reference rate')}>
+          <Select id={`bv-${id}-cur`} name="currency" defaultValue={typedIn} options={currencies.map((c) => ({ value: c, label: unitOf(c) }))} />
+        </Field>
         {lots.map((l) => (
-          <Field key={l.id} label={`${l.number} · ${l.title} (k€)`} htmlFor={`bv-${id}-${l.id}`}>
-            <Input id={`bv-${id}-${l.id}`} name={`lot:${l.id}`} inputMode="decimal" defaultValue={version?.lines[l.id] != null ? String(version.lines[l.id]) : ''} />
+          <Field key={l.id} label={`${l.number} · ${l.title}`} htmlFor={`bv-${id}-${l.id}`}>
+            <Input id={`bv-${id}-${l.id}`} name={`lot:${l.id}`} inputMode="decimal" defaultValue={amounts[l.id] != null ? String(amounts[l.id]) : ''} />
           </Field>
         ))}
       </ActionForm>

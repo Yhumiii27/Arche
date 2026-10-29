@@ -7,12 +7,13 @@ import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import type { RoleKey } from '@/config/roles';
 import { checkMatrix } from '@/domain/delegation';
+import { checkRate } from '@/domain/currency';
 import { checkModelValues, MODEL_CODE, MODEL_VERSION } from '@/domain/lifecycle';
 import { checkAssignment, checkRevenue, checkSite, checkSubsidiary, checkUser, checkZone, selfLockout } from '@/domain/admin';
 import { businessNow, businessToday } from '@/server/clock';
 import { getDb } from '@/server/db/client';
 import { writeAudit } from '@/server/db/helpers';
-import { capex, delegationMatrices, lifecycleModels, referenceRevenues, roleAssignments, sites, subsidiaries, users, zones } from '@/server/db/schema';
+import { capex, delegationMatrices, exchangeRates, lifecycleModels, referenceRevenues, roleAssignments, sites, subsidiaries, users, zones } from '@/server/db/schema';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import { getViewer, type Viewer } from '@/server/session';
 
@@ -173,6 +174,25 @@ export async function setRevenueAction(_prev: ActionResult | null, fd: FormData)
   });
   if (r.ok) revalidatePath('/admin/organisation');
   return r;
+}
+
+/** A reference exchange rate (AR-039): the group CFO or the administrator; a month's or a fiscal year's, replaced when entered again. */
+export async function setRateAction(_prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  const v = await asRole(['group_cfo', 'admin']);
+  if (!v) return { ok: false, error: 'This action is reserved to the group CFO' };
+  const c = checkRate(fieldsOf(fd));
+  if (!c.ok) return c;
+  const db = await getDb();
+  await db.transaction(async (tx) => {
+    const [before] = await tx.select().from(exchangeRates).where(and(eq(exchangeRates.currency, c.value.currency), eq(exchangeRates.period, c.value.period)));
+    const row = { ...c.value, enteredByName: v.name, enteredAt: new Date() };
+    await tx.insert(exchangeRates).values(row).onConflictDoUpdate({ target: [exchangeRates.currency, exchangeRates.period], set: row });
+    await writeAudit(tx, audit(v, `Exchange rate ${c.value.currency} ${c.value.period}`, before ? `rate: ${before.unitsPerEur} → ${c.value.unitsPerEur} ${c.value.currency} for 1 EUR` : `rate: ${c.value.unitsPerEur} ${c.value.currency} for 1 EUR`, {
+      before: before ? { unitsPerEur: before.unitsPerEur } : undefined, after: { unitsPerEur: c.value.unitsPerEur },
+    }));
+  });
+  revalidatePath('/admin/organisation');
+  return { ok: true };
 }
 
 /** Values of the DIG-PRODI 4.0 model (spec 03 header): delays and thresholds, the administrator only; the structure is code. */

@@ -25,6 +25,7 @@ import { CapexGantt } from '@/components/charts/capex-gantt';
 import { portfolioGantt } from '@/features/schedule/gantt-rows';
 import { getDb } from '@/server/db/client';
 import { portfolioSchedule } from '@/server/dal/schedule';
+import { phasedCapex } from '@/server/dal/finance';
 import { getI18n, getSubsidiaryCookie, getViewer, getZone } from '@/server/session';
 
 const pct = (n: number | null | undefined, lang: 'fr' | 'en') => (n == null ? '—' : `${fmtNum(n, lang)} %`);
@@ -38,6 +39,12 @@ export async function PortfolioView({ level }: { level: 'group' | 'subsidiary' }
   const summaries = new Map((await portfolioSchedule(await getDb(), ganttRows)).map((x) => [x.id, x.summary]));
   const gantt = portfolioGantt(ganttRows.map((r) => ({ code: r.code, title: dataText(r.title, lang), sub: [r.subsidiaryCode, t(labelOf(PHASE_LABEL, r.phase))].join(' · '), summary: summaries.get(r.id) ?? null })), p.today, lang, t);
   const k = (n: number | null | undefined) => fmtKeur(n, lang);
+  // Cash-flow by fiscal year (AR-045): the phased disbursements of the CAPEX of the portfolio.
+  const seenIds = new Set(p.rows.map((r) => r.id));
+  const phased = (await phasedCapex(await getDb(), p.today)).filter((x) => seenIds.has(x.id));
+  const thisYear = Number(p.today.slice(0, 4));
+  const cashYears = [thisYear - 1, thisYear, thisYear + 1, thisYear + 2, thisYear + 3];
+  const cashSubs = [...new Set(phased.filter((x) => cashYears.some((y) => (x.byYear[y] ?? 0) > 0)).map((x) => x.subsidiaryCode))].sort();
   const open = p.rows.filter((r) => r.status === 'active' || r.status === 'on_hold');
   const afterG2 = open.filter((r) => r.phase === 'execution' || r.phase === 'demarrage');
   const alerts = p.rows.flatMap((r) => r.dash.alerts);
@@ -183,6 +190,28 @@ export async function PortfolioView({ level }: { level: 'group' | 'subsidiary' }
             })}
           </tbody>
         </Table>
+      </SectionCard>
+
+      <SectionCard title={t('Cash-flow by fiscal year')} hint={t('Phased disbursements of the CAPEX open or on hold: actuals to date, then forecasts (k€)')} scroll>
+        {cashSubs.length ? (
+          <Table>
+            <thead><tr><Th>{t('Subsidiary')}</Th>{cashYears.map((y) => <Th key={y} align="right">{y}</Th>)}</tr></thead>
+            <tbody>
+              {cashSubs.map((sub) => (
+                <tr key={sub}>
+                  <Td>{sub}</Td>
+                  {cashYears.map((y) => <Td key={y} align="right" numeric>{k(phased.filter((x) => x.subsidiaryCode === sub).reduce((a, x) => a + (x.byYear[y] ?? 0), 0))}</Td>)}
+                </tr>
+              ))}
+              <tr>
+                <Td><strong>{t('Total')}</strong></Td>
+                {cashYears.map((y) => <Td key={y} align="right" numeric><strong>{k(phased.reduce((a, x) => a + (x.byYear[y] ?? 0), 0))}</strong></Td>)}
+              </tr>
+            </tbody>
+          </Table>
+        ) : (
+          <EmptyState>{t('No CAPEX with a phased budget yet.')}</EmptyState>
+        )}
       </SectionCard>
 
       <SectionCard title={t('Alerts')} hint={t('Rule-based alerts, always on')} scroll>

@@ -52,7 +52,7 @@ acceptée **qu'une fois** (`signature_replayed`) : un nouvel essai se signe à n
 
 | Point d'entrée | Corps | Effet |
 |---|---|---|
-| `POST /api/v1/capex/<code>/actuals` | `{"lot": 2, "month": "2026-09", "committedKeur": 120, "spentKeur": 80, "physicalPct": 35}` (au moins une mesure) | engagé / réalisé / avancement du lot (hors EPC2i) pour le mois, comme une ligne de l'import CSV du CDG (source « import ») |
+| `POST /api/v1/capex/<code>/actuals` | `{"lot": 2, "month": "2026-09", "currency": "MAD", "committedKeur": 1200, "spentKeur": 800, "physicalPct": 35}` (au moins une mesure ; montants en milliers de `currency`, la devise de la filiale par défaut, ou `EUR`) | engagé / réalisé / avancement du lot (hors EPC2i) pour le mois, convertis en k€ au taux de référence du mois (AR-039), comme une ligne de l'import CSV du CDG (source « import ») ; la réponse donne les k€, la devise et le taux |
 | `POST /api/v1/capex/<code>/actions` | `{"title": "…", "description": "…", "dueOn": "2026-11-15", "ownerEmail": "…", "source": "general", "sourceRef": "…"}` | une action du plan d'actions (201) ; le responsable, par son adresse, est dans l'équipe du CAPEX |
 
 ```bash

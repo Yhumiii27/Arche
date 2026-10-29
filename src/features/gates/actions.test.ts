@@ -19,7 +19,7 @@ import { addWorkingDays } from '@/domain/circuits';
 import { SECTIONS, type DossierKind } from '@/domain/dossiers';
 import type { GateCode } from '@/domain/lifecycle';
 import {
-  auditEntries, budgetVersions, capex, capexLots, changes, circuitSteps, dossierVersions, gateCriteriaResults, gates, roleAssignments, signatures, users,
+  auditEntries, budgetVersions, capex, capexLots, changes, circuitSteps, dossierVersions, gateCriteriaResults, gates, roleAssignments, signatures, users, envelopeMovements, envelopes,
 } from '@/server/db/schema';
 import { approvalsOf } from '@/server/dal/approvals';
 import { getViewer } from '@/server/session';
@@ -36,6 +36,9 @@ import { actOnStepAction, submitGateAction } from './actions';
 let t: TestDatabase;
 beforeAll(async () => {
   t = await testDatabase();
+  // The CAPEX of this test is not in the demo's envelopes: they would block its G2 (the envelope criterion: finance.test.ts).
+  await t.db.delete(envelopeMovements);
+  await t.db.delete(envelopes);
 });
 afterAll(() => t.close());
 beforeEach(() => jar.clear());
@@ -75,7 +78,7 @@ async function validatedVersion(cls: string, amounts: string[], validator: strin
   as('project_lead');
   const c = await row();
   const lots = await t.db.select().from(capexLots).where(eq(capexLots.capexId, c.id)).orderBy(capexLots.number);
-  expect(await saveBudgetVersionAction(CODE, null, null, form({ estimateClass: cls, ...Object.fromEntries(lots.map((l, i) => [`lot:${l.id}`, amounts[i]])) }))).toEqual({ ok: true });
+  expect(await saveBudgetVersionAction(CODE, null, null, form({ estimateClass: cls, currency: 'EUR', ...Object.fromEntries(lots.map((l, i) => [`lot:${l.id}`, amounts[i]])) }))).toEqual({ ok: true });
   const [bv] = await t.db.select().from(budgetVersions).where(eq(budgetVersions.capexId, c.id)).orderBy(desc(budgetVersions.number)).limit(1);
   expect(await submitVersionAction(CODE, bv.id)).toEqual({ ok: true });
   as(validator);
@@ -246,7 +249,7 @@ describe('delivery 3: a CAPEX through its four gates by the circuits', () => {
     await hsPassed('HS4');
     const slab = (await t.db.select().from(capexLots).where(and(eq(capexLots.capexId, (await row()).id), eq(capexLots.kind, 'civil_works'))))[0];
     as('controller');
-    expect(await saveActualAction(CODE, slab.id, null, form({ month: '2026-10', spentKeur: '590', physicalPct: '100' }))).toEqual({ ok: true });
+    expect(await saveActualAction(CODE, slab.id, null, form({ month: '2026-10', currency: 'EUR', spentKeur: '590', physicalPct: '100' }))).toEqual({ ok: true });
     as('project_lead');
     expect(await submitGateAction(CODE, null, form({}))).toEqual({ ok: true });
     expect(await act('dir_ig', 'K3', 'Ready-to-start visa', { outcome: 'approved', confirm: 'on' })).toEqual({ ok: true });
