@@ -10,3 +10,4 @@ export * from './actions';
 export * from './schedule';
 export * from './api';
 export * from './finance';
+export * from './portfolio';

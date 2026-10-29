@@ -26,6 +26,9 @@ import { portfolioGantt } from '@/features/schedule/gantt-rows';
 import { getDb } from '@/server/db/client';
 import { portfolioSchedule } from '@/server/dal/schedule';
 import { phasedCapex } from '@/server/dal/finance';
+import { prioritiesOf, weightsOf } from '@/server/dal/priority';
+import { ranked } from '@/domain/scoring';
+import { WeightsForm } from './forms';
 import { getI18n, getSubsidiaryCookie, getViewer, getZone } from '@/server/session';
 
 const pct = (n: number | null | undefined, lang: 'fr' | 'en') => (n == null ? '—' : `${fmtNum(n, lang)} %`);
@@ -46,6 +49,11 @@ export async function PortfolioView({ level }: { level: 'group' | 'subsidiary' }
   const cashYears = [thisYear - 1, thisYear, thisYear + 1, thisYear + 2, thisYear + 3];
   const cashSubs = [...new Set(phased.filter((x) => cashYears.some((y) => (x.byYear[y] ?? 0) > 0)).map((x) => x.subsidiaryCode))].sort();
   const open = p.rows.filter((r) => r.status === 'active' || r.status === 'on_hold');
+  // Prioritisation (AR-044): the CAPEX of the portfolio not closed, ranked by their score on the group's grid.
+  const prioRows = level === 'group' ? p.rows.filter((r) => r.status !== 'closed' && r.status !== 'abandoned') : [];
+  const prio = await prioritiesOf(await getDb(), prioRows.map((r) => ({ id: r.id, bacKeur: r.dash.indicators.bacKeur })));
+  const rankedRows = ranked(prioRows.map((r) => ({ ...r, ...prio.get(r.id)! })));
+  const weights = level === 'group' && viewer.role === 'dir_ig' ? await weightsOf(await getDb()) : null;
   const afterG2 = open.filter((r) => r.phase === 'execution' || r.phase === 'demarrage');
   const alerts = p.rows.flatMap((r) => r.dash.alerts);
   const lateGates = open.filter((r) => r.dash.running?.late);
@@ -191,6 +199,36 @@ export async function PortfolioView({ level }: { level: 'group' | 'subsidiary' }
           </tbody>
         </Table>
       </SectionCard>
+
+      {level === 'group' && (
+        <SectionCard title={t('Prioritisation')} hint={t('Score on 100 of the grid: computed criteria from the business plan and the risks, the others scored by the group')} actions={weights ? <WeightsForm weights={weights} /> : undefined} scroll>
+          {rankedRows.length ? (
+            <Table>
+              <thead>
+                <tr>
+                  <Th align="right">#</Th><Th>CAPEX</Th><Th>{t('Subsidiary')}</Th>
+                  {rankedRows[0].criteria.map((c) => <Th key={c.code} align="right">{`${t(c.label)} (${c.weight})`}</Th>)}
+                  <Th align="right">{t('Score')}</Th><Th align="right">{t('Coverage')}</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {rankedRows.map((r) => (
+                  <tr key={r.id}>
+                    <Td align="right" numeric>{r.rank ?? '—'}</Td>
+                    <Td nowrap>{canSee(viewer.role, 'capex-governance') ? <Link href={screenHref('capex-governance', { code: r.code })}>{r.code}</Link> : r.code}</Td>
+                    <Td>{r.subsidiaryCode}</Td>
+                    {r.criteria.map((c) => <Td key={c.code} align="right" numeric tone={c.score == null ? 'secondary' : undefined}>{c.score == null ? '—' : `${fmtNum(c.score, lang)}/5`}</Td>)}
+                    <Td align="right" numeric><strong>{r.score == null ? '—' : fmtNum(r.score, lang)}</strong></Td>
+                    <Td align="right" numeric tone="secondary">{`${r.coveragePct} %`}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          ) : (
+            <EmptyState>{t('No CAPEX to rank.')}</EmptyState>
+          )}
+        </SectionCard>
+      )}
 
       <SectionCard title={t('Cash-flow by fiscal year')} hint={t('Phased disbursements of the CAPEX open or on hold: actuals to date, then forecasts (k€)')} scroll>
         {cashSubs.length ? (

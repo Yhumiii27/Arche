@@ -6,21 +6,21 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-29 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 34 faits, 13 en cours, 5 à faire, sur 52 points.
+**Avancement** : 36 faits, 11 en cours, 5 à faire, sur 52 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
 | Bloquant production | 3 | ≈ 7 |
-| Prochaine étape | 10 | ≈ 64 |
+| Prochaine étape | 8 | ≈ 48 |
 | À décider | 3 | ≈ 15 |
 | Plus tard | 2 | ≈ 8 |
-| **Total** | **18** | **≈ 94** |
+| **Total** | **16** | **≈ 78** |
 
 L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il ne compte ni l'attente des décisions et des données, ni les développements à faire côté Keystone, Codex, Vigie, Cursus ou Matrix, ni la recette.
 
 | Statut (points restants) | Points |
 |---|---:|
-| Non commencé | 9 |
+| Non commencé | 7 |
 | Partiel | 0 |
 | Attend le responsable produit | 3 |
 | Attend un système externe | 6 |
@@ -34,7 +34,7 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 | Besoins machines et Keystone | 0 | 1 | 0 | 0 | 1 | 3 |
 | Documents (Codex) | 0 | 2 | 0 | 0 | 2 | 0 |
 | Jalons de sécurité (Vigie) | 0 | 0 | 1 | 0 | 1 | 1 |
-| Tableaux de bord et gouvernance | 1 | 2 | 0 | 0 | 3 | 5 |
+| Tableaux de bord et gouvernance | 1 | 0 | 0 | 0 | 1 | 7 |
 | Démarrage, montée en puissance et transfert | 0 | 1 | 0 | 0 | 1 | 3 |
 | Aide à la décision et signature avancée | 0 | 0 | 0 | 1 | 1 | 0 |
 | Cadrage, décisions et données attendues | 0 | 0 | 2 | 0 | 2 | 1 |
@@ -224,19 +224,11 @@ VG-01 à VG-05 ; Vigie ne les modélise pas aujourd’hui. Analyse comparative d
 Livraison 5 (C-3, N-13).  
 *Avancement : Lot 5a : jalons HS déclarés par le SSE groupe (N-13) avec preuve, quitus PSSR par le circuit du G3, registre des autorisations, critères g1_hs2, g2_hs3, g2_permits, k3_hs4, g3_pssr, g3_hs6. · Sources : docs/spec/03 §4*
 
-### 2.8 Tableaux de bord et gouvernance (3 restants, 5 faits)
+### 2.8 Tableaux de bord et gouvernance (1 restants, 7 faits)
 
 **AR-034 · Pilote sur 1 à 2 CAPEX** — *Bloquant production · non commencé · effort M* · **en cours (Pilote)**  
 Jeu production, utilisateurs réels, guides par rôle, mesure de référence (C-10). Analyse comparative du 25 oct. 2026 : le pilote sur des données réelles des filiales est le prérequis de toute comparaison utile avec les solutions du commerce ; les écarts fonctionnels relevés (AR-039 à AR-052) seront priorisés sur ses retours. Priorité suggérée : bloquant, inchangée.  
 *Avancement : 23 oct. 2026 : lot de développement fait — reprise d'un CAPEX en cours par le Sponsor (N-20), écran Objectifs DIG-PRODI et référence de l'existant (C-10), guides par rôle, procédure et journal des retours. Restent les prérequis du responsable produit (hébergement C-13, Entra, D-1 à D-4, relevé de l'existant, choix des CAPEX) et les corrections issues des retours. 24 oct. 2026 : premiers retours du responsable produit traités (assistant d'ouverture, menus, carte, données de démo, langue) ; plan d'actions et WBS / Gantt à venir. · Sources : docs/PLAN.md*
-
-**AR-043 · Scénarios what-if de portefeuille sous contrainte d’enveloppe groupe (base, contraint, croissance)** — *Prochaine étape · non commencé · effort L* · **en cours (Livraison 7)**  
-Scénarios de portefeuille nommés (base, contraint, croissance) : sélection et décalage de CAPEX, enveloppe groupe par exercice, comparaison des scénarios (dépense, retour, risques) et retenue d’un scénario pour le COPIL GPI. Dépend des enveloppes (AR-040). Absent d’Arche. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Planisware, Finario, Board) ; priorité suggérée : à décider.  
-*Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026*
-
-**AR-044 · Scoring multicritère de priorisation (valeur, risque, alignement stratégique) et classement inter-pays** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 7)**  
-Grille de critères pondérés tenue par le groupe (valeur financière du BP, risque, alignement stratégique, urgence, sécurité), note de chaque CAPEX saisie ou calculée, classement des CAPEX entre filiales et zones sur le portefeuille groupe et au COPIL GPI. Arche n’a que la typologie Light / Stratégique et les alertes à règles. Analyse comparative du 25 oct. 2026 : standard des outils de gestion de portefeuille ; priorité suggérée : à décider.  
-*Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026*
 
 **~~AR-008 · Coquille, registre d’écrans, accueil, registre et fiche CAPEX, administration en lecture~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 1)**  
 25 écrans au registre ; ceux des livraisons suivantes affichent « prévu pour la livraison n ».  
@@ -257,6 +249,14 @@ Enveloppe CAPEX votée par exercice (et plan pluriannuel) par filiale, zone et c
 **~~AR-042 · Exports CSV / XLSX / PDF des registres, portefeuilles et dossiers ; connecteur Power BI~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7a)**  
 Export CSV et XLSX du registre des CAPEX, des portefeuilles, du suivi engagé / réalisé et des alertes (colonnes du contrat `pub_capex`) ; export PDF serveur des dossiers figés et du rapport Copil (aujourd’hui des vues imprimables HTML seulement) ; connecteur Power BI (lecture des vues `pub_` par un compte dédié, ou flux OData). Analyse comparative du 25 oct. 2026 : standard du marché ; priorité suggérée : prochaine étape.  
 *Avancement : Exports Excel et CSV du registre, des portefeuilles groupe et filiale, des alertes et de l'engagé / réalisé (en-tête de chaque page, mêmes droits) ; PDF du rapport Copil et des versions de dossier écrit par le serveur ; Power BI par l'API en lecture (docs/API.md §7), rôle de lecture des vues pub_ demandé à Matrix (M-14). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/CONTRATS.md*
+
+**~~AR-043 · Scénarios what-if de portefeuille sous contrainte d’enveloppe groupe (base, contraint, croissance)~~** — *Prochaine étape · non commencé · effort L* · **fait (Livraison 7, lot 7c)**  
+Scénarios de portefeuille nommés (base, contraint, croissance) : sélection et décalage de CAPEX, enveloppe groupe par exercice, comparaison des scénarios (dépense, retour, risques) et retenue d’un scénario pour le COPIL GPI. Dépend des enveloppes (AR-040). Absent d’Arche. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Planisware, Finario, Board) ; priorité suggérée : à décider.  
+*Avancement : Page Scénarios de portefeuille : CAPEX gardés ou écartés, décalages en mois, enveloppe groupe par exercice ; comparaison (dépense, VAN, risques majeurs, score moyen) ; scénario retenu affiché au COPIL GPI. · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026*
+
+**~~AR-044 · Scoring multicritère de priorisation (valeur, risque, alignement stratégique) et classement inter-pays~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7c)**  
+Grille de critères pondérés tenue par le groupe (valeur financière du BP, risque, alignement stratégique, urgence, sécurité), note de chaque CAPEX saisie ou calculée, classement des CAPEX entre filiales et zones sur le portefeuille groupe et au COPIL GPI. Arche n’a que la typologie Light / Stratégique et les alertes à règles. Analyse comparative du 25 oct. 2026 : standard des outils de gestion de portefeuille ; priorité suggérée : à décider.  
+*Avancement : Grille de 6 critères pondérés (3 calculés depuis le BP et les risques, 3 notés par le groupe), score sur 100 dès 80 % du poids noté, classement sur le Portefeuille groupe, détail et notation sur la page Gouvernance. · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026*
 
 ### 2.9 Démarrage, montée en puissance et transfert (1 restants, 3 faits)
 
@@ -298,6 +298,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-29 — Lot 7c : scoring multicritère et classement (AR-044), scénarios de portefeuille et scénario retenu pour le COPIL GPI (AR-043).
 - 2026-10-29 — Lot 7b : multi-devises (AR-039), enveloppes (AR-040), cash-flow phasé (AR-045), amortissement et immobilisations (AR-050).
 - 2026-10-29 — Lot 7a : exports Excel / CSV / PDF (AR-042) ; API métier et webhooks (AR-048).
 - 2026-10-29 — AR-039 à AR-052 retenus par le responsable produit (livraison 7). Lot 7a : verrouillage optimiste et lecture des portefeuilles en un nombre fixe de requêtes (AR-049).

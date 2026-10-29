@@ -6,10 +6,10 @@
 // — each part only where the database has none of it. Refused on a database not seeded with
 // the demonstration data set. `npm run db:demo-topup` (scripts/db-demo-topup.ts).
 import { and, eq, inArray, isNull, or } from 'drizzle-orm';
-import { assetClasses, authorizations, capex, envelopes, exchangeRates, capexActions, gates, hsStatuses, machineNeeds, packItems, productionLines, reviews, rexEntries, roleAssignments, sites, users, wbsTasks } from '../schema';
+import { assetClasses, authorizations, capex, capexScores, envelopes, portfolioScenarios, exchangeRates, capexActions, gates, hsStatuses, machineNeeds, packItems, productionLines, reviews, rexEntries, roleAssignments, sites, users, wbsTasks } from '../schema';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import type { Tx } from '../types';
-import { DEMO_ASSET_CLASSES, DEMO_CAPEX, DEMO_PEOPLE, DEMO_RATES, DEMO_SITES, DEMO_SUBSIDIARIES, saiRex, seedActions, seedCapex, seedCopilGate, seedDelivery, seedEnvelopes, seedGovernance, seedNeeds, seedStartup, seedWbs } from './demo';
+import { DEMO_ASSET_CLASSES, DEMO_CAPEX, DEMO_PEOPLE, DEMO_RATES, DEMO_SITES, DEMO_SUBSIDIARIES, saiRex, seedActions, seedCapex, seedCopilGate, seedDelivery, seedEnvelopes, seedGovernance, seedPortfolio, seedNeeds, seedStartup, seedWbs } from './demo';
 import { readSeedRecord } from './mode';
 
 export interface TopUpReport {
@@ -31,6 +31,7 @@ export interface TopUpReport {
   rates: number;
   /** The demo's envelopes (AR-040), when the database has none. */
   envelopes: boolean;
+  portfolio: boolean;
 }
 
 export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
@@ -38,7 +39,7 @@ export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
   if (((await readSeedRecord(tx))?.mode ?? 'demo') !== 'demo') throw new Error('This database was not seeded with the demonstration data set: nothing changed');
   const subs = await tx.select({ code: capex.subsidiaryCode }).from(capex).where(inArray(capex.subsidiaryCode, DEMO_SUBSIDIARIES.map((s) => s.code))).limit(1);
   if (!subs.length) throw new Error('The demonstration subsidiaries have no CAPEX in this database: nothing changed');
-  const report: TopUpReport = { people: 0, roles: 0, sites: 0, located: 0, capex: [], copil: false, needs: [], delivery: false, startup: false, governance: false, rex: 0, actions: [], wbs: [], rates: 0, envelopes: false };
+  const report: TopUpReport = { people: 0, roles: 0, sites: 0, located: 0, capex: [], copil: false, needs: [], delivery: false, startup: false, governance: false, rex: 0, actions: [], wbs: [], rates: 0, envelopes: false, portfolio: false };
 
   // People and their roles, by e-mail.
   const known = new Map((await tx.select({ id: users.id, email: users.email }).from(users).where(inArray(users.email, DEMO_PEOPLE.map((p) => p.email)))).map((u) => [u.email, u.id]));
@@ -173,6 +174,14 @@ export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
   if (!(await tx.select({ id: envelopes.id }).from(envelopes).limit(1)).length) {
     await seedEnvelopes(tx, nameOf);
     report.envelopes = true;
+  }
+  // Scores and scenarios (AR-044, AR-043), when the database has none and the CAPEX they name are there.
+  const scored = ['CPX-APM-2026-01', 'CPX-SAI-2026-01', 'CPX-SAI-2026-02', 'CPX-SAI-2026-03'];
+  const found = await tx.select({ id: capex.id, code: capex.code }).from(capex).where(inArray(capex.code, scored));
+  if (found.length === scored.length && !(await tx.select({ id: portfolioScenarios.id }).from(portfolioScenarios).limit(1)).length && !(await tx.select({ id: capexScores.capexId }).from(capexScores).limit(1)).length) {
+    const of = (code: string) => found.find((f) => f.code === code)!.id;
+    await seedPortfolio(tx, { apm: of(scored[0]), sai: of(scored[1]), sai2: of(scored[2]), sai3: of(scored[3]) }, nameOf);
+    report.portfolio = true;
   }
   return report;
 }
