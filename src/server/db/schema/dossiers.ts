@@ -35,6 +35,8 @@ export const dossierVersions = arche.table('dossier_versions', {
   createdByName: text('created_by_name').notNull(),
   ...timestamps,
   rowVersion: rowVersion(),
+  /** Version of the dossier's template its sections follow (AR-052); null = the built-in sections. */
+  templateVersion: integer('template_version'),
 }, (t) => [unique('dossier_versions_number_uq').on(t.dossierId, t.number)]);
 
 /** Steps of a gate session's circuit, instantiated from the model (src/domain/circuits.ts). */
@@ -62,6 +64,8 @@ export const circuitSteps = arche.table('circuit_steps', {
   actedAt: timestamp('acted_at', { withTimezone: true }),
   ...timestamps,
   rowVersion: rowVersion(),
+  /** The absent person the actor stood in for (AR-041); null when they acted in their own name. */
+  onBehalfOfName: text('on_behalf_of_name'),
 }, (t) => [index('circuit_steps_gate_idx').on(t.gateId)]);
 
 /** Proof of a simple signature (spec 05 §3). Append-only (database trigger). */

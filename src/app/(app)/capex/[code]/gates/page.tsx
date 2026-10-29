@@ -9,7 +9,7 @@ import { PageHeader } from '@/components/app/shell/page-header';
 import { Table, Td, Th } from '@/components/ds/Table';
 import { Tag } from '@/components/ds/Tag';
 import { ROLE_LABEL, SPECIALITY_LABEL, isRoleKey, type ExpertSpeciality } from '@/config/roles';
-import { canActOn, circuitTemplate, isSigned, OUTCOMES_OF, OUTCOME_LABEL, STEP_KIND_LABEL, type Outcome, type StepActor, type StepKind } from '@/domain/circuits';
+import { canActOn, isSigned, OUTCOMES_OF, OUTCOME_LABEL, STEP_KIND_LABEL, type Outcome, type StepActor, type StepKind } from '@/domain/circuits';
 import { DOSSIER_LABEL, DOSSIER_OF_GATE } from '@/domain/dossiers';
 import { DECISION_LABEL, GATE_LABEL, currentGate, type CriterionState, type GateDecision } from '@/domain/lifecycle';
 import { loadCapexPage } from '@/features/capex/page-data';
@@ -21,6 +21,8 @@ import { currentEvaluation } from '@/server/cycle/evaluation';
 import { dossierVersions, roleAssignments, users } from '@/server/db/schema';
 import { gatesOf, teamOf } from '@/server/dal/cycle';
 import { dossierVersionsOf, stepsOf } from '@/server/dal/dossiers';
+import { standInFor, standInsOf } from '@/server/dal/absences';
+import { circuitFor } from '@/server/dal/designs';
 
 const STATE_LABEL: Record<CriterionState, string> = { met: 'Met', unmet: 'Not met', forced: 'Forced', not_evaluated: 'Not evaluated yet' };
 const STATUS_LABEL: Record<string, string> = { waiting: 'Waiting', open: 'Open', done: 'Done', cancelled: 'Cancelled' };
@@ -38,7 +40,7 @@ export default async function GatesPage({ params }: PageProps<'/capex/[code]/gat
 
   // Experts the project lead may name per speciality: those holding the speciality on the CAPEX.
   const experts = gate && !running && can('edit')
-    ? await Promise.all([...new Set(circuitTemplate(gate, c.typology as 'light' | 'strategic' | null).filter((s) => s.kind === 'opinion').map((s) => s.speciality!))].map(async (speciality) => {
+    ? await Promise.all([...new Set((await circuitFor(db, gate, c.typology as 'light' | 'strategic' | null)).filter((s) => s.kind === 'opinion').map((s) => s.speciality!))].map(async (speciality) => {
         const rows = await db.select({ id: users.id, name: users.displayName }).from(roleAssignments).innerJoin(users, eq(users.id, roleAssignments.userId))
           .where(and(eq(roleAssignments.role, 'expert'), eq(roleAssignments.scopeRef, c.code), eq(roleAssignments.speciality, speciality)));
         return { speciality, label: SPECIALITY_LABEL[speciality as ExpertSpeciality], options: rows.map((r) => ({ value: r.id, label: r.name })) };
@@ -51,7 +53,9 @@ export default async function GatesPage({ params }: PageProps<'/capex/[code]/gat
   const actorLabel = (a: string, spec: string | null) => (a === 'internal_client' ? t('Internal client') : a === 'expert' && spec ? `${t('Expert')} ${t(SPECIALITY_LABEL[spec as ExpertSpeciality])}` : isRoleKey(a) ? t(ROLE_LABEL[a]) : a);
   const returnTo = `/capex/${encodeURIComponent(c.code)}/gates`;
   // The circuit steps the viewer may act on now: their forms go in the page header (owner's pilot feedback, 25 Oct 2026).
-  const isMine = (s: (typeof runningSteps)[number]) => s.status === 'open' && canActOn({ actor: s.actor as StepActor, speciality: s.speciality, assigneeUserId: s.assigneeUserId }, actor, c);
+  // Their own steps, and those of an absent person they stand in for (AR-041).
+  const standIns = running ? await standInsOf(db, viewer.userId, today) : [];
+  const isMine = (s: (typeof runningSteps)[number]) => s.status === 'open' && (canActOn({ actor: s.actor as StepActor, speciality: s.speciality, assigneeUserId: s.assigneeUserId }, actor, c) || !!standInFor(s, c, standIns));
   const myStepForms = running
     ? runningSteps.filter(isMine).map((s) => (
         <StepForm
@@ -138,7 +142,7 @@ export default async function GatesPage({ params }: PageProps<'/capex/[code]/gat
                     <Td tone="secondary">{s.assigneeName ?? actorLabel(s.actor, s.speciality)}</Td>
                     <Td nowrap>{late ? <Tag tone="accent" size="sm">{t('Late')}</Tag> : t(STATUS_LABEL[s.status])}</Td>
                     <Td nowrap>{fmtDate(s.dueOn, lang)}</Td>
-                    <Td>{s.outcome ? `${t(OUTCOME_LABEL[s.outcome as Outcome])}${s.actedByName ? ` — ${s.actedByName}` : ''}${s.comment ? ` · ${s.comment}` : ''}` : '—'}</Td>
+                    <Td>{s.outcome ? `${t(OUTCOME_LABEL[s.outcome as Outcome])}${s.actedByName ? ` — ${s.actedByName}${s.onBehalfOfName ? ` (${t('on behalf of')} ${s.onBehalfOfName})` : ''}` : ''}${s.comment ? ` · ${s.comment}` : ''}` : '—'}</Td>
                   </tr>
                 );
               })}

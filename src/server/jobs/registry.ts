@@ -2,7 +2,8 @@ import 'server-only';
 // Arche's scheduled jobs: the schema backup (when ARCHE_BACKUP_DIR is set) and the daily schema declaration to Matrix (when
 // MATRIX_URL or MATRIX_DECLARATIONS_DIR is set), the Keystone mirror (every ARCHE_KEYSTONE_SYNC_MIN minutes unless
 // ARCHE_KEYSTONE=off), the weekly snapshot of every active CAPEX (taken daily, one row per week: the dashboards' trends), and
-// the business API's webhooks (AR-048: deliveries every minute, new alerts every hour).
+// the business API's webhooks (AR-048: deliveries every minute, new alerts every hour) and the circuits' e-mail notifications
+// (AR-041: every 15 minutes).
 import path from 'node:path';
 import { backupSchema } from '@/server/backup';
 import { getConfig } from '@/server/config';
@@ -10,6 +11,8 @@ import { businessNow, businessToday } from '@/server/clock';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import { takeSnapshots } from '@/server/dal/governance';
 import { deliverWebhooks, raiseAlerts } from '@/server/api/deliver';
+import { deliverEmails } from '@/server/notify/deliver';
+import { planNotices } from '@/server/notify/plan';
 import { declareArcheSchema } from '@/server/integrations/matrix';
 import { matrixDeclarationEnabled } from '@/server/integrations/matrix/declare-schema';
 import type { PostgresHandle } from '@/server/db/postgres';
@@ -61,6 +64,17 @@ export function archeJobs(h: PostgresHandle): Job[] {
       enabled: !!cfg.database,
       async run() {
         return `${await raiseAlerts(h.db, await businessToday(), new Date())} new alert(s)`;
+      },
+    },
+    {
+      // Circuit notifications (AR-041): the notices due today written to the outbox, then sent by ARCHE_MAIL_TRANSPORT.
+      name: 'notifications',
+      everyMin: 15,
+      enabled: !!cfg.database,
+      async run() {
+        const queued = await planNotices(h.db, await businessToday());
+        const r = await deliverEmails(h.db, cfg.mail, new Date());
+        return `${queued} queued, ${r.sent} sent, ${r.held} held${r.failed ? `, ${r.failed} failed` : ''}`;
       },
     },
     {

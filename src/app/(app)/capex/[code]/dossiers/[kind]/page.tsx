@@ -10,7 +10,7 @@ import { ActionLink } from '@/components/app/ActionForm';
 import { PageHeader } from '@/components/app/shell/page-header';
 import { Table, Td, Th } from '@/components/ds/Table';
 import { Tag } from '@/components/ds/Tag';
-import { completeness, DOSSIER_LABEL, isDossierKind, readContent, SECTIONS, VERSION_STATE_LABEL } from '@/domain/dossiers';
+import { completeness, DOSSIER_LABEL, isDossierKind, readContent, VERSION_STATE_LABEL } from '@/domain/dossiers';
 import { ComputedValues, readSnapshot } from '@/features/dossiers/computed';
 import { FreezeButton, ReferenceForm, RemoveReferenceButton, SectionForm } from '@/features/dossiers/forms';
 import { loadCapexPage } from '@/features/capex/page-data';
@@ -18,6 +18,7 @@ import { dataText } from '@/i18n/data-text';
 import { fmtInstant } from '@/lib/format';
 import { circuitSteps, gates, signatures } from '@/server/db/schema';
 import { computedFacts, computedSnapshot, dossierVersionsOf, versionHash } from '@/server/dal/dossiers';
+import { currentSections, sectionsFor } from '@/server/dal/designs';
 import { codexDocumentUrl } from '@/server/integrations/codex';
 
 export default async function DossierPage({ params, searchParams }: PageProps<'/capex/[code]/dossiers/[kind]'>) {
@@ -30,11 +31,13 @@ export default async function DossierPage({ params, searchParams }: PageProps<'/
   const v = (wanted ? versions.find((x) => x.number === wanted) : versions[0]) ?? null;
   const draft = !v || v.state === 'draft';
   const edit = can('edit') && (draft || v === versions[0]);
-  const content = readContent(kind, v?.content);
+  // The sections of the version's template (AR-052); before any version, the published template.
+  const secs = v ? await sectionsFor(db, kind, v.templateVersion) : (await currentSections(db, kind)).sections;
+  const content = readContent(kind, v?.content, secs);
   const snap = draft ? await computedSnapshot(db, c) : readSnapshot(v!.computed);
   const facts = await computedFacts(db, c);
-  const comp = draft ? completeness(kind, content, facts) : { pct: v!.completenessPct, bySection: completeness(kind, content, facts).bySection };
-  const intact = v && !draft && v.contentHash ? versionHash(kind, v.number, readContent(kind, v.content), v.computed) === v.contentHash : null;
+  const comp = draft ? completeness(kind, content, facts, secs) : { pct: v!.completenessPct, bySection: completeness(kind, content, facts, secs).bySection };
+  const intact = v && !draft && v.contentHash ? versionHash(kind, v.number, content, v.computed) === v.contentHash : null;
   const sessions = v ? await db.select({ id: gates.id, code: gates.code, session: gates.session }).from(gates).where(eq(gates.dossierVersionId, v.id)) : [];
   const sigs = sessions.length
     ? await db.select({ s: signatures, label: circuitSteps.label }).from(signatures).innerJoin(circuitSteps, eq(circuitSteps.id, signatures.circuitStepId)).where(inArray(circuitSteps.gateId, sessions.map((s) => s.id)))
@@ -75,7 +78,7 @@ export default async function DossierPage({ params, searchParams }: PageProps<'/
         {v && !draft && <span className="text-muted">{`${t('Frozen by')} ${v.frozenByName ?? '—'} · ${v.frozenAt ? fmtInstant(v.frozenAt, lang) : ''} · SHA-256 ${v.contentHash}`}</span>}
         {edit && v && !draft && <span className="text-muted">{t('Editing a section starts the next version; a circuit running on this version is then cancelled.')}</span>}
       </SectionCard>
-      {SECTIONS[kind].map((s) => {
+      {secs.map((s) => {
         const sec = content.sections[s.key];
         const done = comp.bySection[s.key];
         return (

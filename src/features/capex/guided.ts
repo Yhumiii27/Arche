@@ -17,6 +17,7 @@ import { applyOpen, applyTakeover } from '@/server/capex/cycle-writes';
 import { auditOf, type ActionResult } from '@/server/capex/write';
 import { capexRow, teamCandidates } from '@/server/dal/cycle';
 import { computedFacts, ensureDossier } from '@/server/dal/dossiers';
+import { currentSections } from '@/server/dal/designs';
 import { getViewer } from '@/server/session';
 
 export async function openGuidedAction(subsidiaryCode: string, raw: GuidedRaw): Promise<ActionResult> {
@@ -65,10 +66,12 @@ export async function openGuidedAction(subsidiaryCode: string, raw: GuidedRaw): 
     }
     if (g.sections.length) {
       const dossierId = await ensureDossier(tx, row.id, g.dossier);
-      const content = emptyContent(g.dossier);
-      for (const s of g.sections) content.sections[s.key].text = s.text;
-      const pct = completeness(g.dossier, content, await computedFacts(tx, { id: row.id, leadUserId: g.leadUserId })).pct;
-      const [d] = await tx.insert(dossierVersions).values({ dossierId, number: 1, state: 'draft', content: content as never, completenessPct: pct, createdByName: v.name }).returning({ id: dossierVersions.id });
+      // The sections of the published template (AR-052); a section it no longer has is left out.
+      const tpl = await currentSections(tx, g.dossier);
+      const content = emptyContent(g.dossier, tpl.sections);
+      for (const s of g.sections) if (content.sections[s.key]) content.sections[s.key].text = s.text;
+      const pct = completeness(g.dossier, content, await computedFacts(tx, { id: row.id, leadUserId: g.leadUserId }), tpl.sections).pct;
+      const [d] = await tx.insert(dossierVersions).values({ dossierId, number: 1, state: 'draft', content: content as never, completenessPct: pct, createdByName: v.name, templateVersion: tpl.version }).returning({ id: dossierVersions.id });
       await writeAudit(tx, auditOf(v, row, `${DOSSIER_LABEL[g.dossier]}: version 1 started (${g.sections.length} section(s))`, { entityType: 'dossier_version', entityId: d.id }));
     }
     await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'capex.created', text: `${code} created`, capexId: row.id });

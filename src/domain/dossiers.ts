@@ -95,14 +95,17 @@ export interface DossierContent {
   sections: Record<string, SectionContent>;
 }
 
-export const emptyContent = (kind: DossierKind): DossierContent => ({ sections: Object.fromEntries(SECTIONS[kind].map((s) => [s.key, { text: '', refs: [] }])) });
+/** The sections of a dossier: those of its template version (AR-052) when given, else the built-in ones. */
+export type Sections = readonly SectionDef[];
+
+export const emptyContent = (kind: DossierKind, secs: Sections = SECTIONS[kind]): DossierContent => ({ sections: Object.fromEntries(secs.map((s) => [s.key, { text: '', refs: [] }])) });
 
 /** Reads stored content over the empty one (unknown sections dropped, missing ones empty). */
-export function readContent(kind: DossierKind, stored: unknown): DossierContent {
-  const base = emptyContent(kind);
+export function readContent(kind: DossierKind, stored: unknown, secs: Sections = SECTIONS[kind]): DossierContent {
+  const base = emptyContent(kind, secs);
   const sec = (stored && typeof stored === 'object' ? (stored as { sections?: unknown }).sections : null) as Record<string, unknown> | null;
   if (!sec || typeof sec !== 'object') return base;
-  for (const s of SECTIONS[kind]) {
+  for (const s of secs) {
     const v = sec[s.key] as Partial<SectionContent> | undefined;
     if (!v || typeof v !== 'object') continue;
     base.sections[s.key] = {
@@ -123,11 +126,11 @@ export interface Completeness {
 }
 
 /** % of the required sections complete: a typed section has text; a computed one has its data. */
-export function completeness(kind: DossierKind, content: DossierContent, facts: ComputedFacts): Completeness {
+export function completeness(kind: DossierKind, content: DossierContent, facts: ComputedFacts, secs: Sections = SECTIONS[kind]): Completeness {
   const bySection: Record<string, boolean | null> = {};
   let counted = 0;
   let done = 0;
-  for (const s of SECTIONS[kind]) {
+  for (const s of secs) {
     if (s.mode === 'optional' || s.mode === 'circuit') {
       bySection[s.key] = null;
       continue;
@@ -161,8 +164,8 @@ export function checkCodexRef(raw: Record<string, unknown>): Check<{ id: string;
 }
 
 /** The text of a section typed by a person (at most 20 000 characters). */
-export function checkSectionText(kind: DossierKind, key: string, raw: unknown): Check<string> {
-  const s = SECTIONS[kind].find((x) => x.key === key);
+export function checkSectionText(kind: DossierKind, key: string, raw: unknown, secs: Sections = SECTIONS[kind]): Check<string> {
+  const s = secs.find((x) => x.key === key);
   if (!s || s.mode === 'circuit') return { ok: false, error: 'Unknown section' };
   const text = typeof raw === 'string' ? raw.replace(/\r\n/g, '\n').trim() : '';
   if (text.length > 20000) return { ok: false, error: 'The text is too long (20 000 characters at most)' };

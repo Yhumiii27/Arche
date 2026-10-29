@@ -6,21 +6,21 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-29 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 36 faits, 11 en cours, 5 à faire, sur 52 points.
+**Avancement** : 38 faits, 9 en cours, 5 à faire, sur 52 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
 | Bloquant production | 3 | ≈ 7 |
-| Prochaine étape | 8 | ≈ 48 |
+| Prochaine étape | 6 | ≈ 32 |
 | À décider | 3 | ≈ 15 |
 | Plus tard | 2 | ≈ 8 |
-| **Total** | **16** | **≈ 78** |
+| **Total** | **14** | **≈ 62** |
 
 L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il ne compte ni l'attente des décisions et des données, ni les développements à faire côté Keystone, Codex, Vigie, Cursus ou Matrix, ni la recette.
 
 | Statut (points restants) | Points |
 |---|---:|
-| Non commencé | 7 |
+| Non commencé | 5 |
 | Partiel | 0 |
 | Attend le responsable produit | 3 |
 | Attend un système externe | 6 |
@@ -30,7 +30,7 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 | Plateforme et mise en production | 2 | 0 | 0 | 1 | 3 | 7 |
 | Connexion, profils et isolation par filiale | 0 | 0 | 0 | 0 | 0 | 4 |
 | CAPEX et cycle DIG-PRODI | 0 | 2 | 0 | 0 | 2 | 6 |
-| Dossiers vivants et circuits de décision | 0 | 2 | 0 | 0 | 2 | 4 |
+| Dossiers vivants et circuits de décision | 0 | 0 | 0 | 0 | 0 | 6 |
 | Besoins machines et Keystone | 0 | 1 | 0 | 0 | 1 | 3 |
 | Documents (Codex) | 0 | 2 | 0 | 0 | 2 | 0 |
 | Jalons de sécurité (Vigie) | 0 | 0 | 1 | 0 | 1 | 1 |
@@ -160,15 +160,7 @@ Montants des budgets, de l’engagé et du réalisé saisis dans la devise de la
 Phasage mensuel prévisionnel des décaissements de chaque lot saisi par le chef de projet ou le CDG (et non une répartition uniforme sur la fenêtre du lot), re-prévision à chaque mois (reste à dépenser), comparaison de la prévision à la baseline G2 et au réalisé sur la courbe en S, consolidation par filiale et par exercice pour la trésorerie du groupe. Arche saisit l’engagé et le réalisé mensuels mais ne phase pas la prévision. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Unifier, Board) ; priorité suggérée : à décider.  
 *Avancement : Prévision mensuelle des décaissements par lot (en devise de la filiale), répartition du reste à dépenser à défaut, comparaison baseline G2 / réalisé (page Exécution), cash-flow par filiale et par exercice dans les portefeuilles. · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/spec/06-gouvernance-pilotage.md*
 
-### 2.4 Dossiers vivants et circuits de décision (2 restants, 4 faits)
-
-**AR-041 · Notifications e-mail aux étapes des circuits, relances, escalade automatique et délégation d’absence** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 7)**  
-Envoi d’un e-mail à l’ouverture d’une étape de circuit, relances des étapes dues et en retard par le worker, escalade automatique au niveau supérieur après un délai paramétrable, délégation d’absence (un suppléant pour une période) ; préférences par utilisateur. Aucune notification aujourd’hui : les étapes dues n’apparaissent que dans « Mes validations » et sur la page du jalon (N-35). Analyse comparative du 25 oct. 2026 : standard du marché ; priorité suggérée : prochaine étape, dès le choix du transport.  
-*Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Attend : Responsable produit / DSI : choix du transport (SMTP ou Microsoft Graph, N-35) · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/DECISIONS.md N-35, docs/spec/05-circuits.md*
-
-**AR-052 · Concepteur no-code de formulaires et de circuits par l’administrateur** — *Prochaine étape · non commencé · effort L* · **en cours (Livraison 7)**  
-Édition par l’administrateur, sans code, des sections et champs des dossiers vivants et des étapes des circuits (acteurs, délais, parallélisme, conditions), avec versions et prévisualisation. Le modèle DIG-PRODI d’Arche est paramétrable en valeurs (phases, critères, délais) mais sa structure est codée (`src/domain/dossiers.ts`, `src/domain/circuits.ts`). Analyse comparative du 25 oct. 2026 : différenciant du marché (Unifier uDesigner) ; priorité suggérée : plus tard.  
-*Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026*
+### 2.4 Dossiers vivants et circuits de décision (0 restants, 6 faits)
 
 **~~AR-021 · Dossiers vivants : sections, complétude, versions, figement, empreinte~~** — *Prochaine étape · non commencé · effort L* · **fait (Livraison 3)**  
 Livraison 3.  
@@ -185,6 +177,14 @@ Livraison 3 (C-4).
 **~~AR-024 · BP : VAN, TRI, délai de retour~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 3)**  
 Livraison 3 (N-11).  
 *Avancement : Saisie du BP sur 10 ans, VAN, TRI, délai de retour, validation par la DAF groupe. · Sources : docs/spec/06 §4*
+
+**~~AR-041 · Notifications e-mail aux étapes des circuits, relances, escalade automatique et délégation d’absence~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7d)**  
+Envoi d’un e-mail à l’ouverture d’une étape de circuit, relances des étapes dues et en retard par le worker, escalade automatique au niveau supérieur après un délai paramétrable, délégation d’absence (un suppléant pour une période) ; préférences par utilisateur. Aucune notification aujourd’hui : les étapes dues n’apparaissent que dans « Mes validations » et sur la page du jalon (N-35). Analyse comparative du 25 oct. 2026 : standard du marché ; priorité suggérée : prochaine étape, dès le choix du transport.  
+*Avancement : Avis des étapes de circuit (ouverture, veille, jour J, relances, escalade au directeur industriel et au sponsor), boîte d’envoi et tâche notifications ; transport none ou file (SMTP / Graph : N-35) ; absences et suppléant qui agit pour le compte de l’absent. · Attend : Responsable produit / DSI : choix du transport (SMTP ou Microsoft Graph, N-35) · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/DECISIONS.md N-35, docs/spec/05-circuits.md*
+
+**~~AR-052 · Concepteur no-code de formulaires et de circuits par l’administrateur~~** — *Prochaine étape · non commencé · effort L* · **fait (Livraison 7, lot 7d)**  
+Édition par l’administrateur, sans code, des sections et champs des dossiers vivants et des étapes des circuits (acteurs, délais, parallélisme, conditions), avec versions et prévisualisation. Le modèle DIG-PRODI d’Arche est paramétrable en valeurs (phases, critères, délais) mais sa structure est codée (`src/domain/dossiers.ts`, `src/domain/circuits.ts`). Analyse comparative du 25 oct. 2026 : différenciant du marché (Unifier uDesigner) ; priorité suggérée : plus tard.  
+*Avancement : Page Concepteur des dossiers et circuits : modèles versionnés par dossier et par jalon, brouillon, aperçu, publication ; appliqués aux versions et sessions commencées ensuite ; verrous de la méthode. · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026*
 
 ### 2.5 Besoins machines et Keystone (1 restants, 3 faits)
 
@@ -298,6 +298,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-29 — Lot 7d : notifications e-mail, relances, escalade et absences (AR-041), concepteur sans code des dossiers et circuits (AR-052).
 - 2026-10-29 — Lot 7c : scoring multicritère et classement (AR-044), scénarios de portefeuille et scénario retenu pour le COPIL GPI (AR-043).
 - 2026-10-29 — Lot 7b : multi-devises (AR-039), enveloppes (AR-040), cash-flow phasé (AR-045), amortissement et immobilisations (AR-050).
 - 2026-10-29 — Lot 7a : exports Excel / CSV / PDF (AR-042) ; API métier et webhooks (AR-048).

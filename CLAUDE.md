@@ -75,8 +75,13 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `src/domain/depreciation.ts`; export `fixed-assets`). Lot 7c: prioritisation (AR-044: `scoring_weights`, `capex_scores`,
   `src/domain/scoring.ts`, a score only from 80 % of the weight scored; `prioritiesOf` in `src/server/dal/priority.ts`; ranking on the
   Group portfolio, scores on the Governance page) and scenarios (AR-043: `portfolio_scenarios`, `scenario_items`,
-  `src/domain/scenarios.ts`, page `/scenarios`, retained scenario on `/copil`; actions `src/features/portfolio/actions.ts`). Lots 7d
-  and 7e follow.
+  `src/domain/scenarios.ts`, page `/scenarios`, retained scenario on `/copil`; actions `src/features/portfolio/actions.ts`). Lot 7d:
+  circuit notifications (AR-041: `src/domain/notify.ts` `noticesOf`, outbox `email_outbox` filled by `planNotices` and sent by
+  `deliverEmails` in the job `notifications`, `ARCHE_MAIL_TRANSPORT` none | file; absences `absences`, a delegate acts "on behalf
+  of" through `standInsOf` / `standInFor` and reads the CAPEX of the step, `src/server/dal/absences.ts`) and the no-code designer
+  (AR-052: `designs`, `src/domain/designer.ts`, page `/admin/designer`; `circuitFor` and `currentSections` / `sectionsFor` in
+  `src/server/dal/designs.ts`, `dossier_versions.template_version`; never read `SECTIONS` or `circuitTemplate` directly for a
+  CAPEX). Lot 7e follows.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

@@ -11,3 +11,5 @@ export * from './schedule';
 export * from './api';
 export * from './finance';
 export * from './portfolio';
+export * from './notify';
+export * from './designer';

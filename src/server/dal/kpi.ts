@@ -3,7 +3,6 @@ import 'server-only';
 // the reference of the existing process (kpi_baselines). The rules are in src/domain/kpi.ts.
 import { and, eq, inArray, isNotNull } from 'drizzle-orm';
 import { workingDaysBetween } from '@/domain/circuits';
-import { readContent, type DossierKind } from '@/domain/dossiers';
 import { KPI_KEYS, kpiView, measureKpis, type KpiKey, type SessionFact } from '@/domain/kpi';
 import type { GateCode } from '@/domain/lifecycle';
 import { getDb } from '@/server/db/client';
@@ -32,7 +31,8 @@ export async function pilotIndicators(viewer: Viewer) {
   const signedGates = new Set(deciding.filter((s) => signed.has(s.id)).map((s) => s.gateId));
   const versionIds = sessions.map((g) => g.dossierVersionId).filter((x): x is string => !!x);
   const versions = versionIds.length ? await db.select({ id: dossierVersions.id, content: dossierVersions.content, kind: dossiers.kind }).from(dossierVersions).innerJoin(dossiers, eq(dossiers.id, dossierVersions.dossierId)).where(inArray(dossierVersions.id, versionIds)) : [];
-  const refsOf = new Map(versions.map((v) => [v.id, Object.values(readContent(v.kind as DossierKind, v.content).sections).reduce((n, s) => n + s.refs.length, 0)]));
+  // Every section stored, whatever the template of the version (AR-052).
+  const refsOf = new Map(versions.map((v) => [v.id, Object.values(((v.content as { sections?: Record<string, { refs?: unknown[] }> }).sections) ?? {}).reduce((n, s) => n + (Array.isArray(s?.refs) ? s.refs.length : 0), 0)]));
   const facts: (SessionFact & { capexCode: string; session: number })[] = sessions.map((g) => {
     const submittedOn = dayOf(g.createdAt);
     const decidedOn = dayOf(g.decidedAt!);

@@ -12,6 +12,8 @@ import { DECIDER_ROLE_OF, type DeciderLevel } from '@/domain/delegation';
 import { getDb } from '@/server/db/client';
 import { budgetVersions, capex, capexMembers, changes, circuitSteps, gates } from '@/server/db/schema';
 import type { Viewer } from '@/server/viewer';
+import { businessToday } from '@/server/clock';
+import { standInFor, standInsOf } from './absences';
 import { visibleCapex } from './capex';
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
@@ -33,12 +35,16 @@ export async function approvalsOf(v: Viewer): Promise<ApprovalItem[]> {
   ]);
   const facts = new Map(rows.map((r) => [r.id, r]));
   const internalClientOf = new Set(members.map((m) => m.capexId));
+  const standIns = await standInsOf(db, v.userId, await businessToday(db));
   const items: ApprovalItem[] = [];
   for (const x of steps) {
     const c = facts.get(x.capexId)!;
     const actor = { role: v.role, userId: v.userId, assignments: v.assignments, internalClient: internalClientOf.has(c.id) };
-    if (!canActOn({ actor: x.s.actor as StepActor, speciality: x.s.speciality, assigneeUserId: x.s.assigneeUserId }, actor, c)) continue;
+    const own = canActOn({ actor: x.s.actor as StepActor, speciality: x.s.speciality, assigneeUserId: x.s.assigneeUserId }, actor, c);
+    const standIn = own ? null : standInFor(x.s, c, standIns);
+    if (!own && !standIn) continue;
     items.push({
+      ...(standIn ? { onBehalfOf: standIn.person.displayName } : {}),
       kind: 'step', capexCode: c.code, title: x.s.label, detail: `${x.gateCode} · session ${x.session}`, subject: byId.get(c.id)!.title, since: x.s.openedOn ?? iso(x.s.createdAt), due: x.s.dueOn,
       href: screenHref('capex-gates', { code: c.code }),
     });

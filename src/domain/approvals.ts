@@ -22,6 +22,8 @@ export interface ApprovalItem {
   /** Deadline (ISO date), null when none. */
   due: string | null;
   href: string;
+  /** The absent person the viewer stands in for (AR-041), as typed. */
+  onBehalfOf?: string;
 }
 
 export interface InboxFigures {
