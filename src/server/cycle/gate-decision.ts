@@ -10,6 +10,7 @@ import { recordActivity, writeAudit } from '@/server/db/helpers';
 import { budgetVersions, capex, decisions, machineNeeds, gateConditions, gateCriteriaResults, gates, phaseTransitions } from '@/server/db/schema';
 import type { Tx } from '@/server/db/types';
 import { auditOf } from '@/server/capex/write';
+import { businessNow } from '@/server/clock';
 import { answersOf } from '@/server/integrations/keystone';
 
 const PHASE_NO: Record<string, number> = { cadrage: 1, avant_projet: 2, execution: 3, demarrage: 4 };
@@ -25,7 +26,9 @@ export async function applyGateDecision(
   opts: { reason: string | null; conditions: readonly string[]; today: string },
 ): Promise<void> {
   const { reason, conditions, today } = opts;
-  await tx.update(gates).set({ status: 'decided', decision, decisionReason: reason, decidedAt: new Date(), decidedByName: actor.name, decidedByUserId: actor.userId, updatedAt: new Date() }).where(eq(gates.id, g.id));
+  // Dated by the business clock, like the transition's effective date (a pinned ARCHE_CLOCK dates the decision on that day).
+  const decidedAt = await businessNow(tx);
+  await tx.update(gates).set({ status: 'decided', decision, decisionReason: reason, decidedAt, decidedByName: actor.name, decidedByUserId: actor.userId, updatedAt: new Date() }).where(eq(gates.id, g.id));
   await tx.delete(gateCriteriaResults).where(eq(gateCriteriaResults.gateId, g.id));
   await tx.insert(gateCriteriaResults).values(ev.results.map((r) => ({ gateId: g.id, criterionCode: r.code, state: r.state, value: r.value, forcedReason: r.forcedReason })));
   if (conditions.length && decision === 'go_with_conditions') await tx.insert(gateConditions).values(conditions.map((text, i) => ({ gateId: g.id, number: i + 1, text })));

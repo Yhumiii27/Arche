@@ -15,6 +15,7 @@ import {
 import { DOSSIER_LABEL, DOSSIER_OF_GATE } from '@/domain/dossiers';
 import { CRITERIA, currentGate, decideGate, evaluateGate, type CycleState, type GateCode } from '@/domain/lifecycle';
 import { withPssrDischarge } from '@/domain/safety';
+import { isStale, ROW_VERSION_FIELD, STALE_MSG } from '@/domain/concurrency';
 import { EXPERT_SPECIALITIES } from '@/config/roles';
 import { recordActivity, writeAudit } from '@/server/db/helpers';
 import { circuitSteps, dossierVersions, gates, signatures } from '@/server/db/schema';
@@ -98,6 +99,7 @@ export async function actOnStepAction(code: string, stepId: string, _prev: Actio
     if (!row) return { ok: false, error: 'Unknown step' };
     const [g] = await tx.select().from(gates).where(eq(gates.id, row.gateId));
     if (!g || g.capexId !== c.id || g.status !== 'in_review') return { ok: false, error: 'This circuit is not running' };
+    if (isStale(fd.get(ROW_VERSION_FIELD), row.rowVersion)) return { ok: false, error: STALE_MSG };
     const team = await teamOf(tx, c.id);
     const actor = { role: v.role, userId: v.userId, assignments: v.assignments, internalClient: team.some((m) => m.userId === v.userId && m.capexRole === 'internal_client') };
     if (!canActOn({ actor: row.actor as StepActor, speciality: row.speciality, assigneeUserId: row.assigneeUserId }, actor, c)) return REFUSED;

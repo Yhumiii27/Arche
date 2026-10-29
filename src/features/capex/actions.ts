@@ -13,6 +13,7 @@ import {
 import { BP_HORIZON, checkBusinessPlan } from '@/domain/bp';
 import { resume, suspend, type CycleState } from '@/domain/lifecycle';
 import { checkTakeover } from '@/domain/takeover';
+import { isStale, ROW_VERSION_FIELD, STALE_MSG } from '@/domain/concurrency';
 import { businessToday } from '@/server/clock';
 import { getDb } from '@/server/db/client';
 import { recordActivity, writeAudit } from '@/server/db/helpers';
@@ -68,6 +69,7 @@ export async function createCapexAction(_prev: ActionResult | null, fd: FormData
 
 export async function updateSheetAction(code: string, _prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
   return onCapex(code, 'edit', async (tx, c, v) => {
+    if (isStale(fd.get(ROW_VERSION_FIELD), c.rowVersion)) return { ok: false, error: STALE_MSG };
     const subSites = new Set((await tx.select({ id: sites.id }).from(sites).where(eq(sites.subsidiaryCode, c.subsidiaryCode))).map((x) => x.id));
     const ch = checkSheet(fieldsOf(fd), { sites: subSites });
     if (!ch.ok) return ch;
@@ -153,6 +155,7 @@ export async function saveBudgetVersionAction(code: string, versionId: string | 
       const cur = versions.find((x) => x.id === versionId);
       if (!cur) return { ok: false, error: 'Unknown budget version' };
       if (cur.status !== 'draft') return { ok: false, error: 'Only a draft version can be changed' };
+      if (isStale(f[ROW_VERSION_FIELD], cur.rowVersion)) return { ok: false, error: STALE_MSG };
       await tx.update(budgetVersions).set({ estimateClass: cls, basis, updatedAt: new Date() }).where(eq(budgetVersions.id, cur.id));
       await writeLines(tx, cur.id, ch.value);
       await writeAudit(tx, auditOf(v, c, `budget version ${cur.number} updated (${cls})`, { entityType: 'budget_version', entityId: cur.id, after: { estimateClass: cls, lines: ch.value } }));

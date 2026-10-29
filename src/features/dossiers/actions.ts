@@ -7,6 +7,7 @@ import { checkCodexRef, checkSectionText, completeness, DOSSIER_LABEL, emptyCont
 import { recordActivity, writeAudit } from '@/server/db/helpers';
 import { circuitSteps, dossierVersions, gates } from '@/server/db/schema';
 import type { Tx } from '@/server/db/types';
+import { sectionChanged, SECTION_BASE_FIELD, STALE_MSG } from '@/domain/concurrency';
 import { auditOf, fieldsOf, onCapex, type ActionResult, type CapexRowFull } from '@/server/capex/write';
 import { computedFacts, computedSnapshot, dossierVersionsOf, ensureDossier, runningSession, versionHash } from '@/server/dal/dossiers';
 import { lookupCodexDocument } from '@/server/integrations/codex';
@@ -53,6 +54,9 @@ export async function saveSectionAction(code: string, kind: string, key: string,
     const d = await draftOf(tx, c, v, kind);
     const content = readContent(kind, d.content);
     if (content.sections[key].text === ch.value) return { ok: true };
+    // Optimistic lock at the level of the section (AR-049): several people write a dossier at once, each its own sections;
+    // a section changed by someone else since the form was shown is not overwritten.
+    if (sectionChanged(fd.get(SECTION_BASE_FIELD), content.sections[key].text)) return { ok: false, error: STALE_MSG };
     content.sections[key].text = ch.value;
     await saveContent(tx, c, kind, d.id, content);
     await writeAudit(tx, auditOf(v, c, `${DOSSIER_LABEL[kind]} v${d.number}: section "${SECTIONS[kind].find((s) => s.key === key)!.title}" updated`, { entityType: 'dossier_version', entityId: d.id }));

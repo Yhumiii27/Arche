@@ -58,6 +58,7 @@ export default async function GatesPage({ params }: PageProps<'/capex/[code]/gat
           key={s.id}
           code={c.code}
           stepId={s.id}
+          rowVersion={s.rowVersion}
           outcomes={OUTCOMES_OF[s.kind as StepKind]}
           signed={isSigned(s.kind as StepKind)}
           statement={`${s.label} — ${c.code}, ${running.code} session ${running.session}${runningVersion ? `, v${runningVersion.number}, SHA-256 ${runningVersion.contentHash}` : ''}`}

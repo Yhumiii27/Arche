@@ -240,5 +240,6 @@
   "You cannot do this on this CAPEX": "Vous ne pouvez pas faire cela sur ce CAPEX",
   "forced": "forcée",
   "major": "majeurs",
-  "open": "ouverts"
+  "open": "ouverts",
+  "Someone else changed this in the meantime: reload the page and try again": "Quelqu’un d’autre a modifié cet élément entre-temps : rechargez la page et recommencez"
 }

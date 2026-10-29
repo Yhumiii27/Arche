@@ -2,7 +2,7 @@
 // decisions (delivery 2). Dossiers, circuits and changes come with delivery 3 (new migrations).
 import { boolean, date, index, integer, jsonb, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { arche } from './_schema';
-import { id, keur, timestamps } from './_common';
+import { id, keur, rowVersion, timestamps } from './_common';
 import { sites, subsidiaries, users } from './organisation';
 
 export type CapexStatus = 'draft' | 'active' | 'on_hold' | 'closed' | 'abandoned';
@@ -40,6 +40,7 @@ export const capex = arche.table('capex', {
   /** Takeover of a CAPEX already in progress (N-20, pilot): when and by whom it was opened in its current phase. */
   takenOverAt: timestamp('taken_over_at', { withTimezone: true }),
   takenOverByName: text('taken_over_by_name'),
+  rowVersion: rowVersion(),
 });
 
 /** Named CAPEX team (docs/spec/02 §3). */
@@ -96,6 +97,7 @@ export const budgetVersions = arche.table('budget_versions', {
   isG2Baseline: boolean('is_g2_baseline').notNull().default(false),
   createdByName: text('created_by_name').notNull(),
   ...timestamps,
+  rowVersion: rowVersion(),
 }, (t) => [unique('budget_versions_number_uq').on(t.capexId, t.number)]);
 
 /** Central amount of a lot in a version (k€); range = class × central. */

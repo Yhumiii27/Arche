@@ -34,8 +34,13 @@ export async function daysOf(q: Q, lineIds: string[]): Promise<RampupDay[]> {
 /** The ramp-up of a CAPEX: its lines, their days and the rules applied. */
 export async function rampupOf(q: Q, c: { id: string; mesStartedOn: string | null }, values: ModelValues, today: string) {
   const rows = await linesOf(q, c.id);
+  const days = await daysOf(q, rows.map((l) => l.id));
+  return rampupFrom(c, rows, days, values, today);
+}
+
+/** rampupOf from rows already read. */
+export function rampupFrom(c: { mesStartedOn: string | null }, rows: Awaited<ReturnType<typeof linesOf>>, days: RampupDay[], values: ModelValues, today: string) {
   const lines = rows.map(lineDef);
-  const days = await daysOf(q, lines.map((l) => l.id));
   const rules = rulesOf(values);
   return { lines, rows, days, rules, result: capexRampup({ mesStartedOn: c.mesStartedOn, lines, days }, rules, today) };
 }

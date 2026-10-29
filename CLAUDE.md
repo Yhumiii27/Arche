@@ -60,6 +60,12 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   summary bar. Page actions (owner, 25 Oct 2026): every page passes the actions its viewer may take to `PageHeader`
   (`primary`, `actions`: client elements only, so that they can be counted); beyond 3 they go in the "Actions" list
   (`src/components/app/shell/header-actions.tsx`; `Folded`, `ActionButton`, `ActionLink` render as menu rows there).
+- **Delivery 7 has started** (owner, 29 Oct 2026: the 14 points of the market gap analysis, AR-039 to AR-052, all retained;
+  `docs/DECISIONS.md` §5 holds the default choice of each). Lot 7a: optimistic lock (`row_version` + trigger on capex,
+  budget_versions, dossier_versions, circuit_steps; `src/domain/concurrency.ts`: a form sends `rowVersion`, a dossier section
+  its shown text `base`), portfolio views in a fixed number of queries (`capexDashboards`, `versionsOfMany`,
+  `projectsOfMany`, `schedulesOf`; load test `src/server/dal/portfolio-load.test.ts`). Then exports (AR-042), API and webhooks
+  (AR-048); lots 7b to 7e follow.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

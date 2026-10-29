@@ -15,6 +15,7 @@ import {
   takeoverCapexAction, updateSheetAction,
 } from './actions';
 import { PHASE_LABEL } from '@/domain/capex-labels';
+import { ROW_VERSION_FIELD } from '@/domain/concurrency';
 import { gatesPassedBefore, takeoverClasses, TAKEOVER_PHASES } from '@/domain/takeover';
 import type { Phase } from '@/domain/lifecycle';
 
@@ -41,6 +42,8 @@ export interface SheetValues {
   investmentType: string;
   siteId: string | null;
   needDate: string | null;
+  /** Optimistic lock (AR-049). */
+  rowVersion: number;
 }
 
 export function SheetForm({ code, sheet, sites }: { code: string; sheet: SheetValues; sites: Opt[] }) {
@@ -49,6 +52,7 @@ export function SheetForm({ code, sheet, sites }: { code: string; sheet: SheetVa
   return (
     <Folded summary="Edit the identity sheet">
       <ActionForm action={(p, fd) => updateSheetAction(code, p, fd)} submit="Save" done="Saved">
+        <input type="hidden" name={ROW_VERSION_FIELD} value={sheet.rowVersion} readOnly />
         <Field label={t('Title')} htmlFor="sh-title" required>
           <Input id="sh-title" name="title" defaultValue={sheet.title} required />
         </Field>
@@ -162,7 +166,7 @@ export function RemoveLotButton({ code, lotId }: { code: string; lotId: string }
 export function VersionForm({ code, lots, version }: {
   code: string;
   lots: { id: string; number: number; title: string }[];
-  version?: { id: string; number: number; estimateClass: string; basis: string | null; lines: Record<string, number> };
+  version?: { id: string; number: number; estimateClass: string; basis: string | null; lines: Record<string, number>; rowVersion: number };
 }) {
   const { t } = useI18n();
   const o = useOptions();
@@ -170,6 +174,7 @@ export function VersionForm({ code, lots, version }: {
   return (
     <Folded summary={version ? `Edit version ${version.number}` : 'New budget version'}>
       <ActionForm action={(p, fd) => saveBudgetVersionAction(code, version?.id ?? null, p, fd)} submit={version ? 'Save the version' : 'Create the version'} done="Saved">
+        {version && <input type="hidden" name={ROW_VERSION_FIELD} value={version.rowVersion} readOnly />}
         <Field label={t('Estimate class')} htmlFor={`bv-${id}-cls`} required>
           <Select id={`bv-${id}-cls`} name="estimateClass" defaultValue={version?.estimateClass ?? 'E50'} options={o.classes} />
         </Field>

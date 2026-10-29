@@ -14,7 +14,7 @@ import type { DB, Tx } from '@/server/db/types';
 import { projectsOf, type Epc2iProject } from '@/server/integrations/keystone';
 import { needsOf } from './needs';
 import { startupFacts } from './rampup';
-import { latestValidated, versionsOf } from './cycle';
+import { latestValidated, versionsOf, type VersionView } from './cycle';
 
 type Q = DB | Tx;
 
@@ -40,8 +40,16 @@ export const epc2iPackOf = (projects: readonly Epc2iProject[]): Epc2iPackRow[] =
  * The lots with the budget the S-curve measures against: the G2 baseline once there is one, else the latest validated version
  * (before G2 the curve is indicative); `budgetSource` says which.
  */
-export async function lotPlansOf(q: Q, capexId: string): Promise<{ lots: LotPlan[]; budgetSource: 'g2_baseline' | 'latest_validated' | 'none'; g2Keur: number | null; latestClass: 'E50' | 'E30' | 'E10' | null }> {
+export async function lotPlansOf(q: Q, capexId: string): Promise<LotPlans> {
   const [lots, versions] = await Promise.all([q.select().from(capexLots).where(eq(capexLots.capexId, capexId)).orderBy(asc(capexLots.number)), versionsOf(q, capexId)]);
+  return lotPlansFrom(lots, versions);
+}
+
+type LotRow = typeof capexLots.$inferSelect;
+type LotPlans = { lots: LotPlan[]; budgetSource: 'g2_baseline' | 'latest_validated' | 'none'; g2Keur: number | null; latestClass: 'E50' | 'E30' | 'E10' | null };
+
+/** lotPlansOf from rows already read. */
+export function lotPlansFrom(lots: readonly LotRow[], versions: readonly VersionView[]): LotPlans {
   const g2 = versions.find((v) => v.isG2Baseline) ?? null;
   const latest = latestValidated(versions);
   const ref = g2 ?? latest;
@@ -77,9 +85,17 @@ export interface ExecutionView {
  * projects (through the machine needs of the lot) as the current month's actuals.
  */
 export async function executionOf(q: Q, c: { id: string; code: string }, today: string): Promise<ExecutionView> {
-  const month = monthOf(today);
   const [plans, projects, needs] = await Promise.all([lotPlansOf(q, c.id), projectsOf(q, c.code), needsOf(q, c)]);
   const stored = await actualRowsOf(q, plans.lots.map((l) => l.id));
+  return executionFrom({ plans, projects, needs, stored }, today);
+}
+
+type ActualRow = typeof lotActuals.$inferSelect;
+
+/** executionOf from rows already read (the lots' plans, the CAPEX's EPC2i projects and machine needs, its stored actuals). */
+export function executionFrom(d: { plans: LotPlans; projects: Epc2iProject[]; needs: readonly { ref: string; lotId: string | null }[]; stored: readonly ActualRow[] }, today: string): ExecutionView {
+  const { plans, projects, needs, stored } = d;
+  const month = monthOf(today);
   const rows: LotActual[] = stored.map((r) => ({ lotId: r.lotId, month: r.month, committedKeur: r.committedKeur, spentKeur: r.spentKeur, physicalPct: r.physicalPct }));
   const lotOfNeed = new Map(needs.map((n) => [n.ref, n.lotId]));
   const projectsOfLot = new Map<string, Epc2iProject[]>();

@@ -2,6 +2,7 @@
 // Living dossier forms (client islands of the dossier page): a section's text, its Codex references, freezing.
 import { ActionButton, ActionForm, Folded } from '@/components/app/ActionForm';
 import { Field, Input, Textarea } from '@/components/ds/Field';
+import { SECTION_BASE_FIELD } from '@/domain/concurrency';
 import { useI18n } from '@/i18n/client';
 import { addReferenceAction, freezeVersionAction, removeReferenceAction, saveSectionAction } from './actions';
 
@@ -9,6 +10,7 @@ export function SectionForm({ code, kind, section, text }: { code: string; kind:
   const { t } = useI18n();
   return (
     <ActionForm action={(p, fd) => saveSectionAction(code, kind, section, p, fd)} submit="Save the section" done="Saved" variant="secondary">
+      <input type="hidden" name={SECTION_BASE_FIELD} value={text} readOnly />
       <Field label={t('Text')} htmlFor={`sec-${section}`} span="full">
         <Textarea id={`sec-${section}`} name="text" rows={4} defaultValue={text} />
       </Field>
