@@ -126,6 +126,10 @@
     {
       "date": "2026-10-29",
       "text": "Lot 7b : multi-devises (AR-039), enveloppes (AR-040), cash-flow phasé (AR-045), amortissement et immobilisations (AR-050)."
+    },
+    {
+      "date": "2026-10-29",
+      "text": "Lot 7c : scoring multicritère et classement (AR-044), scénarios de portefeuille et scénario retenu pour le COPIL GPI (AR-043)."
     }
   ],
   "items": [
@@ -1043,9 +1047,9 @@
         "src/server/dal/governance.ts"
       ],
       "progress": {
-        "state": "en_cours",
-        "delivery": "Livraison 7",
-        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7c",
+        "note": "Page Scénarios de portefeuille : CAPEX gardés ou écartés, décalages en mois, enveloppe groupe par exercice ; comparaison (dépense, VAN, risques majeurs, score moyen) ; scénario retenu affiché au COPIL GPI."
       }
     },
     {
@@ -1067,9 +1071,9 @@
         "src/server/dal/portfolio.ts"
       ],
       "progress": {
-        "state": "en_cours",
-        "delivery": "Livraison 7",
-        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7c",
+        "note": "Grille de 6 critères pondérés (3 calculés depuis le BP et les risques, 3 notés par le groupe), score sur 100 dès 80 % du poids noté, classement sur le Portefeuille groupe, détail et notation sur la page Gouvernance."
       }
     },
     {

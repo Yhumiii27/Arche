@@ -28,7 +28,7 @@ export async function forecastRowsOf(q: Q, lotIds: readonly string[]) {
 }
 
 /** The phased disbursements by fiscal year of the CAPEX open or on hold, and of `extra` (a draft being opened). */
-export async function phasedCapex(q: Q, today: string, extra: readonly string[] = []): Promise<(PhasedCapex & { code: string; status: string })[]> {
+export async function phasedCapex(q: Q, today: string, extra: readonly string[] = []): Promise<(PhasedCapex & { code: string; status: string; months: { month: string; projected: number }[]; bacKeur: number })[]> {
   const rows = await q.select({ id: capex.id, code: capex.code, status: capex.status, subsidiaryCode: capex.subsidiaryCode, zoneCode: subsidiaries.zoneCode, typology: capex.typology })
     .from(capex).innerJoin(subsidiaries, eq(subsidiaries.code, capex.subsidiaryCode))
     .where(extra.length ? or(inArray(capex.status, ['active', 'on_hold']), inArray(capex.id, [...extra])) : inArray(capex.status, ['active', 'on_hold']));
@@ -47,7 +47,7 @@ export async function phasedCapex(q: Q, today: string, extra: readonly string[] 
     const plans = lotPlansFrom(mine, versions.get(r.id) ?? []);
     const rowsOfCapex: LotActual[] = actuals.filter((a) => ids2.has(a.lotId)).map((a) => ({ lotId: a.lotId, month: a.month, committedKeur: a.committedKeur, spentKeur: a.spentKeur, physicalPct: a.physicalPct }));
     const cf = cashflow(plans.lots, rowsOfCapex, forecasts.filter((f) => ids2.has(f.lotId)), month);
-    return { ...r, byYear: byYear(cf.months) };
+    return { ...r, byYear: byYear(cf.months), months: cf.months.map((m) => ({ month: m.month, projected: m.projected })), bacKeur: cf.baselineKeur };
   });
 }
 

@@ -72,7 +72,11 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   subsidiary's currency, consolidated in k€), envelopes (AR-040: `envelopes`, `envelope_movements`, `src/domain/envelopes.ts`,
   page `/envelopes`, G2 criterion `g2_envelope`, alert `envelope_over`), phased cash-flow (AR-045: `lot_forecasts`,
   `src/domain/cashflow.ts`, `phasedCapex`), depreciation (AR-050: `asset_classes`, `fixed_asset_transfers`,
-  `src/domain/depreciation.ts`; export `fixed-assets`). Lots 7c to 7e follow.
+  `src/domain/depreciation.ts`; export `fixed-assets`). Lot 7c: prioritisation (AR-044: `scoring_weights`, `capex_scores`,
+  `src/domain/scoring.ts`, a score only from 80 % of the weight scored; `prioritiesOf` in `src/server/dal/priority.ts`; ranking on the
+  Group portfolio, scores on the Governance page) and scenarios (AR-043: `portfolio_scenarios`, `scenario_items`,
+  `src/domain/scenarios.ts`, page `/scenarios`, retained scenario on `/copil`; actions `src/features/portfolio/actions.ts`). Lots 7d
+  and 7e follow.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

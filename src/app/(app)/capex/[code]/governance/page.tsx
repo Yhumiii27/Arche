@@ -24,14 +24,23 @@ import { dataText } from '@/i18n/data-text';
 import { fmtDate, fmtKeur } from '@/lib/format';
 import { businessToday } from '@/server/clock';
 import { computedTypologyOf, decisionsOf, teamCandidates, teamOf } from '@/server/dal/cycle';
+import { capexDashboard } from '@/server/dal/governance';
+import { prioritiesOf, scoresOf } from '@/server/dal/priority';
+import { SCORERS } from '@/domain/scoring';
+import { ScoreForm } from '@/features/portfolio/forms';
+import { fmtNum } from '@/lib/format';
 
 export default async function GovernancePage({ params }: PageProps<'/capex/[code]/governance'>) {
-  const { t, lang, db, c, can } = await loadCapexPage(params);
+  const { t, lang, db, c, can, viewer } = await loadCapexPage(params);
   const today = await businessToday();
   const [team, decisions, computed, candidates] = await Promise.all([teamOf(db, c.id), decisionsOf(db, c.id), computedTypologyOf(db, c, today), teamCandidates(db, c.subsidiaryCode)]);
   const edit = can('edit');
   const [revs, rex] = await Promise.all([reviewsOf(db, c.id), rexOf(db, c.id)]);
   const rexCover = rexFact(rex);
+  // Priority score on the group's grid (AR-044): computed criteria, the group's scores of the others.
+  const dash = await capexDashboard(db, c, today);
+  const [prio, given] = await Promise.all([prioritiesOf(db, [{ id: c.id, bacKeur: dash.indicators.bacKeur }]).then((m) => m.get(c.id)!), scoresOf(db, c.id)]);
+  const scorer = (SCORERS as readonly string[]).includes(viewer.role) && c.status !== 'closed' && c.status !== 'abandoned';
   const review = nextReview({ status: c.status, typology: c.typology, openedOn: c.openedAt ? c.openedAt.toISOString().slice(0, 10) : null, lastHeldOn: revs.find((r) => r.kind === 'copil_projet')?.heldOn ?? null }, today);
   const audits = missingAudits(c, revs.filter((r) => r.kind === 'audit'));
   const reviewKinds: ReviewKind[] = c.status === 'active' ? [...(edit ? ['copil_projet' as const] : []), ...(can('audit') && c.typology === 'strategic' ? ['audit' as const] : [])] : [];
@@ -155,6 +164,31 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
         ) : (
           <EmptyState>{t('No review recorded.')}</EmptyState>
         )}
+      </SectionCard>
+
+      <SectionCard
+        title={t('Priority score')}
+        hint={`${prio.score == null ? t('Not ranked: less than 80 % of the weight scored') : `${fmtNum(prio.score, lang)} / 100`} · ${t('Coverage')} ${prio.coveragePct} %`}
+        actions={scorer ? <ScoreForm code={c.code} values={Object.fromEntries(given.map((g) => [g.criterionCode, { score: g.score, note: g.note }]))} /> : undefined}
+        scroll
+      >
+        <Table>
+          <thead><tr><Th>{t('Criterion')}</Th><Th align="right">{t('Weight')}</Th><Th align="right">{t('Score')}</Th><Th>{t('Why')}</Th><Th>{t('By')}</Th></tr></thead>
+          <tbody>
+            {prio.criteria.map((x) => {
+              const g = given.find((s) => s.criterionCode === x.code);
+              return (
+                <tr key={x.code}>
+                  <Td>{t(x.label)} <Tag tone="outline" size="xs">{t(x.kind === 'computed' ? 'Computed' : 'Scored by the group')}</Tag></Td>
+                  <Td align="right" numeric>{x.weight}</Td>
+                  <Td align="right" numeric>{x.score == null ? '—' : `${fmtNum(x.score, lang)}/5`}</Td>
+                  <Td tone="secondary">{x.kind === 'manual' ? dataText(x.note, lang) ?? '' : ''}</Td>
+                  <Td tone="secondary">{g ? `${g.scoredByName} · ${fmtDate(g.scoredAt, lang)}` : ''}</Td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
       </SectionCard>
 
       <SectionCard title={t('Lessons learned')} hint={`${t('Phases covered')} ${rexCover.value} · ${t('G3 needs a lesson for every phase')}`} scroll>

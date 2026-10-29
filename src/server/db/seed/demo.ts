@@ -11,7 +11,7 @@ import { createHash } from 'node:crypto';
 import { circuitTemplate } from '@/domain/circuits';
 import { canonicalJson, emptyContent, SECTIONS, type DossierKind } from '@/domain/dossiers';
 import { computedSnapshot } from '@/server/dal/dossiers';
-import { businessPlans, changes, circuitSteps, dossiers, dossierVersions, envelopeMovements, envelopes, machineNeeds, signatures } from '../schema';
+import { businessPlans, capexScores, changes, circuitSteps, dossiers, dossierVersions, envelopeMovements, envelopes, machineNeeds, portfolioScenarios, scenarioItems, signatures } from '../schema';
 import { and, isNull } from 'drizzle-orm';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import { PACK_TEMPLATE } from '@/domain/pack';
@@ -324,6 +324,7 @@ async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: s
   await seedStartup(tx, apm25, nameOf);
   await seedGovernance(tx, apm, sai, nameOf);
   await seedEnvelopes(tx, nameOf);
+  await seedPortfolio(tx, { apm, sai, sai2: await id('CPX-SAI-2026-02'), sai3: await id('CPX-SAI-2026-03') }, nameOf);
   await seedCopil(tx, await id('CPX-SAI-2026-02'), sai, await id('CPX-SAI-2026-03'), idOf, nameOf);
   await seedActions(tx, apm, sai, idOf, nameOf);
   await seedWbs(tx, apm, sai, idOf, nameOf);
@@ -432,6 +433,29 @@ export async function seedEnvelopes(tx: Tx, nameOf: (k: string) => string) {
   const group26 = rows.find((r) => r.year === 2026 && !r.sub && !r.zone)!;
   const apm26 = rows.find((r) => r.year === 2026 && r.sub === 'APM')!;
   await tx.insert(envelopeMovements).values({ kind: 'reallocation', fromEnvelopeId: group26.id, toEnvelopeId: apm26.id, amountKeur: 500, reason: 'Extrusion line 3: early engineering in 2026', byName: by, occurredAt: new Date('2026-09-15T09:00:00Z') });
+}
+
+/**
+ * Portfolio decisions (AR-044, AR-043): the group's scores of four CAPEX on the manual criteria, and two scenarios — the base
+ * plan, retained for the COPIL GPI, and a constrained one that leaves the solar plant out and shifts the aseptic line by 6 months.
+ */
+export async function seedPortfolio(tx: Tx, ids: { apm: string; sai: string; sai2: string; sai3: string }, nameOf: (k: string) => string) {
+  const by = nameOf('dir_ig');
+  const s = (capexId: string, criterionCode: string, score: number, note: string) => ({ capexId, criterionCode, score, note, scoredByName: by, scoredAt: new Date('2026-10-15T09:00:00Z') });
+  await tx.insert(capexScores).values([
+    s(ids.sai, 'strategy', 5, 'Group priority: tomato processing in West Africa'), s(ids.sai, 'urgency', 4, 'Campaign 2027'), s(ids.sai, 'safety', 3, 'Standard plant'),
+    s(ids.apm, 'strategy', 4, 'Extrusion capacity for the Moroccan market'), s(ids.apm, 'urgency', 3, 'Line 1 at 92 % of capacity'), s(ids.apm, 'safety', 3, 'Standard line'),
+    s(ids.sai2, 'strategy', 3, 'Diversification of the packaging'), s(ids.sai2, 'urgency', 2, 'No customer commitment yet'),
+    s(ids.sai3, 'strategy', 3, 'Energy cost of the Thiès site'), s(ids.sai3, 'urgency', 2, 'Grid tariff fixed until 2028'), s(ids.sai3, 'safety', 4, 'Less diesel generation on site'),
+  ]);
+  const [, constrained] = await tx.insert(portfolioScenarios).values([
+    { name: 'Group plan 2027–2028', kind: 'base' as const, description: 'Every CAPEX of the plan, on its schedule', envelopes: { '2027': 25_000, '2028': 25_000 }, retained: true, retainedByName: by, createdByName: by },
+    { name: 'Constrained cash', kind: 'constrained' as const, description: 'Group envelope cut by 20 %: the solar plant waits, the aseptic line slides by 6 months', envelopes: { '2027': 20_000, '2028': 20_000 }, createdByName: nameOf('group_cfo') },
+  ]).returning({ id: portfolioScenarios.id });
+  await tx.insert(scenarioItems).values([
+    { scenarioId: constrained.id, capexId: ids.sai3, included: false, shiftMonths: 0 },
+    { scenarioId: constrained.id, capexId: ids.sai2, included: true, shiftMonths: 6 },
+  ]);
 }
 
 export async function seedGovernance(tx: Tx, apm: string, sai: string, nameOf: (k: string) => string) {
