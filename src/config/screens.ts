@@ -7,7 +7,7 @@ export type ScreenId =
   | 'home' | 'approvals' | 'capex-list' | 'map' | 'portfolio' | 'copil' | 'rex' | 'kpi' | 'envelopes' | 'scenarios' | 'subsidiary-portfolio' | 'capex-open'
   | 'capex-overview' | 'capex-actions' | 'capex-gates' | 'capex-dossiers' | 'capex-budget' | 'capex-execution' | 'capex-changes' | 'capex-schedule' | 'capex-machines'
   | 'capex-pack' | 'capex-permits' | 'capex-safety' | 'capex-risks' | 'capex-governance' | 'capex-rampup' | 'capex-journal'
-  | 'admin-org' | 'admin-users' | 'admin-model' | 'admin-delegation' | 'admin-connectors' | 'admin-api';
+  | 'admin-org' | 'admin-users' | 'admin-model' | 'admin-delegation' | 'admin-designer' | 'admin-connectors' | 'admin-api';
 
 /** Sidebar sections (owner, 24 Oct 2026): group portfolio, subsidiary portfolio (subsidiary selector), steering of the
  * selected CAPEX (CAPEX switcher), administration. */
@@ -64,6 +64,7 @@ export const SCREENS: readonly ScreenDef[] = [
   { id: 'admin-users', path: '/admin/users', title: 'Users & roles', section: 'admin', group: 'Access', roles: ['admin'], delivery: 'L1' },
   { id: 'admin-model', path: '/admin/model', title: 'DIG-PRODI model', section: 'admin', group: 'Method', roles: ['admin', 'group_hse'], delivery: 'L2' },
   { id: 'admin-delegation', path: '/admin/delegation', title: 'Delegation matrix', section: 'admin', group: 'Method', roles: ['admin'], delivery: 'L3' },
+  { id: 'admin-designer', path: '/admin/designer', title: 'Dossiers and circuits designer', section: 'admin', group: 'Method', roles: ['admin', 'dir_ig'], delivery: 'L7' },
   { id: 'admin-connectors', path: '/admin/connectors', title: 'Connectors', section: 'admin', group: 'Integrations', roles: ['admin'], delivery: 'L4' },
   { id: 'admin-api', path: '/admin/api', title: 'API and webhooks', section: 'admin', group: 'Integrations', roles: ['admin'], delivery: 'L7' },
 ];

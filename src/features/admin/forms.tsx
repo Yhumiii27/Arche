@@ -212,6 +212,8 @@ export function ModelValuesForm({ values }: { values: ModelValues }) {
       {n('rampupDays', 'Days at nominal capacity for G3', values.rampupDays, VALUE_BOUNDS.rampupDays)}
       {n('mesMaxMonths', 'Months after commissioning for G3', values.mesMaxMonths, VALUE_BOUNDS.mesMaxMonths)}
       {n('envelopeBlockPct', 'Envelope overrun tolerated at G2 (%)', values.envelopeBlockPct, VALUE_BOUNDS.envelopeBlockPct)}
+      {n('reminderEveryDays', 'Reminder of a late step every (working days)', values.reminderEveryDays, VALUE_BOUNDS.reminderEveryDays)}
+      {n('escalationDays', 'Escalation of a step late by (working days)', values.escalationDays, VALUE_BOUNDS.escalationDays)}
     </ActionForm>
   );
 }

@@ -9,7 +9,7 @@ import { createHash } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import {
-  canActOn, checkOutcome, REAUTH_ERROR, circuitFacts, circuitTemplate, decisionOf, dueOf, isRefusal, isSigned, openGroup, refreshStatuses, STEP_KIND_LABEL,
+  canActOn, checkOutcome, REAUTH_ERROR, circuitFacts, decisionOf, dueOf, isRefusal, isSigned, openGroup, refreshStatuses, STEP_KIND_LABEL,
   type Outcome, type StepActor, type StepKind, type StepState,
 } from '@/domain/circuits';
 import { DOSSIER_LABEL, DOSSIER_OF_GATE } from '@/domain/dossiers';
@@ -23,6 +23,8 @@ import type { Tx } from '@/server/db/types';
 import { auditOf, fieldsOf, onCapex, REFUSED, type ActionResult, type CapexRowFull } from '@/server/capex/write';
 import { applyGateDecision } from '@/server/cycle/gate-decision';
 import { gateFacts, modelValues, nextSession, teamOf } from '@/server/dal/cycle';
+import { standInFor, standInsOf } from '@/server/dal/absences';
+import { circuitFor } from '@/server/dal/designs';
 import { dossierVersionsOf, runningSession, stepsOf, type StepRow } from '@/server/dal/dossiers';
 
 /** A signature needs the credentials entered within the last 10 minutes (N-8). */
@@ -63,7 +65,8 @@ export async function submitGateAction(code: string, _prev: ActionResult | null,
     if (version && version.completenessPct < 100) return { ok: false, error: 'The dossier must be complete (100 %) to be submitted' };
     const f = fieldsOf(fd);
     const team = await teamOf(tx, c.id);
-    const tpl = circuitTemplate(gate, c.typology as 'light' | 'strategic' | null);
+    // The published circuit of the gate (AR-052), else the built-in one.
+    const tpl = await circuitFor(tx, gate, c.typology as 'light' | 'strategic' | null);
     const session = await nextSession(tx, c.id, gate);
     const [g] = await tx.insert(gates).values({ capexId: c.id, code: gate, session, status: 'in_review', dossierVersionId: version?.id ?? null }).returning({ id: gates.id });
     await tx.insert(circuitSteps).values(tpl.map((s, i) => {
@@ -102,7 +105,11 @@ export async function actOnStepAction(code: string, stepId: string, _prev: Actio
     if (isStale(fd.get(ROW_VERSION_FIELD), row.rowVersion)) return { ok: false, error: STALE_MSG };
     const team = await teamOf(tx, c.id);
     const actor = { role: v.role, userId: v.userId, assignments: v.assignments, internalClient: team.some((m) => m.userId === v.userId && m.capexRole === 'internal_client') };
-    if (!canActOn({ actor: row.actor as StepActor, speciality: row.speciality, assigneeUserId: row.assigneeUserId }, actor, c)) return REFUSED;
+    // In their own right, or standing in for an absent person (AR-041): the delegate signs in their own name, on their behalf.
+    const own = canActOn({ actor: row.actor as StepActor, speciality: row.speciality, assigneeUserId: row.assigneeUserId }, actor, c);
+    const standIn = own ? null : standInFor(row, c, await standInsOf(tx, v.userId, today));
+    if (!own && !standIn) return REFUSED;
+    const onBehalfOf = standIn?.person.displayName ?? null;
     // A suspended, closed or abandoned CAPEX is read-only.
     if (c.status !== 'active') return REFUSED;
     const f = fieldsOf(fd);
@@ -137,12 +144,12 @@ export async function actOnStepAction(code: string, stepId: string, _prev: Actio
       decided = { decision, next: t.value, ev, conditions, reason: comment };
     }
 
-    await tx.update(circuitSteps).set({ status: 'done', outcome, comment, actedByName: v.name, actedByUserId: v.userId, actedAt: new Date(), updatedAt: new Date() }).where(eq(circuitSteps.id, row.id));
+    await tx.update(circuitSteps).set({ status: 'done', outcome, comment, actedByName: v.name, actedByUserId: v.userId, actedAt: new Date(), onBehalfOfName: onBehalfOf, updatedAt: new Date() }).where(eq(circuitSteps.id, row.id));
     if (signed) {
-      const statement = `${row.label} — ${c.code}, ${g.code} session ${g.session}${version ? `, dossier version ${version.number}, SHA-256 ${version.contentHash}` : ''}: ${outcome}`;
+      const statement = `${row.label} — ${c.code}, ${g.code} session ${g.session}${version ? `, dossier version ${version.number}, SHA-256 ${version.contentHash}` : ''}: ${outcome}${onBehalfOf ? ` (on behalf of ${onBehalfOf}, absent)` : ''}`;
       await tx.insert(signatures).values({ circuitStepId: row.id, userId: v.userId, userName: v.name, contentHash: version?.contentHash ?? null, statement, authTime: v.authenticatedAt ?? null, ipHash: ip });
     }
-    await writeAudit(tx, auditOf(v, c, `${g.code} session ${g.session}: ${STEP_KIND_LABEL[row.kind as StepKind].toLowerCase()} "${row.label}" — ${outcome}`, { entityType: 'circuit_step', entityId: row.id, reason: comment }));
+    await writeAudit(tx, auditOf(v, c, `${g.code} session ${g.session}: ${STEP_KIND_LABEL[row.kind as StepKind].toLowerCase()} "${row.label}" — ${outcome}${onBehalfOf ? ` (on behalf of ${onBehalfOf}, absent)` : ''}`, { entityType: 'circuit_step', entityId: row.id, reason: comment }));
 
     if (refused) {
       // A refusal stops the circuit and sends the dossier back (spec 05 §1).

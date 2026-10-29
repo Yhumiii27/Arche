@@ -3,7 +3,8 @@ import 'server-only';
 // references, fingerprint) and the Copil report (docs/spec/06 §2: summary, gates, S-curve, main risks, changes, decisions to
 // take). Built once from the data, shown as the HTML print page (./print-view.tsx) or written as a PDF by the server
 // (src/lib/export/pdf.ts). The caller has read the CAPEX through the visibility filter.
-import { DOSSIER_LABEL, readContent, SECTIONS, VERSION_STATE_LABEL, type DossierKind } from '@/domain/dossiers';
+import { DOSSIER_LABEL, readContent, VERSION_STATE_LABEL, type DossierKind } from '@/domain/dossiers';
+import { sectionsFor } from '@/server/dal/designs';
 import { isMajorRisk, refOf, riskScore, TEAM_ROLE_LABEL } from '@/domain/capex';
 import { PHASE_LABEL, TYPOLOGY_LABEL, labelOf } from '@/domain/capex-labels';
 import { DECISION_LABEL, GATE_LABEL } from '@/domain/lifecycle';
@@ -33,10 +34,11 @@ export async function dossierDoc({ t, lang, db, c }: PrintCtx, kind: DossierKind
   const versions = await dossierVersionsOf(db, c.id, kind);
   const v = (number != null ? versions.find((x) => x.number === number) : versions[0]) ?? null;
   if (!v) return null;
-  const content = readContent(kind, v.content);
+  const secs = await sectionsFor(db, kind, v.templateVersion);
+  const content = readContent(kind, v.content, secs);
   const snap = v.state === 'draft' ? await computedSnapshot(db, c) : readSnapshot(v.computed);
   const blocks: PrintBlock[] = [];
-  for (const sec of SECTIONS[kind]) {
+  for (const sec of secs) {
     const x = content.sections[sec.key];
     blocks.push({ kind: 'h2', text: t(sec.title) });
     if ((sec.need === 'budget_e50' || sec.need === 'budget_e10') && snap.budget) {

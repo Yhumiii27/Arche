@@ -6,6 +6,8 @@ import { capexVisibility, type CapexVisibility } from '@/domain/rights';
 import { getDb } from '@/server/db/client';
 import { capex, sites, subsidiaries, users, zones } from '@/server/db/schema';
 import type { Viewer } from '@/server/viewer';
+import { businessToday } from '@/server/clock';
+import { standInCapexIds } from './absences';
 
 /** SQL condition of a visibility (null = no restriction; `false` = nothing). */
 export function visibilityCondition(v: CapexVisibility): SQL | null {
@@ -51,7 +53,10 @@ export interface CapexRow {
 
 async function selectCapex(viewer: Viewer, extra?: SQL): Promise<CapexRow[]> {
   const db = await getDb();
-  const cond = visibilityCondition(capexVisibility(viewer.role, viewer.assignments));
+  const own = visibilityCondition(capexVisibility(viewer.role, viewer.assignments));
+  // A delegate also reads the CAPEX where an absent person's step waits on them (AR-041).
+  const standIn = own ? await standInCapexIds(db, viewer.userId, await businessToday(db)) : [];
+  const cond = standIn.length ? or(own!, inArray(capex.id, standIn))! : own;
   const where = [cond, extra].filter((c): c is SQL => !!c);
   return db
     .select({

@@ -113,6 +113,10 @@ export interface ModelValues {
   mesMaxMonths: number;
   /** Overrun of its envelope beyond which a CAPEX fails the G2 envelope criterion (AR-040), % of the envelope. */
   envelopeBlockPct: number;
+  /** A late circuit step is recalled every N working days (AR-041). */
+  reminderEveryDays: number;
+  /** Working days late after which a step is escalated to the group industrial director and the sponsor (AR-041). */
+  escalationDays: number;
 }
 
 export const MODEL_CODE = 'dig-prodi';
@@ -126,6 +130,8 @@ export const DEFAULT_VALUES: ModelValues = {
   rampupDays: 30,
   mesMaxMonths: 6,
   envelopeBlockPct: 10,
+  reminderEveryDays: 2,
+  escalationDays: 3,
 };
 
 /** Bounds of each value (the administrator's input is checked against them). */
@@ -137,6 +143,8 @@ export const VALUE_BOUNDS = {
   rampupDays: [1, 365],
   mesMaxMonths: [1, 36],
   envelopeBlockPct: [0, 100],
+  reminderEveryDays: [1, 20],
+  escalationDays: [1, 30],
 } as const;
 
 /** Reads stored values over the defaults (a value missing or out of bounds falls back to its default). */
@@ -152,6 +160,8 @@ export function readValues(stored: unknown): ModelValues {
     rampupDays: num(s.rampupDays, VALUE_BOUNDS.rampupDays, DEFAULT_VALUES.rampupDays),
     mesMaxMonths: num(s.mesMaxMonths, VALUE_BOUNDS.mesMaxMonths, DEFAULT_VALUES.mesMaxMonths),
     envelopeBlockPct: num(s.envelopeBlockPct, VALUE_BOUNDS.envelopeBlockPct, DEFAULT_VALUES.envelopeBlockPct),
+    reminderEveryDays: num(s.reminderEveryDays, VALUE_BOUNDS.reminderEveryDays, DEFAULT_VALUES.reminderEveryDays),
+    escalationDays: num(s.escalationDays, VALUE_BOUNDS.escalationDays, DEFAULT_VALUES.escalationDays),
   };
 }
 
@@ -279,6 +289,8 @@ export function checkModelValues(raw: Record<string, unknown>): { ok: true; valu
     mesMaxMonths: read('mesMaxMonths', VALUE_BOUNDS.mesMaxMonths),
     // Added with delivery 7: the default when the form does not send it.
     envelopeBlockPct: raw.envelopeBlockPct == null || raw.envelopeBlockPct === '' ? DEFAULT_VALUES.envelopeBlockPct : read('envelopeBlockPct', VALUE_BOUNDS.envelopeBlockPct),
+    reminderEveryDays: raw.reminderEveryDays == null || raw.reminderEveryDays === '' ? DEFAULT_VALUES.reminderEveryDays : read('reminderEveryDays', VALUE_BOUNDS.reminderEveryDays),
+    escalationDays: raw.escalationDays == null || raw.escalationDays === '' ? DEFAULT_VALUES.escalationDays : read('escalationDays', VALUE_BOUNDS.escalationDays),
   };
   if (Object.values(v).some((x) => x == null)) return { ok: false, error: 'Enter whole numbers within the bounds shown' };
   return { ok: true, value: { gateDelayDays: delays as Record<GateCode, number>, ...(v as Omit<ModelValues, 'gateDelayDays'>) } };

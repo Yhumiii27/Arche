@@ -1,7 +1,9 @@
 // Connectors (docs/spec/07 §2): the state of the Keystone mirror view by view — source (Keystone's shared view or the
 // simulation), rows, last synchronisation, reason when a view is not read — with a "synchronise now" button, and the Codex
 // connector. The worker synchronises every ARCHE_KEYSTONE_SYNC_MIN minutes.
-import { sql } from 'drizzle-orm';
+import { desc, sql } from 'drizzle-orm';
+import { emailOutbox } from '@/server/db/schema';
+import { MAIL_STATUS_LABEL } from '@/domain/notify';
 import { notFound } from 'next/navigation';
 import { ActionButton } from '@/components/app/ActionForm';
 import { KeyValueList } from '@/components/app/KeyValueList';
@@ -31,6 +33,13 @@ export default async function ConnectorsPage() {
     syncState(db), databaseSeedMode(db),
     db.execute(sql`select to_regclass('codex.pub_documents') is not null and has_table_privilege(current_user, 'codex.pub_documents', 'select') as ok`),
   ]);
+  // E-mail notifications (AR-041): the transport and the latest messages of the outbox.
+  const mail = getConfig().mail;
+  const [counts, latest] = await Promise.all([
+    db.select({ status: emailOutbox.status, n: sql<number>`count(*)::int` }).from(emailOutbox).groupBy(emailOutbox.status),
+    db.select().from(emailOutbox).orderBy(desc(emailOutbox.createdAt)).limit(30),
+  ]);
+  const count = (s: string) => counts.find((c) => c.status === s)?.n ?? 0;
   const codexShared = !!(codex.rows[0] as { ok?: boolean } | undefined)?.ok;
   return (
     <>
@@ -70,6 +79,27 @@ export default async function ConnectorsPage() {
           ]}
         />
       </SectionCard>
+      <SectionCard
+        title={t('Notification e-mails')}
+        subtitle={`${t('Transport')}: ${t(MAIL_TRANSPORT[mail.transport])}${mail.transport === 'file' ? ` · ${mail.dir}` : ''} · ${t('Sent')} ${count('sent')} · ${t('Kept (sending off)')} ${count('held')} · ${t('To send')} ${count('pending')} · ${t('Failed')} ${count('failed')}`}
+        scroll
+      >
+        <Table>
+          <thead><tr><Th>{t('Date')}</Th><Th>{t('To')}</Th><Th>{t('Subject')}</Th><Th>{t('Status')}</Th></tr></thead>
+          <tbody>
+            {latest.map((m) => (
+              <tr key={m.id}>
+                <Td nowrap>{fmtInstant(m.createdAt, lang)}</Td>
+                <Td nowrap>{m.toEmail}</Td>
+                <Td>{m.subject}</Td>
+                <Td tone="secondary">{t(MAIL_STATUS_LABEL[m.status])}{m.lastError ? ` · ${m.lastError}` : ''}</Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </SectionCard>
     </>
   );
 }
+
+const MAIL_TRANSPORT: Record<'none' | 'file', string> = { none: 'None: kept in the outbox (SMTP or Microsoft Graph to choose, N-35)', file: 'Files (.eml)' };

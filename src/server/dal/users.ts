@@ -45,6 +45,11 @@ async function accountsWhere(q: Q, where: ReturnType<typeof eq>, today: string):
   });
 }
 
+/** Every active account with its assignments in force on `today` (the circuits' notifications). */
+export async function activeAccounts(q: Q, today: string): Promise<UserAccount[]> {
+  return accountsWhere(q, eq(users.active, true), today);
+}
+
 export async function getUserAccount(userId: string, today: string, q?: Q): Promise<UserAccount | null> {
   return (await accountsWhere(q ?? (await getDb()), eq(users.id, userId), today))[0] ?? null;
 }

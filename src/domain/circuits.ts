@@ -27,41 +27,46 @@ export interface StepTemplate {
   optional?: boolean;
   /** Its outcome is the gate decision. */
   decides?: boolean;
+  /** Only in the circuit of a Strategic CAPEX. */
+  strategicOnly?: boolean;
   /** EN source string. */
   label: string;
 }
 
-/** Circuit of each gate (spec 05 §2): G1 depends on the typology (Strategic: finance opinion too). */
-export function circuitTemplate(gate: GateCode, typology: 'light' | 'strategic' | null): StepTemplate[] {
-  switch (gate) {
-    case 'G1':
-      return [
-        { group: 1, kind: 'opinion', actor: 'expert', speciality: 'hse', label: 'HSE opinion' },
-        ...(typology === 'strategic' ? [{ group: 1, kind: 'opinion' as const, actor: 'expert' as const, speciality: 'finance' as const, label: 'Finance opinion' }] : []),
-        { group: 2, kind: 'visa', actor: 'sponsor', label: 'Sponsor visa' },
-        { group: 3, kind: 'review', actor: 'copil_member', optional: true, label: 'COPIL GPI members’ review' },
-        { group: 3, kind: 'decision', actor: 'dir_ig', decides: true, label: 'COPIL GPI decision (president)' },
-      ];
-    case 'G2':
-      return [
-        { group: 1, kind: 'opinion', actor: 'expert', speciality: 'quality', label: 'Quality opinion' },
-        { group: 1, kind: 'opinion', actor: 'expert', speciality: 'hse', label: 'HSE opinion' },
-        { group: 1, kind: 'opinion', actor: 'expert', speciality: 'finance', label: 'Finance opinion' },
-        { group: 1, kind: 'opinion', actor: 'expert', speciality: 'operations', label: 'Operations opinion' },
-        { group: 2, kind: 'visa', actor: 'dir_ig', label: 'Technical compliance visa' },
-        { group: 2, kind: 'visa', actor: 'group_cfo', label: 'E10 business plan visa' },
-        { group: 3, kind: 'signature', actor: 'ceo', decides: true, label: 'CEO signature' },
-      ];
-    case 'K3':
-      return [{ group: 1, kind: 'visa', actor: 'dir_ig', decides: true, label: 'Ready-to-start visa' }];
-    case 'G3':
-      return [
-        { group: 1, kind: 'quitus', actor: 'group_hse', label: 'PSSR discharge' },
-        { group: 1, kind: 'attestation', actor: 'controller', label: 'Accounting closure attestation' },
-        { group: 2, kind: 'countersign', actor: 'internal_client', label: 'Internal client countersignature' },
-        { group: 2, kind: 'countersign', actor: 'dir_ig', decides: true, label: 'Group industrial director countersignature' },
-      ];
-  }
+/** Built-in circuit of each gate (spec 05 §2): G1's finance opinion is for a Strategic CAPEX only. */
+export const BUILT_IN_CIRCUITS: Record<GateCode, readonly StepTemplate[]> = {
+  G1: [
+    { group: 1, kind: 'opinion', actor: 'expert', speciality: 'hse', label: 'HSE opinion' },
+    { group: 1, kind: 'opinion', actor: 'expert', speciality: 'finance', strategicOnly: true, label: 'Finance opinion' },
+    { group: 2, kind: 'visa', actor: 'sponsor', label: 'Sponsor visa' },
+    { group: 3, kind: 'review', actor: 'copil_member', optional: true, label: 'COPIL GPI members’ review' },
+    { group: 3, kind: 'decision', actor: 'dir_ig', decides: true, label: 'COPIL GPI decision (president)' },
+  ],
+  G2: [
+    { group: 1, kind: 'opinion', actor: 'expert', speciality: 'quality', label: 'Quality opinion' },
+    { group: 1, kind: 'opinion', actor: 'expert', speciality: 'hse', label: 'HSE opinion' },
+    { group: 1, kind: 'opinion', actor: 'expert', speciality: 'finance', label: 'Finance opinion' },
+    { group: 1, kind: 'opinion', actor: 'expert', speciality: 'operations', label: 'Operations opinion' },
+    { group: 2, kind: 'visa', actor: 'dir_ig', label: 'Technical compliance visa' },
+    { group: 2, kind: 'visa', actor: 'group_cfo', label: 'E10 business plan visa' },
+    { group: 3, kind: 'signature', actor: 'ceo', decides: true, label: 'CEO signature' },
+  ],
+  K3: [{ group: 1, kind: 'visa', actor: 'dir_ig', decides: true, label: 'Ready-to-start visa' }],
+  G3: [
+    { group: 1, kind: 'quitus', actor: 'group_hse', label: 'PSSR discharge' },
+    { group: 1, kind: 'attestation', actor: 'controller', label: 'Accounting closure attestation' },
+    { group: 2, kind: 'countersign', actor: 'internal_client', label: 'Internal client countersignature' },
+    { group: 2, kind: 'countersign', actor: 'dir_ig', decides: true, label: 'Group industrial director countersignature' },
+  ],
+};
+
+/** The circuit of a gate for a CAPEX of this typology: the published design (AR-052) when given, else the built-in one. */
+export function circuitTemplate(gate: GateCode, typology: 'light' | 'strategic' | null, designed?: readonly StepTemplate[] | null): StepTemplate[] {
+  return (designed ?? BUILT_IN_CIRCUITS[gate]).filter((s) => !s.strategicOnly || typology === 'strategic').map((step) => {
+    const out = { ...step };
+    delete out.strategicOnly;
+    return out;
+  });
 }
 
 // ── Outcomes ──────────────────────────────────────────────────────────────────────────────────────────────────────────

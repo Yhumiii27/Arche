@@ -197,6 +197,13 @@
       "when": 1793290088326,
       "tag": "0027_portfolio_decisions",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1793291984028,
+      "tag": "0028_circuits_and_designer",
+      "breakpoints": true
     }
   ]
 }

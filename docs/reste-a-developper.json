@@ -130,6 +130,10 @@
     {
       "date": "2026-10-29",
       "text": "Lot 7c : scoring multicritère et classement (AR-044), scénarios de portefeuille et scénario retenu pour le COPIL GPI (AR-043)."
+    },
+    {
+      "date": "2026-10-29",
+      "text": "Lot 7d : notifications e-mail, relances, escalade et absences (AR-041), concepteur sans code des dossiers et circuits (AR-052)."
     }
   ],
   "items": [
@@ -999,9 +1003,9 @@
         "src/domain/delegation.ts"
       ],
       "progress": {
-        "state": "en_cours",
-        "delivery": "Livraison 7",
-        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7d",
+        "note": "Avis des étapes de circuit (ouverture, veille, jour J, relances, escalade au directeur industriel et au sponsor), boîte d’envoi et tâche notifications ; transport none ou file (SMTP / Graph : N-35) ; absences et suppléant qui agit pour le compte de l’absent."
       }
     },
     {
@@ -1264,9 +1268,9 @@
         "src/domain/lifecycle.ts"
       ],
       "progress": {
-        "state": "en_cours",
-        "delivery": "Livraison 7",
-        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7d",
+        "note": "Page Concepteur des dossiers et circuits : modèles versionnés par dossier et par jalon, brouillon, aperçu, publication ; appliqués aux versions et sessions commencées ensuite ; verrous de la méthode."
       }
     }
   ]
