@@ -118,6 +118,10 @@
     {
       "date": "2026-10-29",
       "text": "AR-039 à AR-052 retenus par le responsable produit (livraison 7). Lot 7a : verrouillage optimiste et lecture des portefeuilles en un nombre fixe de requêtes (AR-049)."
+    },
+    {
+      "date": "2026-10-29",
+      "text": "Lot 7a : exports Excel / CSV / PDF (AR-042) ; API métier et webhooks (AR-048)."
     }
   ],
   "items": [
@@ -1012,9 +1016,9 @@
         "src/server/dal/portfolio.ts"
       ],
       "progress": {
-        "state": "en_cours",
-        "delivery": "Livraison 7",
-        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7a",
+        "note": "Exports Excel et CSV du registre, des portefeuilles groupe et filiale, des alertes et de l'engagé / réalisé (en-tête de chaque page, mêmes droits) ; PDF du rapport Copil et des versions de dossier écrit par le serveur ; Power BI par l'API en lecture (docs/API.md §7), rôle de lecture des vues pub_ demandé à Matrix (M-14)."
       }
     },
     {
@@ -1158,9 +1162,9 @@
         "src/server/http/"
       ],
       "progress": {
-        "state": "en_cours",
-        "delivery": "Livraison 7",
-        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7a",
+        "note": "API /api/v1 (clé par application créée par l'administrateur, empreinte seule ; périmètre de filiales) : CAPEX, détail, réalisés ; écritures signées (HMAC, anti-rejeu) des réalisés et des actions ; webhooks capex.opened, gate.decided, alert.raised signés, envoyés par le worker avec reprises ; écran Administration › API et webhooks (docs/API.md)."
       }
     },
     {

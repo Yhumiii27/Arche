@@ -149,6 +149,8 @@ const STATIC_FILE_RE = /\.(?:ico|png|jpe?g|gif|svg|webp|avif|woff2?|ttf|otf|css|
  */
 export function isPublicPath(pathname: string): boolean {
   if (pathname === AUTH_PATHS.page || pathname.startsWith('/api/auth/')) return true;
+  // The business API authenticates its clients by key (AR-048, src/server/api/auth.ts), not by the sign-in session.
+  if (pathname.startsWith('/api/v1/')) return true;
   if (HEALTH_PATHS.some((h) => pathname === h || pathname.startsWith(h + '/'))) return true;
   if (pathname.startsWith('/_next/')) return true;
   // Static files: a single path segment with a file extension (public/ is flat: favicon.ico, *.svg).

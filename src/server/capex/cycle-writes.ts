@@ -9,6 +9,7 @@ import { TAKEOVER_REASON, type TakeoverInput } from '@/domain/takeover';
 import { recordActivity, writeAudit } from '@/server/db/helpers';
 import { budgetLines, budgetVersions, capex, gates, phaseTransitions } from '@/server/db/schema';
 import type { Tx } from '@/server/db/types';
+import { enqueueEvent } from '@/server/api/events';
 import { computedTypologyOf } from '@/server/dal/cycle';
 import type { Viewer } from '@/server/session';
 import { auditOf, type ActionResult, type CapexRowFull } from './write';
@@ -23,6 +24,7 @@ export async function applyOpen(tx: Tx, c: Row, v: Viewer, today: string): Promi
   await tx.insert(phaseTransitions).values({ capexId: c.id, fromStatus: c.status, fromPhase: c.phase, toStatus: t.value.status, toPhase: t.value.phase, effectiveOn: today, byName: v.name, byUserId: v.userId });
   await writeAudit(tx, auditOf(v, c, 'status: Draft → Active (phase 1)', { entityType: 'capex', entityId: c.id }));
   await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'capex.opened', text: `${c.code} opened: phase 1`, capexId: c.id });
+  await enqueueEvent(tx, 'capex.opened', c.id, { openedOn: today, takenOver: false });
   return { ok: true };
 }
 
@@ -60,6 +62,7 @@ export async function applyTakeover(tx: Tx, c: Row, v: Viewer, input: TakeoverIn
     entityType: 'capex', entityId: c.id, after: { ...t },
   }));
   await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'capex.taken_over', text: `${c.code} taken over in progress`, capexId: c.id });
+  await enqueueEvent(tx, 'capex.opened', c.id, { openedOn: t.openedOn, takenOver: true, phase: t.phase });
   const [fresh] = await tx.select().from(capex).where(eq(capex.id, c.id));
   await recomputeTypology(tx, fresh as Row, v, today);
 }

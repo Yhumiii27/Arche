@@ -64,8 +64,11 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `docs/DECISIONS.md` §5 holds the default choice of each). Lot 7a: optimistic lock (`row_version` + trigger on capex,
   budget_versions, dossier_versions, circuit_steps; `src/domain/concurrency.ts`: a form sends `rowVersion`, a dossier section
   its shown text `base`), portfolio views in a fixed number of queries (`capexDashboards`, `versionsOfMany`,
-  `projectsOfMany`, `schedulesOf`; load test `src/server/dal/portfolio-load.test.ts`). Then exports (AR-042), API and webhooks
-  (AR-048); lots 7b to 7e follow.
+  `projectsOfMany`, `schedulesOf`; load test `src/server/dal/portfolio-load.test.ts`); exports (AR-042: `src/lib/export/` CSV,
+  XLSX and a PDF writer without dependency, tables `src/server/export/datasets.ts` served by `/export/[dataset]`, header links
+  `exportLinks`, printable documents `src/features/print/documents.ts` shown as HTML or PDF); business API and webhooks (AR-048,
+  `docs/API.md`: `/api/v1/` by API client key, signed writes, outbox `webhook_deliveries` sent by the job `webhooks`, page
+  `/admin/api`). Lots 7b to 7e follow.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

@@ -25,6 +25,6 @@ describe('screen registry', () => {
     expect(canSee('admin', 'copil')).toBe(true);
     expect(canSee('admin', 'capex-open')).toBe(false);
     expect(canSee('ceo', 'admin-users')).toBe(false);
-    expect([...BUILT].sort()).toEqual(['admin-connectors', 'admin-delegation', 'admin-model', 'admin-org', 'admin-users', 'approvals', 'capex-actions', 'capex-budget', 'capex-changes', 'capex-dossiers', 'capex-execution', 'capex-gates', 'capex-governance', 'capex-journal', 'capex-list', 'capex-machines', 'capex-open', 'capex-overview', 'capex-pack', 'capex-permits', 'capex-rampup', 'capex-risks', 'capex-safety', 'capex-schedule', 'copil', 'home', 'kpi', 'map', 'portfolio', 'rex', 'subsidiary-portfolio']);
+    expect([...BUILT].sort()).toEqual(['admin-api', 'admin-connectors', 'admin-delegation', 'admin-model', 'admin-org', 'admin-users', 'approvals', 'capex-actions', 'capex-budget', 'capex-changes', 'capex-dossiers', 'capex-execution', 'capex-gates', 'capex-governance', 'capex-journal', 'capex-list', 'capex-machines', 'capex-open', 'capex-overview', 'capex-pack', 'capex-permits', 'capex-rampup', 'capex-risks', 'capex-safety', 'capex-schedule', 'copil', 'home', 'kpi', 'map', 'portfolio', 'rex', 'subsidiary-portfolio']);
   });
 });

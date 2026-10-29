@@ -14,6 +14,7 @@ import { labelOf } from '@/domain/capex-labels';
 import { uncertaintyGap } from '@/domain/execution';
 import { currentGate, type CycleState } from '@/domain/lifecycle';
 import { loadCapexPage } from '@/features/capex/page-data';
+import { exportLinks } from '@/features/export/links';
 import { ActualForm, ImportActualsForm, LotWindowForm } from '@/features/delivery/forms';
 import { dataText } from '@/i18n/data-text';
 import { fmtDate, fmtKeur, fmtNum, fmtRatio } from '@/lib/format';
@@ -40,9 +41,12 @@ export default async function ExecutionPage({ params }: PageProps<'/capex/[code]
   return (
     <>
       <PageHeader screen="capex-execution" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} primary={edit ? <ImportActualsForm code={c.code} /> : undefined}
-        actions={can('closure') && c.phase === 'demarrage' && (
-          <ClosureForm code={c.code} statement={closure.statement ? { afeBalanceKeur: closure.statement.afeBalanceKeur, note: closure.statement.note } : null} lots={closure.lots.map((l) => ({ id: l.id, label: `${l.number}. ${dataText(l.title, lang)}`, finalKeur: l.finalKeur }))} />
-        )}
+        actions={<>
+          {can('closure') && c.phase === 'demarrage' && (
+            <ClosureForm code={c.code} statement={closure.statement ? { afeBalanceKeur: closure.statement.afeBalanceKeur, note: closure.statement.note } : null} lots={closure.lots.map((l) => ({ id: l.id, label: `${l.number}. ${dataText(l.title, lang)}`, finalKeur: l.finalKeur }))} />
+          )}
+          {exportLinks(t, 'execution', { capex: c.code })}
+        </>}
       />
       <KpiGrid>
         <KpiTile label={t('Budget at completion')} value={k(i.bacKeur)} sub={t(x.budgetSource === 'g2_baseline' ? 'G2 baseline' : x.budgetSource === 'latest_validated' ? 'Latest validated version (indicative)' : 'No validated budget')} />

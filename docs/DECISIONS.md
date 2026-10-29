@@ -143,8 +143,8 @@ l'absence de consigne, est noté ici et reste modifiable par le responsable prod
 | Point | Ajout | Choix par défaut | ★ |
 |---|---|---|---|
 | AR-049 | Verrouillage optimiste et lecture des portefeuilles | colonne `row_version` sur le CAPEX, les versions de budget, les versions de dossier et les étapes de circuit, augmentée par un déclencheur à chaque mise à jour ; la fiche d'identité, la version de budget en brouillon et l'étape de circuit renvoient la version affichée et l'écriture est refusée si elle a changé (« rechargez la page ») ; un dossier se verrouille par section (le texte affiché), pour que deux personnes écrivent chacune leurs sections ; portefeuilles, alertes, registre et Gantt lus en un nombre fixe de requêtes, test sur 200 CAPEX | **retenu** |
-| AR-042 | Exports et Power BI | à préciser au lot 7a | **retenu** |
-| AR-048 | API REST et webhooks | à préciser au lot 7a | **retenu** |
+| AR-042 | Exports et Power BI | registre, portefeuilles groupe et filiale, alertes de l'accueil, engagé / réalisé d'un CAPEX en Excel et en CSV (en-tête de chaque page, mêmes droits) ; rapport Copil et versions de dossier en PDF écrit par le serveur (sans navigateur ni dépendance) ; Power BI par l'API en lecture (clé dédiée) ou, plus tard, par un rôle de lecture des vues `pub_` (demande M-14 à Matrix) — `API.md` | **retenu** |
+| AR-048 | API REST et webhooks | applications clientes créées par l'administrateur (clé montrée une fois, empreinte seule conservée ; lecture ou écriture ; périmètre de filiales) ; lecture des CAPEX, du détail et des réalisés ; écriture signée (HMAC, anti-rejeu, convention de Codex) des réalisés mensuels et des actions, auditée « API · application » ; webhooks `capex.opened`, `gate.decided`, `alert.raised` signés, par une file envoyée par le worker avec reprises — `API.md` | **retenu** |
 | AR-039 | Multi-devises | à préciser au lot 7b | **retenu** |
 | AR-040 | Enveloppes budgétaires | à préciser au lot 7b | **retenu** |
 | AR-045 | Cash-flow prévisionnel phasé | à préciser au lot 7b | **retenu** |

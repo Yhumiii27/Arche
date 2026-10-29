@@ -17,6 +17,7 @@ import { PHASE_LABEL, STATUS_LABEL, labelOf } from '@/domain/capex-labels';
 import { GATE_LABEL, PHASES, type GateCode } from '@/domain/lifecycle';
 import { OpenCapexButton } from '@/features/capex/forms';
 import { openGuidedLink } from '@/features/capex/open-link';
+import { exportLinks } from '@/features/export/links';
 import { dataText } from '@/i18n/data-text';
 import { fmtKeur } from '@/lib/format';
 import { approvalsOf } from '@/server/dal/approvals';
@@ -48,6 +49,7 @@ export default async function CapexRegisterPage({ searchParams }: PageProps<'/ca
         screen="capex-list"
         crumbs={['Subsidiary portfolio']}
         primary={await openGuidedLink(viewer)}
+        actions={exportLinks(t, 'register', { q, status, phase })}
       />
       <div className={s.toolbar}>
         {subs.current && <Tag tone="outline" size="sm">{`${subs.current} · ${dataText(subName, lang) ?? ''}`}</Tag>}

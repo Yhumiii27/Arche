@@ -12,6 +12,7 @@ import { needRef } from '@/domain/needs';
 import { packSummary, type PackItemState } from '@/domain/pack';
 import type { HsState } from '@/domain/safety';
 import { missingAudits, nextReview } from '@/domain/governance';
+import { CROSS_VIEW_ROLES } from '@/config/roles';
 import { currentGate, type CycleState, type GateCode, type ModelValues } from '@/domain/lifecycle';
 import { permitsDue } from '@/domain/permits';
 import { hsBoard } from '@/domain/safety';
@@ -21,7 +22,7 @@ import { authorizations, capex, capexLots, capexMembers, capexSnapshots, changes
 import { projectsOfMany } from '@/server/integrations/keystone';
 import type { DB, Tx } from '@/server/db/types';
 import type { Viewer } from '@/server/viewer';
-import { visibleCapex, type CapexRow } from './capex';
+import { isMine, visibleCapex, type CapexRow } from './capex';
 import { modelValues, versionsOfMany } from './cycle';
 import { epc2iPackOf, executionFrom, lotPlansFrom } from './execution';
 import { portfolioOf } from './portfolio';
@@ -180,6 +181,15 @@ export async function portfolioDashboard(viewer: Viewer, zone: string | null, su
   const dashes = await capexDashboards(db, p.rows.map((r) => full.get(r.id)!), today);
   const rows = p.rows.map((r, i) => ({ ...r, dash: dashes[i], trend: snaps.filter((s) => s.capexId === r.id) }));
   return { ...p, rows, today };
+}
+
+/**
+ * The CAPEX the home page follows: every visible one for the profiles that oversee (CEO, zone director, the cross-cutting
+ * profiles), else the viewer's own (named on it, sponsor or project lead).
+ */
+export function followedBy(viewer: Viewer): (c: CapexRow) => boolean {
+  const broad = viewer.role === 'ceo' || viewer.role === 'zone_director' || CROSS_VIEW_ROLES.includes(viewer.role);
+  return (c) => broad || isMine(viewer, c);
 }
 
 /** Alerts of the CAPEX the viewer sees (home page). */
