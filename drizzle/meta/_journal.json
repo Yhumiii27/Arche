@@ -141,6 +141,20 @@
       "when": 1792842195838,
       "tag": "0019_wbs_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793286415235,
+      "tag": "0020_row_version",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793286416165,
+      "tag": "0021_row_version_trigger",
+      "breakpoints": true
     }
   ]
 }

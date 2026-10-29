@@ -8,6 +8,7 @@ import { Button } from '@/components/ds/Button';
 import { Field, Input, Select, Textarea } from '@/components/ds/Field';
 import { OUTCOME_LABEL, REAUTH_ERROR, type Outcome } from '@/domain/circuits';
 import { useI18n } from '@/i18n/client';
+import { ROW_VERSION_FIELD } from '@/domain/concurrency';
 import { actOnStepAction, submitGateAction } from './actions';
 
 type Opt = { value: string; label: string };
@@ -33,6 +34,8 @@ export function SubmitGateForm({ code, gate, experts }: { code: string; gate: st
 export interface StepFormProps {
   code: string;
   stepId: string;
+  /** Optimistic lock (AR-049). */
+  rowVersion: number;
   outcomes: readonly Outcome[];
   signed: boolean;
   /** The statement the signer confirms (typed data and codes, shown as is). */
@@ -45,11 +48,12 @@ export interface StepFormProps {
   returnTo: string;
 }
 
-export function StepForm({ code, stepId, outcomes, signed, statement, decides, forcible, proposed, returnTo }: StepFormProps) {
+export function StepForm({ code, stepId, rowVersion, outcomes, signed, statement, decides, forcible, proposed, returnTo }: StepFormProps) {
   const { t } = useI18n();
   const [state, run, pending] = useActionState((p: ActionResult | null, fd: FormData) => actOnStepAction(code, stepId, p, fd), null);
   return (
     <form action={run} className={s.form}>
+      <input type="hidden" name={ROW_VERSION_FIELD} value={rowVersion} readOnly />
       <Field label={t('Outcome')} htmlFor={`o-${stepId}`} required>
         <Select id={`o-${stepId}`} name="outcome" options={outcomes.map((o) => ({ value: o, label: t(OUTCOME_LABEL[o]) }))} />
       </Field>

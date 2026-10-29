@@ -133,3 +133,26 @@ type du pack, définitions RSPDI / ASPD, relevé de l’existant).
 | Menus en trois sections : Portefeuille groupe, Portefeuille filiale (sélecteur de filiale : registre, portefeuille de la filiale, ouverture), Pilotage (pages du seul CAPEX sélectionné) ; choix de langue FR / EN en haut à droite comme dans Keystone | retour du pilote du 24 oct. 2026 (option choisie le jour même) | **retenu** |
 | Plan d'actions du CAPEX : bouton « Nouvelle action » dans l'en-tête de chaque page du CAPEX (origine déduite de la page), actions de suivi (responsable, échéance, élément d'origine), clôture faite / annulée (motif), « Mes actions » à l'Accueil | retour du pilote du 24 oct. 2026 | **retenu** |
 | WBS et Gantt du CAPEX (composants d'affichage repris de Keystone, exception à la règle « plateforme seulement », `SOCLE.md`) : tâches sous les lots ou au niveau du CAPEX (dates, avancement, responsable, jalons), lots sans tâche à leurs mois prévus ; un projet EPC2i y figure en une barre de synthèse ; aux niveaux filiale et groupe, une barre de synthèse par CAPEX (durée, avancement), sans détail | retour du pilote du 24 oct. 2026 | **retenu** |
+
+### Ajouts retenus le 29 oct. 2026 (analyse comparative du 25 oct. 2026, AR-039 à AR-052)
+
+Le responsable produit a lancé les 14 points de l'analyse comparative (« lance AR-039 à AR-052 »). Ils sont développés par lots
+(7a plateforme, 7b finance, 7c portefeuille, 7d circuits, 7e amont et aval) ; le choix par défaut de chaque point, pris en
+l'absence de consigne, est noté ici et reste modifiable par le responsable produit.
+
+| Point | Ajout | Choix par défaut | ★ |
+|---|---|---|---|
+| AR-049 | Verrouillage optimiste et lecture des portefeuilles | colonne `row_version` sur le CAPEX, les versions de budget, les versions de dossier et les étapes de circuit, augmentée par un déclencheur à chaque mise à jour ; la fiche d'identité, la version de budget en brouillon et l'étape de circuit renvoient la version affichée et l'écriture est refusée si elle a changé (« rechargez la page ») ; un dossier se verrouille par section (le texte affiché), pour que deux personnes écrivent chacune leurs sections ; portefeuilles, alertes, registre et Gantt lus en un nombre fixe de requêtes, test sur 200 CAPEX | **retenu** |
+| AR-042 | Exports et Power BI | à préciser au lot 7a | **retenu** |
+| AR-048 | API REST et webhooks | à préciser au lot 7a | **retenu** |
+| AR-039 | Multi-devises | à préciser au lot 7b | **retenu** |
+| AR-040 | Enveloppes budgétaires | à préciser au lot 7b | **retenu** |
+| AR-045 | Cash-flow prévisionnel phasé | à préciser au lot 7b | **retenu** |
+| AR-050 | Amortissement et immobilisations | à préciser au lot 7b | **retenu** |
+| AR-044 | Scoring multicritère | à préciser au lot 7c | **retenu** |
+| AR-043 | Scénarios de portefeuille | à préciser au lot 7c | **retenu** |
+| AR-041 | Notifications e-mail, relances, escalade, absences | à préciser au lot 7d (le transport, SMTP ou Microsoft Graph, reste à choisir : N-35) | **retenu** |
+| AR-052 | Concepteur sans code des dossiers et circuits | à préciser au lot 7d | **retenu** |
+| AR-051 | Backlog d'idées | à préciser au lot 7e | **retenu** |
+| AR-046 | Gains réalisés et post-audit | à préciser au lot 7e | **retenu** |
+| AR-047 | Import Sage | à préciser au lot 7e (accès à Sage par la DSI : N-14) | **retenu** |

@@ -2,7 +2,7 @@
 // 04, 05; delivery 3).
 import { boolean, date, index, integer, jsonb, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { arche } from './_schema';
-import { id, keur, timestamps } from './_common';
+import { id, keur, rowVersion, timestamps } from './_common';
 import { capex, gates } from './capex';
 import { users } from './organisation';
 
@@ -34,6 +34,7 @@ export const dossierVersions = arche.table('dossier_versions', {
   frozenByUserId: uuid('frozen_by_user_id').references(() => users.id),
   createdByName: text('created_by_name').notNull(),
   ...timestamps,
+  rowVersion: rowVersion(),
 }, (t) => [unique('dossier_versions_number_uq').on(t.dossierId, t.number)]);
 
 /** Steps of a gate session's circuit, instantiated from the model (src/domain/circuits.ts). */
@@ -60,6 +61,7 @@ export const circuitSteps = arche.table('circuit_steps', {
   actedByUserId: uuid('acted_by_user_id').references(() => users.id),
   actedAt: timestamp('acted_at', { withTimezone: true }),
   ...timestamps,
+  rowVersion: rowVersion(),
 }, (t) => [index('circuit_steps_gate_idx').on(t.gateId)]);
 
 /** Proof of a simple signature (spec 05 §3). Append-only (database trigger). */

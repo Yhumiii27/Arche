@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-22",
-  "updated": "2026-10-26",
+  "updated": "2026-10-29",
   "branch": "claude/brave-curie-chxbck",
   "history": [
     {
@@ -114,6 +114,10 @@
     {
       "date": "2026-10-26",
       "text": "Analyse comparative avec les solutions du commerce (25 oct. 2026) : 14 items ajoutés (AR-039 à AR-052), 10 items annotés."
+    },
+    {
+      "date": "2026-10-29",
+      "text": "AR-039 à AR-052 retenus par le responsable produit (livraison 7). Lot 7a : verrouillage optimiste et lecture des portefeuilles en un nombre fixe de requêtes (AR-049)."
     }
   ],
   "items": [
@@ -932,8 +936,9 @@
         "src/domain/execution.ts"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "en_cours",
+        "delivery": "Livraison 7",
+        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
       }
     },
     {
@@ -956,8 +961,9 @@
         "src/server/dal/governance.ts"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "en_cours",
+        "delivery": "Livraison 7",
+        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
       }
     },
     {
@@ -981,8 +987,9 @@
         "src/domain/delegation.ts"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "en_cours",
+        "delivery": "Livraison 7",
+        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
       }
     },
     {
@@ -1005,8 +1012,9 @@
         "src/server/dal/portfolio.ts"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "en_cours",
+        "delivery": "Livraison 7",
+        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
       }
     },
     {
@@ -1015,9 +1023,9 @@
       "description": "Scénarios de portefeuille nommés (base, contraint, croissance) : sélection et décalage de CAPEX, enveloppe groupe par exercice, comparaison des scénarios (dépense, retour, risques) et retenue d’un scénario pour le COPIL GPI. Dépend des enveloppes (AR-040). Absent d’Arche. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Planisware, Finario, Board) ; priorité suggérée : à décider.",
       "category": "pilotage_gouvernance",
       "kind": "fonction",
-      "priority": "a_decider",
+      "priority": "prochaine_etape",
       "status": "non_commence",
-      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "waiting_on": "",
       "effort": "L",
       "sources": [
         "Analyse comparative avec les solutions du commerce, 25 oct. 2026"
@@ -1027,8 +1035,9 @@
         "src/server/dal/governance.ts"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "en_cours",
+        "delivery": "Livraison 7",
+        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
       }
     },
     {
@@ -1037,9 +1046,9 @@
       "description": "Grille de critères pondérés tenue par le groupe (valeur financière du BP, risque, alignement stratégique, urgence, sécurité), note de chaque CAPEX saisie ou calculée, classement des CAPEX entre filiales et zones sur le portefeuille groupe et au COPIL GPI. Arche n’a que la typologie Light / Stratégique et les alertes à règles. Analyse comparative du 25 oct. 2026 : standard des outils de gestion de portefeuille ; priorité suggérée : à décider.",
       "category": "pilotage_gouvernance",
       "kind": "fonction",
-      "priority": "a_decider",
+      "priority": "prochaine_etape",
       "status": "non_commence",
-      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "waiting_on": "",
       "effort": "M",
       "sources": [
         "Analyse comparative avec les solutions du commerce, 25 oct. 2026"
@@ -1050,8 +1059,9 @@
         "src/server/dal/portfolio.ts"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "en_cours",
+        "delivery": "Livraison 7",
+        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
       }
     },
     {
@@ -1060,9 +1070,9 @@
       "description": "Phasage mensuel prévisionnel des décaissements de chaque lot saisi par le chef de projet ou le CDG (et non une répartition uniforme sur la fenêtre du lot), re-prévision à chaque mois (reste à dépenser), comparaison de la prévision à la baseline G2 et au réalisé sur la courbe en S, consolidation par filiale et par exercice pour la trésorerie du groupe. Arche saisit l’engagé et le réalisé mensuels mais ne phase pas la prévision. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Unifier, Board) ; priorité suggérée : à décider.",
       "category": "capex_cycle",
       "kind": "fonction",
-      "priority": "a_decider",
+      "priority": "prochaine_etape",
       "status": "non_commence",
-      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "waiting_on": "",
       "effort": "M",
       "sources": [
         "Analyse comparative avec les solutions du commerce, 25 oct. 2026",
@@ -1073,8 +1083,9 @@
         "src/server/dal/execution.ts"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "en_cours",
+        "delivery": "Livraison 7",
+        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
       }
     },
     {
@@ -1083,9 +1094,9 @@
       "description": "Suivi des gains du BP approuvé au G2 (chiffre d’affaires, économies, productivité) contre les gains constatés après la mise en service, saisis par le CDG ou le sponsor ; post-audit programmé automatiquement N mois (6, 12, 24) après la MES avec son circuit et son compte rendu ; VAN et TRI recalculés sur le réalisé. Arche a le ramp-up et la clôture des coûts, mais aucun suivi des gains du BP. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Finario, eCapEx) ; priorité suggérée : à décider.",
       "category": "demarrage_transfert",
       "kind": "fonction",
-      "priority": "a_decider",
+      "priority": "prochaine_etape",
       "status": "non_commence",
-      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "waiting_on": "",
       "effort": "M",
       "sources": [
         "Analyse comparative avec les solutions du commerce, 25 oct. 2026",
@@ -1098,8 +1109,9 @@
         "src/domain/governance.ts"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "en_cours",
+        "delivery": "Livraison 7",
+        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
       }
     },
     {
@@ -1108,7 +1120,7 @@
       "description": "Rapprochement automatique de l’engagé (commandes) et du réalisé (factures) des lots hors EPC2i depuis Sage, par API ou extraction planifiée, avec une table de correspondance compte / lot et un journal des rejets ; l’import CSV manuel du CDG reste disponible. Arche n’a aujourd’hui que l’import CSV manuel (N-14). Analyse comparative du 25 oct. 2026 : standard du marché par fichier, avancé par connecteur ; priorité suggérée : à décider.",
       "category": "capex_cycle",
       "kind": "integration",
-      "priority": "a_decider",
+      "priority": "prochaine_etape",
       "status": "bloque_systeme_externe",
       "waiting_on": "DSI (accès à Sage : API ou extraction planifiée) ; N-14",
       "effort": "M",
@@ -1122,8 +1134,9 @@
         "src/domain/execution.ts"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "en_cours",
+        "delivery": "Livraison 7",
+        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
       }
     },
     {
@@ -1132,9 +1145,9 @@
       "description": "API REST authentifiée par clé signée (comme `POST /api/import` de Codex) exposant les CAPEX, les jalons, les budgets et les besoins en lecture, et la création ou mise à jour de quelques objets (réalisé mensuel, action) ; webhooks sur les événements (décision de jalon, ouverture, alerte) pour Keystone, Codex et les outils du groupe. Seule `/api/health` existe ; les autres applications lisent les vues `pub_`. Analyse comparative du 25 oct. 2026 : standard du marché (Unifier, Finario) ; priorité suggérée : à décider.",
       "category": "plateforme_production",
       "kind": "integration",
-      "priority": "a_decider",
+      "priority": "prochaine_etape",
       "status": "non_commence",
-      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "waiting_on": "",
       "effort": "M",
       "sources": [
         "Analyse comparative avec les solutions du commerce, 25 oct. 2026",
@@ -1145,8 +1158,9 @@
         "src/server/http/"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "en_cours",
+        "delivery": "Livraison 7",
+        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
       }
     },
     {
@@ -1155,9 +1169,9 @@
       "description": "Champ `version` sur les objets modifiés par plusieurs profils (CAPEX, budget, dossiers, étapes de circuit) vérifié par chaque Server Function pour refuser une écriture sur une version périmée ; lecture des portefeuilles et des alertes en une requête par vue au lieu d’une par CAPEX (`portfolioDashboard`, `alertsForViewer` : N+1), avec un test de charge sur un jeu de 200 CAPEX. Analyse comparative du 25 oct. 2026 : prérequis d’échelle avant un déploiement à toutes les filiales ; priorité suggérée : à décider (avant le pilote élargi).",
       "category": "plateforme_production",
       "kind": "socle",
-      "priority": "a_decider",
+      "priority": "prochaine_etape",
       "status": "non_commence",
-      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "waiting_on": "",
       "effort": "M",
       "sources": [
         "Analyse comparative avec les solutions du commerce, 25 oct. 2026"
@@ -1168,8 +1182,9 @@
         "src/server/db/schema/"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7a",
+        "note": "Colonne row_version (CAPEX, versions de budget, versions de dossier, étapes de circuit) et déclencheur ; écriture refusée sur une version périmée (fiche, budget, étape ; dossier par section) ; portefeuilles, alertes, registre et Gantt en un nombre fixe de requêtes (test de charge : 200 CAPEX)."
       }
     },
     {
@@ -1178,9 +1193,9 @@
       "description": "Classes d’actifs avec durée de vie et méthode d’amortissement, simulation de la dépréciation dès le BP (charge annuelle, impact résultat), transfert des lots en immobilisations à la clôture comptable avec date de mise en service et export vers la comptabilité (Sage FI-AA). Absent d’Arche. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Jedox, SAP FI-AA) ; priorité suggérée : plus tard.",
       "category": "demarrage_transfert",
       "kind": "fonction",
-      "priority": "plus_tard",
+      "priority": "prochaine_etape",
       "status": "non_commence",
-      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "waiting_on": "",
       "effort": "M",
       "sources": [
         "Analyse comparative avec les solutions du commerce, 25 oct. 2026"
@@ -1190,8 +1205,9 @@
         "src/domain/bp.ts"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "en_cours",
+        "delivery": "Livraison 7",
+        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
       }
     },
     {
@@ -1200,9 +1216,9 @@
       "description": "Idées d’investissement saisies par n’importe quel utilisateur de la filiale (titre, enjeu, ordre de grandeur), qualifiées par le sponsor ou le zone coordinator, retenues, écartées ou transformées en brouillon de CAPEX par l’assistant « Ouvrir un CAPEX » ; file d’idées visible au portefeuille filiale. Absent d’Arche, dont le cycle commence au brouillon. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (CapEx360) ; priorité suggérée : plus tard.",
       "category": "capex_cycle",
       "kind": "fonction",
-      "priority": "plus_tard",
+      "priority": "prochaine_etape",
       "status": "non_commence",
-      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "waiting_on": "",
       "effort": "M",
       "sources": [
         "Analyse comparative avec les solutions du commerce, 25 oct. 2026"
@@ -1212,8 +1228,9 @@
         "src/domain/capex.ts"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "en_cours",
+        "delivery": "Livraison 7",
+        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
       }
     },
     {
@@ -1222,9 +1239,9 @@
       "description": "Édition par l’administrateur, sans code, des sections et champs des dossiers vivants et des étapes des circuits (acteurs, délais, parallélisme, conditions), avec versions et prévisualisation. Le modèle DIG-PRODI d’Arche est paramétrable en valeurs (phases, critères, délais) mais sa structure est codée (`src/domain/dossiers.ts`, `src/domain/circuits.ts`). Analyse comparative du 25 oct. 2026 : différenciant du marché (Unifier uDesigner) ; priorité suggérée : plus tard.",
       "category": "dossiers_circuits",
       "kind": "fonction",
-      "priority": "plus_tard",
+      "priority": "prochaine_etape",
       "status": "non_commence",
-      "waiting_on": "Responsable produit (hors CDC, à valider)",
+      "waiting_on": "",
       "effort": "L",
       "sources": [
         "Analyse comparative avec les solutions du commerce, 25 oct. 2026"
@@ -1235,8 +1252,9 @@
         "src/domain/lifecycle.ts"
       ],
       "progress": {
-        "state": "a_faire",
-        "note": "Consigné le 26 oct. 2026 (analyse comparative) ; hors CDC, à valider avant de construire."
+        "state": "en_cours",
+        "delivery": "Livraison 7",
+        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
       }
     }
   ]

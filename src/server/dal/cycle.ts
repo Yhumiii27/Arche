@@ -38,21 +38,31 @@ export interface VersionView {
   isG2Baseline: boolean;
   createdByName: string;
   createdAt: Date;
+  /** Optimistic lock (AR-049). */
+  rowVersion: number;
 }
 
 /** Budget versions, newest first, with their lines (lot id → k€) and central amount. */
 export async function versionsOf(q: Q, capexId: string): Promise<VersionView[]> {
-  const vs = await q.select().from(budgetVersions).where(eq(budgetVersions.capexId, capexId)).orderBy(desc(budgetVersions.number));
-  if (!vs.length) return [];
+  return (await versionsOfMany(q, [capexId])).get(capexId) ?? [];
+}
+
+/** versionsOf for several CAPEX in two reads (portfolio views, AR-049). */
+export async function versionsOfMany(q: Q, capexIds: readonly string[]): Promise<Map<string, VersionView[]>> {
+  const out = new Map<string, VersionView[]>(capexIds.map((id) => [id, []]));
+  if (!capexIds.length) return out;
+  const vs = await q.select().from(budgetVersions).where(inArray(budgetVersions.capexId, [...capexIds])).orderBy(desc(budgetVersions.number));
+  if (!vs.length) return out;
   const ls = await q.select().from(budgetLines).where(inArray(budgetLines.budgetVersionId, vs.map((v) => v.id)));
-  return vs.map((v) => {
+  for (const v of vs) {
     const mine = ls.filter((l) => l.budgetVersionId === v.id);
-    return {
+    out.get(v.capexId)!.push({
       id: v.id, number: v.number, estimateClass: v.estimateClass, status: v.status, basis: v.basis, centralKeur: centralOf(mine),
       lines: Object.fromEntries(mine.map((l) => [l.lotId, l.amountKeur])), validatedByName: v.validatedByName, validatedAt: v.validatedAt,
-      isG2Baseline: v.isG2Baseline, createdByName: v.createdByName, createdAt: v.createdAt,
-    };
-  });
+      isG2Baseline: v.isG2Baseline, createdByName: v.createdByName, createdAt: v.createdAt, rowVersion: v.rowVersion,
+    });
+  }
+  return out;
 }
 
 /** The latest validated version (the reference of the typology and of the G1 / G2 criteria). */

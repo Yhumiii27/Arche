@@ -8,7 +8,7 @@ import { subsidiaries, zones } from '@/server/db/schema';
 import { creatableSubsidiaries } from '@/domain/capex';
 import type { Viewer } from '@/server/viewer';
 import { visibleCapex, type CapexRow } from './capex';
-import { latestValidated, versionsOf } from './cycle';
+import { latestValidated, versionsOfMany } from './cycle';
 
 export interface PortfolioRow extends CapexRow {
   validatedKeur: number | null;
@@ -19,12 +19,11 @@ export interface PortfolioRow extends CapexRow {
 export async function portfolioOf(viewer: Viewer, zone: string | null) {
   const db = await getDb();
   const [all, zoneRows] = await Promise.all([visibleCapex(viewer), db.select({ code: zones.code, name: zones.name, w: zones.boundsWest, n: zones.boundsNorth, e: zones.boundsEast, s: zones.boundsSouth }).from(zones).orderBy(asc(zones.code))]);
-  const rows: PortfolioRow[] = await Promise.all(
-    all.map(async (c) => {
-      const v = latestValidated(await versionsOf(db, c.id));
-      return { ...c, validatedKeur: v?.centralKeur ?? null, validatedClass: v?.estimateClass ?? null, nextGate: currentGate(c as CycleState) };
-    }),
-  );
+  const versions = await versionsOfMany(db, all.map((c) => c.id));
+  const rows: PortfolioRow[] = all.map((c) => {
+    const v = latestValidated(versions.get(c.id) ?? []);
+    return { ...c, validatedKeur: v?.centralKeur ?? null, validatedClass: v?.estimateClass ?? null, nextGate: currentGate(c as CycleState) };
+  });
   const inZone = zone ? rows.filter((r) => r.zoneCode === zone) : rows;
   const zoneOptions = [{ code: null as string | null, name: null as string | null, count: rows.length }, ...zoneRows.map((z) => ({ code: z.code, name: z.name, count: rows.filter((r) => r.zoneCode === z.code).length }))];
   const z = zone ? zoneRows.find((x) => x.code === zone) ?? null : null;
