@@ -9,10 +9,11 @@ import { revalidatePath } from 'next/cache';
 import { creatableSubsidiaries, nextCapexCode, refOf, ROLE_OF_TEAM_ROLE } from '@/domain/capex';
 import { completeness, DOSSIER_LABEL, emptyContent } from '@/domain/dossiers';
 import { checkGuided, type GuidedRaw } from '@/domain/guided';
+import { ideaRef } from '@/domain/ideas';
 import { businessToday } from '@/server/clock';
 import { getDb } from '@/server/db/client';
 import { recordActivity, writeAudit } from '@/server/db/helpers';
-import { budgetLines, budgetVersions, capex, capexLots, capexMembers, dossierVersions, risks, roleAssignments, sites } from '@/server/db/schema';
+import { budgetLines, budgetVersions, capex, capexLots, capexMembers, dossierVersions, ideas, risks, roleAssignments, sites } from '@/server/db/schema';
 import { applyOpen, applyTakeover } from '@/server/capex/cycle-writes';
 import { auditOf, type ActionResult } from '@/server/capex/write';
 import { capexRow, teamCandidates } from '@/server/dal/cycle';
@@ -20,7 +21,8 @@ import { computedFacts, ensureDossier } from '@/server/dal/dossiers';
 import { currentSections } from '@/server/dal/designs';
 import { getViewer } from '@/server/session';
 
-export async function openGuidedAction(subsidiaryCode: string, raw: GuidedRaw): Promise<ActionResult> {
+/** `ideaId`: a retained idea of the subsidiary the CAPEX comes from (AR-051), marked converted. */
+export async function openGuidedAction(subsidiaryCode: string, raw: GuidedRaw, ideaId?: string): Promise<ActionResult> {
   const v = await getViewer();
   const allowed = creatableSubsidiaries(v.role, v.assignments, v.subsidiaryCode);
   const sub = String(subsidiaryCode ?? '').toUpperCase();
@@ -34,10 +36,17 @@ export async function openGuidedAction(subsidiaryCode: string, raw: GuidedRaw): 
     const ch = checkGuided(raw ?? {}, { today, role: v.role as 'sponsor' | 'project_lead', userId: v.userId, sites: subSites, people, sponsorUserId });
     if (!ch.ok) return ch;
     const g = ch.value;
+    // The idea it comes from (AR-051), checked before anything is written.
+    const idea = ideaId ? (await tx.select().from(ideas).where(eq(ideas.id, String(ideaId))))[0] ?? null : null;
+    if (ideaId && (!idea || idea.subsidiaryCode !== sub || idea.status !== 'retained')) return { ok: false, error: 'Only a retained idea of the subsidiary becomes a CAPEX' };
     const taken = (await tx.select({ code: capex.code }).from(capex).where(eq(capex.subsidiaryCode, sub))).map((x) => x.code);
     const code = nextCapexCode(sub, Number(today.slice(0, 4)), taken);
     const [row] = await tx.insert(capex).values({ code, subsidiaryCode: sub, ...g.sheet, status: 'draft', phase: 'cadrage', sponsorUserId, leadUserId: g.leadUserId }).returning();
     await writeAudit(tx, auditOf(v, row, 'CAPEX created (draft, guided opening)', { entityType: 'capex', entityId: row.id, after: { ...g.sheet, subsidiaryCode: sub } }));
+    if (idea) {
+      await tx.update(ideas).set({ status: 'converted', capexId: row.id, updatedAt: new Date() }).where(eq(ideas.id, idea.id));
+      await writeAudit(tx, auditOf(v, row, `${ideaRef(sub, idea.number)} became this CAPEX`, { entityType: 'idea', entityId: idea.id }));
+    }
     const named = async (userId: string, capexRole: (typeof g.team)[number]['capexRole'] | 'lead') => {
       const [m] = await tx.insert(capexMembers).values({ capexId: row.id, userId, capexRole }).returning({ id: capexMembers.id });
       const scoped = ROLE_OF_TEAM_ROLE[capexRole];

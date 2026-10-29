@@ -81,6 +81,8 @@ export const capexLots = arche.table('capex_lots', {
   ...timestamps,
   /** Asset class of the lot (AR-050); null: the class of its kind. */
   assetClassCode: text('asset_class_code'),
+  /** Sage analytic code of the lot (AR-047): the extraction's lines with this code go to the lot. */
+  sageCode: text('sage_code'),
 }, (t) => [unique('capex_lots_number_uq').on(t.capexId, t.number)]);
 
 /** Budget versions: the precision funnel E50 → E30 → E10 (spec 03 §5); a validated version is frozen. */

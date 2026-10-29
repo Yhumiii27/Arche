@@ -4,9 +4,9 @@
 import type { RoleKey } from './roles';
 
 export type ScreenId =
-  | 'home' | 'approvals' | 'capex-list' | 'map' | 'portfolio' | 'copil' | 'rex' | 'kpi' | 'envelopes' | 'scenarios' | 'subsidiary-portfolio' | 'capex-open'
+  | 'home' | 'approvals' | 'capex-list' | 'map' | 'portfolio' | 'copil' | 'rex' | 'kpi' | 'envelopes' | 'scenarios' | 'subsidiary-portfolio' | 'ideas' | 'sage' | 'capex-open'
   | 'capex-overview' | 'capex-actions' | 'capex-gates' | 'capex-dossiers' | 'capex-budget' | 'capex-execution' | 'capex-changes' | 'capex-schedule' | 'capex-machines'
-  | 'capex-pack' | 'capex-permits' | 'capex-safety' | 'capex-risks' | 'capex-governance' | 'capex-rampup' | 'capex-journal'
+  | 'capex-pack' | 'capex-permits' | 'capex-safety' | 'capex-risks' | 'capex-governance' | 'capex-rampup' | 'capex-benefits' | 'capex-journal'
   | 'admin-org' | 'admin-users' | 'admin-model' | 'admin-delegation' | 'admin-designer' | 'admin-connectors' | 'admin-api';
 
 /** Sidebar sections (owner, 24 Oct 2026): group portfolio, subsidiary portfolio (subsidiary selector), steering of the
@@ -43,6 +43,8 @@ export const SCREENS: readonly ScreenDef[] = [
   { id: 'rex', path: '/rex', title: 'Lessons learned library', section: 'group', roles: BUSINESS, delivery: 'L6' },
   { id: 'capex-list', path: '/capex', title: 'CAPEX register', section: 'subsidiary', roles: STEERING, delivery: 'L1' },
   { id: 'subsidiary-portfolio', path: '/portfolio/subsidiary', title: 'Subsidiary portfolio', section: 'subsidiary', roles: STEERING, delivery: 'P' },
+  { id: 'ideas', path: '/ideas', title: 'Investment ideas', section: 'subsidiary', roles: BUSINESS, delivery: 'L7' },
+  { id: 'sage', path: '/sage', title: 'Sage import', section: 'subsidiary', roles: ['admin', 'group_cfo', 'controller'], delivery: 'L7' },
   { id: 'capex-open', path: '/open', title: 'Open a CAPEX', section: 'subsidiary', roles: ['sponsor', 'project_lead'], delivery: 'P' },
   { id: 'capex-overview', path: '/capex/[code]', title: 'CAPEX overview', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'L1' },
   { id: 'capex-actions', path: '/capex/[code]/actions', title: 'Action plan', section: 'capex', group: 'DIG-PRODI cycle', roles: BUSINESS, delivery: 'P' },
@@ -59,6 +61,7 @@ export const SCREENS: readonly ScreenDef[] = [
   { id: 'capex-risks', path: '/capex/[code]/risks', title: 'Risks', section: 'capex', group: 'Risks and safety', roles: BUSINESS, delivery: 'L2' },
   { id: 'capex-safety', path: '/capex/[code]/safety', title: 'Safety milestones', section: 'capex', group: 'Risks and safety', roles: BUSINESS, delivery: 'L5' },
   { id: 'capex-rampup', path: '/capex/[code]/rampup', title: 'Ramp-up', section: 'capex', group: 'Start-up and traceability', roles: BUSINESS, delivery: 'L6' },
+  { id: 'capex-benefits', path: '/capex/[code]/benefits', title: 'Benefits & post-audit', section: 'capex', group: 'Start-up and traceability', roles: BUSINESS, delivery: 'L7' },
   { id: 'capex-journal', path: '/capex/[code]/journal', title: 'Journal', section: 'capex', group: 'Start-up and traceability', roles: BUSINESS, delivery: 'L2' },
   { id: 'admin-org', path: '/admin/organisation', title: 'Subsidiaries, sites, zones', section: 'admin', group: 'Reference data', roles: ['admin', 'group_cfo'], delivery: 'L1' },
   { id: 'admin-users', path: '/admin/users', title: 'Users & roles', section: 'admin', group: 'Access', roles: ['admin'], delivery: 'L1' },

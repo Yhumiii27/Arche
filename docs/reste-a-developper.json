@@ -134,6 +134,10 @@
     {
       "date": "2026-10-29",
       "text": "Lot 7d : notifications e-mail, relances, escalade et absences (AR-041), concepteur sans code des dossiers et circuits (AR-052)."
+    },
+    {
+      "date": "2026-10-29",
+      "text": "Lot 7e : backlog d’idées (AR-051), gains réalisés et post-audit (AR-046), import Sage par extraction (AR-047). Les 14 points AR-039 à AR-052 sont livrés."
     }
   ],
   "items": [
@@ -1125,9 +1129,9 @@
         "src/domain/governance.ts"
       ],
       "progress": {
-        "state": "en_cours",
-        "delivery": "Livraison 7",
-        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7e",
+        "note": "Page Gains et post-audit : gains réels contre le BP validé, VAN / TRI recalculés, post-audits M+6 / M+12 / M+24 tenus par le directeur industriel et dus dans « Mes validations »."
       }
     },
     {
@@ -1150,9 +1154,9 @@
         "src/domain/execution.ts"
       ],
       "progress": {
-        "state": "en_cours",
-        "delivery": "Livraison 7",
-        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7e",
+        "note": "Page Import Sage : codes analytiques des lots, import d’extraction (dépôt, dossier planifié ARCHE_SAGE_DIR, démonstration), doublons et journal des rejets, engagé / réalisé cumulés en k€ ; accès API à Sage toujours attendu (DSI, N-14)."
       }
     },
     {
@@ -1244,9 +1248,9 @@
         "src/domain/capex.ts"
       ],
       "progress": {
-        "state": "en_cours",
-        "delivery": "Livraison 7",
-        "note": "Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5)."
+        "state": "fait",
+        "delivery": "Livraison 7, lot 7e",
+        "note": "Page Idées d’investissement : proposition, qualification, retenue ou mise à l’écart, conversion en brouillon par l’assistant « Ouvrir un CAPEX » ; file d’idées au portefeuille filiale."
       }
     },
     {

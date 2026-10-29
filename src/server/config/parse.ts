@@ -56,6 +56,9 @@ export interface ArcheConfig {
   /** E-mail notifications (AR-041): `none` keeps them in the outbox (default, N-35: SMTP or Microsoft Graph to choose), `file`
    * writes each one to `dir` (one .eml per message); `from` is the sender, `publicUrl` the origin of the links. */
   mail: { transport: 'none' | 'file'; dir: string | null; from: string; publicUrl: string | null };
+  /** Folder of Sage's planned extractions (AR-047): `<SUBSIDIARY>*.csv`, imported by the job `sage-import`, then moved to
+   * `done/`; null = no planned extraction (files uploaded on the Sage import page). */
+  sageDir: string | null;
   /** Secret values present in the environment: the logger masks them wherever they appear. */
   secrets: string[];
 }
@@ -141,6 +144,8 @@ const VARS = {
   ARCHE_MAIL_FROM: z.string().email('must be an e-mail address').optional(),
   // Origin of the links in the e-mails (https://arche.example); relative links without it.
   ARCHE_PUBLIC_URL: z.string().optional(),
+  // Folder of Sage's planned extractions (AR-047); unset: uploads only.
+  ARCHE_SAGE_DIR: z.string().optional(),
 } as const;
 
 export type ConfigVariable = keyof typeof VARS;
@@ -257,6 +262,7 @@ export function parseConfig(env: Record<string, string | undefined>, opts: { cwd
         from: v.ARCHE_MAIL_FROM ?? 'arche@groupe.example',
         publicUrl: v.ARCHE_PUBLIC_URL ? trimSlash(v.ARCHE_PUBLIC_URL) : null,
       },
+      sageDir: v.ARCHE_SAGE_DIR ? path.resolve(opts.cwd, v.ARCHE_SAGE_DIR) : null,
       secrets: [...new Set(secrets)],
     },
   };

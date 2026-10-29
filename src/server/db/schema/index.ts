@@ -13,3 +13,5 @@ export * from './finance';
 export * from './portfolio';
 export * from './notify';
 export * from './designer';
+export * from './ideas';
+export * from './sage';

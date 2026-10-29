@@ -6,36 +6,36 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-10-29 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 38 faits, 9 en cours, 5 à faire, sur 52 points.
+**Avancement** : 41 faits, 6 en cours, 5 à faire, sur 52 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
 | Bloquant production | 3 | ≈ 7 |
-| Prochaine étape | 6 | ≈ 32 |
+| Prochaine étape | 3 | ≈ 20 |
 | À décider | 3 | ≈ 15 |
 | Plus tard | 2 | ≈ 8 |
-| **Total** | **14** | **≈ 62** |
+| **Total** | **11** | **≈ 50** |
 
 L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il ne compte ni l'attente des décisions et des données, ni les développements à faire côté Keystone, Codex, Vigie, Cursus ou Matrix, ni la recette.
 
 | Statut (points restants) | Points |
 |---|---:|
-| Non commencé | 5 |
+| Non commencé | 3 |
 | Partiel | 0 |
 | Attend le responsable produit | 3 |
-| Attend un système externe | 6 |
+| Attend un système externe | 5 |
 
 | Domaine | Bloquant production | Prochaine étape | À décider | Plus tard | Restants | Faits |
 |---|---:|---:|---:|---:|---:|---:|
 | Plateforme et mise en production | 2 | 0 | 0 | 1 | 3 | 7 |
 | Connexion, profils et isolation par filiale | 0 | 0 | 0 | 0 | 0 | 4 |
-| CAPEX et cycle DIG-PRODI | 0 | 2 | 0 | 0 | 2 | 6 |
+| CAPEX et cycle DIG-PRODI | 0 | 0 | 0 | 0 | 0 | 8 |
 | Dossiers vivants et circuits de décision | 0 | 0 | 0 | 0 | 0 | 6 |
 | Besoins machines et Keystone | 0 | 1 | 0 | 0 | 1 | 3 |
 | Documents (Codex) | 0 | 2 | 0 | 0 | 2 | 0 |
 | Jalons de sécurité (Vigie) | 0 | 0 | 1 | 0 | 1 | 1 |
 | Tableaux de bord et gouvernance | 1 | 0 | 0 | 0 | 1 | 7 |
-| Démarrage, montée en puissance et transfert | 0 | 1 | 0 | 0 | 1 | 3 |
+| Démarrage, montée en puissance et transfert | 0 | 0 | 0 | 0 | 0 | 4 |
 | Aide à la décision et signature avancée | 0 | 0 | 0 | 1 | 1 | 0 |
 | Cadrage, décisions et données attendues | 0 | 0 | 2 | 0 | 2 | 1 |
 
@@ -62,7 +62,6 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 - **AR-029** Vues Keystone pour Arche (catalogue, réponses, jalons, avancement, avenants, réserves, pack) — Keystone (R-185 à R-193)
 - **AR-033** Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite — Responsable produit (AC-3) puis Vigie
 - **AR-038** Socle partagé @epc2i/socle — Keystone (R-194)
-- **AR-047** Import des réalisés et des engagements depuis l’ERP (Sage) par API — DSI (accès à Sage : API ou extraction planifiée) ; N-14
 
 ## 2. Liste détaillée par domaine
 
@@ -126,15 +125,7 @@ Routes de connexion, cookie de session scellé, rôles et portées lus dans Arch
 Fournisseur OpenID simulé (src/test/mock-entra.ts) : connexion, refus, compte administrateur créé, déconnexion.  
 *Avancement : docs/DELIVERY-1b.md · Sources : src/server/auth/*
 
-### 2.3 CAPEX et cycle DIG-PRODI (2 restants, 6 faits)
-
-**AR-047 · Import des réalisés et des engagements depuis l’ERP (Sage) par API** — *Prochaine étape · attend un système externe · effort M* · **en cours (Livraison 7)**  
-Rapprochement automatique de l’engagé (commandes) et du réalisé (factures) des lots hors EPC2i depuis Sage, par API ou extraction planifiée, avec une table de correspondance compte / lot et un journal des rejets ; l’import CSV manuel du CDG reste disponible. Arche n’a aujourd’hui que l’import CSV manuel (N-14). Analyse comparative du 25 oct. 2026 : standard du marché par fichier, avancé par connecteur ; priorité suggérée : à décider.  
-*Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Attend : DSI (accès à Sage : API ou extraction planifiée) ; N-14 · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/DECISIONS.md N-14, docs/DECISIONS.md C-12*
-
-**AR-051 · Backlog d’idées d’investissement en amont de la demande formelle** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 7)**  
-Idées d’investissement saisies par n’importe quel utilisateur de la filiale (titre, enjeu, ordre de grandeur), qualifiées par le sponsor ou le zone coordinator, retenues, écartées ou transformées en brouillon de CAPEX par l’assistant « Ouvrir un CAPEX » ; file d’idées visible au portefeuille filiale. Absent d’Arche, dont le cycle commence au brouillon. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (CapEx360) ; priorité suggérée : plus tard.  
-*Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026*
+### 2.3 CAPEX et cycle DIG-PRODI (0 restants, 8 faits)
 
 **~~AR-016 · CAPEX : création, lots, équipe et gabarit de staffing~~** — *Prochaine étape · non commencé · effort L* · **fait (Livraison 2)**  
 Livraison 2.  
@@ -159,6 +150,14 @@ Montants des budgets, de l’engagé et du réalisé saisis dans la devise de la
 **~~AR-045 · Cash-flow prévisionnel phasé par mois et comparé à la baseline G2~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7b)**  
 Phasage mensuel prévisionnel des décaissements de chaque lot saisi par le chef de projet ou le CDG (et non une répartition uniforme sur la fenêtre du lot), re-prévision à chaque mois (reste à dépenser), comparaison de la prévision à la baseline G2 et au réalisé sur la courbe en S, consolidation par filiale et par exercice pour la trésorerie du groupe. Arche saisit l’engagé et le réalisé mensuels mais ne phase pas la prévision. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Unifier, Board) ; priorité suggérée : à décider.  
 *Avancement : Prévision mensuelle des décaissements par lot (en devise de la filiale), répartition du reste à dépenser à défaut, comparaison baseline G2 / réalisé (page Exécution), cash-flow par filiale et par exercice dans les portefeuilles. · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/spec/06-gouvernance-pilotage.md*
+
+**~~AR-047 · Import des réalisés et des engagements depuis l’ERP (Sage) par API~~** — *Prochaine étape · attend un système externe · effort M* · **fait (Livraison 7, lot 7e)**  
+Rapprochement automatique de l’engagé (commandes) et du réalisé (factures) des lots hors EPC2i depuis Sage, par API ou extraction planifiée, avec une table de correspondance compte / lot et un journal des rejets ; l’import CSV manuel du CDG reste disponible. Arche n’a aujourd’hui que l’import CSV manuel (N-14). Analyse comparative du 25 oct. 2026 : standard du marché par fichier, avancé par connecteur ; priorité suggérée : à décider.  
+*Avancement : Page Import Sage : codes analytiques des lots, import d’extraction (dépôt, dossier planifié ARCHE_SAGE_DIR, démonstration), doublons et journal des rejets, engagé / réalisé cumulés en k€ ; accès API à Sage toujours attendu (DSI, N-14). · Attend : DSI (accès à Sage : API ou extraction planifiée) ; N-14 · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/DECISIONS.md N-14, docs/DECISIONS.md C-12*
+
+**~~AR-051 · Backlog d’idées d’investissement en amont de la demande formelle~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7e)**  
+Idées d’investissement saisies par n’importe quel utilisateur de la filiale (titre, enjeu, ordre de grandeur), qualifiées par le sponsor ou le zone coordinator, retenues, écartées ou transformées en brouillon de CAPEX par l’assistant « Ouvrir un CAPEX » ; file d’idées visible au portefeuille filiale. Absent d’Arche, dont le cycle commence au brouillon. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (CapEx360) ; priorité suggérée : plus tard.  
+*Avancement : Page Idées d’investissement : proposition, qualification, retenue ou mise à l’écart, conversion en brouillon par l’assistant « Ouvrir un CAPEX » ; file d’idées au portefeuille filiale. · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026*
 
 ### 2.4 Dossiers vivants et circuits de décision (0 restants, 6 faits)
 
@@ -258,11 +257,11 @@ Scénarios de portefeuille nommés (base, contraint, croissance) : sélection et
 Grille de critères pondérés tenue par le groupe (valeur financière du BP, risque, alignement stratégique, urgence, sécurité), note de chaque CAPEX saisie ou calculée, classement des CAPEX entre filiales et zones sur le portefeuille groupe et au COPIL GPI. Arche n’a que la typologie Light / Stratégique et les alertes à règles. Analyse comparative du 25 oct. 2026 : standard des outils de gestion de portefeuille ; priorité suggérée : à décider.  
 *Avancement : Grille de 6 critères pondérés (3 calculés depuis le BP et les risques, 3 notés par le groupe), score sur 100 dès 80 % du poids noté, classement sur le Portefeuille groupe, détail et notation sur la page Gouvernance. · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026*
 
-### 2.9 Démarrage, montée en puissance et transfert (1 restants, 3 faits)
+### 2.9 Démarrage, montée en puissance et transfert (0 restants, 4 faits)
 
-**AR-046 · Bénéfices réalisés contre le business plan approuvé ; post-audit automatique N mois après la mise en service** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 7)**  
+**~~AR-046 · Bénéfices réalisés contre le business plan approuvé ; post-audit automatique N mois après la mise en service~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7e)**  
 Suivi des gains du BP approuvé au G2 (chiffre d’affaires, économies, productivité) contre les gains constatés après la mise en service, saisis par le CDG ou le sponsor ; post-audit programmé automatiquement N mois (6, 12, 24) après la MES avec son circuit et son compte rendu ; VAN et TRI recalculés sur le réalisé. Arche a le ramp-up et la clôture des coûts, mais aucun suivi des gains du BP. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Finario, eCapEx) ; priorité suggérée : à décider.  
-*Avancement : Retenu par le responsable produit le 29 oct. 2026 (DECISIONS.md §5). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/spec/03-cycle-dig-prodi.md*
+*Avancement : Page Gains et post-audit : gains réels contre le BP validé, VAN / TRI recalculés, post-audits M+6 / M+12 / M+24 tenus par le directeur industriel et dus dans « Mes validations ». · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026, docs/spec/03-cycle-dig-prodi.md*
 
 **~~AR-050 · Dépréciation simulée, durée de vie par classe d’actif, transfert en immobilisation~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7b)**  
 Classes d’actifs avec durée de vie et méthode d’amortissement, simulation de la dépréciation dès le BP (charge annuelle, impact résultat), transfert des lots en immobilisations à la clôture comptable avec date de mise en service et export vers la comptabilité (Sage FI-AA). Absent d’Arche. Analyse comparative du 25 oct. 2026 : niveau avancé du marché (Jedox, SAP FI-AA) ; priorité suggérée : plus tard.  
@@ -298,6 +297,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-10-29 — Lot 7e : backlog d’idées (AR-051), gains réalisés et post-audit (AR-046), import Sage par extraction (AR-047). Les 14 points AR-039 à AR-052 sont livrés.
 - 2026-10-29 — Lot 7d : notifications e-mail, relances, escalade et absences (AR-041), concepteur sans code des dossiers et circuits (AR-052).
 - 2026-10-29 — Lot 7c : scoring multicritère et classement (AR-044), scénarios de portefeuille et scénario retenu pour le COPIL GPI (AR-043).
 - 2026-10-29 — Lot 7b : multi-devises (AR-039), enveloppes (AR-040), cash-flow phasé (AR-045), amortissement et immobilisations (AR-050).

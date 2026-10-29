@@ -69,7 +69,7 @@ async function actualRowsOf(q: Q, lotIds: string[]) {
 }
 
 export interface ExecutionView {
-  lots: (LotPlan & { actual: { committedKeur: number; spentKeur: number; physicalPct: number }; projects: string[]; source: 'manual' | 'import' | 'keystone' | null; lastMonth: string | null })[];
+  lots: (LotPlan & { actual: { committedKeur: number; spentKeur: number; physicalPct: number }; projects: string[]; source: 'manual' | 'import' | 'keystone' | 'sage' | null; lastMonth: string | null })[];
   rows: LotActual[];
   budgetSource: 'g2_baseline' | 'latest_validated' | 'none';
   g2Keur: number | null;

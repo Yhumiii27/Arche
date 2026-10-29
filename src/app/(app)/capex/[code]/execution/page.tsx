@@ -31,7 +31,7 @@ import { closureOf } from '@/server/dal/rampup';
 import { ClosureForm } from '@/features/startup/forms';
 import { keystoneProjectUrl } from '@/server/integrations/keystone';
 
-const SOURCE: Record<string, string> = { manual: 'Entered', import: 'Imported', keystone: 'Keystone' };
+const SOURCE: Record<string, string> = { manual: 'Entered', import: 'Imported', keystone: 'Keystone', sage: 'Sage' };
 
 export default async function ExecutionPage({ params }: PageProps<'/capex/[code]/execution'>) {
   const { t, lang, db, c, can } = await loadCapexPage(params);

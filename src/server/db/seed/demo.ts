@@ -11,7 +11,7 @@ import { createHash } from 'node:crypto';
 import { circuitTemplate } from '@/domain/circuits';
 import { canonicalJson, emptyContent, SECTIONS, type DossierKind } from '@/domain/dossiers';
 import { computedSnapshot } from '@/server/dal/dossiers';
-import { businessPlans, capexScores, changes, circuitSteps, dossiers, dossierVersions, envelopeMovements, envelopes, machineNeeds, portfolioScenarios, scenarioItems, signatures } from '../schema';
+import { businessPlans, capexScores, changes, ideas, circuitSteps, dossiers, dossierVersions, envelopeMovements, envelopes, machineNeeds, portfolioScenarios, scenarioItems, signatures } from '../schema';
 import { and, isNull } from 'drizzle-orm';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import { PACK_TEMPLATE } from '@/domain/pack';
@@ -322,9 +322,12 @@ async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: s
   await seedDelivery(tx, apm, sai, nameOf);
   await syncKeystone(tx, { now: at('2026-10-22'), mode: 'simulation' });
   await seedStartup(tx, apm25, nameOf);
+  await seedBenefitsPlan(tx, apm25, nameOf);
   await seedGovernance(tx, apm, sai, nameOf);
   await seedEnvelopes(tx, nameOf);
   await seedPortfolio(tx, { apm, sai, sai2: await id('CPX-SAI-2026-02'), sai3: await id('CPX-SAI-2026-03') }, nameOf);
+  await seedIdeas(tx, idOf, nameOf);
+  await seedSageCodes(tx, sai);
   await seedCopil(tx, await id('CPX-SAI-2026-02'), sai, await id('CPX-SAI-2026-03'), idOf, nameOf);
   await seedActions(tx, apm, sai, idOf, nameOf);
   await seedWbs(tx, apm, sai, idOf, nameOf);
@@ -433,6 +436,33 @@ export async function seedEnvelopes(tx: Tx, nameOf: (k: string) => string) {
   const group26 = rows.find((r) => r.year === 2026 && !r.sub && !r.zone)!;
   const apm26 = rows.find((r) => r.year === 2026 && r.sub === 'APM')!;
   await tx.insert(envelopeMovements).values({ kind: 'reallocation', fromEnvelopeId: group26.id, toEnvelopeId: apm26.id, amountKeur: 500, reason: 'Extrusion line 3: early engineering in 2026', byName: by, occurredAt: new Date('2026-09-15T09:00:00Z') });
+}
+
+/** The validated business plan of the ageing oven (in start-up since 1 Jul 2026): the benefits followed against it (AR-046). */
+export async function seedBenefitsPlan(tx: Tx, apm25: string, nameOf: (k: string) => string) {
+  const flows = Array.from({ length: 9 }, (_, y) => ({ year: y, capexKeur: y === 0 ? 1430 : 0, opexKeur: y === 0 ? 0 : 140, revenueKeur: y === 0 ? 0 : 520 }));
+  await tx.insert(businessPlans).values({ capexId: apm25, horizonYears: 9, discountRatePct: 9, flows, updatedByName: nameOf('controller'), validatedByName: nameOf('group_cfo'), validatedAt: new Date('2025-11-14T09:00:00Z') }).onConflictDoNothing();
+}
+
+/** The Sage analytic codes of the tomato plant's lots outside EPC2i (AR-047): the demonstration extraction uses two of them. */
+export const DEMO_SAGE_CODES: Record<number, string> = { 1: 'SAI-TR-01', 2: 'SAI-GC-01', 3: 'SAI-BT-01', 4: 'SAI-UT-01', 6: 'SAI-RH-01' };
+export async function seedSageCodes(tx: Tx, sai: string) {
+  for (const [n, code] of Object.entries(DEMO_SAGE_CODES))
+    await tx.update(capexLots).set({ sageCode: code }).where(and(eq(capexLots.capexId, sai), eq(capexLots.number, Number(n)), isNull(capexLots.sageCode)));
+}
+
+/** Ideas backlog (AR-051): APM and SAI ideas at every status, one retained ready to become a CAPEX. */
+export async function seedIdeas(tx: Tx, idOf: (k: string) => string, nameOf: (k: string) => string) {
+  const at = (iso: string) => new Date(`${iso}T09:00:00Z`);
+  const i = (subsidiaryCode: string, number: number, by: string, title: string, stake: string, sizeKeur: number | null, investmentType: string | null, created: string) =>
+    ({ subsidiaryCode, number, title, stake, sizeKeur, investmentType, proposedByName: nameOf(by), proposedByUserId: idOf(by), createdAt: at(created), updatedAt: at(created) });
+  await tx.insert(ideas).values([
+    { ...i('APM', 1, 'controller', 'Solar roof on the Kénitra warehouse', 'Cut the electricity bill of the plant by about 15 %; the warehouse roof is 6 000 m² and unshaded.', 900, 'other', '2026-09-02'), status: 'retained' as const, decidedByName: nameOf('sponsor'), decidedAt: at('2026-09-20'), decisionNote: 'Payback under 5 years: to open as a CAPEX' },
+    { ...i('APM', 2, 'project_lead', 'Automatic packing of the profiles', 'Two operators per shift on manual packing; damage claims from customers on long profiles.', 650, 'extension', '2026-10-05'), status: 'qualified' as const, decidedByName: nameOf('sponsor'), decidedAt: at('2026-10-12'), decisionNote: 'Quote a robot cell and a semi-automatic line' },
+    i('APM', 3, 'controller', 'Second anodising bath', 'Customers ask for anodised profiles we subcontract today at a high cost.', 1200, 'new_line', '2026-10-19'),
+    { ...i('SAI', 1, 'sai_lead', 'Tomato paste drum filling', 'Industrial customers want 220 kg drums; we fill only small cans.', 450, 'extension', '2026-08-28'), status: 'rejected' as const, decidedByName: nameOf('sai_sponsor'), decidedAt: at('2026-09-15'), decisionNote: 'Volumes too small before the new plant runs' },
+    i('SAI', 2, 'expert', 'Wastewater treatment upgrade at Thiès', 'The discharge permit will tighten in 2028; the current lagoon will not meet it.', null, 'other', '2026-10-14'),
+  ]);
 }
 
 /**

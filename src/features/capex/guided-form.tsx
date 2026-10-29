@@ -27,11 +27,13 @@ export interface GuidedProps {
   initialSubsidiary: string;
   sites: (Opt & { subsidiary: string })[];
   people: (Opt & { subsidiary: string | null })[];
+  /** The retained idea the CAPEX comes from (AR-051): its title, stake and type prefill the sheet. */
+  idea?: { id: string; ref: string; subsidiaryCode: string; title: string; stake: string; investmentType: string | null } | null;
 }
 
 type Row = Record<string, string>;
 
-export function GuidedOpen({ role, today, subsidiaries, initialSubsidiary, sites, people }: GuidedProps) {
+export function GuidedOpen({ role, today, subsidiaries, initialSubsidiary, sites, people, idea }: GuidedProps) {
   const { t } = useI18n();
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -40,7 +42,7 @@ export function GuidedOpen({ role, today, subsidiaries, initialSubsidiary, sites
   const [visited, setVisited] = useState<Set<GuidedStep>>(new Set(['start']));
   const [sub, setSub] = useState(initialSubsidiary);
   const [mode, setMode] = useState<'new' | 'takeover'>('new');
-  const [sheet, setSheet] = useState<Row>({ title: '', investmentType: 'new_line', siteId: '', needDate: '', description: '', leadUserId: '' });
+  const [sheet, setSheet] = useState<Row>({ title: idea?.title ?? '', investmentType: idea?.investmentType ?? 'new_line', siteId: '', needDate: '', description: idea?.stake ?? '', leadUserId: '' });
   const [lots, setLots] = useState<Row[]>([{ kind: 'civil_works', title: '' }, { kind: 'machines', title: '' }]);
   const [budget, setBudget] = useState<{ basis: string; amounts: string[] }>({ basis: '', amounts: [] });
   const [team, setTeam] = useState<Row[]>([{ userId: '', capexRole: 'controller' }]);
@@ -74,7 +76,7 @@ export function GuidedOpen({ role, today, subsidiaries, initialSubsidiary, sites
         budget: { basis: budget.basis, amounts: lotRows.map((_, i) => budget.amounts[i] ?? '') },
         team, risks, sections,
         takeover: { ...takeover, amounts: lotRows.map((_, i) => toAmounts[i] ?? '') },
-      });
+      }, idea && idea.subsidiaryCode === sub ? idea.id : undefined);
       if (r.ok && r.code) router.push(`/capex/${encodeURIComponent(r.code)}`);
       else if (!r.ok) setError(t(r.error));
     });
@@ -105,6 +107,7 @@ export function GuidedOpen({ role, today, subsidiaries, initialSubsidiary, sites
         {step === 'start' && (
           <>
             <p className={s.intro}>{t('Answer what you know now: only the title and the investment type are required. Everything else can be completed later on the CAPEX pages.')}</p>
+            {idea && <p className={s.intro}>{`${t('From the idea')} ${idea.ref}: ${idea.title}`}</p>}
             {subsidiaries.length > 1 && (
               <Field label={t('Subsidiary')} htmlFor="go-sub" required>
                 <Select id="go-sub" value={sub} onChange={(e) => setSub(e.target.value)} options={subsidiaries.map((x) => ({ value: x.code, label: `${x.code} · ${x.name}` }))} />

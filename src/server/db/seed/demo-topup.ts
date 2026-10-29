@@ -6,10 +6,10 @@
 // — each part only where the database has none of it. Refused on a database not seeded with
 // the demonstration data set. `npm run db:demo-topup` (scripts/db-demo-topup.ts).
 import { and, eq, inArray, isNull, or } from 'drizzle-orm';
-import { assetClasses, authorizations, capex, capexScores, envelopes, portfolioScenarios, exchangeRates, capexActions, gates, hsStatuses, machineNeeds, packItems, productionLines, reviews, rexEntries, roleAssignments, sites, users, wbsTasks } from '../schema';
+import { assetClasses, authorizations, capex, capexScores, envelopes, ideas, portfolioScenarios, exchangeRates, capexActions, gates, hsStatuses, machineNeeds, packItems, productionLines, reviews, rexEntries, roleAssignments, sites, users, wbsTasks } from '../schema';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import type { Tx } from '../types';
-import { DEMO_ASSET_CLASSES, DEMO_CAPEX, DEMO_PEOPLE, DEMO_RATES, DEMO_SITES, DEMO_SUBSIDIARIES, saiRex, seedActions, seedCapex, seedCopilGate, seedDelivery, seedEnvelopes, seedGovernance, seedPortfolio, seedNeeds, seedStartup, seedWbs } from './demo';
+import { DEMO_ASSET_CLASSES, DEMO_CAPEX, DEMO_PEOPLE, DEMO_RATES, DEMO_SITES, DEMO_SUBSIDIARIES, saiRex, seedActions, seedCapex, seedCopilGate, seedDelivery, seedEnvelopes, seedBenefitsPlan, seedGovernance, seedIdeas, seedPortfolio, seedSageCodes, seedNeeds, seedStartup, seedWbs } from './demo';
 import { readSeedRecord } from './mode';
 
 export interface TopUpReport {
@@ -32,6 +32,7 @@ export interface TopUpReport {
   /** The demo's envelopes (AR-040), when the database has none. */
   envelopes: boolean;
   portfolio: boolean;
+  ideas: boolean;
 }
 
 export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
@@ -39,7 +40,7 @@ export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
   if (((await readSeedRecord(tx))?.mode ?? 'demo') !== 'demo') throw new Error('This database was not seeded with the demonstration data set: nothing changed');
   const subs = await tx.select({ code: capex.subsidiaryCode }).from(capex).where(inArray(capex.subsidiaryCode, DEMO_SUBSIDIARIES.map((s) => s.code))).limit(1);
   if (!subs.length) throw new Error('The demonstration subsidiaries have no CAPEX in this database: nothing changed');
-  const report: TopUpReport = { people: 0, roles: 0, sites: 0, located: 0, capex: [], copil: false, needs: [], delivery: false, startup: false, governance: false, rex: 0, actions: [], wbs: [], rates: 0, envelopes: false, portfolio: false };
+  const report: TopUpReport = { people: 0, roles: 0, sites: 0, located: 0, capex: [], copil: false, needs: [], delivery: false, startup: false, governance: false, rex: 0, actions: [], wbs: [], rates: 0, envelopes: false, portfolio: false, ideas: false };
 
   // People and their roles, by e-mail.
   const known = new Map((await tx.select({ id: users.id, email: users.email }).from(users).where(inArray(users.email, DEMO_PEOPLE.map((p) => p.email)))).map((u) => [u.email, u.id]));
@@ -182,6 +183,18 @@ export async function topUpDemo(tx: Tx): Promise<TopUpReport> {
     const of = (code: string) => found.find((f) => f.code === code)!.id;
     await seedPortfolio(tx, { apm: of(scored[0]), sai: of(scored[1]), sai2: of(scored[2]), sai3: of(scored[3]) }, nameOf);
     report.portfolio = true;
+  }
+  // The business plan of the ageing oven (AR-046), when it has none (onConflictDoNothing).
+  const oven = found.find((f) => f.code === 'CPX-APM-2025-01') ?? (await tx.select({ id: capex.id, code: capex.code }).from(capex).where(eq(capex.code, 'CPX-APM-2025-01')))[0];
+  if (oven) await seedBenefitsPlan(tx, oven.id, nameOf);
+  // Sage codes of the tomato plant's lots (AR-047), where none is set.
+  const tomato = (await tx.select({ id: capex.id }).from(capex).where(eq(capex.code, 'CPX-SAI-2026-01')))[0];
+  if (tomato) await seedSageCodes(tx, tomato.id);
+  // Ideas (AR-051), when the database has none and the demo people are there.
+  const ideaPeople = ['controller', 'project_lead', 'sponsor', 'sai_lead', 'sai_sponsor', 'expert'];
+  if (!(await tx.select({ id: ideas.id }).from(ideas).limit(1)).length && ideaPeople.every((k) => { try { return !!idOf(k); } catch { return false; } })) {
+    await seedIdeas(tx, idOf, nameOf);
+    report.ideas = true;
   }
   return report;
 }

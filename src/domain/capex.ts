@@ -183,7 +183,9 @@ export type CapexAction =
   | 'closure' // accounting closure statement of the subsidiary controller (N-15)
   | 'rex' // lessons learned entered by the team
   | 'actions' // action plan: open and edit follow-up actions (owner's pilot feedback, 24 Oct 2026)
-  | 'schedule'; // WBS tasks of the CAPEX (owner's pilot feedback, 24 Oct 2026)
+  | 'schedule' // WBS tasks of the CAPEX (owner's pilot feedback, 24 Oct 2026)
+  | 'benefits' // benefits realised against the business plan, after the start of commissioning (AR-046)
+  | 'post_audit'; // post-audits 6, 12 and 24 months after the start of commissioning (AR-046)
 
 export interface CapexWriteFacts {
   code: string;
@@ -228,6 +230,11 @@ export function canDo(action: CapexAction, role: RoleKey, assignments: readonly 
       return c.status === 'active' && (on('project_lead') || (role === 'expert' && assignments.some((a) => a.role === 'expert' && a.speciality === 'operations' && a.scopeKind === 'capex' && a.scopeRef === c.code)));
     case 'closure':
       return c.status === 'active' && on('controller');
+    // After the start of commissioning, and after the G3 too (a closed CAPEX stays read-only for everything else).
+    case 'benefits':
+      return (c.status === 'active' || c.status === 'closed') && (on('controller') || on('sponsor'));
+    case 'post_audit':
+      return (c.status === 'active' || c.status === 'closed') && on('dir_ig');
     case 'rex':
       return open && (on('project_lead') || on('sponsor') || on('controller') || on('co_dig') || on('epc2i_pmo'));
     case 'schedule':

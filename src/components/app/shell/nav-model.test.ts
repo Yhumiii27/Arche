@@ -10,7 +10,7 @@ describe('sidebar model', () => {
     expect(home.fixed[0].active).toBe(true);
     expect(home.sections.map((s) => s.key)).toEqual(['group', 'subsidiary', 'capex']);
     expect(ids(home.sections[0])).toEqual(['map', 'portfolio', 'copil', 'rex']);
-    expect(ids(home.sections[1])).toEqual(['capex-list', 'subsidiary-portfolio', 'capex-open']);
+    expect(ids(home.sections[1])).toEqual(['capex-list', 'subsidiary-portfolio', 'ideas', 'capex-open']);
     expect(home.sections[2].groups.map((g) => g.label)).toEqual(['DIG-PRODI cycle', 'Budget and decisions', 'Delivery', 'Risks and safety', 'Start-up and traceability']);
     // No CAPEX chosen yet: the CAPEX entries wait for one.
     expect(home.capex).toBeNull();
