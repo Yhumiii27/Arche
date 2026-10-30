@@ -1,5 +1,5 @@
 import 'server-only';
-// Backup and restore of the `arche` schema with pg_dump / pg_restore 16 (custom format). The password never appears on a
+// Backup and restore of the `arche` schema with pg_dump / pg_restore (custom format) and psql. The password never appears on a
 // command line: it goes in PGPASSWORD. Restore replaces the schema's content (--clean --if-exists) and is refused without an
 // explicit confirmation (scripts/restore.ts).
 import { spawn } from 'node:child_process';
@@ -53,7 +53,16 @@ export async function restoreSchema(opts: { databaseUrl: string; file: string; r
   const list = `${opts.file}.restore-list`;
   fs.writeFileSync(list, toc.split('\n').filter((l) => !/ SCHEMA - /.test(l)).join('\n'));
   try {
-    await run('pg_restore', ['--dbname', url, '--use-list', list, '--clean', '--if-exists', '--no-owner', '--no-privileges', ...(opts.role ? [`--role=${opts.role}`] : []), '--single-transaction', opts.file], password);
+    // pg_restore writes the SQL and psql applies it in one transaction: a pg_restore newer than the server (17+) sets
+    // `transaction_timeout`, which a PostgreSQL 16 server refuses, so the settings it does not know are left out.
+    const sql = await run('pg_restore', ['--file=-', '--use-list', list, '--clean', '--if-exists', '--no-owner', '--no-privileges', ...(opts.role ? [`--role=${opts.role}`] : []), opts.file], null);
+    const script = `${opts.file}.restore.sql`;
+    fs.writeFileSync(script, sql.split('\n').filter((l) => !/^SET transaction_timeout\b/.test(l)).join('\n'));
+    try {
+      await run('psql', ['--dbname', url, '--no-psqlrc', '--quiet', '--set=ON_ERROR_STOP=1', '--single-transaction', '--file', script], password);
+    } finally {
+      fs.rmSync(script, { force: true });
+    }
   } finally {
     fs.rmSync(list, { force: true });
   }
