@@ -37,6 +37,10 @@ export const dossierVersions = arche.table('dossier_versions', {
   rowVersion: rowVersion(),
   /** Version of the dossier's template its sections follow (AR-052); null = the built-in sections. */
   templateVersion: integer('template_version'),
+  /** Codex document holding the PDF of this frozen version, once deposited from Arche (CX-03; Arche keeps no file). */
+  codexDocumentId: text('codex_document_id'),
+  codexDepositedAt: timestamp('codex_deposited_at', { withTimezone: true }),
+  codexDepositedByName: text('codex_deposited_by_name'),
 }, (t) => [unique('dossier_versions_number_uq').on(t.dossierId, t.number)]);
 
 /** Steps of a gate session's circuit, instantiated from the model (src/domain/circuits.ts). */
