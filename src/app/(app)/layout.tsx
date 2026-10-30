@@ -11,8 +11,9 @@ import { cookies } from 'next/headers';
 import { PHASE_LABEL, STATUS_LABEL, labelOf } from '@/domain/capex-labels';
 import { dataText } from '@/i18n/data-text';
 import { isMine, visibleCapex } from '@/server/dal/capex';
+import { subsidiaryChoice } from '@/server/dal/portfolio';
 import { initialsOf } from '@/server/viewer';
-import { DEMO_PERSONAS, getI18n, getViewer } from '@/server/session';
+import { DEMO_PERSONAS, getI18n, getSubsidiaryCookie, getViewer } from '@/server/session';
 
 export default async function AppLayout({ children }: LayoutProps<'/'>) {
   const [viewer, today, jar, { t, lang }] = await Promise.all([getViewer(), businessToday(), cookies(), getI18n()]);
@@ -24,6 +25,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
     mine: isMine(viewer, c),
   }));
   const folded = (jar.get('arche-nav')?.value ?? '').split(',').filter(Boolean);
+  const subs = await subsidiaryChoice(viewer, await getSubsidiaryCookie());
   const entra = authMode() === 'entra';
   const personas = entra ? [] : DEMO_PERSONAS.filter((p) => isRoleKey(p.key)).map((p) => ({ role: p.key as never, name: p.name, initials: initialsOf(p.name) }));
   return (
@@ -37,6 +39,8 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
             capex={capex}
             lastCapex={jar.get('arche-capex')?.value ?? null}
             folded={folded}
+            subsidiaries={subs.options.map((o) => ({ code: o.code, name: dataText(o.name, lang) }))}
+            subsidiary={subs.current}
           />
           <main className={styles.main}>{children}</main>
         </div>

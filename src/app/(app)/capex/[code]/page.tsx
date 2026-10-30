@@ -12,12 +12,13 @@ import { Tag } from '@/components/ds/Tag';
 import { rangeOf } from '@/domain/budget';
 import { INVESTMENT_TYPE_LABEL, PHASE_LABEL, STATUS_LABEL, TYPOLOGY_LABEL, labelOf } from '@/domain/capex-labels';
 import { DECISION_LABEL, GATE_LABEL, GATE_OF_PHASE, PHASES, currentGate, type CriterionState } from '@/domain/lifecycle';
+import { ActionLink } from '@/components/app/ActionForm';
 import { ButtonLink } from '@/components/ds/Button';
-import { ArrowRight, Flag } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { CRITERION_ACTION, nextCriterion } from '@/features/capex/next-step';
 import hs from '@/components/app/shell/header.module.css';
 import { screenHref } from '@/config/screens';
-import { OpenCapexButton, SheetForm, SuspendForm } from '@/features/capex/forms';
+import { OpenCapexButton, SheetForm, SuspendForm, TakeoverForm } from '@/features/capex/forms';
 import { currentEvaluation } from '@/server/cycle/evaluation';
 import { loadCapexPage } from '@/features/capex/page-data';
 import { alertDetail } from '@/features/governance/alert-detail';
@@ -26,16 +27,18 @@ import { fmtDate, fmtKeur, fmtNum, fmtRatio } from '@/lib/format';
 import { HS_LABEL } from '@/domain/safety';
 import { businessToday } from '@/server/clock';
 import { capexDashboard } from '@/server/dal/governance';
-import { gatesOf, latestValidated, transitionsOf, versionsOf } from '@/server/dal/cycle';
+import { gatesOf, latestValidated, lotsOf, transitionsOf, versionsOf } from '@/server/dal/cycle';
 import { siteOptions } from '@/server/dal/capex';
+import { TAKEOVER_REASON } from '@/domain/takeover';
 
 const STATE_LABEL: Record<CriterionState, string> = { met: 'Met', unmet: 'Not met', forced: 'Forced', not_evaluated: 'Not evaluated yet' };
 const STATE_TONE: Record<CriterionState, 'neutral' | 'accent' | 'outline'> = { met: 'neutral', unmet: 'accent', forced: 'outline', not_evaluated: 'outline' };
 
 export default async function CapexOverviewPage({ params }: PageProps<'/capex/[code]'>) {
   const { t, lang, db, c, can } = await loadCapexPage(params);
-  const [versions, history, gateRows, ev, sites, d] = await Promise.all([
-    versionsOf(db, c.id), transitionsOf(db, c.id), gatesOf(db, c.id), currentEvaluation(db, c), siteOptions(c.subsidiaryCode), capexDashboard(db, c, await businessToday(db)),
+  const today = await businessToday(db);
+  const [versions, history, gateRows, ev, sites, d, lots] = await Promise.all([
+    versionsOf(db, c.id), transitionsOf(db, c.id), gatesOf(db, c.id), currentEvaluation(db, c), siteOptions(c.subsidiaryCode), capexDashboard(db, c, today), lotsOf(db, c.id),
   ]);
   const validated = latestValidated(versions);
   const gate = currentGate(c);
@@ -49,15 +52,14 @@ export default async function CapexOverviewPage({ params }: PageProps<'/capex/[c
         title={dataText(c.title, lang)}
         crumbs={['CAPEX register']}
         crumbData={c.code}
-        primary={
-          <div className={hs.actions}>
+        primary={gate && can('edit') ? <ActionLink href={screenHref('capex-gates', { code: c.code })} variant="primary" icon="flag" label={t(`Submit to gate ${gate}`)} /> : null}
+        actions={
+          <>
+            {can('open') && <OpenCapexButton code={c.code} />}
+            {can('open') && <TakeoverForm code={c.code} today={today} lots={lots.map((l) => ({ id: l.id, label: `${l.number}. ${dataText(l.title, lang)}` }))} />}
             {can('edit') && <SheetForm code={c.code} sheet={c} sites={sites} />}
             {can('suspend') && <SuspendForm code={c.code} outcome={c.status === 'on_hold' ? 'resume' : 'suspend'} />}
-            {can('open') && <OpenCapexButton code={c.code} />}
-            {gate && can('edit') && (
-              <ButtonLink href={screenHref('capex-gates', { code: c.code })} variant="primary" icon={Flag}>{t(`Submit to gate ${gate}`)}</ButtonLink>
-            )}
-          </div>
+          </>
         }
       />
       {next && (
@@ -201,7 +203,7 @@ export default async function CapexOverviewPage({ params }: PageProps<'/capex/[c
                     {h.forced && <> <Tag tone="outline" size="xs">{t('Forced')}</Tag></>}
                   </Td>
                   <Td tone="secondary">{h.byName}</Td>
-                  <Td tone="secondary">{h.reason ?? '—'}</Td>
+                  <Td tone="secondary">{h.reason === TAKEOVER_REASON ? t(TAKEOVER_REASON) : (h.reason ?? '—')}</Td>
                 </tr>
               ))}
               {gateRows.filter((g) => g.decision === 'deferred').map((g) => (

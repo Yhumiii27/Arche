@@ -11,7 +11,11 @@ import {
   ROLE_OF_TEAM_ROLE, TEAM_ROLES,
 } from '@/domain/capex';
 import { BP_HORIZON, checkBusinessPlan } from '@/domain/bp';
-import { MODEL_VERSION, openCapex, resume, suspend, type CycleState } from '@/domain/lifecycle';
+import { resume, suspend, type CycleState } from '@/domain/lifecycle';
+import { checkTakeover } from '@/domain/takeover';
+import { isStale, ROW_VERSION_FIELD, STALE_MSG } from '@/domain/concurrency';
+import { EUR } from '@/domain/currency';
+import { converterFor, type Converter } from '@/server/dal/currency';
 import { businessToday } from '@/server/clock';
 import { getDb } from '@/server/db/client';
 import { recordActivity, writeAudit } from '@/server/db/helpers';
@@ -19,8 +23,9 @@ import {
   budgetLines, budgetVersions, businessPlans, capex, capexLots, capexMembers, decisions, phaseTransitions, risks, roleAssignments, sites, users,
 } from '@/server/db/schema';
 import type { Tx } from '@/server/db/types';
-import { computedTypologyOf, lotsOf, teamOf, versionsOf } from '@/server/dal/cycle';
+import { lotsOf, teamOf, versionsOf } from '@/server/dal/cycle';
 import { auditOf, fieldsOf, onCapex, REFUSED_MSG, type ActionResult, type CapexRowFull } from '@/server/capex/write';
+import { applyOpen, applyTakeover, recomputeTypology } from '@/server/capex/cycle-writes';
 import { getViewer, type Viewer } from '@/server/session';
 
 type Row = CapexRowFull;
@@ -66,6 +71,7 @@ export async function createCapexAction(_prev: ActionResult | null, fd: FormData
 
 export async function updateSheetAction(code: string, _prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
   return onCapex(code, 'edit', async (tx, c, v) => {
+    if (isStale(fd.get(ROW_VERSION_FIELD), c.rowVersion)) return { ok: false, error: STALE_MSG };
     const subSites = new Set((await tx.select({ id: sites.id }).from(sites).where(eq(sites.subsidiaryCode, c.subsidiaryCode))).map((x) => x.id));
     const ch = checkSheet(fieldsOf(fd), { sites: subSites });
     if (!ch.ok) return ch;
@@ -80,12 +86,22 @@ export async function updateSheetAction(code: string, _prev: ActionResult | null
 
 export async function openCapexAction(code: string): Promise<ActionResult> {
   return onCapex(code, 'open', async (tx, c, v, today) => {
-    const t = openCapex(c, !!c.leadUserId);
-    if (!t.ok) return t;
-    await tx.update(capex).set({ ...t.value, openedAt: new Date(), lifecycleModelVersion: MODEL_VERSION, sponsorUserId: c.sponsorUserId ?? v.userId, updatedAt: new Date() }).where(eq(capex.id, c.id));
-    await tx.insert(phaseTransitions).values({ capexId: c.id, fromStatus: c.status, fromPhase: c.phase, toStatus: t.value.status, toPhase: t.value.phase, effectiveOn: today, byName: v.name, byUserId: v.userId });
-    await writeAudit(tx, auditOf(v, c, 'status: Draft → Active (phase 1)', { entityType: 'capex', entityId: c.id }));
-    await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'capex.opened', text: `${c.code} opened: phase 1`, capexId: c.id });
+    return applyOpen(tx, c, v, today);
+  });
+}
+
+/**
+ * Takeover of a CAPEX already in progress (N-20, pilot): instead of the ordinary opening, the sponsor opens the draft in its
+ * current phase with the gates passed before Arche (dated, decider named) and the validated budget. The gates are recorded as
+ * "taken over" (no circuit, no signature) and every step is in the audit trail, with the opening and gate transitions dated.
+ */
+export async function takeoverCapexAction(code: string, _prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  return onCapex(code, 'open', async (tx, c, v, today) => {
+    if (!c.leadUserId) return { ok: false, error: 'Name the project lead first' };
+    const lots = await lotsOf(tx, c.id);
+    const ch = checkTakeover(fieldsOf(fd), { today, lotIds: lots.map((l) => l.id) });
+    if (!ch.ok) return ch;
+    await applyTakeover(tx, c, v, ch.value, today);
     return { ok: true };
   });
 }
@@ -120,14 +136,20 @@ function readClass(raw: unknown): EstimateClass | null {
   return (ESTIMATE_CLASSES as readonly string[]).includes(String(raw)) ? (raw as EstimateClass) : null;
 }
 
-async function writeLines(tx: Tx, versionId: string, lines: { lotId: string; amountKeur: number }[]) {
+/** Writes a version's lines, typed in `conv`'s currency: k€ for every reading, the amount as typed and the rate beside it (AR-039). */
+async function writeLines(tx: Tx, versionId: string, lines: { lotId: string; amountKeur: number }[], conv: Converter) {
   await tx.delete(budgetLines).where(eq(budgetLines.budgetVersionId, versionId));
-  if (lines.length) await tx.insert(budgetLines).values(lines.map((l) => ({ budgetVersionId: versionId, ...l })));
+  if (lines.length) {
+    await tx.insert(budgetLines).values(lines.map((l) => ({
+      budgetVersionId: versionId, lotId: l.lotId, amountKeur: conv.keur(l.amountKeur),
+      ...(conv.currency === EUR ? {} : { amountLocal: l.amountKeur, currency: conv.currency, rate: conv.rate }),
+    })));
+  }
 }
 
 /** Creates a draft version (one version in progress at a time), or updates the draft `versionId`. */
 export async function saveBudgetVersionAction(code: string, versionId: string | null, _prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  return onCapex(code, 'budget', async (tx, c, v) => {
+  return onCapex(code, 'budget', async (tx, c, v, today) => {
     const f = fieldsOf(fd);
     const cls = readClass(f.estimateClass);
     if (!cls) return { ok: false, error: 'Choose the estimate class' };
@@ -135,22 +157,25 @@ export async function saveBudgetVersionAction(code: string, versionId: string | 
     if (!lots.length) return { ok: false, error: 'Add the lots of the CAPEX first' };
     const ch = checkBudgetLines(f, lots.map((l) => l.id));
     if (!ch.ok) return ch;
+    const conv = await converterFor(tx, c.subsidiaryCode, f.currency, today.slice(0, 7));
+    if (!conv.ok) return conv;
     const basis = (f.basis ?? '').trim().slice(0, 1000) || null;
     const versions = await versionsOf(tx, c.id);
     if (versionId) {
       const cur = versions.find((x) => x.id === versionId);
       if (!cur) return { ok: false, error: 'Unknown budget version' };
       if (cur.status !== 'draft') return { ok: false, error: 'Only a draft version can be changed' };
+      if (isStale(f[ROW_VERSION_FIELD], cur.rowVersion)) return { ok: false, error: STALE_MSG };
       await tx.update(budgetVersions).set({ estimateClass: cls, basis, updatedAt: new Date() }).where(eq(budgetVersions.id, cur.id));
-      await writeLines(tx, cur.id, ch.value);
-      await writeAudit(tx, auditOf(v, c, `budget version ${cur.number} updated (${cls})`, { entityType: 'budget_version', entityId: cur.id, after: { estimateClass: cls, lines: ch.value } }));
+      await writeLines(tx, cur.id, ch.value, conv.value);
+      await writeAudit(tx, auditOf(v, c, `budget version ${cur.number} updated (${cls})`, { entityType: 'budget_version', entityId: cur.id, after: { estimateClass: cls, currency: conv.value.currency, rate: conv.value.rate, lines: ch.value } }));
       return { ok: true };
     }
     if (versions.some((x) => x.status === 'draft' || x.status === 'submitted')) return { ok: false, error: 'Finish the version in progress first' };
     const number = nextNumber(versions.map((x) => x.number));
     const [bv] = await tx.insert(budgetVersions).values({ capexId: c.id, number, estimateClass: cls, basis, createdByName: v.name }).returning({ id: budgetVersions.id });
-    await writeLines(tx, bv.id, ch.value);
-    await writeAudit(tx, auditOf(v, c, `budget version ${number} created (${cls})`, { entityType: 'budget_version', entityId: bv.id, after: { estimateClass: cls, lines: ch.value } }));
+    await writeLines(tx, bv.id, ch.value, conv.value);
+    await writeAudit(tx, auditOf(v, c, `budget version ${number} created (${cls})`, { entityType: 'budget_version', entityId: bv.id, after: { estimateClass: cls, currency: conv.value.currency, rate: conv.value.rate, lines: ch.value } }));
     return { ok: true };
   });
 }
@@ -209,20 +234,6 @@ export async function reviewVersionAction(code: string, versionId: string, outco
   });
 }
 
-async function recomputeTypology(tx: Tx, c: Row, v: Viewer, today: string) {
-  if (c.typologySource === 'forced') return;
-  const t = await computedTypologyOf(tx, c, today);
-  if (!t.typology) return;
-  if (!c.typology) {
-    await tx.update(capex).set({ typology: t.typology, typologySource: 'computed', typologyProposed: null, updatedAt: new Date() }).where(eq(capex.id, c.id));
-    await writeAudit(tx, auditOf(v, c, `typology: ${t.typology} (computed, ratio ${t.ratioPct ?? '—'} %)`, { entityType: 'capex', entityId: c.id }));
-  } else if (t.typology !== c.typology) {
-    await tx.update(capex).set({ typologyProposed: t.typology, updatedAt: new Date() }).where(eq(capex.id, c.id));
-    await writeAudit(tx, auditOf(v, c, `typology to confirm: ${c.typology} → ${t.typology} (ratio ${t.ratioPct ?? '—'} %)`, { entityType: 'capex', entityId: c.id }));
-  } else if (c.typologyProposed) {
-    await tx.update(capex).set({ typologyProposed: null, updatedAt: new Date() }).where(eq(capex.id, c.id));
-  }
-}
 
 // ── Typology (C-5) ────────────────────────────────────────────────────────────────────────────────────────────────────
 

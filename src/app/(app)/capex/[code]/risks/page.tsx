@@ -20,7 +20,7 @@ export default async function RisksPage({ params }: PageProps<'/capex/[code]/ris
   const open = rows.filter((r) => r.status !== 'closed');
   return (
     <>
-      <PageHeader screen="capex-risks" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} />
+      <PageHeader screen="capex-risks" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} actions={edit && <RiskForm code={c.code} people={people} />} />
       <SectionCard title={t('Risks')} hint={`${open.length} ${t('open')} · ${open.filter((r) => isMajorRisk(r.probability, r.impact)).length} ${t('major')}`} scroll>
         {rows.length ? (
           <Table>
@@ -62,7 +62,6 @@ export default async function RisksPage({ params }: PageProps<'/capex/[code]/ris
         ) : (
           <EmptyState>{t('No risk recorded.')}</EmptyState>
         )}
-        {edit && <RiskForm code={c.code} people={people} />}
       </SectionCard>
     </>
   );

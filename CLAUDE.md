@@ -25,7 +25,8 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
 - **Delivery 4 (machine needs, Keystone connector) is done** (`docs/DELIVERY-4.md`): needs `src/domain/needs.ts`,
   `src/features/needs/`, view `pub_besoins_machines`; Keystone connector `src/server/integrations/keystone/` — the mirror
   (`keystone_mirror`, written only by `mirror.ts`), modes `ARCHE_KEYSTONE` off / simulation / views (a missing view is
-  simulated on the demo data set only), job `keystone-sync`; G2 Go orders the needs covered by a valid firm offer. The CI runs
+  simulated on the demo data set only; the simulation serves Keystone's own demo rows for the needs it knows,
+  `keystone-demo.ts`), job `keystone-sync`; G2 Go orders the needs covered by a valid firm offer. The CI runs
   the Coolify kit end to end (`docs/EXPLOITATION.md` §4).
 - **Delivery 4b (interface) is done** (`docs/DELIVERY-4b.md`, mockups validated by the owner): sidebar sections grouped by
   theme (`group` in `src/config/screens.ts`), CAPEX section always visible with the CAPEX switcher, ⌘K page search; `Folded`
@@ -43,7 +44,50 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   production lines and daily ramp-up (`src/domain/rampup.ts`, right `rampup`: project lead or the CAPEX's operations expert;
   line results stored on `production_lines` by `recomputeLines`, read by `pub_rampup`), accounting closure (`src/domain/closure.ts`,
   right `closure`), lessons learned and library `/rex` (right `rex`, published by the lead or sponsor, view `pub_rex_v2`: the common REX contract of Matrix; `pub_rex` v1 kept), G3
-  criteria in `startupFacts`. Every screen of the registry is built. Next: the pilot (`docs/PLAN.md`); L7 after it.
+  criteria in `startupFacts`. Every screen of the registry is built.
+- **The pilot has started** (`docs/PILOTE.md` procedure and prerequisites; `docs/DELIVERY-PILOTE.md` the development lot):
+  takeover of a CAPEX in progress by its sponsor (N-20, `src/domain/takeover.ts`, `takeoverCapexAction`; gates
+  `taken_over`, no circuit), DIG-PRODI objectives `/kpi` (C-10, `src/domain/kpi.ts`, `src/server/dal/kpi.ts`; reference of
+  the existing process `kpi_baselines`, entered by the group industrial director), role guides `docs/guide/`, feedback log
+  `docs/RETOURS-PILOTE.md` (record each user feedback there). Next: the owner's prerequisites (hosting C-13, Entra, D-1 to
+  D-4, survey of the existing process), then corrections from the feedback; L7 after the pilot.
+- **Pilot feedback (owner, 24 Oct 2026; `docs/RETOURS-PILOTE.md`)**: guided opening `/open` (`src/domain/guided.ts`,
+  `openGuidedAction`, `src/features/capex/guided-form.tsx`; writes in one transaction through `src/server/capex/cycle-writes.ts`),
+  sidebar sections Group portfolio / Subsidiary portfolio (subsidiary selector, cookie `arche-subsidiary`, `subsidiaryChoice`)
+  / Steering (the selected CAPEX), FR / EN toggle in the page header, richer demo data, `npm run db:reset-demo`; CAPEX action
+  plan (`capex_actions`, `src/domain/actions.ts`, right `actions`; "New action" added to every CAPEX page header by
+  `PageHeader`, page `/capex/[code]/actions`, "My actions" on Home). WBS and Gantt: `wbs_tasks`, `src/domain/schedule.ts`,
+  `src/server/dal/schedule.ts`, right `schedule`, page `/capex/[code]/schedule`, `src/components/charts/capex-gantt.tsx`
+  (Keystone's Gantt look, origin `5b425d5`); an EPC2i project and, at subsidiary and group level, each CAPEX are one
+  summary bar. Page actions (owner, 25 Oct 2026): every page passes the actions its viewer may take to `PageHeader`
+  (`primary`, `actions`: client elements only, so that they can be counted); beyond 3 they go in the "Actions" list
+  (`src/components/app/shell/header-actions.tsx`; `Folded`, `ActionButton`, `ActionLink` render as menu rows there).
+- **Delivery 7 has started** (owner, 29 Oct 2026: the 14 points of the market gap analysis, AR-039 to AR-052, all retained;
+  `docs/DECISIONS.md` §5 holds the default choice of each). Lot 7a: optimistic lock (`row_version` + trigger on capex,
+  budget_versions, dossier_versions, circuit_steps; `src/domain/concurrency.ts`: a form sends `rowVersion`, a dossier section
+  its shown text `base`), portfolio views in a fixed number of queries (`capexDashboards`, `versionsOfMany`,
+  `projectsOfMany`, `schedulesOf`; load test `src/server/dal/portfolio-load.test.ts`); exports (AR-042: `src/lib/export/` CSV,
+  XLSX and a PDF writer without dependency, tables `src/server/export/datasets.ts` served by `/export/[dataset]`, header links
+  `exportLinks`, printable documents `src/features/print/documents.ts` shown as HTML or PDF); business API and webhooks (AR-048,
+  `docs/API.md`: `/api/v1/` by API client key, signed writes, outbox `webhook_deliveries` sent by the job `webhooks`, page
+  `/admin/api`). Lot 7b: currencies (AR-039: `exchange_rates`, `src/domain/currency.ts`, `converterFor`; amounts typed in the
+  subsidiary's currency, consolidated in k€), envelopes (AR-040: `envelopes`, `envelope_movements`, `src/domain/envelopes.ts`,
+  page `/envelopes`, G2 criterion `g2_envelope`, alert `envelope_over`), phased cash-flow (AR-045: `lot_forecasts`,
+  `src/domain/cashflow.ts`, `phasedCapex`), depreciation (AR-050: `asset_classes`, `fixed_asset_transfers`,
+  `src/domain/depreciation.ts`; export `fixed-assets`). Lot 7c: prioritisation (AR-044: `scoring_weights`, `capex_scores`,
+  `src/domain/scoring.ts`, a score only from 80 % of the weight scored; `prioritiesOf` in `src/server/dal/priority.ts`; ranking on the
+  Group portfolio, scores on the Governance page) and scenarios (AR-043: `portfolio_scenarios`, `scenario_items`,
+  `src/domain/scenarios.ts`, page `/scenarios`, retained scenario on `/copil`; actions `src/features/portfolio/actions.ts`). Lot 7d:
+  circuit notifications (AR-041: `src/domain/notify.ts` `noticesOf`, outbox `email_outbox` filled by `planNotices` and sent by
+  `deliverEmails` in the job `notifications`, `ARCHE_MAIL_TRANSPORT` none | file; absences `absences`, a delegate acts "on behalf
+  of" through `standInsOf` / `standInFor` and reads the CAPEX of the step, `src/server/dal/absences.ts`) and the no-code designer
+  (AR-052: `designs`, `src/domain/designer.ts`, page `/admin/designer`; `circuitFor` and `currentSections` / `sectionsFor` in
+  `src/server/dal/designs.ts`, `dossier_versions.template_version`; never read `SECTIONS` or `circuitTemplate` directly for a
+  CAPEX). Lot 7e: ideas backlog (AR-051: `ideas`, `src/domain/ideas.ts`, page `/ideas`, `/open?idea=` converts a retained idea),
+  benefits and post-audits (AR-046: `benefit_actuals`, `post_audits`, `src/domain/benefits.ts`, page `/capex/[code]/benefits`,
+  rights `benefits` / `post_audit` also on a closed CAPEX) and the Sage connector (AR-047: `capex_lots.sage_code`, `sage_imports`,
+  `sage_lines`, `sage_rejects`, `src/domain/sage.ts`, `src/server/integrations/sage/`, page `/sage`, job `sage-import` on
+  `ARCHE_SAGE_DIR`). Delivery 7's 14 points are delivered.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.
@@ -82,6 +126,8 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
 
 ```bash
 npm ci && npm run db:local && npm run db:migrate   # .env.local: see .env.example
+npm run db:reset-demo                              # local only: drop schema arche, reseed the current demo data set
+npm run db:demo-topup                              # an existing demo database (a server): add what later lots added, change nothing
 npx next typegen && npm run typecheck && npm run lint && npm test
 npm run dev                                         # http://localhost:3400
 ```

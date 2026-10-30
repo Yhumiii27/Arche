@@ -8,20 +8,27 @@ import { alertsOf, sortAlerts, type Alert } from '@/domain/alerts';
 import { missingStaff } from '@/domain/budget';
 import { addWorkingDays } from '@/domain/circuits';
 import { uncertaintyGap } from '@/domain/execution';
+import { needRef } from '@/domain/needs';
+import { packSummary, type PackItemState } from '@/domain/pack';
+import type { HsState } from '@/domain/safety';
 import { missingAudits, nextReview } from '@/domain/governance';
-import { currentGate, type CycleState, type GateCode } from '@/domain/lifecycle';
+import { CROSS_VIEW_ROLES } from '@/config/roles';
+import { currentGate, type CycleState, type GateCode, type ModelValues } from '@/domain/lifecycle';
 import { permitsDue } from '@/domain/permits';
 import { hsBoard } from '@/domain/safety';
 import { businessToday } from '@/server/clock';
 import { getDb } from '@/server/db/client';
-import { capex, capexSnapshots, changes, circuitSteps, gateConditions, gates, reviews, risks } from '@/server/db/schema';
+import { authorizations, capex, capexLots, capexMembers, capexSnapshots, changes, circuitSteps, gateConditions, gates, hsStatuses, lotActuals, machineNeeds, packItems, productionLines, reviews, risks } from '@/server/db/schema';
+import { projectsOfMany } from '@/server/integrations/keystone';
 import type { DB, Tx } from '@/server/db/types';
 import type { Viewer } from '@/server/viewer';
-import { visibleCapex, type CapexRow } from './capex';
-import { modelValues, teamOf } from './cycle';
-import { executionOf, hsOf, packOf, permitsOf } from './execution';
+import { isMine, visibleCapex, type CapexRow } from './capex';
+import { modelValues, versionsOfMany } from './cycle';
+import { epc2iPackOf, executionFrom, lotPlansFrom } from './execution';
 import { portfolioOf } from './portfolio';
-import { rampupOf } from './rampup';
+import { daysOf, rampupFrom } from './rampup';
+import { envelopeData, phasedCapex } from './finance';
+import { envelopeCheck } from '@/domain/envelopes';
 
 type Q = DB | Tx;
 
@@ -31,22 +38,103 @@ export async function reviewsOf(q: Q, capexId: string) {
 
 type CapexFull = { id: string; code: string; status: string; phase: string; typology: string | null; typologyProposed: string | null; openedAt: Date | null };
 
+const groupBy = <T, K>(rows: readonly T[], key: (r: T) => K) => {
+  const m = new Map<K, T[]>();
+  for (const r of rows) m.set(key(r), [...(m.get(key(r)) ?? []), r]);
+  return m;
+};
+
+/**
+ * Everything the dashboards of these CAPEX read, one query per table whatever their number (AR-049: the portfolio views
+ * read in a fixed number of queries, not one batch per CAPEX).
+ */
+async function dashboardData(q: Q, cs: readonly { id: string; code: string }[], today: string) {
+  const ids = cs.map((c) => c.id);
+  const none = ids.length === 0;
+  const [lots, versions, projects, needs, revs, team, permits, hs, running, conds, openChanges, openRisks, items, mes, lines] = await Promise.all([
+    none ? [] : q.select().from(capexLots).where(inArray(capexLots.capexId, ids)).orderBy(asc(capexLots.number)),
+    versionsOfMany(q, ids),
+    projectsOfMany(q, cs.map((c) => c.code)),
+    none ? [] : q.select().from(machineNeeds).where(inArray(machineNeeds.capexId, ids)).orderBy(asc(machineNeeds.number)),
+    none ? [] : q.select().from(reviews).where(inArray(reviews.capexId, ids)).orderBy(desc(reviews.heldOn), desc(reviews.number)),
+    none ? [] : q.select({ capexId: capexMembers.capexId, capexRole: capexMembers.capexRole }).from(capexMembers).where(inArray(capexMembers.capexId, ids)),
+    none ? [] : q.select().from(authorizations).where(inArray(authorizations.capexId, ids)).orderBy(asc(authorizations.number)),
+    none ? [] : q.select().from(hsStatuses).where(inArray(hsStatuses.capexId, ids)),
+    none ? [] : q.select().from(gates).where(and(inArray(gates.capexId, ids), eq(gates.status, 'in_review'))),
+    none ? [] : q.select({ capexId: gates.capexId }).from(gateConditions).innerJoin(gates, eq(gates.id, gateConditions.gateId))
+      .where(and(inArray(gates.capexId, ids), isNull(gateConditions.closedOn), lt(gateConditions.dueOn, today))),
+    none ? [] : q.select({ capexId: changes.capexId }).from(changes).where(and(inArray(changes.capexId, ids), eq(changes.status, 'submitted'))),
+    none ? [] : q.select({ capexId: risks.capexId, p: risks.probability, i: risks.impact }).from(risks).where(and(inArray(risks.capexId, ids), inArray(risks.status, ['open', 'mitigated']))),
+    none ? [] : q.select().from(packItems).where(inArray(packItems.capexId, ids)),
+    none ? [] : q.select({ id: capex.id, on: capex.mesStartedOn }).from(capex).where(inArray(capex.id, ids)),
+    none ? [] : q.select().from(productionLines).where(inArray(productionLines.capexId, ids)).orderBy(asc(productionLines.number)),
+  ]);
+  const lotIds = lots.map((l) => l.id);
+  const sessionIds = running.map((g) => g.id);
+  const [stored, days, steps, env, phased] = await Promise.all([
+    lotIds.length ? q.select().from(lotActuals).where(inArray(lotActuals.lotId, lotIds)).orderBy(asc(lotActuals.month)) : [],
+    daysOf(q, lines.map((l) => l.id)),
+    sessionIds.length ? q.select().from(circuitSteps).where(and(inArray(circuitSteps.gateId, sessionIds), eq(circuitSteps.status, 'open'))) : [],
+    envelopeData(q),
+    none ? Promise.resolve([]) : phasedCapex(q, today, ids),
+  ]);
+  // Envelope control of each CAPEX (AR-040), against every CAPEX of the group.
+  const envelopeOverOf = (id: string, tolerancePct: number) => {
+    const mine = phased.find((p) => p.id === id);
+    if (!mine || !env.envelopes.length) return [];
+    return envelopeCheck(env.envelopes, env.movements, phased, mine, tolerancePct).over.map((r) => ({ year: r.year, overKeur: r.overKeur, blocked: !!r.state && (r.state.totalKeur <= 0 || (r.overKeur / r.state.totalKeur) * 100 > tolerancePct) }));
+  };
+  const lotCapex = new Map(lots.map((l) => [l.id, l.capexId]));
+  const lineCapex = new Map(lines.map((l) => [l.id, l.capexId]));
+  const by = {
+    lots: groupBy(lots, (l) => l.capexId), needs: groupBy(needs, (n) => n.capexId), revs: groupBy(revs, (r) => r.capexId), team: groupBy(team, (m) => m.capexId),
+    permits: groupBy(permits, (p) => p.capexId), hs: groupBy(hs, (h) => h.capexId), running: groupBy(running, (g) => g.capexId), conds: groupBy(conds, (c) => c.capexId),
+    changes: groupBy(openChanges, (c) => c.capexId), risks: groupBy(openRisks, (r) => r.capexId), items: groupBy(items, (i) => i.capexId), lines: groupBy(lines, (l) => l.capexId),
+    stored: groupBy(stored, (a) => lotCapex.get(a.lotId)), days: groupBy(days, (d) => lineCapex.get(d.lineId)), steps: groupBy(steps, (s) => s.gateId),
+  };
+  const mesOf = new Map(mes.map((m) => [m.id, m.on]));
+  return (c: { id: string; code: string }) => ({
+    plans: lotPlansFrom(by.lots.get(c.id) ?? [], versions.get(c.id) ?? []),
+    projects: projects.get(c.code) ?? [],
+    needs: (by.needs.get(c.id) ?? []).map((n) => ({ ...n, ref: needRef(c.code, n.number) })),
+    stored: by.stored.get(c.id) ?? [],
+    revs: by.revs.get(c.id) ?? [],
+    team: by.team.get(c.id) ?? [],
+    permits: by.permits.get(c.id) ?? [],
+    hs: (by.hs.get(c.id) ?? []).map((r): HsState => ({ code: r.hsCode, status: r.status, evidenceRef: r.evidenceRef, passedOn: r.passedOn, note: r.note, source: r.source })),
+    running: by.running.get(c.id) ?? [],
+    lateConditions: (by.conds.get(c.id) ?? []).length,
+    openChanges: (by.changes.get(c.id) ?? []).length,
+    openRisks: by.risks.get(c.id) ?? [],
+    items: (by.items.get(c.id) ?? []).map((r): PackItemState => ({ code: r.itemCode, status: r.status, codexRef: r.codexRef, validatedOn: r.validatedOn })),
+    mesStartedOn: mesOf.get(c.id) ?? null,
+    lines: by.lines.get(c.id) ?? [],
+    days: by.days.get(c.id) ?? [],
+    steps: (g: string) => by.steps.get(g) ?? [],
+    envelopeOver: (tolerancePct: number) => envelopeOverOf(c.id, tolerancePct),
+  });
+}
+
+type DashboardData = ReturnType<Awaited<ReturnType<typeof dashboardData>>>;
+
 /** The dashboard of one CAPEX at `today`. */
 export async function capexDashboard(q: Q, c: CapexFull, today: string) {
-  const values = await modelValues(q);
-  const [exec, revs, team, permits, hs, running, conds, openChanges, openRisks] = await Promise.all([
-    executionOf(q, c, today), reviewsOf(q, c.id), teamOf(q, c.id), permitsOf(q, c.id), hsOf(q, c.id),
-    q.select().from(gates).where(and(eq(gates.capexId, c.id), eq(gates.status, 'in_review'))),
-    q.select({ id: gateConditions.id }).from(gateConditions).innerJoin(gates, eq(gates.id, gateConditions.gateId))
-      .where(and(eq(gates.capexId, c.id), isNull(gateConditions.closedOn), lt(gateConditions.dueOn, today))),
-    q.select({ id: changes.id }).from(changes).where(and(eq(changes.capexId, c.id), eq(changes.status, 'submitted'))),
-    q.select({ p: risks.probability, i: risks.impact }).from(risks).where(and(eq(risks.capexId, c.id), inArray(risks.status, ['open', 'mitigated']))),
-  ]);
-  const pack = await packOf(q, c, exec.projects);
-  const [mes] = await q.select({ on: capex.mesStartedOn }).from(capex).where(eq(capex.id, c.id));
-  const startup = await rampupOf(q, { id: c.id, mesStartedOn: mes?.on ?? null }, values, today);
-  const session = running[0] ?? null;
-  const steps = session ? await q.select().from(circuitSteps).where(and(eq(circuitSteps.gateId, session.id), eq(circuitSteps.status, 'open'))) : [];
+  return (await capexDashboards(q, [c], today))[0];
+}
+
+/** The dashboards of several CAPEX at `today`, in a fixed number of queries (AR-049). */
+export async function capexDashboards(q: Q, cs: readonly CapexFull[], today: string) {
+  const [values, data] = await Promise.all([modelValues(q), dashboardData(q, cs, today)]);
+  return cs.map((c) => dashboardFrom(c, data(c), values, today));
+}
+
+function dashboardFrom(c: CapexFull, d: DashboardData, values: ModelValues, today: string) {
+  const exec = executionFrom(d, today);
+  const pack = { summary: packSummary(d.items, epc2iPackOf(exec.projects)) };
+  const startup = rampupFrom({ mesStartedOn: d.mesStartedOn }, d.lines, d.days, values, today);
+  const revs = d.revs;
+  const session = d.running[0] ?? null;
+  const steps = session ? d.steps(session.id) : [];
   const submittedOn = session ? session.createdAt.toISOString().slice(0, 10) : null;
   const targetOn = session && submittedOn ? addWorkingDays(submittedOn, values.gateDelayDays[session.code as GateCode]) : null;
   const copil = revs.filter((r) => r.kind === 'copil_projet');
@@ -58,13 +146,14 @@ export async function capexDashboard(q: Q, c: CapexFull, today: string) {
     code: c.code, status: c.status, typologyProposed: c.typologyProposed,
     running: session && submittedOn && targetOn ? { gate: session.code, submittedOn, targetOn } : null,
     openSteps: steps.map((s) => ({ label: s.label, kind: s.kind, dueOn: s.dueOn })),
-    review, missingAudits: audits, permitsDue: permitsDue(permits, today),
+    review, missingAudits: audits, permitsDue: permitsDue(d.permits, today),
     indicators: afterG2 && measured ? { spi: exec.indicators.spi, cpi: exec.indicators.cpi, eacKeur: exec.indicators.eacKeur } : null,
-    g2Keur: exec.g2Keur, missingStaff: c.status === 'active' ? missingStaff(c.typology as 'light' | 'strategic' | null, team.map((m) => m.capexRole)) : [],
-    lateConditions: conds.length,
+    g2Keur: exec.g2Keur, missingStaff: c.status === 'active' ? missingStaff(c.typology as 'light' | 'strategic' | null, d.team.map((m) => m.capexRole)) : [],
+    lateConditions: d.lateConditions,
     rampup: c.phase === 'demarrage' && startup.result.mesStartedOn ? { alertOn: startup.result.alertOn, limitOn: startup.result.limitOn, reached: !!startup.result.reachedOn } : null,
+    envelopeOver: d.envelopeOver(values.envelopeBlockPct),
   }, today));
-  const board = hsBoard(hs);
+  const board = hsBoard(d.hs);
   return {
     nextGate: currentGate(c as CycleState),
     running: session ? { gate: session.code as GateCode, session: session.session, submittedOn, targetOn, late: !!targetOn && targetOn < today } : null,
@@ -73,7 +162,7 @@ export async function capexDashboard(q: Q, c: CapexFull, today: string) {
     pack: pack.summary, packThresholdPct: values.packThresholdPct,
     hs: { passed: board.filter((s) => s.status === 'passed' || s.status === 'waived').length, total: board.length, next: board.find((s) => s.status !== 'passed' && s.status !== 'waived') ?? null },
     review, missingAudits: audits, lastReview: revs[0] ?? null,
-    openChanges: openChanges.length, majorRisks: openRisks.filter((r) => r.p * r.i >= 9).length, openRisks: openRisks.length,
+    openChanges: d.openChanges, majorRisks: d.openRisks.filter((r) => r.p * r.i >= 9).length, openRisks: d.openRisks.length,
     rampup: startup.result,
     alerts,
   };
@@ -93,19 +182,26 @@ async function snapshotsOf(q: Q, ids: string[], since: string) {
 }
 
 /** The portfolio dashboard (spec 06 §5): the viewer's CAPEX on the zone of the session, each with its dashboard and trend. */
-export async function portfolioDashboard(viewer: Viewer, zone: string | null) {
+export async function portfolioDashboard(viewer: Viewer, zone: string | null, subsidiary: string | null = null) {
   const db = await getDb();
   const today = await businessToday(db);
-  const p = await portfolioOf(viewer, zone);
+  const all = await portfolioOf(viewer, zone);
+  const p = subsidiary ? { ...all, rows: all.rows.filter((r) => r.subsidiaryCode === subsidiary) } : all;
   const full = new Map((await fullRows(db, p.rows.map((r) => r.id))).map((r) => [r.id, r]));
   const since = new Date(Date.parse(`${today}T12:00:00Z`) - 12 * 7 * 86_400_000).toISOString().slice(0, 10);
   const snaps = await snapshotsOf(db, p.rows.map((r) => r.id), since);
-  const rows = await Promise.all(p.rows.map(async (r) => ({
-    ...r,
-    dash: await capexDashboard(db, full.get(r.id)!, today),
-    trend: snaps.filter((s) => s.capexId === r.id),
-  })));
+  const dashes = await capexDashboards(db, p.rows.map((r) => full.get(r.id)!), today);
+  const rows = p.rows.map((r, i) => ({ ...r, dash: dashes[i], trend: snaps.filter((s) => s.capexId === r.id) }));
   return { ...p, rows, today };
+}
+
+/**
+ * The CAPEX the home page follows: every visible one for the profiles that oversee (CEO, zone director, the cross-cutting
+ * profiles), else the viewer's own (named on it, sponsor or project lead).
+ */
+export function followedBy(viewer: Viewer): (c: CapexRow) => boolean {
+  const broad = viewer.role === 'ceo' || viewer.role === 'zone_director' || CROSS_VIEW_ROLES.includes(viewer.role);
+  return (c) => broad || isMine(viewer, c);
 }
 
 /** Alerts of the CAPEX the viewer sees (home page). */
@@ -114,7 +210,8 @@ export async function alertsForViewer(viewer: Viewer, only?: (c: CapexRow) => bo
   const today = await businessToday(db);
   const seen = (await visibleCapex(viewer)).filter((c) => (c.status === 'active' || c.status === 'draft') && (!only || only(c)));
   const full = new Map((await fullRows(db, seen.map((c) => c.id))).map((r) => [r.id, r]));
-  const rows = await Promise.all(seen.map(async (c) => ({ ...c, dash: await capexDashboard(db, full.get(c.id)!, today) })));
+  const dashes = await capexDashboards(db, seen.map((c) => full.get(c.id)!), today);
+  const rows = seen.map((c, i) => ({ ...c, dash: dashes[i] }));
   return { alerts: sortAlerts(rows.flatMap((r) => r.dash.alerts)), rows };
 }
 
@@ -155,8 +252,9 @@ export async function takeSnapshots(q: Q, today: string): Promise<number> {
   const rows = await q.select({ id: capex.id, code: capex.code, status: capex.status, phase: capex.phase, typology: capex.typology, typologyProposed: capex.typologyProposed, openedAt: capex.openedAt })
     .from(capex).where(eq(capex.status, 'active'));
   const week = weekOf(today);
-  for (const c of rows) {
-    const d = await capexDashboard(q, c, today);
+  const dashes = await capexDashboards(q, rows, today);
+  for (const [i, c] of rows.entries()) {
+    const d = dashes[i];
     const values = {
       status: c.status, phase: c.phase, packPct: d.pack.pct, subsidiaryPackPct: d.pack.subsidiary.pct, epc2iPackPct: d.pack.epc2i.pct,
       bacKeur: d.indicators.bacKeur, pvKeur: d.indicators.pvKeur, evKeur: d.indicators.evKeur, acKeur: d.indicators.acKeur, eacKeur: d.indicators.eacKeur,

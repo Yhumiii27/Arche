@@ -12,9 +12,11 @@ import type { CriterionFact, ModelValues } from '@/domain/lifecycle';
 import { authorizations, capexLots, hsStatuses, lotActuals, packItems } from '@/server/db/schema';
 import type { DB, Tx } from '@/server/db/types';
 import { projectsOf, type Epc2iProject } from '@/server/integrations/keystone';
+import { envelopeFact } from '@/domain/envelopes';
+import { capexEnvelopeCheck } from './finance';
 import { needsOf } from './needs';
 import { startupFacts } from './rampup';
-import { latestValidated, versionsOf } from './cycle';
+import { latestValidated, versionsOf, type VersionView } from './cycle';
 
 type Q = DB | Tx;
 
@@ -40,8 +42,16 @@ export const epc2iPackOf = (projects: readonly Epc2iProject[]): Epc2iPackRow[] =
  * The lots with the budget the S-curve measures against: the G2 baseline once there is one, else the latest validated version
  * (before G2 the curve is indicative); `budgetSource` says which.
  */
-export async function lotPlansOf(q: Q, capexId: string): Promise<{ lots: LotPlan[]; budgetSource: 'g2_baseline' | 'latest_validated' | 'none'; g2Keur: number | null; latestClass: 'E50' | 'E30' | 'E10' | null }> {
+export async function lotPlansOf(q: Q, capexId: string): Promise<LotPlans> {
   const [lots, versions] = await Promise.all([q.select().from(capexLots).where(eq(capexLots.capexId, capexId)).orderBy(asc(capexLots.number)), versionsOf(q, capexId)]);
+  return lotPlansFrom(lots, versions);
+}
+
+type LotRow = typeof capexLots.$inferSelect;
+type LotPlans = { lots: LotPlan[]; budgetSource: 'g2_baseline' | 'latest_validated' | 'none'; g2Keur: number | null; latestClass: 'E50' | 'E30' | 'E10' | null };
+
+/** lotPlansOf from rows already read. */
+export function lotPlansFrom(lots: readonly LotRow[], versions: readonly VersionView[]): LotPlans {
   const g2 = versions.find((v) => v.isG2Baseline) ?? null;
   const latest = latestValidated(versions);
   const ref = g2 ?? latest;
@@ -59,7 +69,7 @@ async function actualRowsOf(q: Q, lotIds: string[]) {
 }
 
 export interface ExecutionView {
-  lots: (LotPlan & { actual: { committedKeur: number; spentKeur: number; physicalPct: number }; projects: string[]; source: 'manual' | 'import' | 'keystone' | null; lastMonth: string | null })[];
+  lots: (LotPlan & { actual: { committedKeur: number; spentKeur: number; physicalPct: number }; projects: string[]; source: 'manual' | 'import' | 'keystone' | 'sage' | null; lastMonth: string | null })[];
   rows: LotActual[];
   budgetSource: 'g2_baseline' | 'latest_validated' | 'none';
   g2Keur: number | null;
@@ -77,9 +87,17 @@ export interface ExecutionView {
  * projects (through the machine needs of the lot) as the current month's actuals.
  */
 export async function executionOf(q: Q, c: { id: string; code: string }, today: string): Promise<ExecutionView> {
-  const month = monthOf(today);
   const [plans, projects, needs] = await Promise.all([lotPlansOf(q, c.id), projectsOf(q, c.code), needsOf(q, c)]);
   const stored = await actualRowsOf(q, plans.lots.map((l) => l.id));
+  return executionFrom({ plans, projects, needs, stored }, today);
+}
+
+type ActualRow = typeof lotActuals.$inferSelect;
+
+/** executionOf from rows already read (the lots' plans, the CAPEX's EPC2i projects and machine needs, its stored actuals). */
+export function executionFrom(d: { plans: LotPlans; projects: Epc2iProject[]; needs: readonly { ref: string; lotId: string | null }[]; stored: readonly ActualRow[] }, today: string): ExecutionView {
+  const { plans, projects, needs, stored } = d;
+  const month = monthOf(today);
   const rows: LotActual[] = stored.map((r) => ({ lotId: r.lotId, month: r.month, committedKeur: r.committedKeur, spentKeur: r.spentKeur, physicalPct: r.physicalPct }));
   const lotOfNeed = new Map(needs.map((n) => [n.ref, n.lotId]));
   const projectsOfLot = new Map<string, Epc2iProject[]>();
@@ -114,6 +132,12 @@ export async function packOf(q: Q, c: { id: string; code: string }, projects?: E
   return { items, projects: ps, summary: packSummary(items, epc2iPackOf(ps)) };
 }
 
+/** The G2 envelope criterion (AR-040): absent while no envelope covers the CAPEX. */
+async function envelopeFactOf(q: Q, c: { id: string }, values: ModelValues, today: string): Promise<Record<string, CriterionFact>> {
+  const fact = envelopeFact(await capexEnvelopeCheck(q, c, values.envelopeBlockPct, today));
+  return fact ? { g2_envelope: fact } : {};
+}
+
 /** Facts of the criteria fed by deliveries 5 and 6: safety milestones, permits, pack, works lots; ramp-up, closure, REX. */
 export async function deliveryFacts(q: Q, c: { id: string; code: string }, values: ModelValues, today: string): Promise<Record<string, CriterionFact>> {
   const [hs, permits, exec] = await Promise.all([hsOf(q, c.id), permitsOf(q, c.id), executionOf(q, c, today)]);
@@ -125,5 +149,6 @@ export async function deliveryFacts(q: Q, c: { id: string; code: string }, value
     g2_pack: packFact(pack.summary, values.packThresholdPct),
     ...(works ? { k3_works: works } : {}),
     ...(await startupFacts(q, c, values, today, exec.g2Keur)),
+    ...(await envelopeFactOf(q, c, values, today)),
   };
 }

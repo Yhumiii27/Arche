@@ -49,7 +49,7 @@ export function buildNav(role: RoleKey, pathname: string, current: string | null
   const visible = SCREENS.filter((s) => canSee(role, s.id));
   const fixed = visible.filter((s) => s.section === 'fixed').map((s) => entry(s.id, s.title, 'fixed'));
   const sections: NavSection[] = [];
-  for (const key of ['steering', 'capex', 'admin'] as const) {
+  for (const key of ['group', 'subsidiary', 'capex', 'admin'] as const) {
     const screens = visible.filter((s) => s.section === key);
     if (!screens.length) continue;
     const groups: NavGroup[] = [];

@@ -1,5 +1,6 @@
-// Delivery 4 on a fresh PostgreSQL database with the demo data set ("View as"): the project lead enters and submits machine
-// needs, a submitted need is published in pub_besoins_machines (drafts never), the simulated answer of EPC2i comes back with
+// Delivery 4 on a fresh PostgreSQL database with the demo data set ("View as"), aligned with Keystone's demo (owner, 25 Oct
+// 2026): the project lead enters and submits machine needs, a submitted need is published in pub_besoins_machines (drafts
+// never), Keystone's own demo answers and project RCF-019 are mirrored, the simulated answer of EPC2i comes back with
 // the synchronisation of the mirror, the G2 criterion counts the firm offers, the G2 Go orders the covered needs, K3 and G3
 // read the EPC2i projects; a view Keystone shares is read instead of its simulation (mixed mode).
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -51,56 +52,65 @@ describe('delivery 4: machine needs and the Keystone connector', () => {
       'besoin_ref', 'capex_code', 'ligne', 'catalogue_code', 'catalogue_version', 'libelle_libre', 'quantite', 'options', 'capacite_visee', 'unite_capacite', 'date_besoin', 'site', 'statut',
       'commentaire', 'soumis_le', 'commande_le', 'maj_le',
     ]);
-    expect((await published()).map((r) => `${r.besoin_ref} ${r.statut}`)).toEqual(['CPX-APM-2025-01/B01 ordered', `${APM}/B01 submitted`, `${APM}/B02 submitted`, `${SAI}/B01 ordered`, `${SAI}/B02 ordered`]);
+    expect((await published()).map((r) => `${r.besoin_ref} ${r.statut}`)).toEqual([
+      'CPX-APM-2025-01/B01 ordered', `${APM}/B01 submitted`, `${APM}/B02 submitted`, `${SAI}/B01 ordered`, `${SAI}/B02 withdrawn`, `${SAI}/B03 ordered`,
+    ]);
   });
 
-  it('the demo mirror: simulated catalogue, answers and the EPC2i projects of SAI', async () => {
+  it('the demo mirror: the demo of Keystone itself — its catalogue, its answers RB-001 to RB-005 and RCF-019 (owner, 25 Oct 2026)', async () => {
     const sheets = await catalogue(t.db);
-    expect(sheets.filter((s) => s.status === 'publie').map((s) => `${s.code}@${s.version}`)).toEqual(['EXT-9MN@3', 'EXT-AGE@1', 'PRC-CAN@1', 'PRC-TOM@2']);
-    const answers = await answersOf(t.db, APM);
-    expect(latestAnswer(answers, `${APM}/B01`)).toMatchObject({ nature: 'devis', estimateClass: 'E30', documentRef: `DEV-${APM}-B01` });
-    expect(latestAnswer(answers, `${APM}/B02`)).toMatchObject({ nature: 'offre_ferme', estimateClass: 'E10', centralKeur: 663 });
+    expect(sheets.map((s) => `${s.code}@${s.version} ${s.status}`)).toEqual(['EMP-40T@1 publie', 'MEMU-16@1 publie', 'SPUR-2X@1 retire']);
+    const apm = await answersOf(t.db, APM);
+    expect(latestAnswer(apm, `${APM}/B01`)).toMatchObject({ number: 'RB-005', nature: 'devis', estimateClass: 'E30', centralKeur: 4150, documentRef: 'DEV-CPX-APM-2026-01-001' });
+    expect(latestAnswer(apm, `${APM}/B02`)).toBeNull();
+    const sai = await answersOf(t.db, SAI);
+    expect(latestAnswer(sai, `${SAI}/B01`)).toMatchObject({ number: 'RB-003', nature: 'offre_ferme', projectCode: 'RCF-019' });
+    expect(latestAnswer(sai, `${SAI}/B03`)).toMatchObject({ number: 'RB-002', estimateClass: 'E10', centralKeur: 8436, projectCode: null });
     const projects = await projectsOf(t.db, SAI);
-    expect(projects.map((p) => p.code)).toEqual(['SAI-26011', 'SAI-26012']);
-    expect(projects[0]).toMatchObject({ needRef: `${SAI}/B01`, phase: 'Manufacturing' });
+    expect(projects.map((p) => p.code)).toEqual(['RCF-019']);
+    expect(projects[0]).toMatchObject({ needRef: `${SAI}/B01`, phase: 'Chantier' });
     expect(projects[0].milestones.map((m) => m.code)).toEqual(['commande', 'fin_etudes', 'fat', 'expedition', 'arrivee_site', 'sat', 'pv_reception', 'fin_garantie']);
-    expect(projects[0].amendments.map((a) => `${a.number} ${a.status}`)).toEqual(['AV-01 signe', 'AV-02 propose']);
-    expect(simulatedProjectCode(`${SAI}/B01`)).toBe('SAI-26011');
+    // The oven of CPX-APM-2025-01, unknown to Keystone's demo, keeps a generated project.
+    expect((await projectsOf(t.db, 'CPX-APM-2025-01')).map((p) => p.code)).toEqual([simulatedProjectCode('CPX-APM-2025-01/B01')]);
   });
 
   it('the project lead enters a need: checks on the catalogue, the quantity, the right', async () => {
     as('project_lead');
-    expect(await saveNeedAction(APM, null, null, form({ catalogue: 'CON-BLT@1' }))).toEqual({ ok: false, error: 'Choose a machine of the catalogue' });
+    expect(await saveNeedAction(APM, null, null, form({ catalogue: 'SPUR-2X@1' }))).toEqual({ ok: false, error: 'Choose a machine of the catalogue' });
     expect(await saveNeedAction(APM, null, null, form({ catalogue: '', freeLabel: 'ab' }))).toEqual({ ok: false, error: 'Choose a machine of the catalogue or describe the need' });
-    expect(await saveNeedAction(APM, null, null, form({ catalogue: 'EXT-9MN@3', quantity: '0' }))).toEqual({ ok: false, error: 'The quantity goes from 1 to 99' });
-    expect(await saveNeedAction(APM, null, null, form({ catalogue: 'EXT-9MN@3', quantity: '2', options: ['QUENCH', 'NOPE'], targetCapacity: '1,8' }))).toEqual({ ok: true });
-    const n = await needOf(APM, 4);
-    expect(n).toMatchObject({ status: 'draft', catalogueCode: 'EXT-9MN', catalogueVersion: 3, quantity: 2, options: ['QUENCH'], targetCapacity: 1.8, capacityUnit: 't/h' });
-    expect((await published()).some((r) => r.besoin_ref === `${APM}/B04`)).toBe(false);
+    expect(await saveNeedAction(APM, null, null, form({ catalogue: 'EMP-40T@1', quantity: '0' }))).toEqual({ ok: false, error: 'The quantity goes from 1 to 99' });
+    expect(await saveNeedAction(APM, null, null, form({ catalogue: 'EMP-40T@1', quantity: '2', options: ['TELE', 'NOPE'], targetCapacity: '40' }))).toEqual({ ok: true });
+    const n = await needOf(APM, 3);
+    expect(n).toMatchObject({ status: 'draft', catalogueCode: 'EMP-40T', catalogueVersion: 1, quantity: 2, options: ['TELE'], targetCapacity: 40, capacityUnit: 't' });
+    expect((await published()).some((r) => r.besoin_ref === `${APM}/B03`)).toBe(false);
     as('sponsor');
     expect(await submitNeedAction(APM, n.id)).toEqual({ ok: false, error: 'You cannot do this on this CAPEX' });
     as('project_lead');
-    expect(await saveNeedAction(SAI, null, null, form({ catalogue: 'PRC-CAN@1' }))).toEqual({ ok: false, error: 'CAPEX not found' });
+    expect(await saveNeedAction(SAI, null, null, form({ catalogue: 'MEMU-16@1' }))).toEqual({ ok: false, error: 'CAPEX not found' });
   });
 
   it('a submitted need is published, and the answer of EPC2i comes back with the synchronisation', async () => {
     as('project_lead');
-    const n = await needOf(APM, 4);
+    const n = await needOf(APM, 3);
     expect(await submitNeedAction(APM, n.id)).toEqual({ ok: true });
     expect(await submitNeedAction(APM, n.id)).toEqual({ ok: false, error: 'This need is already submitted' });
-    expect(await saveNeedAction(APM, n.id, null, form({ catalogue: 'EXT-9MN@3' }))).toEqual({ ok: false, error: 'A submitted need is no longer edited: withdraw it and enter a new one' });
+    expect(await saveNeedAction(APM, n.id, null, form({ catalogue: 'EMP-40T@1' }))).toEqual({ ok: false, error: 'A submitted need is no longer edited: withdraw it and enter a new one' });
     expect(await deleteNeedAction(APM, n.id)).toEqual({ ok: false, error: 'Only a draft is deleted; a submitted need is withdrawn' });
-    expect((await published()).find((r) => r.besoin_ref === `${APM}/B04`)).toMatchObject({ statut: 'submitted', quantite: 2, options: ['QUENCH'] });
-    const submitted = (await needOf(APM, 4)).submittedAt!;
+    expect((await published()).find((r) => r.besoin_ref === `${APM}/B03`)).toMatchObject({ statut: 'submitted', quantite: 2, options: ['TELE'] });
+    const submitted = (await needOf(APM, 3)).submittedAt!;
     await syncKeystone(t.db, { now: new Date(submitted.getTime() + 5 * 60_000), mode: 'simulation' });
-    expect(latestAnswer(await answersOf(t.db, APM), `${APM}/B04`)).toBeNull();
+    expect(latestAnswer(await answersOf(t.db, APM), `${APM}/B03`)).toBeNull();
     await syncKeystone(t.db, { now: new Date(submitted.getTime() + 2 * 86_400_000), mode: 'simulation' });
-    // (4200 + 120) × 2 = 8640 k€ at E50.
-    expect(latestAnswer(await answersOf(t.db, APM), `${APM}/B04`)).toMatchObject({ nature: 'indicatif', estimateClass: 'E50', centralKeur: 8640, leadTimeWeeks: 40 });
+    // A need Keystone's demo does not know is answered by the simulation: (4200 + 18) × 2 = 8436 k€ at E50.
+    expect(latestAnswer(await answersOf(t.db, APM), `${APM}/B03`)).toMatchObject({ nature: 'indicatif', estimateClass: 'E50', centralKeur: 8436, leadTimeWeeks: 52 });
+    // Keystone's own answers stay as they are.
+    expect(latestAnswer(await answersOf(t.db, APM), `${APM}/B01`)).toMatchObject({ number: 'RB-005' });
     expect((await syncState(t.db)).every((s) => s.source === 'simulation' && !s.error)).toBe(true);
   });
 
   it('the G2 criterion counts the valid firm offers of the submitted needs', async () => {
+    // Two months later, the simulation has made its firm offer on B03; Keystone's B01 is at the quote, B02 not answered yet.
+    await syncKeystone(t.db, { now: new Date((await needOf(APM, 3)).submittedAt!.getTime() + 70 * 86_400_000), mode: 'simulation' });
     const ev = await currentEvaluation(t.db, await capexOf(APM));
     expect(ev?.gate).toBe('G2');
     expect(ev?.results.find((r) => r.code === 'g2_epc2i_offers')).toMatchObject({ state: 'unmet', value: '1 / 3' });
@@ -108,12 +118,13 @@ describe('delivery 4: machine needs and the Keystone connector', () => {
 
   it('a need is withdrawn with a reason; a draft is deleted', async () => {
     as('project_lead');
-    const n = await needOf(APM, 4);
+    const n = await needOf(APM, 2);
     expect(await withdrawNeedAction(APM, n.id, ' ')).toEqual({ ok: false, error: 'Give the reason' });
-    expect(await withdrawNeedAction(APM, n.id, 'Second press postponed')).toEqual({ ok: true });
-    expect((await published()).find((r) => r.besoin_ref === `${APM}/B04`)?.statut).toBe('withdrawn');
-    expect(await deleteNeedAction(APM, (await needOf(APM, 3)).id)).toEqual({ ok: true });
-    expect(await needOf(APM, 3)).toBeUndefined();
+    expect(await withdrawNeedAction(APM, n.id, 'Cooling kept in the extrusion line')).toEqual({ ok: true });
+    expect((await published()).find((r) => r.besoin_ref === `${APM}/B02`)?.statut).toBe('withdrawn');
+    expect(await saveNeedAction(APM, null, null, form({ catalogue: 'MEMU-16@1' }))).toEqual({ ok: true });
+    expect(await deleteNeedAction(APM, (await needOf(APM, 4)).id)).toEqual({ ok: true });
+    expect(await needOf(APM, 4)).toBeUndefined();
   });
 
   it('the G2 Go orders the submitted needs covered by a valid firm offer, the others stay submitted', async () => {
@@ -124,15 +135,16 @@ describe('delivery 4: machine needs and the Keystone connector', () => {
       await applyGateDecision(tx, c, { name: 'Test CEO', userId: c.sponsorUserId!, role: 'ceo' }, { id: g.id, code: 'G2', session: 9 }, 'go', { status: 'active', phase: 'execution' }, ev, { reason: 'test', conditions: [], today: '2026-10-22' });
     });
     expect(await needOf(APM, 1)).toMatchObject({ status: 'submitted', orderedOn: null });
-    expect(await needOf(APM, 2)).toMatchObject({ status: 'ordered', orderedOn: '2026-10-22' });
+    expect(await needOf(APM, 3)).toMatchObject({ status: 'ordered', orderedOn: '2026-10-22' });
     await syncKeystone(t.db, { now: new Date('2026-10-23T09:00:00Z'), mode: 'simulation' });
-    expect((await projectsOf(t.db, APM)).map((p) => p.code)).toEqual(['APM-26012']);
+    expect((await projectsOf(t.db, APM)).map((p) => p.code)).toEqual([simulatedProjectCode(`${APM}/B03`)]);
   });
 
   it('K3 and G3 read the EPC2i projects: SATs planned, reservations', async () => {
     const ev = await currentEvaluation(t.db, await capexOf(SAI));
     expect(ev?.gate).toBe('K3');
-    expect(ev?.results.find((r) => r.code === 'k3_sat_planned')).toMatchObject({ state: 'met', value: '2 / 2' });
+    // Keystone's demo: RCF-019 has no SAT date yet (its project for B03 is still to be created).
+    expect(ev?.results.find((r) => r.code === 'k3_sat_planned')).toMatchObject({ state: 'unmet', value: '0 / 1' });
   });
 
   it('views mode: a view Keystone shares is read, the missing ones stay simulated on the demo data set', async () => {

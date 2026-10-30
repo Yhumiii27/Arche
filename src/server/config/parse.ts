@@ -53,6 +53,12 @@ export interface ArcheConfig {
   adminEmails: string[];
   /** Keystone connector: mode and minutes between two synchronisations of its mirror (docs/spec/07 §2). */
   keystone: { mode: 'off' | 'simulation' | 'views'; syncEveryMin: number };
+  /** E-mail notifications (AR-041): `none` keeps them in the outbox (default, N-35: SMTP or Microsoft Graph to choose), `file`
+   * writes each one to `dir` (one .eml per message); `from` is the sender, `publicUrl` the origin of the links. */
+  mail: { transport: 'none' | 'file'; dir: string | null; from: string; publicUrl: string | null };
+  /** Folder of Sage's planned extractions (AR-047): `<SUBSIDIARY>*.csv`, imported by the job `sage-import`, then moved to
+   * `done/`; null = no planned extraction (files uploaded on the Sage import page). */
+  sageDir: string | null;
   /** Secret values present in the environment: the logger masks them wherever they appear. */
   secrets: string[];
 }
@@ -137,6 +143,14 @@ const VARS = {
   ARCHE_KEYSTONE: z.enum(['off', 'simulation', 'views'], { message: 'must be "off", "simulation" or "views"' }).optional(),
   // Minutes between two synchronisations of the Keystone mirror by the worker (default 15).
   ARCHE_KEYSTONE_SYNC_MIN: z.coerce.number().int().min(1, 'must be at least 1').max(1440, 'must be at most 1440').optional(),
+  // E-mail notifications (AR-041): none (default: kept in the outbox), or file (one .eml per message in ARCHE_MAIL_DIR).
+  ARCHE_MAIL_TRANSPORT: z.enum(['none', 'file'], { message: 'must be "none" or "file" (SMTP or Microsoft Graph: N-35)' }).optional(),
+  ARCHE_MAIL_DIR: z.string().optional(),
+  ARCHE_MAIL_FROM: z.string().email('must be an e-mail address').optional(),
+  // Origin of the links in the e-mails (https://arche.example); relative links without it.
+  ARCHE_PUBLIC_URL: z.string().optional(),
+  // Folder of Sage's planned extractions (AR-047); unset: uploads only.
+  ARCHE_SAGE_DIR: z.string().optional(),
 } as const;
 
 export type ConfigVariable = keyof typeof VARS;
@@ -225,6 +239,8 @@ export function parseConfig(env: Record<string, string | undefined>, opts: { cwd
   if (v.CODEX_DOCUMENTS_TOKEN && v.CODEX_API_URL && new URL(v.CODEX_API_URL).username)
     errors.push({ variable: 'CODEX_DOCUMENTS_TOKEN', message: 'cannot go with credentials in CODEX_API_URL (both use the Authorization header): use CODEX_DOCUMENTS_SECRET' });
   // A pinned date in production is a demonstration setting; real use needs the real clock.
+  if (v.ARCHE_MAIL_TRANSPORT === 'file' && !v.ARCHE_MAIL_DIR) errors.push({ variable: 'ARCHE_MAIL_DIR', message: 'is required with ARCHE_MAIL_TRANSPORT=file' });
+  if (v.ARCHE_PUBLIC_URL && !isUrlWith(v.ARCHE_PUBLIC_URL, ['http:', 'https:'])) errors.push({ variable: 'ARCHE_PUBLIC_URL', message: 'must be an http(s) URL' });
   if (production && v.ARCHE_CLOCK?.kind === 'fixed')
     warnings.push({ variable: 'ARCHE_CLOCK', message: 'pins the business date in production: lateness, due dates and dated writes ignore the real date' });
   const secrets = [...SECRET_VARIABLES.map((n) => v[n] as string | undefined), urlPassword(v.DATABASE_URL), urlPassword(v.MATRIX_URL), urlPassword(v.CODEX_API_URL)].filter((s): s is string => !!s && s.length >= 4);
@@ -248,6 +264,13 @@ export function parseConfig(env: Record<string, string | undefined>, opts: { cwd
       log: { level: v.LOG_LEVEL ?? 'info', format: v.LOG_FORMAT ?? (production ? 'json' : 'pretty') },
       adminEmails: v.ARCHE_AUTH === 'entra' ? (v.ARCHE_ADMIN_EMAILS ?? []) : [],
       keystone: { mode: v.ARCHE_KEYSTONE ?? 'simulation', syncEveryMin: v.ARCHE_KEYSTONE_SYNC_MIN ?? 15 },
+      mail: {
+        transport: v.ARCHE_MAIL_TRANSPORT ?? 'none',
+        dir: v.ARCHE_MAIL_DIR ? path.resolve(opts.cwd, v.ARCHE_MAIL_DIR) : null,
+        from: v.ARCHE_MAIL_FROM ?? 'arche@groupe.example',
+        publicUrl: v.ARCHE_PUBLIC_URL ? trimSlash(v.ARCHE_PUBLIC_URL) : null,
+      },
+      sageDir: v.ARCHE_SAGE_DIR ? path.resolve(opts.cwd, v.ARCHE_SAGE_DIR) : null,
       secrets: [...new Set(secrets)],
     },
   };

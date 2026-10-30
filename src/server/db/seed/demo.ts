@@ -4,17 +4,18 @@
 import { eq } from 'drizzle-orm';
 import type { RoleKey, ScopeKind, ExpertSpeciality } from '@/config/roles';
 import {
-  authorizations, budgetLines, budgetVersions, capex, capexLots, capexSnapshots, hsStatuses, lotActuals, packItems, productionLines, rampupDays, reviews, rexEntries, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
+  assetClasses, authorizations, exchangeRates, budgetLines, capexActions, wbsTasks, budgetVersions, capex, capexLots, capexSnapshots, hsStatuses, lotActuals, packItems, productionLines, rampupDays, reviews, rexEntries, capexMembers, decisions, gateCriteriaResults, gates, phaseTransitions, referenceRevenues, risks,
   roleAssignments, sites, subsidiaries, users, zones, type CapexRole, type EstimateClass, type GateCode,
 } from '../schema';
 import { createHash } from 'node:crypto';
 import { circuitTemplate } from '@/domain/circuits';
 import { canonicalJson, emptyContent, SECTIONS, type DossierKind } from '@/domain/dossiers';
 import { computedSnapshot } from '@/server/dal/dossiers';
-import { businessPlans, changes, circuitSteps, dossiers, dossierVersions, machineNeeds, signatures } from '../schema';
-import { and } from 'drizzle-orm';
+import { businessPlans, capexScores, changes, ideas, circuitSteps, dossiers, dossierVersions, envelopeMovements, envelopes, machineNeeds, portfolioScenarios, scenarioItems, signatures } from '../schema';
+import { and, isNull } from 'drizzle-orm';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import { PACK_TEMPLATE } from '@/domain/pack';
+import { addDaysIso } from '@/lib/dates';
 import { takeSnapshots, weekOf } from '@/server/dal/governance';
 import { recomputeLines } from '@/server/dal/rampup';
 import { readValues } from '@/domain/lifecycle';
@@ -32,9 +33,27 @@ export const DEMO_SUBSIDIARIES = [
   { code: 'SAI', name: 'Sahel Agro Industries', countryIso2: 'SN', zoneCode: 'AFO', currency: 'XOF' },
 ] as const;
 
-const DEMO_SITES = [
+/** The group's reference rates of the demo (AR-039): units for one euro, by fiscal year, and October 2026 for the dirham. */
+export const DEMO_RATES = [
+  { currency: 'MAD', period: '2025', unitsPerEur: 10.85 },
+  { currency: 'MAD', period: '2026', unitsPerEur: 10.9 },
+  { currency: 'MAD', period: '2026-10', unitsPerEur: 10.95 },
+  { currency: 'XOF', period: '2025', unitsPerEur: 655.957 },
+  { currency: 'XOF', period: '2026', unitsPerEur: 655.957 },
+] as const;
+
+/** Asset classes of the demo (AR-050): the group CFO adjusts them; land and recruitment are not depreciated. */
+export const DEMO_ASSET_CLASSES = [
+  { code: 'BUILD', label: 'Buildings and civil works', lifeYears: 20, method: 'linear' as const, factor: null, lotKinds: ['buildings', 'civil_works', 'vrd'] },
+  { code: 'UTIL', label: 'Utilities and networks', lifeYears: 15, method: 'linear' as const, factor: null, lotKinds: ['utilities'] },
+  { code: 'MACH', label: 'Industrial machinery', lifeYears: 10, method: 'declining' as const, factor: 2.25, lotKinds: ['machines'] },
+  { code: 'EQUIP', label: 'Other equipment', lifeYears: 5, method: 'linear' as const, factor: null, lotKinds: ['other'] },
+];
+
+export const DEMO_SITES = [
   { subsidiaryCode: 'APM', name: 'Kénitra plant', city: 'Kénitra', countryIso2: 'MA', latitude: 34.261, longitude: -6.58 },
   { subsidiaryCode: 'SAI', name: 'Thiès site', city: 'Thiès', countryIso2: 'SN', latitude: 14.791, longitude: -16.926 },
+  { subsidiaryCode: 'SAI', name: 'Kaolack plant', city: 'Kaolack', countryIso2: 'SN', latitude: 14.152, longitude: -16.073 },
 ] as const;
 
 interface DemoPerson {
@@ -66,11 +85,11 @@ export const DEMO_PEOPLE: DemoPerson[] = [
   { key: 'expert', name: 'Aminata Diop', email: `a.diop@${SAI}`, title: 'HSE manager', subsidiary: 'SAI', roles: [{ role: 'expert', scope: 'capex', ref: 'CPX-SAI-2026-01', speciality: 'hse' }] },
   { key: 'admin', name: 'Arche administrator', email: `admin.arche@${G}`, title: 'Arche administrator', subsidiary: null, roles: [{ role: 'admin', scope: 'group', ref: null }] },
   { key: 'sai_sponsor', name: 'Moussa Ndiaye', email: `m.ndiaye@${SAI}`, title: 'Managing director', subsidiary: 'SAI', roles: [{ role: 'sponsor', scope: 'subsidiary', ref: 'SAI' }] },
-  { key: 'sai_lead', name: 'Fatou Sarr', email: `f.sarr@${SAI}`, title: 'Dedicated project lead', subsidiary: 'SAI', roles: [{ role: 'project_lead', scope: 'capex', ref: 'CPX-SAI-2026-01' }] },
+  { key: 'sai_lead', name: 'Fatou Sarr', email: `f.sarr@${SAI}`, title: 'Dedicated project lead', subsidiary: 'SAI', roles: [{ role: 'project_lead', scope: 'capex', ref: 'CPX-SAI-2026-01' }, { role: 'project_lead', scope: 'capex', ref: 'CPX-SAI-2026-02' }, { role: 'project_lead', scope: 'capex', ref: 'CPX-SAI-2026-03' }] },
   { key: 'sai_controller', name: 'Ibrahima Fall', email: `i.fall@${SAI}`, title: 'Management controller', subsidiary: 'SAI', roles: [{ role: 'controller', scope: 'subsidiary', ref: 'SAI' }] },
 ];
 
-interface DemoCapex {
+export interface DemoCapex {
   code: string; subsidiary: string; site: string; title: string; investmentType: 'new_plant' | 'new_line' | 'extension' | 'other';
   status: 'draft' | 'active'; phase: 'cadrage' | 'avant_projet' | 'execution' | 'demarrage'; typology: 'light' | 'strategic' | null;
   sponsor: string; lead: string; team: [string, CapexRole][]; openedOn?: string; needDate?: string;
@@ -83,7 +102,7 @@ interface DemoCapex {
   decisions: [string, string, string][];
 }
 
-const DEMO_CAPEX: DemoCapex[] = [
+export const DEMO_CAPEX: DemoCapex[] = [
   {
     // Delivery 6: a CAPEX in its start-up phase — commissioning started on 1 July 2026, ramp-up of its line.
     code: 'CPX-APM-2025-01', subsidiary: 'APM', site: 'Kénitra plant', title: 'Ageing oven and finishing line', investmentType: 'new_line', status: 'active', phase: 'demarrage', typology: 'light',
@@ -133,6 +152,24 @@ const DEMO_CAPEX: DemoCapex[] = [
     ],
     decisions: [['2026-01-20', 'copil_gpi', 'G1 Go: studies released'], ['2026-07-08', 'ceo', 'G2 Go: CAPEX in force, baseline E10']],
   },
+  {
+    // COPIL GPI demonstration: a CAPEX in phase 1 whose G1 waits for the committee (its circuit is seeded in seedCopil).
+    code: 'CPX-SAI-2026-02', subsidiary: 'SAI', site: 'Kaolack plant', title: 'Aseptic packaging line', investmentType: 'new_line', status: 'active', phase: 'cadrage', typology: 'light',
+    sponsor: 'sai_sponsor', lead: 'sai_lead', team: [['sai_lead', 'lead'], ['sai_controller', 'controller']], openedOn: '2026-08-17', needDate: '2027-11-01',
+    passed: [], lots: [['civil_works', 'Hall adaptation'], ['machines', 'Aseptic filler (EPC2i)']],
+    versions: [{ cls: 'E50', status: 'validated', amounts: [250, 1900], on: '2026-09-25', basis: 'Ratios and EPC2i catalogue prices' }],
+    risks: [{ title: 'Sterile water quality not demonstrated', category: 'technical', p: 2, i: 3, owner: 'sai_lead', response: 'Water analysis campaign before the G2' }],
+    decisions: [],
+  },
+  {
+    // A G1 decided by the COPIL GPI less than 90 days ago.
+    code: 'CPX-SAI-2026-03', subsidiary: 'SAI', site: 'Thiès site', title: 'Solar power plant for the Thiès site', investmentType: 'other', status: 'active', phase: 'avant_projet', typology: 'light',
+    sponsor: 'sai_sponsor', lead: 'sai_lead', team: [['sai_lead', 'lead'], ['sai_controller', 'controller']], openedOn: '2026-07-06', needDate: '2027-06-01',
+    passed: [['G1', '2026-09-24']], lots: [['civil_works', 'Ground-mounted structures'], ['utilities', 'Panels, inverters and grid connection']],
+    versions: [{ cls: 'E50', status: 'validated', amounts: [400, 1300], on: '2026-09-10', basis: 'Two integrators’ budgetary quotes' }],
+    risks: [{ title: 'Grid operator’s connection study late', category: 'schedule', p: 3, i: 2, owner: 'sai_lead', response: 'Study requested with the G1 dossier', due: '2026-12-01' }],
+    decisions: [['2026-09-24', 'copil_gpi', 'G1 Go: grid connection study to deliver before the preliminary design']],
+  },
 ];
 
 /** Reference revenue of the demo subsidiaries (k€). */
@@ -144,6 +181,8 @@ const DEMO_REVENUES = [
 const GATE_DECIDER_KEY: Record<GateCode, string> = { G1: 'dir_ig', G2: 'ceo', K3: 'dir_ig', G3: 'dir_ig' };
 const PHASE_AFTER: Record<GateCode, string> = { G1: 'avant_projet', G2: 'execution', K3: 'demarrage', G3: 'demarrage' };
 const at = (day: string) => new Date(`${day}T10:00:00Z`);
+/** Calendar days between the submission of a demonstration gate and its decision (the C-10 delay indicator reads them). */
+const DEMO_REVIEW_DAYS: Record<GateCode, number> = { G1: 6, G2: 16, K3: 7, G3: 14 };
 
 export async function seedDemo(tx: Tx): Promise<void> {
   await tx.insert(zones).values([...DEMO_ZONES]);
@@ -158,51 +197,57 @@ export async function seedDemo(tx: Tx): Promise<void> {
     userId: userId.get(p.email)!, role: r.role, scopeKind: r.scope, scopeRef: r.ref, speciality: r.speciality ?? null, createdByName: 'System',
   }))));
   await tx.insert(referenceRevenues).values(DEMO_REVENUES);
+  await tx.insert(exchangeRates).values(DEMO_RATES.map((r) => ({ ...r, enteredByName: 'Paul Renaud', note: 'Group reference rate' })));
+  await tx.insert(assetClasses).values(DEMO_ASSET_CLASSES);
   const nameOf = (key: string) => DEMO_PEOPLE.find((p) => p.key === key)!.name;
-  for (const c of DEMO_CAPEX) {
-    const [row] = await tx.insert(capex).values({
-      code: c.code, subsidiaryCode: c.subsidiary, siteId: siteId.get(c.site) ?? null, title: c.title, investmentType: c.investmentType,
-      status: c.status, phase: c.phase, typology: c.typology, typologySource: c.typology ? 'computed' : null, lifecycleModelVersion: c.openedOn ? '4.0' : null,
-      needDate: c.needDate ?? null, openedAt: c.openedOn ? at(c.openedOn) : null, sponsorUserId: idOf(c.sponsor), leadUserId: idOf(c.lead),
-    }).returning({ id: capex.id });
-    const capexId = row.id;
-    await tx.insert(capexMembers).values(c.team.map(([key, capexRole]) => ({ capexId, userId: idOf(key), capexRole })));
-    const lotRows = await tx.insert(capexLots).values(c.lots.map(([kind, title], i) => ({ capexId, number: i + 1, kind, title, epc2i: kind === 'machines' })))
-      .returning({ id: capexLots.id, number: capexLots.number });
-    const lotIds = lotRows.sort((a, b) => a.number - b.number).map((l) => l.id);
-    for (const [i, v] of c.versions.entries()) {
-      const validated = v.status === 'validated' || v.status === 'superseded';
-      const [bv] = await tx.insert(budgetVersions).values({
-        capexId, number: i + 1, estimateClass: v.cls, status: v.status, basis: v.basis, createdByName: nameOf(c.lead), isG2Baseline: !!v.g2,
-        submittedAt: at(v.on), validatedAt: validated ? at(v.on) : null, validatedByName: validated ? nameOf(v.cls === 'E10' ? 'group_cfo' : c.subsidiary === 'APM' ? 'controller' : 'sai_controller') : null,
-        validatedByUserId: validated ? idOf(v.cls === 'E10' ? 'group_cfo' : c.subsidiary === 'APM' ? 'controller' : 'sai_controller') : null,
-      }).returning({ id: budgetVersions.id });
-      await tx.insert(budgetLines).values(v.amounts.map((amountKeur, j) => ({ budgetVersionId: bv.id, lotId: lotIds[j], amountKeur })));
-    }
-    if (c.openedOn) {
-      await tx.insert(phaseTransitions).values({ capexId, fromStatus: 'draft', fromPhase: 'cadrage', toStatus: 'active', toPhase: 'cadrage', effectiveOn: c.openedOn, byName: nameOf(c.sponsor), byUserId: idOf(c.sponsor), occurredAt: at(c.openedOn) });
-    }
-    if (c.risks.length) {
-      await tx.insert(risks).values(c.risks.map((r, i) => ({
-        capexId, number: i + 1, title: r.title, category: r.category, probability: r.p, impact: r.i, ownerUserId: idOf(r.owner), response: r.response, status: r.status ?? 'open', dueOn: r.due ?? null,
-      })));
-    }
-    let phase = 'cadrage';
-    for (const [code, on] of c.passed) {
-      const decider = GATE_DECIDER_KEY[code];
-      const kind: DossierKind | null = code === 'G1' ? 'business_case' : code === 'G2' ? 'investment' : null;
-      const version = kind ? await seedDossier(tx, capexId, c.code, kind, 'approved', on, nameOf(c.lead), idOf(c.lead), { typology: c.typology }) : null;
-      const [g] = await tx.insert(gates).values({ capexId, code, session: 1, status: 'decided', decision: 'go', decidedAt: at(on), decidedByName: nameOf(decider), decidedByUserId: idOf(decider), dossierVersionId: version?.id ?? null }).returning({ id: gates.id });
-      await seedCircuit(tx, g.id, code, c.typology, on, version?.hash ?? null, (actor) => actor === 'sponsor' ? c.sponsor : actor, nameOf, idOf, c.code);
-      await tx.insert(gateCriteriaResults).values({ gateId: g.id, criterionCode: code === 'G1' ? 'g1_budget_e50' : 'g2_budget_e10', state: 'met', value: code === 'G1' ? 'E50' : 'E10' });
-      await tx.insert(phaseTransitions).values({ capexId, fromStatus: 'active', fromPhase: phase, toStatus: 'active', toPhase: PHASE_AFTER[code], gateCode: code, effectiveOn: on, byName: nameOf(decider), byUserId: idOf(decider), occurredAt: at(on) });
-      phase = PHASE_AFTER[code];
-    }
-    if (c.decisions.length) {
-      await tx.insert(decisions).values(c.decisions.map(([takenOn, body, text], i) => ({ capexId, number: i + 1, takenOn, body, text, recordedByName: nameOf(c.lead) })));
-    }
-  }
+  for (const c of DEMO_CAPEX) await seedCapex(tx, c, siteId, idOf, nameOf);
   await seedDemoExtras(tx, idOf, nameOf);
+}
+
+/** One CAPEX of the data set: lots, budget versions, opening, risks, gates passed with their circuits, decisions. */
+export async function seedCapex(tx: Tx, c: DemoCapex, siteId: ReadonlyMap<string, string>, idOf: (k: string) => string, nameOf: (k: string) => string): Promise<string> {
+  const [row] = await tx.insert(capex).values({
+    code: c.code, subsidiaryCode: c.subsidiary, siteId: siteId.get(c.site) ?? null, title: c.title, investmentType: c.investmentType,
+    status: c.status, phase: c.phase, typology: c.typology, typologySource: c.typology ? 'computed' : null, lifecycleModelVersion: c.openedOn ? '4.0' : null,
+    needDate: c.needDate ?? null, openedAt: c.openedOn ? at(c.openedOn) : null, sponsorUserId: idOf(c.sponsor), leadUserId: idOf(c.lead),
+  }).returning({ id: capex.id });
+  const capexId = row.id;
+  await tx.insert(capexMembers).values(c.team.map(([key, capexRole]) => ({ capexId, userId: idOf(key), capexRole })));
+  const lotRows = await tx.insert(capexLots).values(c.lots.map(([kind, title], i) => ({ capexId, number: i + 1, kind, title, epc2i: kind === 'machines' })))
+    .returning({ id: capexLots.id, number: capexLots.number });
+  const lotIds = lotRows.sort((a, b) => a.number - b.number).map((l) => l.id);
+  for (const [i, v] of c.versions.entries()) {
+    const validated = v.status === 'validated' || v.status === 'superseded';
+    const [bv] = await tx.insert(budgetVersions).values({
+      capexId, number: i + 1, estimateClass: v.cls, status: v.status, basis: v.basis, createdByName: nameOf(c.lead), isG2Baseline: !!v.g2,
+      submittedAt: at(v.on), validatedAt: validated ? at(v.on) : null, validatedByName: validated ? nameOf(v.cls === 'E10' ? 'group_cfo' : c.subsidiary === 'APM' ? 'controller' : 'sai_controller') : null,
+      validatedByUserId: validated ? idOf(v.cls === 'E10' ? 'group_cfo' : c.subsidiary === 'APM' ? 'controller' : 'sai_controller') : null,
+    }).returning({ id: budgetVersions.id });
+    await tx.insert(budgetLines).values(v.amounts.map((amountKeur, j) => ({ budgetVersionId: bv.id, lotId: lotIds[j], amountKeur })));
+  }
+  if (c.openedOn) {
+    await tx.insert(phaseTransitions).values({ capexId, fromStatus: 'draft', fromPhase: 'cadrage', toStatus: 'active', toPhase: 'cadrage', effectiveOn: c.openedOn, byName: nameOf(c.sponsor), byUserId: idOf(c.sponsor), occurredAt: at(c.openedOn) });
+  }
+  if (c.risks.length) {
+    await tx.insert(risks).values(c.risks.map((r, i) => ({
+      capexId, number: i + 1, title: r.title, category: r.category, probability: r.p, impact: r.i, ownerUserId: idOf(r.owner), response: r.response, status: r.status ?? 'open', dueOn: r.due ?? null,
+    })));
+  }
+  let phase = 'cadrage';
+  for (const [code, on] of c.passed) {
+    const decider = GATE_DECIDER_KEY[code];
+    const kind: DossierKind | null = code === 'G1' ? 'business_case' : code === 'G2' ? 'investment' : null;
+    const version = kind ? await seedDossier(tx, capexId, c.code, kind, 'approved', on, nameOf(c.lead), idOf(c.lead), { typology: c.typology }) : null;
+    const [g] = await tx.insert(gates).values({ capexId, code, session: 1, status: 'decided', decision: 'go', createdAt: at(addDaysIso(on, -DEMO_REVIEW_DAYS[code])), decidedAt: at(on), decidedByName: nameOf(decider), decidedByUserId: idOf(decider), dossierVersionId: version?.id ?? null }).returning({ id: gates.id });
+    await seedCircuit(tx, g.id, code, c.typology, on, version?.hash ?? null, (actor) => actor === 'sponsor' ? c.sponsor : actor, nameOf, idOf, c.code);
+    await tx.insert(gateCriteriaResults).values({ gateId: g.id, criterionCode: code === 'G1' ? 'g1_budget_e50' : 'g2_budget_e10', state: 'met', value: code === 'G1' ? 'E50' : 'E10' });
+    await tx.insert(phaseTransitions).values({ capexId, fromStatus: 'active', fromPhase: phase, toStatus: 'active', toPhase: PHASE_AFTER[code], gateCode: code, effectiveOn: on, byName: nameOf(decider), byUserId: idOf(decider), occurredAt: at(on) });
+    phase = PHASE_AFTER[code];
+  }
+  if (c.decisions.length) {
+    await tx.insert(decisions).values(c.decisions.map(([takenOn, body, text], i) => ({ capexId, number: i + 1, takenOn, body, text, recordedByName: nameOf(c.lead) })));
+  }
+  return capexId;
 }
 
 /** Demonstration text of a dossier section (English; French in src/i18n/fr/demo.json). */
@@ -218,16 +263,16 @@ const DEMO_SECTION_TEXT: Record<string, string> = {
   schedule: 'Order, works, commissioning, ramp-up and G3 planned.',
 };
 
-async function seedDossier(tx: Tx, capexId: string, code: string, kind: DossierKind, state: 'approved' | 'draft', on: string, by: string, byId: string, facts: { typology: string | null } = { typology: null }) {
+async function seedDossier(tx: Tx, capexId: string, code: string, kind: DossierKind, state: 'approved' | 'frozen' | 'draft', on: string, by: string, byId: string, facts: { typology: string | null } = { typology: null }) {
   const [d] = await tx.insert(dossiers).values({ capexId, kind }).returning({ id: dossiers.id });
   const content = emptyContent(kind);
-  for (const sec of SECTIONS[kind]) if (sec.mode === 'text' && (state === 'approved' || sec.key === 'baseline')) content.sections[sec.key].text = DEMO_SECTION_TEXT[sec.key] ?? 'Done.';
+  for (const sec of SECTIONS[kind]) if (sec.mode === 'text' && (state !== 'draft' || sec.key === 'baseline')) content.sections[sec.key].text = DEMO_SECTION_TEXT[sec.key] ?? 'Done.';
   if (kind === 'business_case' && code === 'CPX-APM-2026-01') {
     content.sections.strategy.refs.push({ id: 'NOT-CPX-APM-2026-01-001', revision: 'B', title: 'Market study — extruded profiles 2027–2031', verified: true });
     content.sections.safety.refs.push({ id: 'NOT-CPX-APM-2026-01-002', revision: 'A', title: 'HazID report — second extrusion line', verified: true });
   }
   if (kind === 'investment' && code === 'CPX-APM-2026-01') content.sections.pack.refs.push({ id: 'PID-CPX-APM-2026-01-001', revision: 'A', title: 'P&ID — extrusion line and cooling', verified: true });
-  const frozen = state === 'approved';
+  const frozen = state !== 'draft';
   const computed = frozen ? await computedSnapshot(tx, { id: capexId, typology: facts.typology, typologySource: facts.typology ? 'computed' : null }) : null;
   const hash = frozen ? createHash('sha256').update(canonicalJson({ kind, number: 1, content, computed })).digest('hex') : null;
   const [v] = await tx.insert(dossierVersions).values({
@@ -272,23 +317,45 @@ async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: s
     { capexId: sai, number: 1, title: 'Additional drainage of the plot', kind: 'cost', amountKeur: 150, requiredDecider: 'copil_projet', status: 'approved', createdByName: nameOf('sai_lead'), decidedByName: nameOf('sai_sponsor'), decidedByUserId: idOf('sai_sponsor'), decidedAt: at('2026-09-10') },
     { capexId: sai, number: 2, title: 'Second evaporator for the concentrate line', kind: 'cost', amountKeur: 600, delayDays: 20, requiredDecider: 'dir_ig', createdByName: nameOf('sai_lead') },
   ]);
-  // Machine needs (delivery 4): APM in phase 2 — a quote, a firm offer, a draft —; SAI ordered at its G2 with two EPC2i
-  // projects. The answers and the projects come from the simulation of Keystone (src/server/integrations/keystone).
-  const lot = async (capexId: string) => (await tx.select({ id: capexLots.id }).from(capexLots).where(and(eq(capexLots.capexId, capexId), eq(capexLots.kind, 'machines'))))[0]?.id ?? null;
   const apm25 = await id('CPX-APM-2025-01');
-  const [apmLot, saiLot, apm25Lot] = [await lot(apm), await lot(sai), await lot(apm25)];
-  await tx.insert(machineNeeds).values([
-    { capexId: apm, number: 1, catalogueCode: 'EXT-9MN', catalogueVersion: 3, quantity: 1, options: ['PULLER'], targetCapacity: 1.8, capacityUnit: 't/h', needDate: '2027-09-01', status: 'submitted', submittedAt: at('2026-09-10'), lotId: apmLot, createdByName: nameOf('project_lead') },
-    { capexId: apm, number: 2, catalogueCode: 'EXT-AGE', catalogueVersion: 1, quantity: 1, needDate: '2027-09-01', status: 'submitted', submittedAt: at('2026-08-10'), lotId: apmLot, createdByName: nameOf('project_lead') },
-    { capexId: apm, number: 3, freeLabel: 'Billet saw with automatic loader', quantity: 1, needDate: '2027-10-01', status: 'draft', lotId: apmLot, comment: 'To size with the process team', createdByName: nameOf('project_lead') },
-    { capexId: apm25, number: 1, catalogueCode: 'EXT-AGE', catalogueVersion: 1, quantity: 1, targetCapacity: 2, capacityUnit: 't/h', needDate: '2026-07-01', status: 'ordered', submittedAt: at('2025-06-02'), orderedOn: '2025-09-15', lotId: apm25Lot, createdByName: nameOf('project_lead') },
-    { capexId: sai, number: 1, catalogueCode: 'PRC-TOM', catalogueVersion: 2, quantity: 1, options: ['EVAP3'], targetCapacity: 40, capacityUnit: 't/h', needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-03-02'), orderedOn: '2026-07-08', lotId: saiLot, createdByName: nameOf('sai_lead') },
-    { capexId: sai, number: 2, catalogueCode: 'PRC-CAN', catalogueVersion: 1, quantity: 1, needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-03-02'), orderedOn: '2026-07-08', lotId: saiLot, createdByName: nameOf('sai_lead') },
-  ]);
+  await seedNeeds(tx, { apm, sai, apm25 }, nameOf);
   await seedDelivery(tx, apm, sai, nameOf);
   await syncKeystone(tx, { now: at('2026-10-22'), mode: 'simulation' });
   await seedStartup(tx, apm25, nameOf);
+  await seedBenefitsPlan(tx, apm25, nameOf);
   await seedGovernance(tx, apm, sai, nameOf);
+  await seedEnvelopes(tx, nameOf);
+  await seedPortfolio(tx, { apm, sai, sai2: await id('CPX-SAI-2026-02'), sai3: await id('CPX-SAI-2026-03') }, nameOf);
+  await seedIdeas(tx, idOf, nameOf);
+  await seedSageCodes(tx, sai);
+  await seedCopil(tx, await id('CPX-SAI-2026-02'), sai, await id('CPX-SAI-2026-03'), idOf, nameOf);
+  await seedActions(tx, apm, sai, idOf, nameOf);
+  await seedWbs(tx, apm, sai, idOf, nameOf);
+}
+
+/**
+ * Machine needs (delivery 4), aligned with Keystone's demo (owner, 25 Oct 2026): APM in phase 2 — a gantry answered with an
+ * indicative price then a quote, a free need waiting —; SAI ordered at its G2 — a mobile unit delivered by Keystone's project
+ * RCF-019, two gantries whose project is still to be created, a need withdrawn —; the ageing oven of CPX-APM-2025-01. The
+ * answers and projects come from the Keystone simulation (keystone-demo.ts). `only`: the CAPEX to seed (all three by default).
+ */
+export async function seedNeeds(tx: Tx, ids: { apm: string; sai: string; apm25: string }, nameOf: (k: string) => string, only?: ReadonlySet<string>) {
+  const { apm, sai, apm25 } = ids;
+  const lot = async (capexId: string) => (await tx.select({ id: capexLots.id }).from(capexLots).where(and(eq(capexLots.capexId, capexId), eq(capexLots.kind, 'machines'))))[0]?.id ?? null;
+  const [apmLot, saiLot, apm25Lot] = [await lot(apm), await lot(sai), await lot(apm25)];
+  const all: (typeof machineNeeds.$inferInsert)[] = [
+    // Keystone's demo expects exactly these needs (its simulation of Arche, R-187) and answers them (RB-001 to RB-005, RCF-019).
+    { capexId: apm, number: 1, catalogueCode: 'EMP-40T', catalogueVersion: 1, quantity: 1, options: ['TELE'], targetCapacity: 40, capacityUnit: 't', needDate: '2027-09-01', status: 'submitted', submittedAt: at('2026-09-01'), lotId: apmLot, comment: 'Portique de manutention des filières, hall extrusion', createdByName: nameOf('project_lead') },
+    { capexId: apm, number: 2, freeLabel: 'Ligne de refroidissement en ligne des profilés', quantity: 1, targetCapacity: 1.2, capacityUnit: 't/h', needDate: '2027-09-01', status: 'submitted', submittedAt: at('2026-09-20'), lotId: apmLot, comment: 'Variante B retenue au COPIL du 18 sept.', createdByName: nameOf('project_lead') },
+    { capexId: sai, number: 1, catalogueCode: 'MEMU-16', catalogueVersion: 1, quantity: 1, options: ['GEN'], targetCapacity: 16, capacityUnit: 't/h', needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-06-29'), orderedOn: '2026-07-08', lotId: saiLot, createdByName: nameOf('sai_lead') },
+    { capexId: sai, number: 2, catalogueCode: 'SPUR-2X', catalogueVersion: 1, quantity: 1, needDate: '2027-06-01', status: 'withdrawn', submittedAt: at('2026-03-10'), lotId: saiLot, comment: 'Remplacé par la station de traitement des eaux du lot utilités', createdByName: nameOf('sai_lead'), updatedAt: at('2026-07-30') },
+    { capexId: sai, number: 3, catalogueCode: 'EMP-40T', catalogueVersion: 1, quantity: 2, options: ['TELE'], targetCapacity: 40, capacityUnit: 't', needDate: '2027-06-01', status: 'ordered', submittedAt: at('2026-06-01'), orderedOn: '2026-07-08', lotId: saiLot, comment: 'Portiques du hall de conditionnement', createdByName: nameOf('sai_lead') },
+    // CPX-APM-2025-01 is not in Keystone's demo yet (DEMANDES-KEYSTONE K-14): its oven is a free need, answered by the simulation.
+    { capexId: apm25, number: 1, freeLabel: 'Ageing oven 2 × 6 m', quantity: 1, targetCapacity: 2, capacityUnit: 't/h', needDate: '2026-07-01', status: 'ordered', submittedAt: at('2025-06-02'), orderedOn: '2025-09-15', lotId: apm25Lot, createdByName: nameOf('project_lead') },
+  ];
+  const rows = all.filter((r) => !only || only.has(r.capexId));
+  if (rows.length) await tx.insert(machineNeeds).values(rows);
+  return rows.length;
 }
 
 /**
@@ -297,7 +364,7 @@ async function seedDemoExtras(tx: Tx, idOf: (k: string) => string, nameOf: (k: s
  * on 15 August, the run of conforming days reached in October —, the lessons of three phases (two published). The accounting
  * closure is still to enter: it is the next step of the CAPEX.
  */
-async function seedStartup(tx: Tx, capexId: string, nameOf: (k: string) => string) {
+export async function seedStartup(tx: Tx, capexId: string, nameOf: (k: string) => string) {
   const hse = nameOf('group_hse');
   await tx.insert(hsStatuses).values([
     { capexId, hsCode: 'HS2', status: 'passed', passedOn: '2025-05-02', evidenceRef: 'NOT-CPX-APM-2025-01-001', updatedByName: hse },
@@ -351,7 +418,77 @@ async function seedStartup(tx: Tx, capexId: string, nameOf: (k: string) => strin
  * Lot 5b demonstration: project reviews (APM, Light, quarterly: its last review is more than 15 days late; SAI, Strategic,
  * monthly, with the audit of phase 1 — the audit of phase 2 is missing), and twelve weeks of snapshots for the trends.
  */
-async function seedGovernance(tx: Tx, apm: string, sai: string, nameOf: (k: string) => string) {
+/**
+ * The envelopes of the demo (AR-040), voted by the group CFO: the group, APM and the strategic CAPEX of West Africa for 2026,
+ * APM and the group for 2027 and 2028 (multi-year plan), with a reallocation of the group's 2026 envelope to APM. CPX-SAI-2026-01
+ * goes slightly over its zone envelope (a watch alert), CPX-APM-2026-01 slightly over APM's 2027 one.
+ */
+export async function seedEnvelopes(tx: Tx, nameOf: (k: string) => string) {
+  const by = nameOf('group_cfo');
+  const rows = await tx.insert(envelopes).values([
+    { fiscalYear: 2026, zoneCode: null, subsidiaryCode: null, category: 'all' as const, amountKeur: 20_000, note: 'Group CAPEX budget 2026', createdByName: by },
+    { fiscalYear: 2026, zoneCode: null, subsidiaryCode: 'APM', category: 'all' as const, amountKeur: 2_500, note: 'APM plan 2026', createdByName: by },
+    { fiscalYear: 2026, zoneCode: 'AFO', subsidiaryCode: null, category: 'strategic' as const, amountKeur: 7_000, note: 'West Africa — strategic projects', createdByName: by },
+    { fiscalYear: 2027, zoneCode: null, subsidiaryCode: null, category: 'all' as const, amountKeur: 25_000, note: 'Group CAPEX plan 2027', createdByName: by },
+    { fiscalYear: 2027, zoneCode: null, subsidiaryCode: 'APM', category: 'all' as const, amountKeur: 3_700, note: 'APM plan 2027', createdByName: by },
+    { fiscalYear: 2028, zoneCode: null, subsidiaryCode: null, category: 'all' as const, amountKeur: 25_000, note: 'Group CAPEX plan 2028', createdByName: by },
+  ]).returning({ id: envelopes.id, year: envelopes.fiscalYear, sub: envelopes.subsidiaryCode, zone: envelopes.zoneCode });
+  const group26 = rows.find((r) => r.year === 2026 && !r.sub && !r.zone)!;
+  const apm26 = rows.find((r) => r.year === 2026 && r.sub === 'APM')!;
+  await tx.insert(envelopeMovements).values({ kind: 'reallocation', fromEnvelopeId: group26.id, toEnvelopeId: apm26.id, amountKeur: 500, reason: 'Extrusion line 3: early engineering in 2026', byName: by, occurredAt: new Date('2026-09-15T09:00:00Z') });
+}
+
+/** The validated business plan of the ageing oven (in start-up since 1 Jul 2026): the benefits followed against it (AR-046). */
+export async function seedBenefitsPlan(tx: Tx, apm25: string, nameOf: (k: string) => string) {
+  const flows = Array.from({ length: 9 }, (_, y) => ({ year: y, capexKeur: y === 0 ? 1430 : 0, opexKeur: y === 0 ? 0 : 140, revenueKeur: y === 0 ? 0 : 520 }));
+  await tx.insert(businessPlans).values({ capexId: apm25, horizonYears: 9, discountRatePct: 9, flows, updatedByName: nameOf('controller'), validatedByName: nameOf('group_cfo'), validatedAt: new Date('2025-11-14T09:00:00Z') }).onConflictDoNothing();
+}
+
+/** The Sage analytic codes of the tomato plant's lots outside EPC2i (AR-047): the demonstration extraction uses two of them. */
+export const DEMO_SAGE_CODES: Record<number, string> = { 1: 'SAI-TR-01', 2: 'SAI-GC-01', 3: 'SAI-BT-01', 4: 'SAI-UT-01', 6: 'SAI-RH-01' };
+export async function seedSageCodes(tx: Tx, sai: string) {
+  for (const [n, code] of Object.entries(DEMO_SAGE_CODES))
+    await tx.update(capexLots).set({ sageCode: code }).where(and(eq(capexLots.capexId, sai), eq(capexLots.number, Number(n)), isNull(capexLots.sageCode)));
+}
+
+/** Ideas backlog (AR-051): APM and SAI ideas at every status, one retained ready to become a CAPEX. */
+export async function seedIdeas(tx: Tx, idOf: (k: string) => string, nameOf: (k: string) => string) {
+  const at = (iso: string) => new Date(`${iso}T09:00:00Z`);
+  const i = (subsidiaryCode: string, number: number, by: string, title: string, stake: string, sizeKeur: number | null, investmentType: string | null, created: string) =>
+    ({ subsidiaryCode, number, title, stake, sizeKeur, investmentType, proposedByName: nameOf(by), proposedByUserId: idOf(by), createdAt: at(created), updatedAt: at(created) });
+  await tx.insert(ideas).values([
+    { ...i('APM', 1, 'controller', 'Solar roof on the Kénitra warehouse', 'Cut the electricity bill of the plant by about 15 %; the warehouse roof is 6 000 m² and unshaded.', 900, 'other', '2026-09-02'), status: 'retained' as const, decidedByName: nameOf('sponsor'), decidedAt: at('2026-09-20'), decisionNote: 'Payback under 5 years: to open as a CAPEX' },
+    { ...i('APM', 2, 'project_lead', 'Automatic packing of the profiles', 'Two operators per shift on manual packing; damage claims from customers on long profiles.', 650, 'extension', '2026-10-05'), status: 'qualified' as const, decidedByName: nameOf('sponsor'), decidedAt: at('2026-10-12'), decisionNote: 'Quote a robot cell and a semi-automatic line' },
+    i('APM', 3, 'controller', 'Second anodising bath', 'Customers ask for anodised profiles we subcontract today at a high cost.', 1200, 'new_line', '2026-10-19'),
+    { ...i('SAI', 1, 'sai_lead', 'Tomato paste drum filling', 'Industrial customers want 220 kg drums; we fill only small cans.', 450, 'extension', '2026-08-28'), status: 'rejected' as const, decidedByName: nameOf('sai_sponsor'), decidedAt: at('2026-09-15'), decisionNote: 'Volumes too small before the new plant runs' },
+    i('SAI', 2, 'expert', 'Wastewater treatment upgrade at Thiès', 'The discharge permit will tighten in 2028; the current lagoon will not meet it.', null, 'other', '2026-10-14'),
+  ]);
+}
+
+/**
+ * Portfolio decisions (AR-044, AR-043): the group's scores of four CAPEX on the manual criteria, and two scenarios — the base
+ * plan, retained for the COPIL GPI, and a constrained one that leaves the solar plant out and shifts the aseptic line by 6 months.
+ */
+export async function seedPortfolio(tx: Tx, ids: { apm: string; sai: string; sai2: string; sai3: string }, nameOf: (k: string) => string) {
+  const by = nameOf('dir_ig');
+  const s = (capexId: string, criterionCode: string, score: number, note: string) => ({ capexId, criterionCode, score, note, scoredByName: by, scoredAt: new Date('2026-10-15T09:00:00Z') });
+  await tx.insert(capexScores).values([
+    s(ids.sai, 'strategy', 5, 'Group priority: tomato processing in West Africa'), s(ids.sai, 'urgency', 4, 'Campaign 2027'), s(ids.sai, 'safety', 3, 'Standard plant'),
+    s(ids.apm, 'strategy', 4, 'Extrusion capacity for the Moroccan market'), s(ids.apm, 'urgency', 3, 'Line 1 at 92 % of capacity'), s(ids.apm, 'safety', 3, 'Standard line'),
+    s(ids.sai2, 'strategy', 3, 'Diversification of the packaging'), s(ids.sai2, 'urgency', 2, 'No customer commitment yet'),
+    s(ids.sai3, 'strategy', 3, 'Energy cost of the Thiès site'), s(ids.sai3, 'urgency', 2, 'Grid tariff fixed until 2028'), s(ids.sai3, 'safety', 4, 'Less diesel generation on site'),
+  ]);
+  const [, constrained] = await tx.insert(portfolioScenarios).values([
+    { name: 'Group plan 2027–2028', kind: 'base' as const, description: 'Every CAPEX of the plan, on its schedule', envelopes: { '2027': 25_000, '2028': 25_000 }, retained: true, retainedByName: by, createdByName: by },
+    { name: 'Constrained cash', kind: 'constrained' as const, description: 'Group envelope cut by 20 %: the solar plant waits, the aseptic line slides by 6 months', envelopes: { '2027': 20_000, '2028': 20_000 }, createdByName: nameOf('group_cfo') },
+  ]).returning({ id: portfolioScenarios.id });
+  await tx.insert(scenarioItems).values([
+    { scenarioId: constrained.id, capexId: ids.sai3, included: false, shiftMonths: 0 },
+    { scenarioId: constrained.id, capexId: ids.sai2, included: true, shiftMonths: 6 },
+  ]);
+}
+
+export async function seedGovernance(tx: Tx, apm: string, sai: string, nameOf: (k: string) => string) {
   const r = (capexId: string, number: number, kind: 'copil_projet' | 'audit', heldOn: string, phase: string, attendees: string, summary: string, by: string) =>
     ({ capexId, number, kind, heldOn, phase, attendees, summary, recordedByName: nameOf(by) });
   await tx.insert(reviews).values([
@@ -365,7 +502,7 @@ async function seedGovernance(tx: Tx, apm: string, sai: string, nameOf: (k: stri
   await tx.insert(capexSnapshots).values(weeks.flatMap((week, i) => [
     { capexId: apm, week, status: 'active', phase: 'avant_projet', packPct: Math.round(20 + i * 3.5), subsidiaryPackPct: Math.round(20 + i * 3.5), alerts: 1, takenAt: at(week) },
     { capexId: sai, week, status: 'active', phase: 'execution', packPct: 100, subsidiaryPackPct: 100, epc2iPackPct: Math.min(100, 70 + i * 3), alerts: 1, takenAt: at(week) },
-  ]));
+  ])).onConflictDoNothing();
   await takeSnapshots(tx, '2026-10-22');
 }
 
@@ -373,7 +510,7 @@ async function seedGovernance(tx: Tx, apm: string, sai: string, nameOf: (k: stri
  * Delivery 5 demonstration: safety milestones declared by the group HSE, permits, the subsidiary's part of the engineering
  * pack, the lots' planned windows and the monthly actuals of SAI's lots outside EPC2i (cumulative to the end of each month).
  */
-async function seedDelivery(tx: Tx, apm: string, sai: string, nameOf: (k: string) => string) {
+export async function seedDelivery(tx: Tx, apm: string, sai: string, nameOf: (k: string) => string) {
   const hse = nameOf('group_hse');
   await tx.insert(hsStatuses).values([
     { capexId: apm, hsCode: 'HS2', status: 'passed', passedOn: '2026-05-05', evidenceRef: 'NOT-CPX-APM-2026-01-002', updatedByName: hse },
@@ -404,7 +541,7 @@ async function seedDelivery(tx: Tx, apm: string, sai: string, nameOf: (k: string
     [sai]: { 1: ['2026-07', '2026-08'], 2: ['2026-08', '2027-01'], 3: ['2026-10', '2027-04'], 4: ['2026-11', '2027-04'], 5: ['2026-07', '2027-05'], 6: ['2027-01', '2027-05'] },
   };
   for (const [capexId, ws] of Object.entries(windows)) {
-    for (const [n, [plannedStart, plannedEnd]] of Object.entries(ws)) await tx.update(capexLots).set({ plannedStart, plannedEnd }).where(and(eq(capexLots.capexId, capexId), eq(capexLots.number, Number(n))));
+    for (const [n, [plannedStart, plannedEnd]] of Object.entries(ws)) await tx.update(capexLots).set({ plannedStart, plannedEnd }).where(and(eq(capexLots.capexId, capexId), eq(capexLots.number, Number(n)), isNull(capexLots.plannedStart)));
   }
   const lots = new Map((await tx.select({ id: capexLots.id, number: capexLots.number }).from(capexLots).where(eq(capexLots.capexId, sai))).map((l) => [l.number, l.id]));
   const ctl = nameOf('sai_controller');
@@ -414,5 +551,84 @@ async function seedDelivery(tx: Tx, apm: string, sai: string, nameOf: (k: string
     row(2, '2026-08', 2400, 240, 10), row(2, '2026-09', 2450, 620, 25), row(2, '2026-10', 2450, 1000, 40),
     row(3, '2026-09', 3200, 0, 0), row(3, '2026-10', 3250, 150, 5),
     row(4, '2026-10', 900, 0, 0),
+  ]);
+}
+
+/**
+ * COPIL GPI demonstration: the G1 of CPX-SAI-2026-02 in review since 15 October (business case frozen, HSE opinion and sponsor
+ * visa given, the COPIL members' review and the decision of its president open, past the 2 working days), and the lessons
+ * learned of the SAI CAPEX for the library.
+ */
+export async function seedCopil(tx: Tx, packaging: string, plant: string, solar: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
+  await seedCopilGate(tx, packaging, idOf, nameOf);
+  await tx.insert(rexEntries).values(saiRex(plant, solar, nameOf));
+}
+
+/** The G1 of CPX-SAI-2026-02 in front of the COPIL GPI. */
+export async function seedCopilGate(tx: Tx, packaging: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
+  const on = '2026-10-15';
+  const version = await seedDossier(tx, packaging, 'CPX-SAI-2026-02', 'business_case', 'frozen', on, nameOf('sai_lead'), idOf('sai_lead'), { typology: 'light' });
+  const [g] = await tx.insert(gates).values({ capexId: packaging, code: 'G1', session: 1, status: 'in_review', dossierVersionId: version.id, createdAt: at(on) }).returning({ id: gates.id });
+  const tpl = circuitTemplate('G1', 'light');
+  for (const [i, x] of tpl.entries()) {
+    const done = x.group < 3;
+    const key = x.actor === 'expert' ? 'group_hse' : x.actor === 'sponsor' ? 'sai_sponsor' : null;
+    const outcome = x.kind === 'opinion' ? 'favorable' : 'approved';
+    const [st] = await tx.insert(circuitSteps).values({
+      gateId: g.id, position: i + 1, group: x.group, kind: x.kind, actor: x.actor, speciality: x.speciality ?? null, label: x.label, optional: !!x.optional, decides: !!x.decides,
+      status: done ? 'done' : 'open', openedOn: done ? on : '2026-10-16', dueOn: done ? on : '2026-10-20',
+      outcome: done ? outcome : null, comment: x.kind === 'opinion' ? 'HazID done; sterile area to detail at the APS.' : null,
+      actedByName: done && key ? nameOf(key) : null, actedByUserId: done && key ? idOf(key) : null, actedAt: done ? at('2026-10-16') : null,
+    }).returning({ id: circuitSteps.id });
+    if (done && key && x.kind !== 'opinion') {
+      await tx.insert(signatures).values({ circuitStepId: st.id, userId: idOf(key), userName: nameOf(key), signedAt: at('2026-10-16'), contentHash: version.hash, statement: `${x.label} — CPX-SAI-2026-02, G1 session 1, dossier version 1, SHA-256 ${version.hash}: ${outcome}` });
+    }
+  }
+}
+
+/** The published lessons learned of the SAI CAPEX (library). */
+export function saiRex(plant: string, solar: string, nameOf: (k: string) => string) {
+  const lead = nameOf('sai_lead');
+  const rex = (capexId: string, number: number, phase: string, category: string, title: string, text: string, published: string) => ({ capexId, number, phase, category, title, text, authorName: lead, publishedAt: at(published) });
+  return [
+    rex(plant, 1, 'cadrage', 'cost', 'Budget the servicing of the plot from the framing', 'Water and power servicing of the plot was missing from the E50: four more per cent at the E30.', '2026-02-05'),
+    rex(plant, 2, 'avant_projet', 'regulatory', 'File the environmental permit with the preliminary design', 'Waiting for the detailed design cost six weeks on the environmental permit.', '2026-07-20'),
+    rex(plant, 3, 'avant_projet', 'supplier', 'Align the validity of the EPC2i offer with the G2 date', 'The firm offer expired one week before the G2: EPC2i had to renew it.', '2026-07-20'),
+    rex(plant, 4, 'execution', 'hse', 'Separate the site accesses of trucks and pedestrians', 'Two near misses between trucks and pedestrians in August; separate accesses since then.', '2026-09-05'),
+    rex(solar, 1, 'cadrage', 'technical', 'Check the load capacity of roofs before the E50', 'The roof option was dropped at the G1: structure too weak, ground-mounted panels retained.', '2026-09-30'),
+  ];
+}
+
+/** Action plans of the demonstration (owner's pilot feedback, 24 Oct 2026): open, late and done actions of APM and SAI. */
+export async function seedActions(tx: Tx, apm: string, sai: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
+  const a = (capexId: string, number: number, title: string, source: string, sourceRef: string | null, owner: string, dueOn: string, status: 'open' | 'done' = 'open', closedOn: string | null = null) => ({
+    capexId, number, title, source, sourceRef, ownerUserId: idOf(owner), dueOn, status, closedOn, createdByName: nameOf(owner === 'sai_lead' ? 'sai_lead' : 'project_lead'),
+  });
+  await tx.insert(capexActions).values([
+    a(apm, 1, 'Order the soil survey of the extension', 'risk', 'R-02', 'project_lead', '2026-10-15'),
+    a(apm, 2, 'Send the E30 version to the controller with the EPC2i quote', 'budget', 'v2', 'project_lead', '2026-11-05'),
+    a(apm, 3, 'Hold the overdue project review', 'governance', null, 'sponsor', '2026-10-30'),
+    a(apm, 4, 'Confirm the cooling variant with production', 'dossier', null, 'co_dig', '2026-09-30', 'done', '2026-09-18'),
+    a(sai, 1, 'Book rental generators for the start-up', 'risk', 'R-01', 'sai_lead', '2026-12-15'),
+    a(sai, 2, 'Prepare the decision file of MOC-02', 'change', 'MOC-02', 'sai_lead', '2026-10-20'),
+  ]);
+}
+
+/** WBS of the demonstration (owner's pilot feedback, 24 Oct 2026): studies and lot tasks of APM, works and milestones of SAI. */
+export async function seedWbs(tx: Tx, apm: string, sai: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
+  const lotOf = async (capexId: string, kind: string) => (await tx.select({ id: capexLots.id }).from(capexLots).where(and(eq(capexLots.capexId, capexId), eq(capexLots.kind, kind))))[0]?.id ?? null;
+  const t = (capexId: string, number: number, lotId: string | null, name: string, startOn: string, endOn: string, progressPct: number, owner: string | null, milestone = false) => ({
+    capexId, number, lotId, name, startOn, endOn, progressPct, ownerUserId: owner ? idOf(owner) : null, milestone, updatedByName: nameOf('project_lead'),
+  });
+  await tx.insert(wbsTasks).values([
+    t(apm, 1, null, 'Preliminary design studies (APS)', '2026-05-18', '2026-09-30', 100, 'project_lead'),
+    t(apm, 2, null, 'Detailed design (APD)', '2026-10-01', '2027-01-29', 20, 'project_lead'),
+    t(apm, 3, null, 'G2 dossier ready', '2027-02-15', '2027-02-15', 0, 'project_lead', true),
+    t(apm, 4, await lotOf(apm, 'civil_works'), 'Soil survey', '2026-10-05', '2026-11-13', 30, 'project_lead'),
+    t(apm, 5, await lotOf(apm, 'machines'), 'EPC2i firm offer and negotiation', '2026-09-01', '2026-12-18', 50, 'co_dig'),
+    t(sai, 1, await lotOf(sai, 'civil_works'), 'Earthworks', '2026-07-15', '2026-11-27', 80, 'sai_lead'),
+    t(sai, 2, await lotOf(sai, 'buildings'), 'Process hall structure', '2026-10-01', '2027-02-26', 15, 'sai_lead'),
+    t(sai, 3, await lotOf(sai, 'utilities'), 'Grid connection', '2026-11-02', '2027-03-31', 0, 'sai_lead'),
+    t(sai, 4, null, 'Mechanical completion', '2027-04-30', '2027-04-30', 0, 'sai_lead', true),
   ]);
 }

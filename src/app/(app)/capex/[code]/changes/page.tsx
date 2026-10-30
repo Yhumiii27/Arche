@@ -21,7 +21,7 @@ export default async function ChangesPage({ params }: PageProps<'/capex/[code]/c
   const decides = (level: DeciderLevel) => c.status === 'active' && viewer.role === DECIDER_ROLE_OF[level] && holdsOn(viewer.assignments, DECIDER_ROLE_OF[level], c);
   return (
     <>
-      <PageHeader screen="capex-changes" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} />
+      <PageHeader screen="capex-changes" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} actions={afterG2 && can('edit') && <NewChangeForm code={c.code} />} />
       <SectionCard title={t('Changes')} hint={t('Routed by the delegation matrix in force when submitted')} scroll>
         {rows.length ? (
           <Table>
@@ -65,7 +65,6 @@ export default async function ChangesPage({ params }: PageProps<'/capex/[code]/c
         ) : (
           <EmptyState>{afterG2 ? t('No change recorded.') : t('Changes are recorded after G2.')}</EmptyState>
         )}
-        {afterG2 && can('edit') && <NewChangeForm code={c.code} />}
       </SectionCard>
     </>
   );

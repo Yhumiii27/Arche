@@ -61,7 +61,7 @@ export interface CriterionDef {
   forcible: boolean;
   source: CriterionSource;
   /** Delivery that brings the data the criterion reads (docs/PLAN.md); before it, the criterion is "not evaluated yet". */
-  from: 'L2' | 'L3' | 'L4' | 'L5' | 'L6';
+  from: 'L2' | 'L3' | 'L4' | 'L5' | 'L6' | 'L7';
 }
 
 /** Criteria of the gates (spec 03 §3; G1 typology: spec 06 §1). */
@@ -80,6 +80,8 @@ export const CRITERIA: readonly CriterionDef[] = [
   { code: 'g2_permits', gate: 'G2', label: 'ICPE and building permit filed', blocking: true, forcible: true, source: 'arche', from: 'L5' },
   { code: 'g2_epc2i_offers', gate: 'G2', label: 'Firm EPC2i offers for every submitted machine need', blocking: true, forcible: true, source: 'keystone', from: 'L4' },
   { code: 'g2_experts', gate: 'G2', label: 'Quality, HSE, finance and operations opinions given', blocking: true, forcible: true, source: 'circuit', from: 'L3' },
+  // Not evaluated while no envelope covers the CAPEX (AR-040, DECISIONS.md §5).
+  { code: 'g2_envelope', gate: 'G2', label: 'Within the CAPEX envelope (tolerance of the model)', blocking: true, forcible: true, source: 'arche', from: 'L7' },
   { code: 'g2_staffing', gate: 'G2', label: 'Staffing template complete', blocking: true, forcible: true, source: 'arche', from: 'L2' },
   { code: 'k3_hs4', gate: 'K3', label: 'HS 4 site inspection passed', blocking: true, forcible: true, source: 'safety', from: 'L5' },
   { code: 'k3_works', gate: 'K3', label: 'Works lots at the completion threshold', blocking: true, forcible: true, source: 'arche', from: 'L5' },
@@ -109,6 +111,12 @@ export interface ModelValues {
   rampupDays: number;
   /** Months after the start of commissioning within which G3 is expected. */
   mesMaxMonths: number;
+  /** Overrun of its envelope beyond which a CAPEX fails the G2 envelope criterion (AR-040), % of the envelope. */
+  envelopeBlockPct: number;
+  /** A late circuit step is recalled every N working days (AR-041). */
+  reminderEveryDays: number;
+  /** Working days late after which a step is escalated to the group industrial director and the sponsor (AR-041). */
+  escalationDays: number;
 }
 
 export const MODEL_CODE = 'dig-prodi';
@@ -121,6 +129,9 @@ export const DEFAULT_VALUES: ModelValues = {
   worksThresholdPct: 95,
   rampupDays: 30,
   mesMaxMonths: 6,
+  envelopeBlockPct: 10,
+  reminderEveryDays: 2,
+  escalationDays: 3,
 };
 
 /** Bounds of each value (the administrator's input is checked against them). */
@@ -131,6 +142,9 @@ export const VALUE_BOUNDS = {
   worksThresholdPct: [1, 100],
   rampupDays: [1, 365],
   mesMaxMonths: [1, 36],
+  envelopeBlockPct: [0, 100],
+  reminderEveryDays: [1, 20],
+  escalationDays: [1, 30],
 } as const;
 
 /** Reads stored values over the defaults (a value missing or out of bounds falls back to its default). */
@@ -145,6 +159,9 @@ export function readValues(stored: unknown): ModelValues {
     worksThresholdPct: num(s.worksThresholdPct, VALUE_BOUNDS.worksThresholdPct, DEFAULT_VALUES.worksThresholdPct),
     rampupDays: num(s.rampupDays, VALUE_BOUNDS.rampupDays, DEFAULT_VALUES.rampupDays),
     mesMaxMonths: num(s.mesMaxMonths, VALUE_BOUNDS.mesMaxMonths, DEFAULT_VALUES.mesMaxMonths),
+    envelopeBlockPct: num(s.envelopeBlockPct, VALUE_BOUNDS.envelopeBlockPct, DEFAULT_VALUES.envelopeBlockPct),
+    reminderEveryDays: num(s.reminderEveryDays, VALUE_BOUNDS.reminderEveryDays, DEFAULT_VALUES.reminderEveryDays),
+    escalationDays: num(s.escalationDays, VALUE_BOUNDS.escalationDays, DEFAULT_VALUES.escalationDays),
   };
 }
 
@@ -270,6 +287,10 @@ export function checkModelValues(raw: Record<string, unknown>): { ok: true; valu
     worksThresholdPct: read('worksThresholdPct', VALUE_BOUNDS.worksThresholdPct),
     rampupDays: read('rampupDays', VALUE_BOUNDS.rampupDays),
     mesMaxMonths: read('mesMaxMonths', VALUE_BOUNDS.mesMaxMonths),
+    // Added with delivery 7: the default when the form does not send it.
+    envelopeBlockPct: raw.envelopeBlockPct == null || raw.envelopeBlockPct === '' ? DEFAULT_VALUES.envelopeBlockPct : read('envelopeBlockPct', VALUE_BOUNDS.envelopeBlockPct),
+    reminderEveryDays: raw.reminderEveryDays == null || raw.reminderEveryDays === '' ? DEFAULT_VALUES.reminderEveryDays : read('reminderEveryDays', VALUE_BOUNDS.reminderEveryDays),
+    escalationDays: raw.escalationDays == null || raw.escalationDays === '' ? DEFAULT_VALUES.escalationDays : read('escalationDays', VALUE_BOUNDS.escalationDays),
   };
   if (Object.values(v).some((x) => x == null)) return { ok: false, error: 'Enter whole numbers within the bounds shown' };
   return { ok: true, value: { gateDelayDays: delays as Record<GateCode, number>, ...(v as Omit<ModelValues, 'gateDelayDays'>) } };

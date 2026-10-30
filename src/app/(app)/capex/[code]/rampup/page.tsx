@@ -43,6 +43,7 @@ export default async function RampupPage({ params }: PageProps<'/capex/[code]/ra
         crumbs={['CAPEX register']}
         crumbData={c.code}
         primary={canStart && pssrPassed ? <StartMesForm code={c.code} today={today} /> : edit && c.mesStartedOn && r.lines.length ? <ImportRampupForm code={c.code} /> : undefined}
+        actions={edit && c.phase === 'demarrage' && <LineForm code={c.code} machines={machines} />}
       />
       <KpiGrid>
         <KpiTile label={t('Start of commissioning')} value={c.mesStartedOn ? fmtDate(c.mesStartedOn, lang) : '—'} sub={c.phase !== 'demarrage' ? t('In phase 4, after the PSSR') : !pssrPassed ? t('PSSR not passed yet') : undefined} />
@@ -55,7 +56,6 @@ export default async function RampupPage({ params }: PageProps<'/capex/[code]/ra
       {r.lines.length === 0 && (
         <SectionCard title={t('Production lines')}>
           <EmptyState>{c.phase === 'demarrage' ? t('No production line yet.') : t('Production lines are set up in phase 4.')}</EmptyState>
-          {edit && c.phase === 'demarrage' && <LineForm code={c.code} machines={machines} />}
         </SectionCard>
       )}
 
@@ -132,7 +132,6 @@ export default async function RampupPage({ params }: PageProps<'/capex/[code]/ra
           </SectionCard>
         );
       })}
-      {edit && r.lines.length > 0 && <div><LineForm code={c.code} machines={machines} /></div>}
     </>
   );
 }

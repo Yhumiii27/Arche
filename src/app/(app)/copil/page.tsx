@@ -13,8 +13,11 @@ import { TYPOLOGY_LABEL, labelOf } from '@/domain/capex-labels';
 import { workingDaysBetween } from '@/domain/circuits';
 import { DECISION_LABEL } from '@/domain/lifecycle';
 import { dataText } from '@/i18n/data-text';
-import { fmtDate } from '@/lib/format';
 import { copilAgenda } from '@/server/dal/governance';
+import { SCENARIO_KIND_LABEL } from '@/domain/scenarios';
+import { fmtDate, fmtKeur, fmtNum } from '@/lib/format';
+import { getDb } from '@/server/db/client';
+import { scenariosOf } from '@/server/dal/priority';
 import { getI18n, getViewer } from '@/server/session';
 
 const STEP_STATUS: Record<string, string> = { waiting: 'Waiting', open: 'Open', done: 'Done', cancelled: 'Cancelled' };
@@ -24,9 +27,13 @@ export default async function CopilPage() {
   const a = await copilAgenda(viewer);
   const gatesHref = (code: string) => (canSee(viewer.role, 'capex-gates') ? screenHref('capex-gates', { code }) : null);
   const late = a.running.filter((r) => r.decision?.dueOn && r.decision.dueOn < a.today);
+  // The portfolio scenario retained for the committee (AR-043), for the profiles that see the scenarios.
+  const retained = canSee(viewer.role, 'scenarios') ? (await scenariosOf(await getDb(), a.today)).scenarios.find((s) => s.retained) ?? null : null;
+  const thisYear = Number(a.today.slice(0, 4));
+  const years = [thisYear, thisYear + 1, thisYear + 2, thisYear + 3];
   return (
     <>
-      <PageHeader screen="copil" crumbs={['Steering']} />
+      <PageHeader screen="copil" crumbs={['Group portfolio']} />
       <KpiGrid>
         <KpiTile label={t('Dossiers submitted to G1')} value={a.running.length} />
         <KpiTile label={t('Decisions past the 2 working days')} value={late.length} tone={late.length ? 'alert' : 'default'} />
@@ -69,6 +76,21 @@ export default async function CopilPage() {
           <EmptyState>{t('No dossier submitted to G1.')}</EmptyState>
         )}
       </SectionCard>
+
+      {retained && (
+        <SectionCard title={t('Retained portfolio scenario')} hint={`${dataText(retained.name, lang)} · ${t(SCENARIO_KIND_LABEL[retained.kind])} · ${retained.retainedByName ?? ''}`} actions={<Link href="/scenarios">{t('Portfolio scenarios')}</Link>} scroll>
+          <Table>
+            <thead><tr><Th>{t('Fiscal year')}</Th>{years.map((y) => <Th key={y} align="right">{y}</Th>)}</tr></thead>
+            <tbody>
+              <tr><Td>{t('Spend (k€)')}</Td>{years.map((y) => <Td key={y} align="right" numeric>{(retained.result.overByYear[y] ?? 0) > 0 ? <Tag tone="accent" size="sm">{fmtKeur(retained.result.byYear[y] ?? 0, lang)}</Tag> : fmtKeur(retained.result.byYear[y] ?? 0, lang)}</Td>)}</tr>
+              <tr><Td>{t('Envelope (k€)')}</Td>{years.map((y) => <Td key={y} align="right" numeric tone="secondary">{retained.envelopes[String(y)] != null ? fmtKeur(retained.envelopes[String(y)], lang) : '—'}</Td>)}</tr>
+            </tbody>
+          </Table>
+          <p style={{ fontSize: 12.5, marginTop: 8 }}>
+            {`${retained.result.kept} ${t('CAPEX kept')}, ${retained.result.left} ${t('left out')} · ${t('NPV (k€)')} ${fmtKeur(retained.result.npvKeur, lang)} · ${t('Major risks')} ${retained.result.majorRisks} · ${t('Mean score')} ${retained.result.meanScore == null ? '—' : fmtNum(retained.result.meanScore, lang)} · ${fmtDate(retained.updatedAt, lang)}`}
+          </p>
+        </SectionCard>
+      )}
 
       <SectionCard title={t('Recent G1 decisions')} scroll>
         {a.decided.length ? (

@@ -124,8 +124,99 @@
     {
       "idx": 17,
       "version": "7",
-      "when": 1792766776430,
-      "tag": "0017_codex_deposit",
+      "when": 1792765585012,
+      "tag": "0017_pilot",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792841709730,
+      "tag": "0018_capex_actions",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792842195838,
+      "tag": "0019_wbs_tasks",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793286415235,
+      "tag": "0020_row_version",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793286416165,
+      "tag": "0021_row_version_trigger",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793287551044,
+      "tag": "0022_api",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793288385425,
+      "tag": "0023_currencies",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793288399231,
+      "tag": "0024_share_capex_currency",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793288990793,
+      "tag": "0025_finance",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793289589434,
+      "tag": "0026_fixed_assets",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1793290088326,
+      "tag": "0027_portfolio_decisions",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1793291984028,
+      "tag": "0028_circuits_and_designer",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1793293745716,
+      "tag": "0029_ideas_benefits_sage",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1793351057355,
+      "tag": "0030_codex_deposit",
       "breakpoints": true
     }
   ]

@@ -73,19 +73,27 @@ const MILESTONE_ORDER = ['commande', 'fin_etudes', 'fat', 'expedition', 'arrivee
  * to one of its needs (pub_reponses_besoins.projet_code), with their follow-up.
  */
 export async function projectsOf(q: Q, capexCode: string): Promise<Epc2iProject[]> {
-  const answers = await answersOf(q, capexCode);
+  return (await projectsOfMany(q, [capexCode])).get(capexCode) ?? [];
+}
+
+/** projectsOf for several CAPEX in three reads (portfolio views, AR-049). */
+export async function projectsOfMany(q: Q, capexCodes: readonly string[]): Promise<Map<string, Epc2iProject[]>> {
+  const out = new Map<string, Epc2iProject[]>(capexCodes.map((c) => [c, []]));
+  if (!capexCodes.length) return out;
+  const answers = (await rowsOf(q, 'pub_reponses_besoins', and(inArray(keystoneMirror.capexCode, [...capexCodes])))).map(toAnswer);
   const named = [...new Set(answers.map((a) => a.projectCode).filter((x): x is string => !!x))];
-  const projects = await rowsOf(q, 'pub_projets', named.length ? or(eq(keystoneMirror.capexCode, capexCode), inArray(keystoneMirror.projectCode, named)) : eq(keystoneMirror.capexCode, capexCode));
-  const codes = [...new Set([...named, ...projects.map((p) => String(p.code))])].sort();
-  if (!codes.length) return [];
+  const byCapex = inArray(keystoneMirror.capexCode, [...capexCodes]);
+  const projects = await rowsOf(q, 'pub_projets', named.length ? or(byCapex, inArray(keystoneMirror.projectCode, named)) : byCapex);
+  const all = [...new Set([...named, ...projects.map((p) => String(p.code))])];
+  if (!all.length) return out;
   const sub = await q.select({ view: keystoneMirror.view, project: keystoneMirror.projectCode, data: keystoneMirror.data }).from(keystoneMirror)
-    .where(and(inArray(keystoneMirror.view, ['pub_jalons_projets', 'pub_avancement_projets', 'pub_avenants', 'pub_reserves', 'pub_livrables', 'pub_pack_ingenierie', 'pub_parc_machines']), inArray(keystoneMirror.projectCode, codes))).orderBy(asc(keystoneMirror.key));
+    .where(and(inArray(keystoneMirror.view, ['pub_jalons_projets', 'pub_avancement_projets', 'pub_avenants', 'pub_reserves', 'pub_livrables', 'pub_pack_ingenierie', 'pub_parc_machines']), inArray(keystoneMirror.projectCode, all))).orderBy(asc(keystoneMirror.key));
   const of = (view: string, code: string) => sub.filter((r) => r.view === view && r.project === code).map((r) => r.data);
-  return codes.map((code) => {
+  const build = (code: string, mine: Answer[]): Epc2iProject => {
     const p = projects.find((x) => x.code === code);
     const prog = of('pub_avancement_projets', code)[0];
     return {
-      code, name: String(p?.nom ?? code), phase: str(p?.phase), leadName: str(p?.chef_projet_nom), needRef: str(p?.besoin_ref) ?? answers.find((a) => a.projectCode === code)?.needRef ?? null,
+      code, name: String(p?.nom ?? code), phase: str(p?.phase), leadName: str(p?.chef_projet_nom), needRef: str(p?.besoin_ref) ?? mine.find((a) => a.projectCode === code)?.needRef ?? null,
       milestones: of('pub_jalons_projets', code).map((m) => ({ code: String(m.jalon_code), plannedOn: date(m.prevu_le), baselineOn: date(m.reference_le), actualOn: date(m.reel_le) }))
         .sort((a, b) => MILESTONE_ORDER.indexOf(a.code) - MILESTONE_ORDER.indexOf(b.code)),
       progress: prog ? {
@@ -98,7 +106,13 @@ export async function projectsOf(q: Q, capexCode: string): Promise<Epc2iProject[
       machines: [...new Map(of('pub_parc_machines', code).map((m) => [String(m.number), { number: String(m.number), name: String(m.name ?? m.number), deliveredOn: date(m.livree_le) }])).values()],
       pack: of('pub_pack_ingenierie', code).map((f) => ({ family: String(f.famille ?? ''), expected: num(f.attendues) ?? 0, validated: num(f.validees) ?? 0, weight: num(f.poids) ?? 0 })),
     };
-  });
+  };
+  for (const capexCode of capexCodes) {
+    const mine = answers.filter((a) => a.capexCode === capexCode);
+    const codes = [...new Set([...mine.map((a) => a.projectCode).filter((x): x is string => !!x), ...projects.filter((p) => p.capex_code === capexCode).map((p) => String(p.code))])].sort();
+    out.set(capexCode, codes.map((code) => build(code, mine)));
+  }
+  return out;
 }
 
 /** State of the last synchronisation of each view. */
@@ -106,10 +120,19 @@ export async function syncState(q: Q) {
   return q.select().from(keystoneSync).orderBy(asc(keystoneSync.view));
 }
 
-/** Deep link to a project in Keystone; null without NEXT_PUBLIC_KEYSTONE_URL. */
+/**
+ * Deep link to a project in Keystone: its Contract page, which shows the CAPEX the project delivers (Keystone has no page at
+ * /projects/<code> itself); null without NEXT_PUBLIC_KEYSTONE_URL.
+ */
 export function keystoneProjectUrl(code: string): string | null {
   const base = process.env.NEXT_PUBLIC_KEYSTONE_URL;
-  return base ? `${base.replace(/\/+$/, '')}/projects/${encodeURIComponent(code)}` : null;
+  return base ? `${base.replace(/\/+$/, '')}/projects/${encodeURIComponent(code)}/contract` : null;
+}
+
+/** Deep link to Keystone's machine catalogue; null without NEXT_PUBLIC_KEYSTONE_URL. */
+export function keystoneCatalogueUrl(): string | null {
+  const base = process.env.NEXT_PUBLIC_KEYSTONE_URL;
+  return base ? `${base.replace(/\/+$/, '')}/catalogue/machines` : null;
 }
 
 export { syncKeystone } from './mirror';

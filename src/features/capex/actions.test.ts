@@ -40,7 +40,7 @@ const versionOf = async (capexId: string, n: number) => (await t.db.select().fro
 async function newVersion(code: string, cls: string, amounts: string[]) {
   const c = await row(code);
   const lots = await t.db.select().from(capexLots).where(eq(capexLots.capexId, c.id)).orderBy(capexLots.number);
-  return saveBudgetVersionAction(code, null, null, form({ estimateClass: cls, basis: `${cls} basis`, ...Object.fromEntries(lots.map((l, i) => [`lot:${l.id}`, amounts[i] ?? '0'])) }));
+  return saveBudgetVersionAction(code, null, null, form({ estimateClass: cls, currency: 'EUR', basis: `${cls} basis`, ...Object.fromEntries(lots.map((l, i) => [`lot:${l.id}`, amounts[i] ?? '0'])) }));
 }
 
 describe('a CAPEX through the DIG-PRODI cycle', () => {

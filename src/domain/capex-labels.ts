@@ -17,6 +17,14 @@ export const PHASE_LABEL: Record<CapexPhase, string> = {
   demarrage: '4 · Start-up, ramp-up & transfer',
 };
 
+/** Short phase labels (tags of lists and maps). */
+export const PHASE_SHORT: Record<CapexPhase, string> = {
+  cadrage: '1 · Scoping',
+  avant_projet: '2 · Front-end engineering',
+  execution: '3 · Execution',
+  demarrage: '4 · Start-up',
+};
+
 export const TYPOLOGY_LABEL: Record<Typology, string> = {
   light: 'Light',
   strategic: 'Strategic',

@@ -5,9 +5,9 @@
 import { EmptyState } from '@/components/app/EmptyState';
 import { KeyValueList } from '@/components/app/KeyValueList';
 import { SectionCard } from '@/components/app/SectionCard';
+import { ActionLink } from '@/components/app/ActionForm';
 import { PageHeader } from '@/components/app/shell/page-header';
 import { Table, Td, Th } from '@/components/ds/Table';
-import { ButtonLink } from '@/components/ds/Button';
 import { Tag } from '@/components/ds/Tag';
 import { missingStaff, STAFFING } from '@/domain/budget';
 import { DECISION_BODY_LABEL, refOf, TEAM_ROLE_LABEL, type DecisionBody } from '@/domain/capex';
@@ -24,14 +24,23 @@ import { dataText } from '@/i18n/data-text';
 import { fmtDate, fmtKeur } from '@/lib/format';
 import { businessToday } from '@/server/clock';
 import { computedTypologyOf, decisionsOf, teamCandidates, teamOf } from '@/server/dal/cycle';
+import { capexDashboard } from '@/server/dal/governance';
+import { prioritiesOf, scoresOf } from '@/server/dal/priority';
+import { SCORERS } from '@/domain/scoring';
+import { ScoreForm } from '@/features/portfolio/forms';
+import { fmtNum } from '@/lib/format';
 
 export default async function GovernancePage({ params }: PageProps<'/capex/[code]/governance'>) {
-  const { t, lang, db, c, can } = await loadCapexPage(params);
+  const { t, lang, db, c, can, viewer } = await loadCapexPage(params);
   const today = await businessToday();
   const [team, decisions, computed, candidates] = await Promise.all([teamOf(db, c.id), decisionsOf(db, c.id), computedTypologyOf(db, c, today), teamCandidates(db, c.subsidiaryCode)]);
   const edit = can('edit');
   const [revs, rex] = await Promise.all([reviewsOf(db, c.id), rexOf(db, c.id)]);
   const rexCover = rexFact(rex);
+  // Priority score on the group's grid (AR-044): computed criteria, the group's scores of the others.
+  const dash = await capexDashboard(db, c, today);
+  const [prio, given] = await Promise.all([prioritiesOf(db, [{ id: c.id, bacKeur: dash.indicators.bacKeur }]).then((m) => m.get(c.id)!), scoresOf(db, c.id)]);
+  const scorer = (SCORERS as readonly string[]).includes(viewer.role) && c.status !== 'closed' && c.status !== 'abandoned';
   const review = nextReview({ status: c.status, typology: c.typology, openedOn: c.openedAt ? c.openedAt.toISOString().slice(0, 10) : null, lastHeldOn: revs.find((r) => r.kind === 'copil_projet')?.heldOn ?? null }, today);
   const audits = missingAudits(c, revs.filter((r) => r.kind === 'audit'));
   const reviewKinds: ReviewKind[] = c.status === 'active' ? [...(edit ? ['copil_projet' as const] : []), ...(can('audit') && c.typology === 'strategic' ? ['audit' as const] : [])] : [];
@@ -39,7 +48,24 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
   const missing = missingStaff(c.typology, team.map((m) => m.capexRole));
   return (
     <>
-      <PageHeader screen="capex-governance" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} />
+      <PageHeader
+        screen="capex-governance"
+        title={dataText(c.title, lang)}
+        crumbs={['CAPEX register']}
+        crumbData={c.code}
+        actions={
+          <>
+            {reviewKinds.length > 0 && <ReviewForm code={c.code} kinds={reviewKinds} today={today} />}
+            {edit && <DecisionForm code={c.code} today={today} />}
+            {edit && <MemberForm code={c.code} candidates={candidates.map((p) => ({ value: p.id, label: p.name }))} />}
+            {can('rex') && <RexForm code={c.code} phase={c.phase} />}
+            {c.typologyProposed && can('confirm_typology') && <ConfirmTypologyButton code={c.code} />}
+            {can('force_typology') && <ForceTypologyForm code={c.code} />}
+            <ActionLink href={`/print/capex/${encodeURIComponent(c.code)}/report`} newTab icon="print" label={t('Copil report')} />
+            <ActionLink href={`/print/capex/${encodeURIComponent(c.code)}/report/pdf`} download icon="download" label={t('Copil report (PDF)')} />
+          </>
+        }
+      />
       <SectionCard
         title={t('Team')}
         hint={`${t('Staffing template')} (${c.typology ? t(labelOf(TYPOLOGY_LABEL, c.typology)) : t('Light')})${lang === 'fr' ? ' : ' : ': '}${template.map((r) => t(TEAM_ROLE_LABEL[r])).join(', ')}`}
@@ -76,7 +102,6 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
         ) : (
           <EmptyState>{t('Nobody is named yet.')}</EmptyState>
         )}
-        {edit && <MemberForm code={c.code} candidates={candidates.map((p) => ({ value: p.id, label: p.name }))} />}
       </SectionCard>
 
       <SectionCard title={t('Typology')}>
@@ -95,8 +120,6 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
             <Tag tone="accent" size="sm">{t('New typology to confirm')}</Tag> {t(labelOf(TYPOLOGY_LABEL, c.typologyProposed))}
           </span>
         )}
-        {c.typologyProposed && can('confirm_typology') && <ConfirmTypologyButton code={c.code} />}
-        {can('force_typology') && <ForceTypologyForm code={c.code} />}
       </SectionCard>
 
       <SectionCard
@@ -141,10 +164,31 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
         ) : (
           <EmptyState>{t('No review recorded.')}</EmptyState>
         )}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {reviewKinds.length > 0 && <ReviewForm code={c.code} kinds={reviewKinds} today={today} />}
-          <ButtonLink href={`/print/capex/${encodeURIComponent(c.code)}/report`} variant="secondary" size="sm" target="_blank">{t('Copil report')}</ButtonLink>
-        </div>
+      </SectionCard>
+
+      <SectionCard
+        title={t('Priority score')}
+        hint={`${prio.score == null ? t('Not ranked: less than 80 % of the weight scored') : `${fmtNum(prio.score, lang)} / 100`} · ${t('Coverage')} ${prio.coveragePct} %`}
+        actions={scorer ? <ScoreForm code={c.code} values={Object.fromEntries(given.map((g) => [g.criterionCode, { score: g.score, note: g.note }]))} /> : undefined}
+        scroll
+      >
+        <Table>
+          <thead><tr><Th>{t('Criterion')}</Th><Th align="right">{t('Weight')}</Th><Th align="right">{t('Score')}</Th><Th>{t('Why')}</Th><Th>{t('By')}</Th></tr></thead>
+          <tbody>
+            {prio.criteria.map((x) => {
+              const g = given.find((s) => s.criterionCode === x.code);
+              return (
+                <tr key={x.code}>
+                  <Td>{t(x.label)} <Tag tone="outline" size="xs">{t(x.kind === 'computed' ? 'Computed' : 'Scored by the group')}</Tag></Td>
+                  <Td align="right" numeric>{x.weight}</Td>
+                  <Td align="right" numeric>{x.score == null ? '—' : `${fmtNum(x.score, lang)}/5`}</Td>
+                  <Td tone="secondary">{x.kind === 'manual' ? dataText(x.note, lang) ?? '' : ''}</Td>
+                  <Td tone="secondary">{g ? `${g.scoredByName} · ${fmtDate(g.scoredAt, lang)}` : ''}</Td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
       </SectionCard>
 
       <SectionCard title={t('Lessons learned')} hint={`${t('Phases covered')} ${rexCover.value} · ${t('G3 needs a lesson for every phase')}`} scroll>
@@ -185,7 +229,6 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
         ) : (
           <EmptyState>{t('No lesson recorded.')}</EmptyState>
         )}
-        {can('rex') && <RexForm code={c.code} phase={c.phase} />}
       </SectionCard>
 
       <SectionCard title={t('Decisions')} hint={t(`${decisions.length} decisions`)} scroll>
@@ -215,7 +258,6 @@ export default async function GovernancePage({ params }: PageProps<'/capex/[code
         ) : (
           <EmptyState>{t('No decision recorded.')}</EmptyState>
         )}
-        {edit && <DecisionForm code={c.code} today={today} />}
       </SectionCard>
     </>
   );

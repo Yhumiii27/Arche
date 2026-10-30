@@ -2,7 +2,7 @@
 // decisions (delivery 2). Dossiers, circuits and changes come with delivery 3 (new migrations).
 import { boolean, date, index, integer, jsonb, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { arche } from './_schema';
-import { id, keur, timestamps } from './_common';
+import { id, keur, rowVersion, timestamps } from './_common';
 import { sites, subsidiaries, users } from './organisation';
 
 export type CapexStatus = 'draft' | 'active' | 'on_hold' | 'closed' | 'abandoned';
@@ -37,6 +37,10 @@ export const capex = arche.table('capex', {
   sponsorUserId: uuid('sponsor_user_id').references(() => users.id),
   leadUserId: uuid('lead_user_id').references(() => users.id),
   ...timestamps,
+  /** Takeover of a CAPEX already in progress (N-20, pilot): when and by whom it was opened in its current phase. */
+  takenOverAt: timestamp('taken_over_at', { withTimezone: true }),
+  takenOverByName: text('taken_over_by_name'),
+  rowVersion: rowVersion(),
 });
 
 /** Named CAPEX team (docs/spec/02 §3). */
@@ -75,6 +79,10 @@ export const capexLots = arche.table('capex_lots', {
   plannedStart: text('planned_start'),
   plannedEnd: text('planned_end'),
   ...timestamps,
+  /** Asset class of the lot (AR-050); null: the class of its kind. */
+  assetClassCode: text('asset_class_code'),
+  /** Sage analytic code of the lot (AR-047): the extraction's lines with this code go to the lot. */
+  sageCode: text('sage_code'),
 }, (t) => [unique('capex_lots_number_uq').on(t.capexId, t.number)]);
 
 /** Budget versions: the precision funnel E50 → E30 → E10 (spec 03 §5); a validated version is frozen. */
@@ -93,6 +101,7 @@ export const budgetVersions = arche.table('budget_versions', {
   isG2Baseline: boolean('is_g2_baseline').notNull().default(false),
   createdByName: text('created_by_name').notNull(),
   ...timestamps,
+  rowVersion: rowVersion(),
 }, (t) => [unique('budget_versions_number_uq').on(t.capexId, t.number)]);
 
 /** Central amount of a lot in a version (k€); range = class × central. */
@@ -100,6 +109,10 @@ export const budgetLines = arche.table('budget_lines', {
   budgetVersionId: uuid('budget_version_id').notNull().references(() => budgetVersions.id, { onDelete: 'cascade' }),
   lotId: uuid('lot_id').notNull().references(() => capexLots.id),
   amountKeur: keur('amount_keur').notNull(),
+  /** As typed in the subsidiary's currency (AR-039): thousands, the currency and the rate applied (units per euro); null when typed in k€. */
+  amountLocal: keur('amount_local'),
+  currency: text('currency'),
+  rate: keur('rate'),
 }, (t) => [unique('budget_lines_uq').on(t.budgetVersionId, t.lotId)]);
 
 export const risks = arche.table('risks', {
@@ -148,6 +161,8 @@ export const gates = arche.table('gates', {
   /** The frozen dossier version the session decides on (delivery 3; none at K3). */
   dossierVersionId: uuid('dossier_version_id'),
   ...timestamps,
+  /** A gate passed before Arche, recorded at the takeover (N-20): no circuit, no signature; left out of the C-10 indicators. */
+  takenOver: boolean('taken_over').notNull().default(false),
 }, (t) => [unique('gates_session_uq').on(t.capexId, t.code, t.session)]);
 
 /** Snapshot of the criteria when the gate was decided. */

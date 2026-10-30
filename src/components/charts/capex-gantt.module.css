@@ -1,0 +1,125 @@
+/* CAPEX Gantt — adapted from Keystone's project Gantt (project-gantt.module.css, origin 5b425d5): name · done · timeline of
+   `--months` monthly columns. */
+.grid {
+  display: grid;
+  grid-template-columns: 260px 56px minmax(560px, 1fr);
+  min-width: 880px;
+}
+.row { display: contents; }
+
+.th {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-neutral-400);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-neutral-800);
+}
+.thRight { text-align: right; padding-right: 10px; }
+.months {
+  display: grid;
+  grid-template-columns: repeat(var(--months), 1fr);
+  border-bottom: 1px solid var(--color-neutral-800);
+}
+.month {
+  font-size: 10.5px;
+  color: var(--color-neutral-400);
+  padding: 6px 0 6px 4px;
+  border-left: 1px solid var(--color-neutral-900);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.nameCell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 40px;
+  line-height: 1.25;
+  padding: 4px 8px 4px 0;
+  border-bottom: 1px solid var(--color-neutral-900);
+  min-width: 0;
+}
+.indent1 { padding-left: 14px; }
+.indent2 { padding-left: 28px; }
+.name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
+.nameStrong { font-weight: 600; }
+.link { color: inherit; text-decoration: none; }
+.link:hover { color: var(--color-accent-300); }
+.sub { font-size: 11px; color: var(--color-neutral-400); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.num {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  border-bottom: 1px solid var(--color-neutral-900);
+}
+
+.track {
+  position: relative;
+  min-height: 40px;
+  background: repeating-linear-gradient(to right, var(--color-neutral-900) 0 1px, transparent 1px calc(100% / var(--months)));
+}
+.trackRow { border-bottom: 1px solid var(--color-neutral-900); }
+.bar {
+  position: absolute;
+  top: 12px;
+  height: 14px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--color-neutral-900);
+  box-shadow: inset 0 0 0 1px var(--color-neutral-700);
+}
+.fill { height: 100%; background: var(--color-neutral-600); }
+.summary { top: 10px; height: 18px; background: var(--color-accent-900); box-shadow: inset 0 0 0 1px var(--color-accent-600); }
+.summary .fill { background: linear-gradient(90deg, var(--color-accent-700), var(--color-accent-500)); }
+.lot .fill { background: var(--color-neutral-500); }
+.task { top: 14px; height: 10px; }
+.epc2i {
+  top: 10px;
+  height: 18px;
+  background: repeating-linear-gradient(135deg, var(--color-neutral-900) 0 6px, var(--color-neutral-800) 6px 12px);
+  box-shadow: inset 0 0 0 1px var(--color-accent-700);
+}
+.epc2i .fill { background: color-mix(in srgb, var(--color-accent-500) 55%, transparent); }
+.clipped { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-accent);
+  opacity: 0.7;
+}
+
+.msLabel { min-height: 48px; display: flex; align-items: center; font-size: 13px; color: var(--color-neutral-300); }
+.msWrap { position: absolute; top: 10px; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); }
+.msForecast {
+  position: absolute;
+  top: 14px;
+  width: 11px;
+  height: 11px;
+  margin-left: -5.5px;
+  transform: rotate(45deg);
+  background: var(--color-accent);
+}
+.msWrap .msForecast { position: static; margin: 0; }
+.msPlanned { background: transparent; box-shadow: inset 0 0 0 1.5px var(--color-accent); }
+.msText { font-size: 10.5px; color: var(--color-neutral-300); margin-top: 5px; white-space: nowrap; }
+.todayChip {
+  position: absolute;
+  top: -2px;
+  font-size: 10px;
+  color: var(--color-accent-300);
+  padding: 0 4px;
+  background: var(--color-surface);
+  border-radius: 3px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* Portfolio Gantt: no milestone row, only the today chip. */
+.msNone .msLabel { min-height: 22px; }

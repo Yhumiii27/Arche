@@ -79,9 +79,9 @@ describe('delivery 5: dashboards and governance', () => {
     jar.set('arche-role', 'project_lead');
     // The demo project lead persona leads the APM CAPEX.
     const civil = await lot(APM, 1);
-    expect(await importActualsAction(APM, null, form({ csv: 'lot;month;committed_keur;spent_keur;physical_pct\n1;2026-10;300;50;5\n3;2026-10;1;1;1' }))).toEqual({ ok: false, error: 'Line 3 — EPC2i lots come from Keystone' });
+    expect(await importActualsAction(APM, null, form({ currency: 'EUR', csv: 'lot;month;committed_keur;spent_keur;physical_pct\n1;2026-10;300;50;5\n3;2026-10;1;1;1' }))).toEqual({ ok: false, error: 'Line 3 — EPC2i lots come from Keystone' });
     expect(await t.db.$count(lotActuals, eq(lotActuals.lotId, civil.id))).toBe(0);
-    expect(await importActualsAction(APM, null, form({ csv: '1;2026-09;300;20;2\n1;2026-10;300;50;5' }))).toEqual({ ok: true });
+    expect(await importActualsAction(APM, null, form({ currency: 'EUR', csv: '1;2026-09;300;20;2\n1;2026-10;300;50;5' }))).toEqual({ ok: true });
     expect((await t.db.select().from(lotActuals).where(eq(lotActuals.lotId, civil.id))).map((r) => [r.month, r.spentKeur, r.source])).toEqual([['2026-09', 20, 'import'], ['2026-10', 50, 'import']]);
   });
 
@@ -107,12 +107,14 @@ describe('delivery 5: dashboards and governance', () => {
     expect((await portfolioDashboard(await getViewer(), null)).rows.map((r) => r.code)).toEqual(['CPX-APM-2025-01', APM]);
     as('dir_ig');
     const p = await portfolioDashboard(await getViewer(), null);
-    expect(p.rows.map((r) => r.code)).toEqual(['CPX-APM-2025-01', APM, SAI]);
+    expect(p.rows.map((r) => r.code)).toEqual(['CPX-APM-2025-01', APM, SAI, 'CPX-SAI-2026-02', 'CPX-SAI-2026-03']);
     expect(p.rows.find((r) => r.code === APM)!.trend.length).toBeGreaterThanOrEqual(12);
     const agenda = await copilAgenda(await getViewer());
-    expect(agenda.running).toEqual([]);
-    expect(await takeSnapshots(t.db, TODAY)).toBe(3);
-    expect(await takeSnapshots(t.db, TODAY)).toBe(3);
-    expect(await t.db.$count(capexSnapshots, eq(capexSnapshots.week, weekOf(TODAY)))).toBe(3);
+    // The demo G1 of CPX-SAI-2026-02 waits for the committee; the G1 of CPX-SAI-2026-03 was decided less than 90 days ago.
+    expect(agenda.running.map((r) => [r.capex.code, r.decision?.status])).toEqual([['CPX-SAI-2026-02', 'open']]);
+    expect(agenda.decided.map((d) => d.capex.code)).toEqual(['CPX-SAI-2026-03']);
+    expect(await takeSnapshots(t.db, TODAY)).toBe(5);
+    expect(await takeSnapshots(t.db, TODAY)).toBe(5);
+    expect(await t.db.$count(capexSnapshots, eq(capexSnapshots.week, weekOf(TODAY)))).toBe(5);
   });
 });

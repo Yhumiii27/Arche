@@ -1,12 +1,8 @@
 'use client';
 // CAPEX forms (client islands of the CAPEX pages, delivery 2). They collect the input; the Server Functions of ./actions.ts
 // check the rights and the input again.
-import { Plus } from '@phosphor-icons/react/dist/ssr';
-import { useRouter } from 'next/navigation';
-import { useActionState, useState } from 'react';
-import { ActionButton, ActionForm, Folded, Result, type ActionResult } from '@/components/app/ActionForm';
-import { Button } from '@/components/ds/Button';
-import { Dialog } from '@/components/ds/Dialog';
+import { Fragment, useState } from 'react';
+import { ActionButton, ActionForm, Folded } from '@/components/app/ActionForm';
 import styles from './forms.module.css';
 import { Field, Input, Select, Textarea } from '@/components/ds/Field';
 import { ESTIMATE_CLASSES } from '@/domain/budget';
@@ -14,10 +10,15 @@ import { DECISION_BODIES, DECISION_BODY_LABEL, INVESTMENT_TYPES, LOT_KINDS, LOT_
 import { INVESTMENT_TYPE_LABEL } from '@/domain/capex-labels';
 import { useI18n } from '@/i18n/client';
 import {
-  addDecisionAction, addLotAction, addMemberAction, confirmTypologyAction, createCapexAction, deleteDraftVersionAction, forceTypologyAction,
+  addDecisionAction, addLotAction, addMemberAction, confirmTypologyAction, deleteDraftVersionAction, forceTypologyAction,
   openCapexAction, removeLotAction, saveBusinessPlanAction, validateBusinessPlanAction, removeMemberAction, reviewVersionAction, saveBudgetVersionAction, saveRiskAction, submitVersionAction, suspendAction,
-  updateSheetAction,
+  takeoverCapexAction, updateSheetAction,
 } from './actions';
+import { PHASE_LABEL } from '@/domain/capex-labels';
+import { ROW_VERSION_FIELD } from '@/domain/concurrency';
+import { unitOf } from '@/domain/currency';
+import { gatesPassedBefore, takeoverClasses, TAKEOVER_PHASES } from '@/domain/takeover';
+import type { Phase } from '@/domain/lifecycle';
 
 type Opt = { value: string; label: string };
 
@@ -36,76 +37,14 @@ function useOptions() {
  * "New CAPEX": the page's main action, a dialog with the identity of the draft (title, subsidiary, site, investment type,
  * need date, description and, for a sponsor, the project lead) and the code it will get; once created, its overview opens.
  */
-export function NewCapexButton({ subsidiaries, sites, leads }: {
-  subsidiaries: (Opt & { nextCode: string })[];
-  sites: (Opt & { subsidiary: string })[];
-  /** People a sponsor may name project lead (empty: the creator is the lead, or none). */
-  leads: (Opt & { subsidiary: string | null })[];
-}) {
-  const { t } = useI18n();
-  const o = useOptions();
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [sub, setSub] = useState(subsidiaries[0]?.value ?? '');
-  const [state, run, pending] = useActionState(async (prev: ActionResult | null, fd: FormData) => {
-    const r = await createCapexAction(prev, fd);
-    if (r.ok && r.code) {
-      setOpen(false);
-      router.push(`/capex/${encodeURIComponent(r.code)}`);
-    }
-    return r;
-  }, null);
-  const next = subsidiaries.find((x) => x.value === sub)?.nextCode;
-  return (
-    <>
-      <Button variant="primary" icon={Plus} onClick={() => setOpen(true)} aria-haspopup="dialog">
-        {t('New CAPEX')}
-      </Button>
-      <Dialog open={open} onClose={() => setOpen(false)} title={t('New CAPEX')} subtitle={t('Created as a draft in your subsidiary. The sponsor opens it once the project lead is named.')}>
-        <form action={run} className={styles.dialogForm}>
-          <Field label={t('Title')} htmlFor="nc-title" required span="full">
-            <Input id="nc-title" name="title" required minLength={3} />
-          </Field>
-          <Field label={t('Subsidiary')} htmlFor="nc-sub" required>
-            <Select id="nc-sub" name="subsidiaryCode" value={sub} onChange={(e) => setSub(e.target.value)} options={subsidiaries.map(({ value, label }) => ({ value, label }))} />
-          </Field>
-          <Field label={t('Site')} htmlFor="nc-site">
-            <Select id="nc-site" name="siteId" options={[{ value: '', label: '—' }, ...sites.filter((x) => x.subsidiary === sub)]} />
-          </Field>
-          <Field label={t('Investment type')} htmlFor="nc-type" required>
-            <Select id="nc-type" name="investmentType" options={o.investment} />
-          </Field>
-          <Field label={t('Need date')} htmlFor="nc-need">
-            <Input id="nc-need" name="needDate" type="date" />
-          </Field>
-          {leads.length > 0 && (
-            <Field label={t('Project lead')} htmlFor="nc-lead" span="full" hint={t('Needed to open the CAPEX')}>
-              <Select id="nc-lead" name="leadUserId" options={[{ value: '', label: t('To name later') }, ...leads.filter((x) => !x.subsidiary || x.subsidiary === sub)]} />
-            </Field>
-          )}
-          <Field label={t('Description')} htmlFor="nc-desc" span="full">
-            <Textarea id="nc-desc" name="description" rows={3} />
-          </Field>
-          {next && <div className={styles.dialogNote}>{t(`Code given when saved: ${next}`)}</div>}
-          <div className={styles.dialogActions}>
-            <Result state={state?.ok ? null : state} done="Draft created" />
-            <Button onClick={() => setOpen(false)}>{t('Cancel')}</Button>
-            <Button type="submit" variant="primary" disabled={pending}>
-              {t('Create the draft')}
-            </Button>
-          </div>
-        </form>
-      </Dialog>
-    </>
-  );
-}
-
 export interface SheetValues {
   title: string;
   description: string | null;
   investmentType: string;
   siteId: string | null;
   needDate: string | null;
+  /** Optimistic lock (AR-049). */
+  rowVersion: number;
 }
 
 export function SheetForm({ code, sheet, sites }: { code: string; sheet: SheetValues; sites: Opt[] }) {
@@ -114,6 +53,7 @@ export function SheetForm({ code, sheet, sites }: { code: string; sheet: SheetVa
   return (
     <Folded summary="Edit the identity sheet">
       <ActionForm action={(p, fd) => updateSheetAction(code, p, fd)} submit="Save" done="Saved">
+        <input type="hidden" name={ROW_VERSION_FIELD} value={sheet.rowVersion} readOnly />
         <Field label={t('Title')} htmlFor="sh-title" required>
           <Input id="sh-title" name="title" defaultValue={sheet.title} required />
         </Field>
@@ -136,6 +76,54 @@ export function SheetForm({ code, sheet, sites }: { code: string; sheet: SheetVa
 
 export function OpenCapexButton({ code }: { code: string }) {
   return <ActionButton run={() => openCapexAction(code)} label="Open the CAPEX (phase 1)" done="CAPEX opened" variant="primary" />;
+}
+
+/** Takeover of a CAPEX already in progress (N-20): opened in its current phase with the gates passed before Arche. */
+export function TakeoverForm({ code, lots, today }: { code: string; lots: { id: string; label: string }[]; today: string }) {
+  const { t } = useI18n();
+  const [phase, setPhase] = useState<Phase>('avant_projet');
+  return (
+    <Folded summary="Take over a CAPEX in progress" title="Take over a CAPEX in progress">
+      <ActionForm action={(prev, fd) => takeoverCapexAction(code, prev, fd)} submit="Take over the CAPEX" done="CAPEX taken over">
+        <p className={styles.dialogNote}>{t('For a CAPEX started before Arche: its current phase, the gates already passed and the budget validated. These gates are recorded as taken over, without a circuit or signature.')}</p>
+        <Field label={t('Current phase')} htmlFor="to-phase" required>
+          <Select id="to-phase" name="phase" value={phase} onChange={(e) => setPhase(e.target.value as Phase)} options={TAKEOVER_PHASES.map((p) => ({ value: p, label: t(PHASE_LABEL[p]) }))} />
+        </Field>
+        <Field label={t('Opened on')} htmlFor="to-open" required>
+          <Input id="to-open" name="openedOn" type="date" max={today} required />
+        </Field>
+        {gatesPassedBefore(phase).map((g) => (
+          <Fragment key={g}>
+            <Field label={`${g} — ${t('decided on')}`} htmlFor={`to-${g}-on`} required>
+              <Input id={`to-${g}-on`} name={`${g}:on`} type="date" max={today} required />
+            </Field>
+            <Field label={`${g} — ${t('decided by')}`} htmlFor={`to-${g}-by`} required>
+              <Input id={`to-${g}-by`} name={`${g}:by`} required />
+            </Field>
+          </Fragment>
+        ))}
+        <Field label={t('Class of the validated budget')} htmlFor="to-class" required>
+          <Select key={phase} id="to-class" name="estimateClass" defaultValue={takeoverClasses(phase)[0]} options={takeoverClasses(phase).map((c) => ({ value: c, label: c }))} />
+        </Field>
+        <Field label={t('Budget validated on')} htmlFor="to-val-on" required>
+          <Input id="to-val-on" name="validatedOn" type="date" max={today} required />
+        </Field>
+        <Field label={t('Budget validated by')} htmlFor="to-val-by" required span="full">
+          <Input id="to-val-by" name="validatedByName" required />
+        </Field>
+        {lots.map((l) => (
+          <Field key={l.id} label={`${l.label} (k€)`} htmlFor={`to-lot-${l.id}`} required>
+            <Input id={`to-lot-${l.id}`} name={`lot:${l.id}`} inputMode="decimal" required />
+          </Field>
+        ))}
+        {phase === 'demarrage' && (
+          <Field label={t('Start of commissioning')} htmlFor="to-mes" hint={t('If commissioning has started')}>
+            <Input id="to-mes" name="mesStartedOn" type="date" max={today} />
+          </Field>
+        )}
+      </ActionForm>
+    </Folded>
+  );
 }
 
 // ── Cycle ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -176,26 +164,35 @@ export function RemoveLotButton({ code, lotId }: { code: string; lotId: string }
   return <ActionButton run={() => removeLotAction(code, lotId)} label="Remove" done="Removed" variant="ghost" />;
 }
 
-export function VersionForm({ code, lots, version }: {
+export function VersionForm({ code, lots, version, currencies }: {
   code: string;
   lots: { id: string; number: number; title: string }[];
-  version?: { id: string; number: number; estimateClass: string; basis: string | null; lines: Record<string, number> };
+  version?: { id: string; number: number; estimateClass: string; basis: string | null; lines: Record<string, number>; rowVersion: number; entry: { currency: string; lines: Record<string, number> } | null };
+  /** The currencies the amounts may be typed in: the subsidiary's first, then the euro (AR-039). */
+  currencies: string[];
 }) {
   const { t } = useI18n();
   const o = useOptions();
   const id = version?.id ?? 'new';
+  // A draft shows its amounts as they were typed: in the subsidiary's currency, or in k€.
+  const typedIn = version ? version.entry?.currency ?? 'EUR' : currencies[0];
+  const amounts = version ? version.entry?.lines ?? version.lines : {};
   return (
     <Folded summary={version ? `Edit version ${version.number}` : 'New budget version'}>
       <ActionForm action={(p, fd) => saveBudgetVersionAction(code, version?.id ?? null, p, fd)} submit={version ? 'Save the version' : 'Create the version'} done="Saved">
+        {version && <input type="hidden" name={ROW_VERSION_FIELD} value={version.rowVersion} readOnly />}
         <Field label={t('Estimate class')} htmlFor={`bv-${id}-cls`} required>
           <Select id={`bv-${id}-cls`} name="estimateClass" defaultValue={version?.estimateClass ?? 'E50'} options={o.classes} />
         </Field>
         <Field label={t('Basis of the estimate')} htmlFor={`bv-${id}-basis`}>
           <Input id={`bv-${id}-basis`} name="basis" defaultValue={version?.basis ?? ''} />
         </Field>
+        <Field label={t('Amounts in')} htmlFor={`bv-${id}-cur`} hint={t('Converted to k€ at the group’s reference rate')}>
+          <Select id={`bv-${id}-cur`} name="currency" defaultValue={typedIn} options={currencies.map((c) => ({ value: c, label: unitOf(c) }))} />
+        </Field>
         {lots.map((l) => (
-          <Field key={l.id} label={`${l.number} · ${l.title} (k€)`} htmlFor={`bv-${id}-${l.id}`}>
-            <Input id={`bv-${id}-${l.id}`} name={`lot:${l.id}`} inputMode="decimal" defaultValue={version?.lines[l.id] != null ? String(version.lines[l.id]) : ''} />
+          <Field key={l.id} label={`${l.number} · ${l.title}`} htmlFor={`bv-${id}-${l.id}`}>
+            <Input id={`bv-${id}-${l.id}`} name={`lot:${l.id}`} inputMode="decimal" defaultValue={amounts[l.id] != null ? String(amounts[l.id]) : ''} />
           </Field>
         ))}
       </ActionForm>

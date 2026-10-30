@@ -194,6 +194,7 @@ tant qu’elles n’existent pas. Lecteurs accordés par Matrix (`partage/90-dro
 | `g1_le`, `g2_le`, `g3_le` | date | dates des décisions Go (null si non passées) |
 | `debut_mes_le` | date | début de la MES |
 | `maj_le` | timestamptz | |
+| `devise` | text | devise de la filiale (ISO 4217) ; les montants d'Arche restent consolidés en k€ (AR-039, ajoutée le 29 oct. 2026) |
 
 **`pub_besoins_machines`** — lecteurs : `keystone_app`, `matrix_app`. Les brouillons ne sont pas publiés.
 
@@ -250,3 +251,9 @@ figurent.
 **`pub_rex`** (v1, remplacée par `pub_rex_v2`) — lecteur : `matrix_app`. Proposition de la livraison 6 (migration
 `0014_share_rampup_rex`) : `ref_source` (`rex_entries.id`), `capex_code`, `projet_code` (null), `categorie`, `titre`, `texte`,
 `phase`, `publie_le`, `auteur`. Gardée telle quelle (contrat `pub_`) ; plus de nouveau lecteur.
+
+## 4. API métier et webhooks (AR-048)
+
+Pour les outils qui ne lisent pas le serveur commun (Power BI, un connecteur Sage, un script) : API `/api/v1/` par clé
+d'application cliente et webhooks signés (`capex.opened`, `gate.decided`, `alert.raised`). Contrat détaillé :
+[`API.md`](API.md). Les vues `pub_` restent le contrat des outils du groupe.

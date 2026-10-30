@@ -13,6 +13,8 @@
     "test": "vitest run",
     "remaining:page": "tsx scripts/remaining-work/build.ts",
     "db:local": "tsx scripts/db-local.ts",
+    "db:reset-demo": "tsx scripts/db-local.ts --reset && npm run db:migrate",
+    "db:demo-topup": "tsx --conditions=react-server scripts/db-demo-topup.ts",
     "test:smoke": "tsx tests/smoke/run.ts",
     "questionnaire:page": "tsx scripts/questionnaire/build.ts",
     "worker": "tsx --conditions=react-server scripts/worker.ts",
@@ -25,14 +27,14 @@
     "d3-selection": "^3.0.0",
     "d3-zoom": "^3.0.0",
     "drizzle-orm": "^0.45.3",
-    "next": "16.4.2",
+    "next": "16.4.3",
     "pg": "8.23.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "^0.0.1",
     "topojson-client": "^3.1.0",
     "world-atlas": "^2.0.2",
-    "zod": "4.6.5"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@playwright/test": "1.56.1",
@@ -48,7 +50,7 @@
     "@types/topojson-specification": "^1.0.5",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
-    "eslint-config-next": "16.4.2",
+    "eslint-config-next": "16.4.3",
     "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.3"

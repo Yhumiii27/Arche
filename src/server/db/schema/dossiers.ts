@@ -2,7 +2,7 @@
 // 04, 05; delivery 3).
 import { boolean, date, index, integer, jsonb, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { arche } from './_schema';
-import { id, keur, timestamps } from './_common';
+import { id, keur, rowVersion, timestamps } from './_common';
 import { capex, gates } from './capex';
 import { users } from './organisation';
 
@@ -34,6 +34,9 @@ export const dossierVersions = arche.table('dossier_versions', {
   frozenByUserId: uuid('frozen_by_user_id').references(() => users.id),
   createdByName: text('created_by_name').notNull(),
   ...timestamps,
+  rowVersion: rowVersion(),
+  /** Version of the dossier's template its sections follow (AR-052); null = the built-in sections. */
+  templateVersion: integer('template_version'),
   /** Codex document holding the PDF of this frozen version, once deposited from Arche (CX-03; Arche keeps no file). */
   codexDocumentId: text('codex_document_id'),
   codexDepositedAt: timestamp('codex_deposited_at', { withTimezone: true }),
@@ -64,6 +67,9 @@ export const circuitSteps = arche.table('circuit_steps', {
   actedByUserId: uuid('acted_by_user_id').references(() => users.id),
   actedAt: timestamp('acted_at', { withTimezone: true }),
   ...timestamps,
+  rowVersion: rowVersion(),
+  /** The absent person the actor stood in for (AR-041); null when they acted in their own name. */
+  onBehalfOfName: text('on_behalf_of_name'),
 }, (t) => [index('circuit_steps_gate_idx').on(t.gateId)]);
 
 /** Proof of a simple signature (spec 05 §3). Append-only (database trigger). */

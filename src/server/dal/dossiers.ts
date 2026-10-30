@@ -11,6 +11,7 @@ import type { GateCode } from '@/domain/lifecycle';
 import {
   businessPlans, changes, circuitSteps, delegationMatrices, dossiers, dossierVersions, gates, signatures, users,
 } from '@/server/db/schema';
+import { sectionsFor } from './designs';
 import type { DB, Tx } from '@/server/db/types';
 import { latestValidated, lotsOf, risksOf, teamOf, versionsOf } from './cycle';
 
@@ -93,7 +94,8 @@ export function versionHash(kind: DossierKind, number: number, content: unknown,
 /** Completeness of a version now (a draft: with today's computed facts; a frozen one: as frozen). */
 export async function versionCompleteness(q: Q, c: { id: string; leadUserId: string | null }, kind: DossierKind, v: DossierVersionRow) {
   if (v.state !== 'draft') return v.completenessPct;
-  return completeness(kind, readContent(kind, v.content), await computedFacts(q, c)).pct;
+  const secs = await sectionsFor(q, kind, v.templateVersion);
+  return completeness(kind, readContent(kind, v.content, secs), await computedFacts(q, c), secs).pct;
 }
 
 // ── Gates and circuits ────────────────────────────────────────────────────────────────────────────────────────────────

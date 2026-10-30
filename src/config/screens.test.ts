@@ -19,10 +19,12 @@ describe('screen registry', () => {
     expect(matchScreen('/nowhere')).toBeNull();
   });
 
-  it('administration stays with the administrator; business screens never show it', () => {
+  it('administration stays with the administrator, who also reads every business screen', () => {
     expect(canSee('admin', 'admin-users')).toBe(true);
-    expect(canSee('admin', 'capex-list')).toBe(false);
+    expect(canSee('admin', 'capex-list')).toBe(true);
+    expect(canSee('admin', 'copil')).toBe(true);
+    expect(canSee('admin', 'capex-open')).toBe(false);
     expect(canSee('ceo', 'admin-users')).toBe(false);
-    expect([...BUILT].sort()).toEqual(['admin-connectors', 'admin-delegation', 'admin-model', 'admin-org', 'admin-users', 'approvals', 'capex-budget', 'capex-changes', 'capex-dossiers', 'capex-execution', 'capex-gates', 'capex-governance', 'capex-journal', 'capex-list', 'capex-machines', 'capex-overview', 'capex-pack', 'capex-permits', 'capex-rampup', 'capex-risks', 'capex-safety', 'copil', 'home', 'map', 'portfolio', 'rex']);
+    expect([...BUILT].sort()).toEqual(['admin-api', 'admin-connectors', 'admin-delegation', 'admin-designer', 'admin-model', 'admin-org', 'admin-users', 'approvals', 'capex-actions', 'capex-benefits', 'capex-budget', 'capex-changes', 'capex-dossiers', 'capex-execution', 'capex-gates', 'capex-governance', 'capex-journal', 'capex-list', 'capex-machines', 'capex-open', 'capex-overview', 'capex-pack', 'capex-permits', 'capex-rampup', 'capex-risks', 'capex-safety', 'capex-schedule', 'copil', 'envelopes', 'home', 'ideas', 'kpi', 'map', 'portfolio', 'rex', 'sage', 'scenarios', 'subsidiary-portfolio']);
   });
 });

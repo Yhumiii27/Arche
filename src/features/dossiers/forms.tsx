@@ -3,6 +3,7 @@
 // Codex (CX-03), freezing and the deposit of the frozen version's PDF.
 import { ActionButton, ActionForm, Folded } from '@/components/app/ActionForm';
 import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { SECTION_BASE_FIELD } from '@/domain/concurrency';
 import { CODEX_CONF_LEVELS } from '@/domain/dossiers';
 import { useI18n } from '@/i18n/client';
 import { addReferenceAction, depositFrozenVersionAction, depositReferenceAction, freezeVersionAction, removeReferenceAction, saveSectionAction } from './actions';
@@ -11,6 +12,7 @@ export function SectionForm({ code, kind, section, text }: { code: string; kind:
   const { t } = useI18n();
   return (
     <ActionForm action={(p, fd) => saveSectionAction(code, kind, section, p, fd)} submit="Save the section" done="Saved" variant="secondary">
+      <input type="hidden" name={SECTION_BASE_FIELD} value={text} readOnly />
       <Field label={t('Text')} htmlFor={`sec-${section}`} span="full">
         <Textarea id={`sec-${section}`} name="text" rows={4} defaultValue={text} />
       </Field>

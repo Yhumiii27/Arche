@@ -25,7 +25,7 @@ describe('capex visibility in SQL', () => {
   it('every profile sees what the rule allows, nothing more', async () => {
     const ceo = await viewerOf('ceo');
     const everything = await visibleCapex(ceo);
-    expect(everything.map((c) => c.code)).toEqual(['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-APM-2026-02', 'CPX-SAI-2026-01']);
+    expect(everything.map((c) => c.code)).toEqual(['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-APM-2026-02', 'CPX-SAI-2026-01', 'CPX-SAI-2026-02', 'CPX-SAI-2026-03']);
     for (const role of ROLE_KEYS) {
       const v = await viewerOf(role);
       const expected = everything
@@ -41,12 +41,13 @@ describe('capex visibility in SQL', () => {
     expect(await capexForViewer(apmSponsor, 'CPX-SAI-2026-01')).toBeNull();
     expect((await capexForViewer(apmSponsor, 'CPX-APM-2026-01'))?.title).toBe('Second extrusion line');
     const saiSponsor = await viewerOf('sai_sponsor');
-    expect((await visibleCapex(saiSponsor)).map((c) => c.code)).toEqual(['CPX-SAI-2026-01']);
+    expect((await visibleCapex(saiSponsor)).map((c) => c.code)).toEqual(['CPX-SAI-2026-01', 'CPX-SAI-2026-02', 'CPX-SAI-2026-03']);
   });
 
-  it('central functions see no draft; the administrator sees no CAPEX', async () => {
-    expect((await visibleCapex(await viewerOf('group_cfo'))).map((c) => c.code)).toEqual(['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-SAI-2026-01']);
-    expect(await visibleCapex(await viewerOf('admin'))).toEqual([]);
+  it('central functions see no draft; the administrator reads every CAPEX, drafts included, like the CEO', async () => {
+    expect((await visibleCapex(await viewerOf('group_cfo'))).map((c) => c.code)).toEqual(['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-SAI-2026-01', 'CPX-SAI-2026-02', 'CPX-SAI-2026-03']);
+    expect((await visibleCapex(await viewerOf('admin'))).map((c) => c.code)).toEqual((await visibleCapex(await viewerOf('ceo'))).map((c) => c.code));
+    expect(await capexForViewer(await viewerOf('admin'), 'CPX-APM-2026-02')).not.toBeNull();
     expect(await capexForViewer(await viewerOf('dir_ig'), 'CPX-APM-2026-02')).toBeNull();
   });
 });
@@ -54,7 +55,7 @@ describe('capex visibility in SQL', () => {
 describe('pub_capex', () => {
   it('publishes the open CAPEX only (drafts stay in their subsidiary), with the dates of the gates passed', async () => {
     const rows = (await t.handle.pool.query(`select code, statut, phase_code, typologie, g1_le::text, g2_le::text, g3_le from arche.pub_capex order by code`)).rows;
-    expect(rows.map((r) => r.code)).toEqual(['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-SAI-2026-01']);
+    expect(rows.map((r) => r.code)).toEqual(['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-SAI-2026-01', 'CPX-SAI-2026-02', 'CPX-SAI-2026-03']);
     expect(rows[2]).toMatchObject({ statut: 'active', phase_code: 'execution', typologie: 'strategic', g1_le: '2026-01-20', g2_le: '2026-07-08', g3_le: null });
   });
 });

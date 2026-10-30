@@ -10,8 +10,11 @@ import { holdsOn } from '@/domain/capex';
 import { canActOn, type StepActor } from '@/domain/circuits';
 import { DECIDER_ROLE_OF, type DeciderLevel } from '@/domain/delegation';
 import { getDb } from '@/server/db/client';
-import { budgetVersions, capex, capexMembers, changes, circuitSteps, gates } from '@/server/db/schema';
+import { budgetVersions, capex, capexMembers, changes, circuitSteps, gates, postAudits } from '@/server/db/schema';
+import { postAuditsOf } from '@/domain/benefits';
 import type { Viewer } from '@/server/viewer';
+import { businessToday } from '@/server/clock';
+import { standInFor, standInsOf } from './absences';
 import { visibleCapex } from './capex';
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
@@ -33,12 +36,16 @@ export async function approvalsOf(v: Viewer): Promise<ApprovalItem[]> {
   ]);
   const facts = new Map(rows.map((r) => [r.id, r]));
   const internalClientOf = new Set(members.map((m) => m.capexId));
+  const standIns = await standInsOf(db, v.userId, await businessToday(db));
   const items: ApprovalItem[] = [];
   for (const x of steps) {
     const c = facts.get(x.capexId)!;
     const actor = { role: v.role, userId: v.userId, assignments: v.assignments, internalClient: internalClientOf.has(c.id) };
-    if (!canActOn({ actor: x.s.actor as StepActor, speciality: x.s.speciality, assigneeUserId: x.s.assigneeUserId }, actor, c)) continue;
+    const own = canActOn({ actor: x.s.actor as StepActor, speciality: x.s.speciality, assigneeUserId: x.s.assigneeUserId }, actor, c);
+    const standIn = own ? null : standInFor(x.s, c, standIns);
+    if (!own && !standIn) continue;
     items.push({
+      ...(standIn ? { onBehalfOf: standIn.person.displayName } : {}),
       kind: 'step', capexCode: c.code, title: x.s.label, detail: `${x.gateCode} · session ${x.session}`, subject: byId.get(c.id)!.title, since: x.s.openedOn ?? iso(x.s.createdAt), due: x.s.dueOn,
       href: screenHref('capex-gates', { code: c.code }),
     });
@@ -51,6 +58,18 @@ export async function approvalsOf(v: Viewer): Promise<ApprovalItem[]> {
   for (const c of rows) {
     if (c.typologyProposed && v.role === 'dir_ig' && holdsOn(v.assignments, 'dir_ig', c) && c.status === 'active')
       items.push({ kind: 'typology', capexCode: c.code, title: 'Typology to confirm', detail: `${c.typologyProposed}`, subject: byId.get(c.id)!.title, since: iso(c.updatedAt), due: null, href: screenHref('capex-governance', { code: c.code }) });
+  }
+  // Post-audits that fell due (AR-046), for the group industrial director.
+  if (v.role === 'dir_ig') {
+    const commissioned = await db.select({ id: capex.id, mesStartedOn: capex.mesStartedOn }).from(capex).where(inArray(capex.id, ids));
+    const held = await db.select({ capexId: postAudits.capexId, milestone: postAudits.milestone, heldOn: postAudits.heldOn }).from(postAudits).where(inArray(postAudits.capexId, ids));
+    const today = await businessToday(db);
+    for (const x of commissioned) {
+      const c = facts.get(x.id)!;
+      if (!holdsOn(v.assignments, 'dir_ig', c) || (c.status !== 'active' && c.status !== 'closed')) continue;
+      for (const a of postAuditsOf(x.mesStartedOn, held.filter((h) => h.capexId === x.id), today).filter((a) => a.state === 'due' || a.state === 'late'))
+        items.push({ kind: 'post_audit', capexCode: c.code, title: 'Post-audit to hold', detail: `M+${a.milestone}`, subject: byId.get(c.id)!.title, since: a.dueOn, due: a.dueOn, href: screenHref('capex-benefits', { code: c.code }) });
+    }
   }
   for (const ch of chs) {
     const c = facts.get(ch.capexId)!;
