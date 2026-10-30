@@ -21,7 +21,7 @@
 | K-10 | À la commande (passage d’un besoin à `ordered`), créer le projet EPC2i — ou ajouter des équipements à un projet existant — et publier son code dans `pub_reponses_besoins.projet_code` | R-185, R-187 | L4 | haute |
 | K-11 | Index sur `maj_le` (ou colonne source) des vues lues, pour la lecture incrémentale d’Arche | R-189 | L4 | basse |
 | K-12 | Socle partagé `@epc2i/socle` : Arche consommera le paquet à la place de ses copies (liste dans [`SOCLE.md`](SOCLE.md)) | R-194 | après le pilote | basse |
-| K-14 | **Démo alignée** (responsable produit, 25 oct. 2026) : dans la simulation d'Arche de Keystone (`src/server/integrations/capex/simulation.ts`), ajouter les CAPEX de démo d'Arche qui lui manquent — CPX-APM-2025-01 (phase 4, démarrage), CPX-SAI-2026-02 et CPX-SAI-2026-03 — et le besoin CPX-APM-2025-01/B01 (libellé libre « Ageing oven 2 × 6 m », commandé le 15/09/2025) ; relier à ce besoin un projet de démo livré ou en garantie (son parc installé donne les machines des lignes de ramp-up d'Arche) ; planifier la SAT de RCF-019 (le critère K3 de CPX-SAI-2026-01 la lit) ; si possible, un projet plus vraisemblable que RCF-019 (aménagement d'une clinique à Lyon) pour l'unité mobile d'une usine de tomates au Sénégal | — | démo du pilote | moyenne |
+| K-14 | **Démo alignée** (responsable produit, 25 oct. 2026) : dans la simulation d'Arche de Keystone (`src/server/integrations/capex/simulation.ts`), ajouter les CAPEX de démo d'Arche qui lui manquent — CPX-APM-2025-01 (phase 4, démarrage), CPX-SAI-2026-02 et CPX-SAI-2026-03 — et le besoin CPX-APM-2025-01/B01 (libellé libre « Ageing oven 2 × 6 m », commandé le 15/09/2025) ; relier à ce besoin un projet de démo livré ou en garantie (son parc installé donne les machines des lignes de ramp-up d'Arche) ; planifier la SAT de RCF-019 (le critère K3 de CPX-SAI-2026-01 la lit) ; si possible, un projet plus vraisemblable que RCF-019 (aménagement d'une clinique à Lyon) pour l'unité mobile d'une usine de tomates au Sénégal — **déposée le 30 oct. 2026** (REQUESTS.md de Keystone) | — | démo du pilote | moyenne |
 | K-13 | ~~Publier `keystone.pub_rex` au contrat commun du REX~~ — retirée le 23 oct. 2026 : Matrix a déposé la même demande chez Keystone avec le contrat commun à 15 colonnes, qu'Arche suit dans `pub_rex_v2` | — | — | — |
 
 > **K-13 retirée le 23 oct. 2026** : l'entrée proposée à Keystone (Yhumiii27/Keystone#27, non fusionnée) doublait la demande
@@ -32,7 +32,7 @@
 > **25 oct. 2026 — démo alignée sur Keystone** : la simulation de Keystone dans Arche reprend désormais les lignes réelles de la
 > démo de Keystone (`src/server/integrations/keystone/keystone-demo.ts`, exportées de ses vues de partage, `origin/main` 4af0f31) :
 > catalogue EMP-40T / MEMU-16 / SPUR-2X, réponses RB-001 à RB-005, projet RCF-019 ; et les besoins de démo d'Arche sont ceux que
-> la démo de Keystone attend. Ce qui reste à faire côté Keystone est la demande K-14 (non déposée : à valider).
+> la démo de Keystone attend. Ce qui reste à faire côté Keystone est la demande K-14, **validée par le responsable produit le 30 oct. 2026 et déposée** dans le `REQUESTS.md` de Keystone (entrée OUVERTE).
 
 Questions à transmettre en même temps : AC-2 (P-05), AC-4 (catalogue), AC-5 (multi-équipements) — voir
 [`DECISIONS.md`](DECISIONS.md) §3.
