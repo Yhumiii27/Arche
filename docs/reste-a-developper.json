@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-22",
-  "updated": "2026-10-29",
+  "updated": "2026-10-31",
   "branch": "claude/brave-curie-chxbck",
   "history": [
     {
@@ -138,6 +138,10 @@
     {
       "date": "2026-10-29",
       "text": "Lot 7e : backlog d’idées (AR-051), gains réalisés et post-audit (AR-046), import Sage par extraction (AR-047). Les 14 points AR-039 à AR-052 sont livrés."
+    },
+    {
+      "date": "2026-10-31",
+      "text": "AR-037 lancé : lot 037a, aide à la décision par règles (prévision, dérive, comparaison aux CAPEX réalisés, synthèse du jalon)."
     }
   ],
   "items": [
@@ -915,7 +919,9 @@
       ],
       "evidence": [],
       "progress": {
-        "state": "a_faire"
+        "state": "en_cours",
+        "delivery": "L7",
+        "note": "31 oct. 2026 : lot 037a fait — aide à la décision par règles (sans IA, rien envoyé) : prévision de la courbe en S et de l'EAC au rythme des 3 derniers mois, dérive des coûts (EAC +3 % sur 3 mois) et du planning (fin projetée 2 mois ou plus après la fin prévue) en alertes, comparaison avec les CAPEX déjà réalisés (coût final ou EAC contre le budget G2 : médiane et 80e centile, même type d'investissement dès 3 CAPEX), synthèse de la décision sur la page du jalon. Reste : signature avancée G2 / AFE (037b) ; IA quand un fournisseur conforme est validé (C-13)."
       }
     },
     {

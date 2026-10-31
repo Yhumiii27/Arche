@@ -1,6 +1,6 @@
 // Gates & circuits (docs/spec/05): the gate the CAPEX faces, its criteria evaluated now, the submission of the gate on the
 // frozen dossier, the running circuit — each step, its deadline, its outcome — with the form of the step that is the viewer's,
-// and the earlier sessions.
+// the brief of the decision and the comparison with the CAPEX already built (AR-037, rules), and the earlier sessions.
 import { and, eq } from 'drizzle-orm';
 import Link from 'next/link';
 import { EmptyState } from '@/components/app/EmptyState';
@@ -13,6 +13,7 @@ import { canActOn, isSigned, OUTCOMES_OF, OUTCOME_LABEL, STEP_KIND_LABEL, type O
 import { DOSSIER_LABEL, DOSSIER_OF_GATE } from '@/domain/dossiers';
 import { DECISION_LABEL, GATE_LABEL, currentGate, type CriterionState, type GateDecision } from '@/domain/lifecycle';
 import { loadCapexPage } from '@/features/capex/page-data';
+import { GateBriefCard, ReferenceCard } from '@/features/decision/aid';
 import { StepForm, SubmitGateForm } from '@/features/gates/forms';
 import { dataText } from '@/i18n/data-text';
 import { fmtDate } from '@/lib/format';
@@ -23,6 +24,7 @@ import { gatesOf, teamOf } from '@/server/dal/cycle';
 import { dossierVersionsOf, stepsOf } from '@/server/dal/dossiers';
 import { standInFor, standInsOf } from '@/server/dal/absences';
 import { circuitFor } from '@/server/dal/designs';
+import { decisionAidOf } from '@/server/dal/decision-aid';
 
 const STATE_LABEL: Record<CriterionState, string> = { met: 'Met', unmet: 'Not met', forced: 'Forced', not_evaluated: 'Not evaluated yet' };
 const STATUS_LABEL: Record<string, string> = { waiting: 'Waiting', open: 'Open', done: 'Done', cancelled: 'Cancelled' };
@@ -31,7 +33,8 @@ const SESSION_LABEL: Record<string, string> = { in_review: 'Circuit running', de
 export default async function GatesPage({ params }: PageProps<'/capex/[code]/gates'>) {
   const { t, lang, viewer, db, c, can } = await loadCapexPage(params);
   const gate = currentGate(c);
-  const [sessions, ev, team, today] = await Promise.all([gatesOf(db, c.id), currentEvaluation(db, c), teamOf(db, c.id), businessToday()]);
+  const today = await businessToday();
+  const [sessions, ev, team, aid] = await Promise.all([gatesOf(db, c.id), currentEvaluation(db, c), teamOf(db, c.id), gate ? decisionAidOf(db, viewer, c, today) : null]);
   const running = sessions.find((g) => g.status === 'in_review') ?? null;
   const allSteps = await stepsOf(db, sessions.map((g) => g.id));
   const kind = gate ? DOSSIER_OF_GATE[gate] : undefined;
@@ -115,6 +118,9 @@ export default async function GatesPage({ params }: PageProps<'/capex/[code]/gat
           <span className="text-muted">{t('Freeze the dossier, complete at 100 %, before submitting the gate.')}</span>
         )}
       </SectionCard>
+
+      {aid && <GateBriefCard aid={aid} t={t} lang={lang} />}
+      {aid && (gate === 'G1' || gate === 'G2') && <ReferenceCard aid={aid} t={t} lang={lang} />}
 
       {running && (
         <SectionCard title={`${running.code} · ${t('session')} ${running.session} — ${t(SESSION_LABEL.in_review)}`} subtitle={runningVersion ? `v${runningVersion.number} · SHA-256 ${runningVersion.contentHash}` : undefined} scroll>
