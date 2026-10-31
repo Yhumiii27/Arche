@@ -142,6 +142,10 @@
     {
       "date": "2026-10-31",
       "text": "AR-037 lancé : lot 037a, aide à la décision par règles (prévision, dérive, comparaison aux CAPEX réalisés, synthèse du jalon)."
+    },
+    {
+      "date": "2026-10-31",
+      "text": "AR-037 : lot 037b, signature avancée du G2 / AFE (Yousign ou simulation) ; développement d'AR-037 fait, reste la clé Yousign et l'IA (C-13)."
     }
   ],
   "items": [
@@ -911,8 +915,8 @@
       "category": "ia_signature",
       "kind": "fonction",
       "priority": "plus_tard",
-      "status": "non_commence",
-      "waiting_on": "",
+      "status": "bloque_attente_proprietaire",
+      "waiting_on": "Responsable produit (contrat Yousign ; fournisseur IA conforme, C-13)",
       "effort": "M",
       "sources": [
         "docs/PLAN.md"
@@ -921,7 +925,7 @@
       "progress": {
         "state": "en_cours",
         "delivery": "L7",
-        "note": "31 oct. 2026 : lot 037a fait — aide à la décision par règles (sans IA, rien envoyé) : prévision de la courbe en S et de l'EAC au rythme des 3 derniers mois, dérive des coûts (EAC +3 % sur 3 mois) et du planning (fin projetée 2 mois ou plus après la fin prévue) en alertes, comparaison avec les CAPEX déjà réalisés (coût final ou EAC contre le budget G2 : médiane et 80e centile, même type d'investissement dès 3 CAPEX), synthèse de la décision sur la page du jalon. Reste : signature avancée G2 / AFE (037b) ; IA quand un fournisseur conforme est validé (C-13)."
+        "note": "31 oct. 2026 : développement fait. 037a — aide à la décision par règles (sans IA, rien envoyé) : prévision de la courbe en S et de l'EAC, dérive des coûts et du planning en alertes, comparaison avec les CAPEX déjà réalisés, synthèse de la décision sur la page du jalon. 037b — signature avancée du G2 / AFE par Yousign (ou sa simulation) : décision vérifiée, PDF du dossier d'investissement envoyé, retour dans Arche et signature « avancée » avec la référence Yousign ; PDF signé et preuve lus chez Yousign. Reste : la clé du contrat Yousign du groupe (responsable produit / DSI) et l'IA quand un fournisseur conforme est validé (C-13)."
       }
     },
     {

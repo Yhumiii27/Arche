@@ -11,7 +11,8 @@ import { capexForViewer } from '@/server/dal/capex';
 import { capexRow } from '@/server/dal/cycle';
 import { getViewer, type Viewer } from '@/server/session';
 
-export type ActionResult = { ok: true; code?: string } | { ok: false; error: string };
+/** `requestId`: an advanced signature request opened (AR-037); `redirect`: where the browser goes next (the provider). */
+export type ActionResult = { ok: true; code?: string; requestId?: string; redirect?: string } | { ok: false; error: string };
 export type CapexRowFull = NonNullable<Awaited<ReturnType<typeof capexRow>>>;
 
 export const fieldsOf = (fd: FormData) => Object.fromEntries([...fd.entries()].map(([k, v]) => [k, typeof v === 'string' ? v : '']));
