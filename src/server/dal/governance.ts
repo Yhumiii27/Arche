@@ -8,6 +8,7 @@ import { alertsOf, sortAlerts, type Alert } from '@/domain/alerts';
 import { missingStaff } from '@/domain/budget';
 import { addWorkingDays } from '@/domain/circuits';
 import { uncertaintyGap } from '@/domain/execution';
+import { forecastOf } from '@/domain/forecast';
 import { needRef } from '@/domain/needs';
 import { packSummary, type PackItemState } from '@/domain/pack';
 import type { HsState } from '@/domain/safety';
@@ -142,6 +143,7 @@ function dashboardFrom(c: CapexFull, d: DashboardData, values: ModelValues, toda
   const audits = missingAudits(c, revs.filter((r) => r.kind === 'audit'));
   const afterG2 = c.phase === 'execution' || c.phase === 'demarrage';
   const measured = exec.indicators.acKeur > 0 || exec.indicators.evKeur > 0;
+  const drift = afterG2 && measured ? forecastOf(exec.curve, exec.indicators.bacKeur, exec.month) : null;
   const alerts = sortAlerts(alertsOf({
     code: c.code, status: c.status, typologyProposed: c.typologyProposed,
     running: session && submittedOn && targetOn ? { gate: session.code, submittedOn, targetOn } : null,
@@ -152,6 +154,7 @@ function dashboardFrom(c: CapexFull, d: DashboardData, values: ModelValues, toda
     lateConditions: d.lateConditions,
     rampup: c.phase === 'demarrage' && startup.result.mesStartedOn ? { alertOn: startup.result.alertOn, limitOn: startup.result.limitOn, reached: !!startup.result.reachedOn } : null,
     envelopeOver: d.envelopeOver(values.envelopeBlockPct),
+    drift: drift ? { ...drift.drift, eacDeltaPct: drift.eacTrend?.deltaPct ?? null, delayMonths: drift.delayMonths } : null,
   }, today));
   const board = hsBoard(d.hs);
   return {

@@ -48,9 +48,11 @@ export interface SCurveProps {
   /** Month label ("oct. 26"). */
   monthLabel: (m: string) => string;
   t: (s: string) => string;
+  /** Earned value projected after the current month by rules (AR-037), drawn on the months of the curve. */
+  projection?: readonly { month: string; earned: number }[];
 }
 
-export function SCurve({ points, bacKeur, eacKeur, current, fmt, monthLabel, t }: SCurveProps) {
+export function SCurve({ points, bacKeur, eacKeur, current, fmt, monthLabel, t, projection }: SCurveProps) {
   if (points.length < 2) return null;
   const ymax = Math.max(bacKeur, eacKeur, ...points.map((p) => Math.max(p.planned, p.actual ?? 0, p.earned ?? 0)), 1) * 1.12;
   const gstep = stepOf(ymax);
@@ -105,6 +107,12 @@ export function SCurve({ points, bacKeur, eacKeur, current, fmt, monthLabel, t }
           <text x={fx(x(n - 1) - 8)} y={fx(y(eacKeur) - 10)} style={{ fill: C.ac, fontSize: 11, textAnchor: 'end' }}>{`${t('EAC')} ${fmt(eacKeur)}`}</text>
         </>
       )}
+      {lastPast >= 0 && projection && projection.length > 0 && (() => {
+        const pts = projection.map((p) => [points.findIndex((q) => q.month === p.month), p.earned] as const).filter(([i]) => i > lastPast);
+        if (!pts.length) return null;
+        const d = `M${fx(x(lastPast))} ${fx(y(points[lastPast].earned ?? 0))} ` + pts.map(([i, v]) => `L${fx(x(i))} ${fx(y(v))}`).join(' ');
+        return <path d={d} fill="none" style={{ stroke: C.ev, strokeWidth: 2, strokeDasharray: '1 5', strokeLinecap: 'round' }}><title>{t('Earned value projected at the recent pace')}</title></path>;
+      })()}
       {direct.map(({ k, i }) => (
         <text key={k} x={fx(x(i!) + 6)} y={fx(y(points[i!][k]!) + 4)} style={{ fill: 'var(--color-neutral-400)', fontSize: 11 }}>{t(LABEL[k])}</text>
       ))}
