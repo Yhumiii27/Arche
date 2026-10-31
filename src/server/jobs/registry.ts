@@ -3,7 +3,8 @@ import 'server-only';
 // MATRIX_URL or MATRIX_DECLARATIONS_DIR is set), the Keystone mirror (every ARCHE_KEYSTONE_SYNC_MIN minutes unless
 // ARCHE_KEYSTONE=off), the weekly snapshot of every active CAPEX (taken daily, one row per week: the dashboards' trends), and
 // the business API's webhooks (AR-048: deliveries every minute, new alerts every hour) and the circuits' e-mail notifications
-// (AR-041: every 15 minutes), Sage's planned extractions (AR-047: every hour, when ARCHE_SAGE_DIR is set).
+// (AR-041: every 15 minutes), Sage's planned extractions (AR-047: every hour, when ARCHE_SAGE_DIR is set), the advanced
+// signatures under way at Yousign (AR-037: every 10 minutes).
 import path from 'node:path';
 import { backupSchema } from '@/server/backup';
 import { getConfig } from '@/server/config';
@@ -14,6 +15,7 @@ import { deliverWebhooks, raiseAlerts } from '@/server/api/deliver';
 import { deliverEmails } from '@/server/notify/deliver';
 import { planNotices } from '@/server/notify/plan';
 import { importSageFolder } from '@/server/integrations/sage/folder';
+import { refreshSignatureRequests } from '@/server/signature/advanced';
 import { declareArcheSchema } from '@/server/integrations/matrix';
 import { matrixDeclarationEnabled } from '@/server/integrations/matrix/declare-schema';
 import type { PostgresHandle } from '@/server/db/postgres';
@@ -85,6 +87,15 @@ export function archeJobs(h: PostgresHandle): Job[] {
       enabled: !!cfg.database && !!cfg.sageDir,
       async run() {
         return importSageFolder(h.db, cfg.sageDir!, await businessToday());
+      },
+    },
+    {
+      // The advanced signatures under way at Yousign (AR-037): declined or expired ones closed.
+      name: 'signature-status',
+      everyMin: 10,
+      enabled: !!cfg.database && cfg.signature.provider === 'yousign',
+      async run() {
+        return `${await refreshSignatureRequests(h.db)} request(s) changed`;
       },
     },
     {

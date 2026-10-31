@@ -78,6 +78,16 @@ describe('parseConfig', () => {
     expect(vars(parse({ ARCHE_ADMIN_EMAILS: 'a@b.example' }).warnings)).toEqual(['ARCHE_ADMIN_EMAILS']);
   });
 
+  it('advanced signature (AR-037): none by default; Yousign needs its key and the public URL; the key is a secret', () => {
+    expect(parse({}).config.signature).toEqual({ provider: 'none', yousignUrl: 'https://api-sandbox.yousign.app/v3', yousignKey: null });
+    expect(vars(parse({ ARCHE_SIGNATURE_PROVIDER: 'yousign' }).errors)).toEqual(['ARCHE_YOUSIGN_API_KEY', 'ARCHE_PUBLIC_URL']);
+    const ok = parse({ ARCHE_SIGNATURE_PROVIDER: 'yousign', ARCHE_YOUSIGN_API_KEY: 'secret-key', ARCHE_PUBLIC_URL: 'https://arche.example', ARCHE_YOUSIGN_API_URL: 'https://api.yousign.app/v3/' });
+    expect(ok.errors).toEqual([]);
+    expect(ok.config.signature).toEqual({ provider: 'yousign', yousignUrl: 'https://api.yousign.app/v3', yousignKey: 'secret-key' });
+    expect(ok.config.secrets).toContain('secret-key');
+    expect(vars(parse({ ARCHE_SIGNATURE_PROVIDER: 'docusign' }).errors)).toEqual(['ARCHE_SIGNATURE_PROVIDER']);
+  });
+
   it('redactUrl hides the password; every variable is known', () => {
     expect(redactUrl(DB)).toBe('postgres://arche_app:***@db:5432/epc2i');
     expect(redactUrl('nope')).toBe('[invalid URL]');
