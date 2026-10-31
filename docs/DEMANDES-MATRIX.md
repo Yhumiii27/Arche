@@ -116,7 +116,7 @@ existent mais ne sont pas lues ; Arche n'est pas bloqué.
 
 ## M-14 · Rôle de lecture pour Power BI (AR-042, 29 oct. 2026)
 
-À transmettre au chat Matrix par le responsable produit (non déposée). Créer un rôle `bi_reader` (connexion, mot de passe dans
+Déposée le 31 oct. 2026 dans le `REQUESTS.md` de Matrix (validée par le responsable produit). Créer un rôle `bi_reader` (connexion, mot de passe dans
 le coffre de la DSI) qui lit **seulement** les vues `pub_` des outils (Arche : `pub_capex`, `pub_besoins_machines`,
 `pub_rampup`, `pub_rex_v2`, `pub_journal`), sans accès aux tables ; Power BI s'y connecte avec son connecteur PostgreSQL.
 Sans ce rôle, Power BI lit l'API métier d'Arche (`docs/API.md` §7).
