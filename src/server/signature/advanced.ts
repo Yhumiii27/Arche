@@ -4,10 +4,8 @@ import 'server-only';
 // (Yousign) with the signer, who signs there (code by e-mail) and comes back to Arche; the step is then completed with the
 // choices kept, and the signature row carries the provider's reference. The simulation stands for the provider with a page of
 // Arche (demonstrations and tests). Arche keeps no file: the signed PDF and its audit trail are read from the provider.
-import { and, eq, inArray } from 'drizzle-orm';
-import { isOpenRequest, requestStatusOf, type ProviderStatus, type RequestStatus } from '@/domain/signature';
-import { dossierDoc, printCtxOf } from '@/features/print/documents';
-import { toPdf } from '@/lib/export/pdf';
+import { eq, inArray } from 'drizzle-orm';
+import { isOpenRequest, type RequestStatus } from '@/domain/signature';
 import { getConfig } from '@/server/config';
 import { getDb } from '@/server/db/client';
 import { writeAudit } from '@/server/db/helpers';
@@ -16,22 +14,11 @@ import type { DB, Tx } from '@/server/db/types';
 import type { Viewer } from '@/server/viewer';
 import { auditOf, type ActionResult, type CapexRowFull } from '@/server/capex/write';
 import { statementOf, type GateRecord, type StepInput, type StepPlan, type StepRecord } from '@/server/cycle/step';
-import { yousignClient, type YousignClient } from '@/server/integrations/signature/yousign';
+import { providerStatusOf, setYousignClientForTests, yousign } from './status';
+
+export { providerStatusOf, setYousignClientForTests };
 
 export type SignatureRequestRow = typeof signatureRequests.$inferSelect;
-
-let testClient: YousignClient | null = null;
-/** Tests replace the Yousign client. */
-export function setYousignClientForTests(c: YousignClient | null) {
-  testClient = c;
-}
-
-function yousign(): YousignClient {
-  if (testClient) return testClient;
-  const s = getConfig().signature;
-  if (!s.yousignKey) throw new Error('ARCHE_YOUSIGN_API_KEY is not set');
-  return yousignClient({ baseUrl: s.yousignUrl, apiKey: s.yousignKey });
-}
 
 const origin = () => getConfig().mail.publicUrl ?? '';
 
@@ -64,6 +51,8 @@ export async function launchSignatureRequest(requestId: string): Promise<ActionR
   try {
     const where = await whereOf(db, req);
     if (!where) throw new Error('The step of the request is gone');
+    // Loaded here only: the printable documents pull in UI modules the worker (job signature-status) cannot load.
+    const [{ dossierDoc, printCtxOf }, { toPdf }] = await Promise.all([import('@/features/print/documents'), import('@/lib/export/pdf')]);
     const ctx = await printCtxOf(where.code);
     const doc = ctx ? await dossierDoc(ctx, 'investment', where.versionNumber ?? undefined) : null;
     if (!doc) throw new Error('The investment dossier cannot be read');
@@ -92,14 +81,6 @@ export async function whereOf(q: DB | Tx, req: { circuitStepId: string }) {
   return { ...w, versionNumber: v?.number ?? null };
 }
 
-/** The provider's status of a request (the simulation keeps it on the row). */
-export async function providerStatusOf(req: SignatureRequestRow): Promise<ProviderStatus> {
-  // A simulated request counts only while the simulation is the provider set (never once a real provider is configured).
-  if (req.provider === 'simulation') return getConfig().signature.provider === 'simulation' ? ((req.providerStatus as ProviderStatus | null) ?? 'pending') : 'cancelled';
-  if (!req.providerRef) return 'pending';
-  return yousign().status(req.providerRef);
-}
-
 /** Cancels the request at the provider (best effort: a failure there leaves it to expire). */
 export async function cancelAtProvider(req: SignatureRequestRow): Promise<void> {
   if (req.provider === 'yousign' && req.providerRef) await yousign().cancel(req.providerRef).catch(() => undefined);
@@ -109,19 +90,6 @@ export async function cancelAtProvider(req: SignatureRequestRow): Promise<void> 
 export async function providerFile(req: SignatureRequestRow, kind: 'document' | 'proof'): Promise<Uint8Array | null> {
   if (req.provider !== 'yousign' || !req.providerRef || req.status !== 'completed') return null;
   return kind === 'document' ? yousign().signedDocument(req.providerRef) : req.signerRef ? yousign().auditTrail(req.providerRef, req.signerRef) : null;
-}
-
-/** Job `signature-status`: the requests under way at Yousign, their status refreshed (declined or expired ones closed). */
-export async function refreshSignatureRequests(q: DB): Promise<number> {
-  const rows = await q.select().from(signatureRequests).where(and(eq(signatureRequests.provider, 'yousign'), inArray(signatureRequests.status, ['pending'])));
-  let changed = 0;
-  for (const r of rows) {
-    const p = await providerStatusOf(r).catch(() => null);
-    if (!p || p === r.providerStatus) continue;
-    await q.update(signatureRequests).set({ providerStatus: p, status: requestStatusOf(p), updatedAt: new Date() }).where(eq(signatureRequests.id, r.id));
-    changed++;
-  }
-  return changed;
 }
 
 /** The requests of a gate session's steps (the gates page). */

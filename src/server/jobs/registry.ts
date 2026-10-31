@@ -15,7 +15,7 @@ import { deliverWebhooks, raiseAlerts } from '@/server/api/deliver';
 import { deliverEmails } from '@/server/notify/deliver';
 import { planNotices } from '@/server/notify/plan';
 import { importSageFolder } from '@/server/integrations/sage/folder';
-import { refreshSignatureRequests } from '@/server/signature/advanced';
+import { refreshSignatureRequests } from '@/server/signature/status';
 import { declareArcheSchema } from '@/server/integrations/matrix';
 import { matrixDeclarationEnabled } from '@/server/integrations/matrix/declare-schema';
 import type { PostgresHandle } from '@/server/db/postgres';
