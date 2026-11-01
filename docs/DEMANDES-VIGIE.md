@@ -19,3 +19,12 @@
 
 En attendant : les jalons HS sont **déclaratifs** dans Arche (N-13), saisis par le SSE groupe avec une référence de preuve
 (document Codex).
+
+## 1er nov. 2026 — AR-033 lancé par le responsable produit
+
+Le responsable produit a lancé AR-033 : **les études de sécurité des procédés sont tenues dans Vigie** (réponse à AC-3 et à la
+question CNF-12 à CNF-14 / INT-18 du `docs/RESTE-A-FAIRE.md` de Vigie). Arche est prêt à les lire : contrat de
+`vigie.pub_etudes_securite` dans [`CONTRATS.md`](CONTRATS.md) §2.5 (colonnes, valeurs, règle de franchissement des jalons),
+connecteur `src/server/integrations/vigie/` (mode `ARCHE_VIGIE`, simulation sur le jeu de démonstration), tâche `vigie-sync`.
+La demande VG-01 à VG-05 est à déposer dans le `REQUESTS.md` de Vigie (après le « validé » du responsable produit), et le
+droit de lecture d’`arche_app` dans celui de Matrix.

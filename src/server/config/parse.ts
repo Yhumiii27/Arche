@@ -59,6 +59,8 @@ export interface ArcheConfig {
   /** Folder of Sage's planned extractions (AR-047): `<SUBSIDIARY>*.csv`, imported by the job `sage-import`, then moved to
    * `done/`; null = no planned extraction (files uploaded on the Sage import page). */
   sageDir: string | null;
+  /** Vigie connector (AR-033). */
+  vigie: { mode: 'off' | 'simulation' | 'views' };
   /** Advanced signature of the G2 / AFE (AR-037). */
   signature: { provider: 'none' | 'simulation' | 'yousign'; yousignUrl: string; yousignKey: string | null };
   /** Secret values present in the environment: the logger masks them wherever they appear. */
@@ -153,6 +155,9 @@ const VARS = {
   ARCHE_PUBLIC_URL: z.string().optional(),
   // Folder of Sage's planned extractions (AR-047); unset: uploads only.
   ARCHE_SAGE_DIR: z.string().optional(),
+  // Vigie connector (AR-033): off, simulation (default; the demonstration data set only) or views (vigie.pub_etudes_securite;
+  // not shared yet: simulated on the demonstration data set only).
+  ARCHE_VIGIE: z.enum(['off', 'simulation', 'views'], { message: 'must be "off", "simulation" or "views"' }).optional(),
   // Advanced electronic signature of the G2 / AFE (AR-037, C-7): none (default: simple signature as everywhere), simulation
   // (a page of Arche stands for the provider: demonstrations and tests) or yousign (ARCHE_YOUSIGN_API_KEY, ARCHE_PUBLIC_URL).
   ARCHE_SIGNATURE_PROVIDER: z.enum(['none', 'simulation', 'yousign'], { message: 'must be "none", "simulation" or "yousign"' }).optional(),
@@ -285,6 +290,7 @@ export function parseConfig(env: Record<string, string | undefined>, opts: { cwd
         publicUrl: v.ARCHE_PUBLIC_URL ? trimSlash(v.ARCHE_PUBLIC_URL) : null,
       },
       sageDir: v.ARCHE_SAGE_DIR ? path.resolve(opts.cwd, v.ARCHE_SAGE_DIR) : null,
+      vigie: { mode: v.ARCHE_VIGIE ?? 'simulation' },
       signature: {
         provider: v.ARCHE_SIGNATURE_PROVIDER ?? 'none',
         yousignUrl: trimSlash(v.ARCHE_YOUSIGN_API_URL ?? 'https://api-sandbox.yousign.app/v3'),

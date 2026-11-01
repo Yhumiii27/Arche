@@ -1,7 +1,7 @@
 // Delivery and safety of a CAPEX (docs/spec/02 §3; delivery 5): the permits register, the subsidiary's part of the engineering
 // pack, the safety milestones declared by the group HSE (N-13) and the monthly committed / spent / physical % of the lots
 // (N-14). Documents stay in Codex: only their references are kept.
-import { date, integer, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
+import { date, index, integer, jsonb, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { arche } from './_schema';
 import { id, keur, timestamps } from './_common';
 import { capex, capexLots } from './capex';
@@ -51,6 +51,26 @@ export const hsStatuses = arche.table('hs_statuses', {
   updatedByName: text('updated_by_name').notNull(),
   ...timestamps,
 }, (t) => [unique('hs_statuses_uq').on(t.capexId, t.hsCode)]);
+
+/**
+ * Mirror of vigie.pub_etudes_securite (AR-033): the process safety studies Vigie holds, one row per study as Vigie publishes it
+ * (French column names, parsed by src/domain/process-safety.ts). Written only by src/server/integrations/vigie/sync.ts.
+ */
+export const vigieStudies = arche.table('vigie_studies', {
+  ref: text('ref').primaryKey(),
+  capexCode: text('capex_code'),
+  data: jsonb('data').$type<Record<string, unknown>>().notNull(),
+  syncedAt: timestamp('synced_at', { withTimezone: true }).notNull(),
+}, (t) => [index('vigie_studies_capex_idx').on(t.capexCode)]);
+
+/** The last synchronisation of the Vigie mirror (one row per view). */
+export const vigieSync = arche.table('vigie_sync', {
+  view: text('view').primaryKey(),
+  source: text('source').$type<'views' | 'simulation' | 'off'>().notNull(),
+  rows: integer('rows').notNull().default(0),
+  syncedAt: timestamp('synced_at', { withTimezone: true }).notNull(),
+  error: text('error'),
+});
 
 /** Values of a lot at the end of a month, cumulative (committed, spent, physical %); `keystone` rows are the EPC2i lots'. */
 export const lotActuals = arche.table('lot_actuals', {
