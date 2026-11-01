@@ -19,7 +19,7 @@ import { addWorkingDays } from '@/domain/circuits';
 import { SECTIONS, type DossierKind } from '@/domain/dossiers';
 import type { GateCode } from '@/domain/lifecycle';
 import {
-  auditEntries, budgetVersions, capex, capexLots, changes, circuitSteps, dossierVersions, gateCriteriaResults, gates, roleAssignments, signatures, users, envelopeMovements, envelopes,
+  auditEntries, budgetVersions, capex, capexLots, changes, circuitSteps, dossierVersions, gateCriteriaResults, gates, roleAssignments, signatureRequests, signatures, users, envelopeMovements, envelopes,
 } from '@/server/db/schema';
 import { approvalsOf } from '@/server/dal/approvals';
 import { getViewer } from '@/server/session';
@@ -32,6 +32,8 @@ import { declareHsAction } from '../safety/actions';
 import { importRampupAction, saveClosureAction, saveLineAction, saveRexAction, startMesAction } from '../startup/actions';
 import { PACK_TEMPLATE } from '@/domain/pack';
 import { actOnStepAction, submitGateAction } from './actions';
+import { finishSignatureAction, simulateSignatureAction } from './signature';
+import { setYousignClientForTests } from '@/server/signature/advanced';
 
 let t: TestDatabase;
 beforeAll(async () => {
@@ -220,7 +222,55 @@ describe('delivery 3: a CAPEX through its four gates by the circuits', () => {
     expect(await act('group_cfo', 'G2', 'E10 business plan visa', { outcome: 'approved', confirm: 'on' })).toEqual({ ok: true });
     expect(await act('dir_ig', 'G2', 'CEO signature', { outcome: 'go', confirm: 'on' })).toEqual({ ok: false, error: 'You cannot do this on this CAPEX' });
     expect(await act('ceo', 'G2', 'CEO signature', { outcome: 'go_with_conditions', confirm: 'on' })).toEqual({ ok: false, error: 'Enter at least one condition' });
-    expect(await act('ceo', 'G2', 'CEO signature', { outcome: 'go_with_conditions', confirm: 'on', conditions: 'Detail the working capital' })).toEqual({ ok: true });
+    // AR-037: the CEO's G2 / AFE signature is advanced once a provider is set. Simulation first: declined at the provider.
+    process.env.ARCHE_SIGNATURE_PROVIDER = 'simulation';
+    const go = { outcome: 'go_with_conditions', confirm: 'on', conditions: 'Detail the working capital' };
+    const sim = await act('ceo', 'G2', 'CEO signature', go);
+    expect(sim).toMatchObject({ ok: true, redirect: expect.stringMatching(/^\/signature\/[0-9a-f-]{36}\/simulate$/) });
+    const simId = (sim as { requestId: string }).requestId;
+    expect((await stepOf('G2', 'CEO signature')).status).toBe('open');
+    expect(await simulateSignatureAction(simId, 'declined')).toEqual({ ok: true });
+    expect(await finishSignatureAction(simId)).toEqual({ ok: false, error: 'The signature was declined, cancelled or expired at the provider' });
+    expect((await t.db.select().from(signatureRequests).where(eq(signatureRequests.id, simId)))[0].status).toBe('declined');
+
+    // Then Yousign (its client replaced): the investment dossier's PDF and the CEO sent; signed there; the step completed on return.
+    process.env.ARCHE_SIGNATURE_PROVIDER = 'yousign';
+    process.env.ARCHE_YOUSIGN_API_KEY = 'test-key';
+    process.env.ARCHE_PUBLIC_URL = 'https://arche.example';
+    let atProvider: 'pending' | 'signed' = 'pending';
+    const sent: { pdf: Uint8Array; signer: { name: string; email: string }; successUrl: string }[] = [];
+    setYousignClientForTests({
+      async create(i) { sent.push(i); return { ref: 'ys-req-1', signerRef: 'ys-signer-1', documentRef: 'ys-doc-1', url: 'https://yousign.example/sign/1' }; },
+      async status() { return atProvider; },
+      async cancel() {},
+      async signedDocument() { return new Uint8Array(); },
+      async auditTrail() { return new Uint8Array(); },
+    });
+    try {
+      const ys = await act('ceo', 'G2', 'CEO signature', go);
+      expect(ys).toMatchObject({ ok: true, redirect: 'https://yousign.example/sign/1' });
+      const ysId = (ys as { requestId: string }).requestId;
+      expect(Buffer.from(sent[0].pdf.slice(0, 5)).toString()).toBe('%PDF-');
+      expect(sent[0].signer.name).toBe('Henri Valette');
+      expect(sent[0].successUrl).toBe(`https://arche.example/signature/${ysId}/return`);
+      expect(await finishSignatureAction(ysId)).toEqual({ ok: false, error: 'The signature is not finished at the provider yet' });
+      as('dir_ig');
+      atProvider = 'signed';
+      expect(await finishSignatureAction(ysId)).toEqual({ ok: false, error: 'You cannot do this on this CAPEX' });
+      as('ceo');
+      expect(await finishSignatureAction(ysId)).toEqual({ ok: true, code: CODE });
+      expect(await finishSignatureAction(ysId)).toEqual({ ok: true });
+      const step = await stepOf('G2', 'CEO signature');
+      expect(step).toMatchObject({ status: 'done', outcome: 'go_with_conditions' });
+      const [sig] = await t.db.select().from(signatures).where(eq(signatures.circuitStepId, step.id));
+      expect(sig).toMatchObject({ level: 'advanced', providerRef: 'yousign:ys-req-1', userName: 'Henri Valette' });
+      expect((await t.db.select().from(signatureRequests).where(eq(signatureRequests.id, ysId)))[0].status).toBe('completed');
+    } finally {
+      setYousignClientForTests(null);
+      delete process.env.ARCHE_SIGNATURE_PROVIDER;
+      delete process.env.ARCHE_YOUSIGN_API_KEY;
+      delete process.env.ARCHE_PUBLIC_URL;
+    }
     expect(await row()).toMatchObject({ phase: 'execution' });
     expect(await session('G2')).toMatchObject({ session: 2, decision: 'go_with_conditions' });
     const [base] = await t.db.select().from(budgetVersions).where(and(eq(budgetVersions.capexId, (await row()).id), eq(budgetVersions.isG2Baseline, true)));

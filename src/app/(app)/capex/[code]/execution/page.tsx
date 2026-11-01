@@ -1,7 +1,7 @@
 // Execution of a CAPEX (docs/spec/06 §3, N-14): the lots with their budget (G2 baseline, else the latest validated version) and
 // planned window, the committed, spent and physical % of each month — entered or imported by the controller for the lots outside
 // EPC2i, read in Keystone for the machine lots (contract and signed amendments, invoiced, physical %) — the consolidated
-// S-curve with SPI, CPI and EAC, the uncertainty gap (CDC §4) and, in phase 4, the controller's accounting closure (N-15).
+// S-curve with SPI, CPI and EAC, the forecast by rules (AR-037), the uncertainty gap (CDC §4) and, in phase 4, the controller's accounting closure (N-15).
 import { EmptyState } from '@/components/app/EmptyState';
 import { KpiGrid, KpiTile } from '@/components/app/Kpi';
 import { SectionCard } from '@/components/app/SectionCard';
@@ -12,6 +12,8 @@ import { Tag } from '@/components/ds/Tag';
 import { LOT_KIND_LABEL, type LotKind } from '@/domain/capex';
 import { labelOf } from '@/domain/capex-labels';
 import { uncertaintyGap } from '@/domain/execution';
+import { forecastOf } from '@/domain/forecast';
+import { ForecastCard } from '@/features/decision/aid';
 import { currentGate, type CycleState } from '@/domain/lifecycle';
 import { loadCapexPage } from '@/features/capex/page-data';
 import { ActionLink } from '@/components/app/ActionForm';
@@ -58,6 +60,8 @@ export default async function ExecutionPage({ params }: PageProps<'/capex/[code]
   const k = (n: number) => fmtKeur(n, lang);
   const monthLabel = (m: string) => new Date(`${m}-15T12:00:00Z`).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB', { month: 'short', year: '2-digit', timeZone: 'UTC' });
   const low = (r: number | null) => r != null && r < 0.9;
+  // Forecast by rules (AR-037): once something is measured.
+  const forecast = i.acKeur > 0 || i.evKeur > 0 ? forecastOf(x.curve, i.bacKeur, x.month) : null;
   return (
     <>
       <PageHeader screen="capex-execution" title={dataText(c.title, lang)} crumbs={['CAPEX register']} crumbData={c.code} primary={edit ? <ImportActualsForm code={c.code} currencies={currencies} /> : undefined}
@@ -89,7 +93,7 @@ export default async function ExecutionPage({ params }: PageProps<'/capex/[code]
         {x.curve.length > 1 ? (
           <>
             <SCurveLegend t={t} />
-            <SCurve points={x.curve} bacKeur={i.bacKeur} eacKeur={i.eacKeur} current={x.month} fmt={k} monthLabel={monthLabel} t={t} />
+            <SCurve points={x.curve} bacKeur={i.bacKeur} eacKeur={i.eacKeur} current={x.month} fmt={k} monthLabel={monthLabel} t={t} projection={forecast?.projection} />
             <details>
               <summary>{t('Table view')}</summary>
               <Table>
@@ -118,6 +122,8 @@ export default async function ExecutionPage({ params }: PageProps<'/capex/[code]
           <EmptyState>{t('Plan the lots (start and end months) to draw the S-curve.')}</EmptyState>
         )}
       </SectionCard>
+
+      <ForecastCard forecast={forecast} t={t} lang={lang} />
 
       <SectionCard title={t('Cash-flow forecast')} hint={t('Disbursements by month: G2 baseline, actuals to date, forecast of the months to come (a lot without a forecast spreads what is left over its window)')} scroll>
         {cf.months.length ? (

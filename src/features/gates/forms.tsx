@@ -1,7 +1,7 @@
 'use client';
 // Gate circuit forms (client islands of the Gates page): submitting the gate, acting on a step. A signed step asks the
 // signer to confirm the statement; when the sign-in is too old, the form offers to sign in again (N-8).
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { Result, type ActionResult } from '@/components/app/ActionForm';
 import s from '@/components/app/ActionForm.module.css';
 import { Button } from '@/components/ds/Button';
@@ -46,11 +46,18 @@ export interface StepFormProps {
   /** Reservations of the opinions, proposed as conditions. */
   proposed: string;
   returnTo: string;
+  /** The G2 / AFE signed at the advanced level at the provider (AR-037). */
+  advanced?: boolean;
 }
 
-export function StepForm({ code, stepId, rowVersion, outcomes, signed, statement, decides, forcible, proposed, returnTo }: StepFormProps) {
+export function StepForm({ code, stepId, rowVersion, outcomes, signed, statement, decides, forcible, proposed, returnTo, advanced }: StepFormProps) {
   const { t } = useI18n();
   const [state, run, pending] = useActionState((p: ActionResult | null, fd: FormData) => actOnStepAction(code, stepId, p, fd), null);
+  // An advanced signature goes on at the provider (or its simulation).
+  const redirect = state && state.ok && 'redirect' in state ? (state.redirect as string | undefined) : undefined;
+  useEffect(() => {
+    if (redirect) window.location.assign(redirect);
+  }, [redirect]);
   return (
     <form action={run} className={s.form}>
       <input type="hidden" name={ROW_VERSION_FIELD} value={rowVersion} readOnly />
@@ -78,8 +85,9 @@ export function StepForm({ code, stepId, rowVersion, outcomes, signed, statement
           </span>
         </label>
       )}
+      {advanced && <span className="text-muted" style={{ gridColumn: '1 / -1', fontSize: 12 }}>{t('Advanced electronic signature: you will sign the investment dossier at the provider (code by e-mail), then come back to Arche.')}</span>}
       <div className={s.actions}>
-        <Button type="submit" variant="primary" disabled={pending}>{t(signed ? 'Sign' : 'Record')}</Button>
+        <Button type="submit" variant="primary" disabled={pending}>{t(advanced ? 'Sign at the provider' : signed ? 'Sign' : 'Record')}</Button>
         <Result state={state} done="Recorded" />
         {state && !state.ok && state.error === REAUTH_ERROR && (
           <a href={`/api/auth/sign-in?reauth=1&returnTo=${encodeURIComponent(returnTo)}`}>{t('Sign in again')}</a>

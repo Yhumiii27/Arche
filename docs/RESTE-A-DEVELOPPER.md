@@ -1,12 +1,12 @@
 # Arche — reste à développer
 
-Inventaire initial du 2026-10-22, mis à jour le 2026-10-30 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
+Inventaire initial du 2026-10-22, mis à jour le 2026-11-01 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
 
 **Lecture.** Priorité : Bloquant production, Prochaine étape, À décider (il faut d'abord trancher), Plus tard. Effort, pour un développeur qui connaît le code : S < 2 jours, M ≤ 1 semaine, L ≤ 3 semaines, XL > 3 semaines. Les identifiants entre parenthèses renvoient aux décisions (`docs/DECISIONS.md`) et aux demandes (`docs/DEMANDES-*.md`).
 
 ## 1. En bref
 
-**Avancement** : 41 faits, 7 en cours, 4 à faire, sur 52 points.
+**Avancement** : 41 faits, 8 en cours, 3 à faire, sur 52 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
@@ -20,9 +20,9 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 
 | Statut (points restants) | Points |
 |---|---:|
-| Non commencé | 3 |
+| Non commencé | 2 |
 | Partiel | 0 |
-| Attend le responsable produit | 3 |
+| Attend le responsable produit | 4 |
 | Attend un système externe | 5 |
 
 | Domaine | Bloquant production | Prochaine étape | À décider | Plus tard | Restants | Faits |
@@ -54,6 +54,7 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 - **AR-003** Données de référence des filiales — Responsable produit / DAF groupe
 - **AR-015** Hébergement en France et choix du serveur de production — Responsable produit et DSI
 - **AR-033** Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite — Responsable produit (AC-3) puis Vigie
+- **AR-037** Aide à la décision (règles puis IA conforme) et signature avancée G2 / AFE — Responsable produit (contrat Yousign ; fournisseur IA conforme, C-13)
 
 ### 1.3 Ce qui attend les autres applications
 
@@ -277,9 +278,9 @@ Livraison 6 (N-15).
 
 ### 2.10 Aide à la décision et signature avancée (1 restants)
 
-**AR-037 · Aide à la décision (règles puis IA conforme) et signature avancée G2 / AFE** — *Plus tard · non commencé · effort M*  
+**AR-037 · Aide à la décision (règles puis IA conforme) et signature avancée G2 / AFE** — *Plus tard · attend le responsable produit · effort M* · **en cours (L7)**  
 Livraison 7 (C-7, C-13). Analyse comparative du 25 oct. 2026 : la signature électronique qualifiée (DocuSign, Adobe Sign, Yousign) pour le G2 / AFE est un niveau avancé du marché (Unifier) ; l’IA de prévision de dérive des coûts et des délais et le benchmark d’une demande contre les CAPEX passés (Finario Predict) sont également avancés. Arche n’a qu’une signature simple par empreinte et des alertes à règles. Priorité suggérée : plus tard (après le pilote, livraison 7), inchangée.  
-*Sources : docs/PLAN.md*
+*Avancement : 31 oct. 2026 : développement fait. 037a — aide à la décision par règles (sans IA, rien envoyé) : prévision de la courbe en S et de l'EAC, dérive des coûts et du planning en alertes, comparaison avec les CAPEX déjà réalisés, synthèse de la décision sur la page du jalon. 037b — signature avancée du G2 / AFE par Yousign (ou sa simulation) : décision vérifiée, PDF du dossier d'investissement envoyé, retour dans Arche et signature « avancée » avec la référence Yousign ; PDF signé et preuve lus chez Yousign. Reste : la clé du contrat Yousign du groupe (responsable produit / DSI) et l'IA quand un fournisseur conforme est validé (C-13). · Attend : Responsable produit (contrat Yousign ; fournisseur IA conforme, C-13) · Sources : docs/PLAN.md*
 
 ### 2.11 Cadrage, décisions et données attendues (2 restants, 1 faits)
 
@@ -297,7 +298,9 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
-- 2026-10-30 — Dépôt dans Codex (CX-03) : depuis une section d’un dossier, un fichier est déposé dans Codex et rattaché ; le PDF d’une version figée est déposé et son identifiant gardé sur la version. Variables CODEX_API_URL, CODEX_DOCUMENTS_TOKEN, CODEX_DOCUMENTS_SECRET.
+- 2026-11-01 — Dépôt dans Codex (CX-03) : depuis une section d’un dossier, un fichier est déposé dans Codex et rattaché ; le PDF d’une version figée est déposé et son identifiant gardé sur la version. Variables CODEX_API_URL, CODEX_DOCUMENTS_TOKEN, CODEX_DOCUMENTS_SECRET.
+- 2026-10-31 — AR-037 : lot 037b, signature avancée du G2 / AFE (Yousign ou simulation) ; développement d'AR-037 fait, reste la clé Yousign et l'IA (C-13).
+- 2026-10-31 — AR-037 lancé : lot 037a, aide à la décision par règles (prévision, dérive, comparaison aux CAPEX réalisés, synthèse du jalon).
 - 2026-10-29 — Lot 7e : backlog d’idées (AR-051), gains réalisés et post-audit (AR-046), import Sage par extraction (AR-047). Les 14 points AR-039 à AR-052 sont livrés.
 - 2026-10-29 — Lot 7d : notifications e-mail, relances, escalade et absences (AR-041), concepteur sans code des dossiers et circuits (AR-052).
 - 2026-10-29 — Lot 7c : scoring multicritère et classement (AR-044), scénarios de portefeuille et scénario retenu pour le COPIL GPI (AR-043).

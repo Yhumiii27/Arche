@@ -4,47 +4,29 @@
 // acts on the step that is theirs: opinion, review, visa, decision, signature, countersignature, discharge, attestation. A
 // signed step needs a recent authentication (10 minutes, N-8) and leaves an append-only signature carrying the SHA-256 of the
 // version. A refusal stops the circuit; when every required step is done, the deciding step's outcome is applied to the CAPEX
-// (src/server/cycle/gate-decision.ts) with the criteria evaluated then, forced with a reason by the decider when forcible.
+// (src/server/cycle/gate-decision.ts) with the criteria evaluated then, forced with a reason by the decider when forcible. The
+// G2 decision is signed at the advanced level when a provider is configured (AR-037).
 import { createHash } from 'node:crypto';
-import { eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
-import {
-  canActOn, checkOutcome, REAUTH_ERROR, circuitFacts, decisionOf, dueOf, isRefusal, isSigned, openGroup, refreshStatuses, STEP_KIND_LABEL,
-  type Outcome, type StepActor, type StepKind, type StepState,
-} from '@/domain/circuits';
+import { checkOutcome, isSigned, REAUTH_ERROR, type StepKind } from '@/domain/circuits';
 import { DOSSIER_LABEL, DOSSIER_OF_GATE } from '@/domain/dossiers';
-import { CRITERIA, currentGate, decideGate, evaluateGate, type CycleState, type GateCode } from '@/domain/lifecycle';
-import { withPssrDischarge } from '@/domain/safety';
+import { currentGate, type GateCode } from '@/domain/lifecycle';
+import { isAdvancedStep } from '@/domain/signature';
 import { isStale, ROW_VERSION_FIELD, STALE_MSG } from '@/domain/concurrency';
 import { EXPERT_SPECIALITIES } from '@/config/roles';
+import { getConfig } from '@/server/config';
 import { recordActivity, writeAudit } from '@/server/db/helpers';
-import { circuitSteps, dossierVersions, gates, signatures } from '@/server/db/schema';
+import { circuitSteps, gates } from '@/server/db/schema';
 import type { Tx } from '@/server/db/types';
-import { auditOf, fieldsOf, onCapex, REFUSED, type ActionResult, type CapexRowFull } from '@/server/capex/write';
-import { applyGateDecision } from '@/server/cycle/gate-decision';
-import { gateFacts, modelValues, nextSession, teamOf } from '@/server/dal/cycle';
-import { standInFor, standInsOf } from '@/server/dal/absences';
+import { auditOf, fieldsOf, onCapex, type ActionResult, type CapexRowFull } from '@/server/capex/write';
+import { applyStep, asState, planStep, stepForActor, syncStatuses, type StepInput } from '@/server/cycle/step';
+import { nextSession, teamOf } from '@/server/dal/cycle';
 import { circuitFor } from '@/server/dal/designs';
-import { dossierVersionsOf, runningSession, stepsOf, type StepRow } from '@/server/dal/dossiers';
+import { dossierVersionsOf, runningSession, stepsOf } from '@/server/dal/dossiers';
+import { launchSignatureRequest, openSignatureRequest } from '@/server/signature/advanced';
 
 /** A signature needs the credentials entered within the last 10 minutes (N-8). */
 const REAUTH_MS = 10 * 60 * 1000;
-
-const asState = (s: StepRow): StepState & { actor: StepActor } => ({
-  id: s.id, group: s.group, kind: s.kind as StepKind, optional: s.optional, decides: s.decides, status: s.status, outcome: (s.outcome as Outcome | null) ?? null, actor: s.actor as StepActor,
-});
-
-/** Writes the statuses the engine computes; a step that opens gets its opening date and deadline. */
-async function syncStatuses(tx: Tx, gate: GateCode, steps: StepRow[], today: string) {
-  const values = await modelValues(tx);
-  const next = refreshStatuses(steps.map(asState));
-  for (const n of next) {
-    const s = steps.find((x) => x.id === n.id)!;
-    if (n.status === s.status) continue;
-    const opening = n.status === 'open' && s.status === 'waiting';
-    await tx.update(circuitSteps).set({ status: n.status, ...(opening ? { openedOn: today, dueOn: dueOf(s.kind as StepKind, gate, today, values) } : {}), updatedAt: new Date() }).where(eq(circuitSteps.id, s.id));
-  }
-}
 
 /** The frozen version a gate session decides on: the latest version of the gate's dossier, frozen. */
 async function frozenVersionFor(tx: Tx, c: CapexRowFull, gate: GateCode) {
@@ -93,82 +75,39 @@ async function clientIp(): Promise<string | null> {
 
 /**
  * Acts on a step of the running circuit (fields: outcome, comment; confirm = "on" for a signed step; on the deciding step,
- * conditions — one per line — and `force:<criterion>` reasons).
+ * conditions — one per line — and `force:<criterion>` reasons). The G2 decision, when an advanced signature provider is
+ * configured (AR-037), is not written here: the choices wait in a signature request and the signer is sent to the provider;
+ * the step is completed when they come back signed (src/features/gates/signature.ts).
  */
 export async function actOnStepAction(code: string, stepId: string, _prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
   const ip = await clientIp();
-  return onCapex(code, null, async (tx, c, v, today) => {
-    const [row] = await tx.select().from(circuitSteps).where(eq(circuitSteps.id, stepId));
-    if (!row) return { ok: false, error: 'Unknown step' };
-    const [g] = await tx.select().from(gates).where(eq(gates.id, row.gateId));
-    if (!g || g.capexId !== c.id || g.status !== 'in_review') return { ok: false, error: 'This circuit is not running' };
+  const provider = getConfig().signature.provider;
+  const r = await onCapex(code, null, async (tx, c, v, today) => {
+    const who = await stepForActor(tx, c, v, stepId, today);
+    if (!who.ok) return who;
+    const { row, g, onBehalfOf } = who;
     if (isStale(fd.get(ROW_VERSION_FIELD), row.rowVersion)) return { ok: false, error: STALE_MSG };
-    const team = await teamOf(tx, c.id);
-    const actor = { role: v.role, userId: v.userId, assignments: v.assignments, internalClient: team.some((m) => m.userId === v.userId && m.capexRole === 'internal_client') };
-    // In their own right, or standing in for an absent person (AR-041): the delegate signs in their own name, on their behalf.
-    const own = canActOn({ actor: row.actor as StepActor, speciality: row.speciality, assigneeUserId: row.assigneeUserId }, actor, c);
-    const standIn = own ? null : standInFor(row, c, await standInsOf(tx, v.userId, today));
-    if (!own && !standIn) return REFUSED;
-    const onBehalfOf = standIn?.person.displayName ?? null;
-    // A suspended, closed or abandoned CAPEX is read-only.
-    if (c.status !== 'active') return REFUSED;
     const f = fieldsOf(fd);
     const comment = f.comment?.trim() || null;
     const ch = checkOutcome(asState({ ...row, assigneeName: null }), f.outcome, comment);
     if (!ch.ok) return ch;
-    const outcome = ch.value;
+    const input: StepInput = {
+      outcome: ch.value, comment,
+      conditions: (f.conditions ?? '').split('\n').map((x) => x.trim()).filter(Boolean),
+      forced: Object.fromEntries(Object.entries(f).filter(([k, x]) => k.startsWith('force:') && x.trim()).map(([k, x]) => [k.slice(6), x.trim()])),
+    };
     const signed = isSigned(row.kind as StepKind);
-    const version = g.dossierVersionId ? (await tx.select().from(dossierVersions).where(eq(dossierVersions.id, g.dossierVersionId)))[0] ?? null : null;
     if (signed) {
       if (f.confirm !== 'on') return { ok: false, error: 'Confirm the statement to sign' };
       if (!v.demo && (!v.authenticatedAt || Date.now() - v.authenticatedAt.getTime() > REAUTH_MS)) return { ok: false, error: REAUTH_ERROR };
     }
-
-    // The steps once this one is done: the decision happens when no required step is left.
-    const steps = await stepsOf(tx, [g.id]);
-    const after = refreshStatuses(steps.map((s) => (s.id === row.id ? { ...asState(s), status: 'done' as const, outcome } : asState(s))));
-    const refused = isRefusal(outcome);
-    const complete = !refused && openGroup(after) == null;
-    let decided: { decision: NonNullable<ReturnType<typeof decisionOf>>; next: CycleState; ev: ReturnType<typeof evaluateGate>; conditions: string[]; reason: string | null } | null = null;
-    if (complete) {
-      const deciding = after.find((s) => s.decides);
-      const decision = deciding ? decisionOf(deciding) : null;
-      if (!decision) return { ok: false, error: 'The circuit has no decision' };
-      const forced = Object.fromEntries(CRITERIA.filter((x) => x.gate === g.code && f[`force:${x.code}`]?.trim()).map((x) => [x.code, f[`force:${x.code}`].trim()]));
-      const dossierFact = version ? { [`${g.code.toLowerCase()}_dossier`]: { met: version.completenessPct === 100, value: `v${version.number} · ${version.completenessPct} %` } } : {};
-      const facts = { ...(await gateFacts(tx, c)), ...circuitFacts(g.code, after), ...dossierFact };
-      const ev = evaluateGate(g.code, withPssrDischarge(facts), forced);
-      const conditions = (f.conditions ?? '').split('\n').map((x) => x.trim()).filter(Boolean);
-      const t = decideGate(c as CycleState, g.code, decision, ev, { reason: comment, conditions });
-      if (!t.ok) return t;
-      decided = { decision, next: t.value, ev, conditions, reason: comment };
+    const planned = await planStep(tx, c, row, g, input);
+    if (!planned.ok) return planned;
+    if (signed && provider !== 'none' && isAdvancedStep(provider, g.code, { kind: row.kind, decides: row.decides })) {
+      return openSignatureRequest(tx, c, v, row, g, planned.plan, input, onBehalfOf, provider);
     }
-
-    await tx.update(circuitSteps).set({ status: 'done', outcome, comment, actedByName: v.name, actedByUserId: v.userId, actedAt: new Date(), onBehalfOfName: onBehalfOf, updatedAt: new Date() }).where(eq(circuitSteps.id, row.id));
-    if (signed) {
-      const statement = `${row.label} — ${c.code}, ${g.code} session ${g.session}${version ? `, dossier version ${version.number}, SHA-256 ${version.contentHash}` : ''}: ${outcome}${onBehalfOf ? ` (on behalf of ${onBehalfOf}, absent)` : ''}`;
-      await tx.insert(signatures).values({ circuitStepId: row.id, userId: v.userId, userName: v.name, contentHash: version?.contentHash ?? null, statement, authTime: v.authenticatedAt ?? null, ipHash: ip });
-    }
-    await writeAudit(tx, auditOf(v, c, `${g.code} session ${g.session}: ${STEP_KIND_LABEL[row.kind as StepKind].toLowerCase()} "${row.label}" — ${outcome}${onBehalfOf ? ` (on behalf of ${onBehalfOf}, absent)` : ''}`, { entityType: 'circuit_step', entityId: row.id, reason: comment }));
-
-    if (refused) {
-      // A refusal stops the circuit and sends the dossier back (spec 05 §1).
-      await tx.update(gates).set({ status: 'returned', updatedAt: new Date() }).where(eq(gates.id, g.id));
-      for (const s of steps.filter((x) => x.id !== row.id && (x.status === 'open' || x.status === 'waiting'))) await tx.update(circuitSteps).set({ status: 'cancelled', updatedAt: new Date() }).where(eq(circuitSteps.id, s.id));
-      if (version) await tx.update(dossierVersions).set({ state: 'rejected', updatedAt: new Date() }).where(eq(dossierVersions.id, version.id));
-      await writeAudit(tx, auditOf(v, c, `${g.code} session ${g.session}: circuit stopped (refused), dossier sent back`, { entityType: 'gate', entityId: g.id, reason: comment }));
-      return { ok: true };
-    }
-    if (decided) {
-      for (const s of steps.filter((x) => x.id !== row.id && (x.status === 'open' || x.status === 'waiting'))) await tx.update(circuitSteps).set({ status: 'cancelled', updatedAt: new Date() }).where(eq(circuitSteps.id, s.id));
-      await applyGateDecision(tx, c, v, { id: g.id, code: g.code, session: g.session }, decided.decision, decided.next, decided.ev, { reason: decided.reason, conditions: decided.conditions, today });
-      if (version) {
-        const state = decided.decision === 'go' || decided.decision === 'go_with_conditions' ? 'approved' : decided.decision === 'no_go' ? 'rejected' : 'frozen';
-        if (state !== 'frozen') await tx.update(dossierVersions).set({ state, updatedAt: new Date() }).where(eq(dossierVersions.id, version.id));
-      }
-      return { ok: true };
-    }
-    await syncStatuses(tx, g.code, await stepsOf(tx, [g.id]), today);
-    return { ok: true };
+    return applyStep(tx, c, v, today, row, g, planned.plan, input, { onBehalfOf, ipHash: ip, level: 'simple', providerRef: null });
   });
+  if (r.ok && r.requestId) return launchSignatureRequest(r.requestId);
+  return r;
 }

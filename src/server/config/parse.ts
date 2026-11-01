@@ -59,6 +59,8 @@ export interface ArcheConfig {
   /** Folder of Sage's planned extractions (AR-047): `<SUBSIDIARY>*.csv`, imported by the job `sage-import`, then moved to
    * `done/`; null = no planned extraction (files uploaded on the Sage import page). */
   sageDir: string | null;
+  /** Advanced signature of the G2 / AFE (AR-037). */
+  signature: { provider: 'none' | 'simulation' | 'yousign'; yousignUrl: string; yousignKey: string | null };
   /** Secret values present in the environment: the logger masks them wherever they appear. */
   secrets: string[];
 }
@@ -151,13 +153,18 @@ const VARS = {
   ARCHE_PUBLIC_URL: z.string().optional(),
   // Folder of Sage's planned extractions (AR-047); unset: uploads only.
   ARCHE_SAGE_DIR: z.string().optional(),
+  // Advanced electronic signature of the G2 / AFE (AR-037, C-7): none (default: simple signature as everywhere), simulation
+  // (a page of Arche stands for the provider: demonstrations and tests) or yousign (ARCHE_YOUSIGN_API_KEY, ARCHE_PUBLIC_URL).
+  ARCHE_SIGNATURE_PROVIDER: z.enum(['none', 'simulation', 'yousign'], { message: 'must be "none", "simulation" or "yousign"' }).optional(),
+  ARCHE_YOUSIGN_API_URL: httpUrl.optional(),
+  ARCHE_YOUSIGN_API_KEY: z.string().optional(),
 } as const;
 
 export type ConfigVariable = keyof typeof VARS;
 /** Every variable the configuration reads (the cache key of src/server/config/index.ts). */
 export const CONFIG_VARIABLES = Object.keys(VARS) as ConfigVariable[];
 /** Variables whose value is a secret (masked in logs, never echoed in messages). */
-const SECRET_VARIABLES: ConfigVariable[] = ['ARCHE_SESSION_SECRET', 'ENTRA_CLIENT_SECRET', 'MATRIX_TOKEN', 'CODEX_DOCUMENTS_TOKEN', 'CODEX_DOCUMENTS_SECRET'];
+const SECRET_VARIABLES: ConfigVariable[] = ['ARCHE_SESSION_SECRET', 'ENTRA_CLIENT_SECRET', 'MATRIX_TOKEN', 'ARCHE_YOUSIGN_API_KEY', 'CODEX_DOCUMENTS_TOKEN', 'CODEX_DOCUMENTS_SECRET'];
 
 type Values = { [K in ConfigVariable]: z.output<(typeof VARS)[K]> };
 
@@ -241,6 +248,13 @@ export function parseConfig(env: Record<string, string | undefined>, opts: { cwd
   // A pinned date in production is a demonstration setting; real use needs the real clock.
   if (v.ARCHE_MAIL_TRANSPORT === 'file' && !v.ARCHE_MAIL_DIR) errors.push({ variable: 'ARCHE_MAIL_DIR', message: 'is required with ARCHE_MAIL_TRANSPORT=file' });
   if (v.ARCHE_PUBLIC_URL && !isUrlWith(v.ARCHE_PUBLIC_URL, ['http:', 'https:'])) errors.push({ variable: 'ARCHE_PUBLIC_URL', message: 'must be an http(s) URL' });
+  // Yousign needs its key and Arche's public address (the signer comes back to it).
+  if (v.ARCHE_SIGNATURE_PROVIDER === 'yousign') {
+    if (!v.ARCHE_YOUSIGN_API_KEY) errors.push({ variable: 'ARCHE_YOUSIGN_API_KEY', message: 'is required with ARCHE_SIGNATURE_PROVIDER=yousign' });
+    if (!v.ARCHE_PUBLIC_URL) errors.push({ variable: 'ARCHE_PUBLIC_URL', message: 'is required with ARCHE_SIGNATURE_PROVIDER=yousign (the signer comes back to Arche)' });
+  }
+  if (production && v.ARCHE_SIGNATURE_PROVIDER === 'simulation' && v.ARCHE_AUTH === 'entra')
+    warnings.push({ variable: 'ARCHE_SIGNATURE_PROVIDER', message: 'is "simulation" with real users: the G2 signature is not an advanced electronic signature' });
   if (production && v.ARCHE_CLOCK?.kind === 'fixed')
     warnings.push({ variable: 'ARCHE_CLOCK', message: 'pins the business date in production: lateness, due dates and dated writes ignore the real date' });
   const secrets = [...SECRET_VARIABLES.map((n) => v[n] as string | undefined), urlPassword(v.DATABASE_URL), urlPassword(v.MATRIX_URL), urlPassword(v.CODEX_API_URL)].filter((s): s is string => !!s && s.length >= 4);
@@ -271,6 +285,11 @@ export function parseConfig(env: Record<string, string | undefined>, opts: { cwd
         publicUrl: v.ARCHE_PUBLIC_URL ? trimSlash(v.ARCHE_PUBLIC_URL) : null,
       },
       sageDir: v.ARCHE_SAGE_DIR ? path.resolve(opts.cwd, v.ARCHE_SAGE_DIR) : null,
+      signature: {
+        provider: v.ARCHE_SIGNATURE_PROVIDER ?? 'none',
+        yousignUrl: trimSlash(v.ARCHE_YOUSIGN_API_URL ?? 'https://api-sandbox.yousign.app/v3'),
+        yousignKey: v.ARCHE_YOUSIGN_API_KEY ?? null,
+      },
       secrets: [...new Set(secrets)],
     },
   };

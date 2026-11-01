@@ -112,6 +112,35 @@ export const changes = arche.table('changes', {
   ...timestamps,
 }, (t) => [unique('changes_number_uq').on(t.capexId, t.number)]);
 
+/**
+ * Advanced signatures asked of a provider (AR-037, C-7): the G2 / AFE signature goes through Yousign (or its simulation). The
+ * signer's choices wait here while they sign at the provider; once signed, the step is completed with them and the
+ * signature row carries the provider's reference. Arche keeps no file: the signed PDF and its proof stay at the provider.
+ */
+export const signatureRequests = arche.table('signature_requests', {
+  id: id(),
+  circuitStepId: uuid('circuit_step_id').notNull().references(() => circuitSteps.id),
+  provider: text('provider').$type<'simulation' | 'yousign'>().notNull(),
+  /** creating → pending (at the provider) → completed (step done); or declined, expired, cancelled, failed. */
+  status: text('status').$type<'creating' | 'pending' | 'completed' | 'declined' | 'expired' | 'cancelled' | 'failed'>().notNull().default('creating'),
+  /** The last status read at the provider (pending, signed, declined, expired, cancelled). */
+  providerStatus: text('provider_status'),
+  providerRef: text('provider_ref'),
+  signerRef: text('signer_ref'),
+  documentRef: text('document_ref'),
+  signingUrl: text('signing_url'),
+  /** What the signer chose in Arche: outcome, comment, conditions, criteria forced with their reason. */
+  input: jsonb('input').$type<{ outcome: string; comment: string | null; conditions: string[]; forced: Record<string, string> }>().notNull(),
+  statement: text('statement').notNull(),
+  contentHash: text('content_hash'),
+  signerUserId: uuid('signer_user_id').notNull().references(() => users.id),
+  signerName: text('signer_name').notNull(),
+  onBehalfOfName: text('on_behalf_of_name'),
+  error: text('error'),
+  completedAt: timestamp('completed_at', { withTimezone: true }),
+  ...timestamps,
+}, (t) => [index('signature_requests_step_idx').on(t.circuitStepId)]);
+
 /** Business plan of a CAPEX (N-11): yearly flows, discount rate; prepared by the controller, validated by the group CFO. */
 export const businessPlans = arche.table('business_plans', {
   capexId: uuid('capex_id').primaryKey().references(() => capex.id, { onDelete: 'cascade' }),

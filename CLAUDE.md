@@ -88,6 +88,13 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   rights `benefits` / `post_audit` also on a closed CAPEX) and the Sage connector (AR-047: `capex_lots.sage_code`, `sage_imports`,
   `sage_lines`, `sage_rejects`, `src/domain/sage.ts`, `src/server/integrations/sage/`, page `/sage`, job `sage-import` on
   `ARCHE_SAGE_DIR`). Delivery 7's 14 points are delivered.
+- **AR-037 has started** (owner, 31 Oct 2026; `docs/DECISIONS.md` §5): decision aid by rules, no AI (C-13) — forecast and
+  drift (`src/domain/forecast.ts`, alerts `cost_drift` / `schedule_drift`), reference class of the CAPEX already built and the
+  gate brief (`src/server/dal/decision-aid.ts`, `src/features/decision/aid.tsx`); advanced signature of the G2 / AFE
+  (`ARCHE_SIGNATURE_PROVIDER` none | simulation | yousign, `src/domain/signature.ts`, `signature_requests`,
+  `src/server/cycle/step.ts` shared by every step action, `src/server/signature/advanced.ts`, Yousign client
+  `src/server/integrations/signature/yousign.ts`, routes `/signature/[id]/…`, job `signature-status`). Left: the group's
+  Yousign key, and AI once a compliant provider is validated (C-13).
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

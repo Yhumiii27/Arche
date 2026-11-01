@@ -1,7 +1,8 @@
 // Rule-based alerts of a CAPEX (docs/spec/06 §7), always on, no AI: gate late on its target delay, circuit step past due (an
 // expert opinion missing), project review late (flagged to the group industrial director after 15 days), Strategic audit
 // missing, permit decision due within 30 days, SPI or CPI below 0.9, EAC above the G2 budget + 5 %, typology to confirm, team
-// incomplete, gate condition past due; ramp-up close to (M+5) or beyond (M+6) its time limit; over its envelope (AR-040). Pure: texts are EN source strings, details are values.
+// incomplete, gate condition past due; ramp-up close to (M+5) or beyond (M+6) its time limit; over its envelope (AR-040); cost or schedule drift of the
+// forecast (AR-037). Pure: texts are EN source strings, details are values.
 import type { ScreenId } from '@/config/screens';
 import type { TeamRole } from './budget';
 import { TEAM_ROLE_LABEL } from './capex';
@@ -39,6 +40,8 @@ export interface AlertInput {
   rampup?: { alertOn: string | null; limitOn: string | null; reached: boolean } | null;
   /** Fiscal years where the CAPEX takes its envelope over (AR-040); `blocked`: beyond the model's tolerance. */
   envelopeOver?: readonly { year: number; overKeur: number; blocked: boolean }[];
+  /** Drift of the forecast by rules (AR-037, src/domain/forecast.ts): EAC growth over the trend window, months late. */
+  drift?: { cost: boolean; schedule: boolean; eacDeltaPct: number | null; delayMonths: number | null } | null;
 }
 
 /** SPI / CPI below this ratio raise an alert (spec 06 §7). */
@@ -71,6 +74,8 @@ export function alertsOf(i: AlertInput, today: string): Alert[] {
     if (today > i.rampup.limitOn) add('rampup_overdue', 'alert', 'Ramp-up beyond the time limit (flagged to the group industrial director)', i.rampup.limitOn, 'capex-rampup');
     else if (today >= i.rampup.alertOn) add('rampup_m5', 'watch', 'Ramp-up close to the time limit', i.rampup.limitOn, 'capex-rampup');
   }
+  if (i.drift?.cost) add('cost_drift', 'watch', 'Cost drift: the EAC keeps growing', i.drift.eacDeltaPct == null ? null : `+${i.drift.eacDeltaPct} %`, 'capex-execution');
+  if (i.drift?.schedule) add('schedule_drift', 'watch', 'Schedule drift: the projected finish is late', i.drift.delayMonths == null ? null : `+${i.drift.delayMonths}`, 'capex-execution');
   for (const e of i.envelopeOver ?? []) add('envelope_over', e.blocked ? 'alert' : 'watch', 'Over the CAPEX envelope', `${e.year} · +${Math.round(e.overKeur)} k€`, 'capex-budget');
   return out;
 }

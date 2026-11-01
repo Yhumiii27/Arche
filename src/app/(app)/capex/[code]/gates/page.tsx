@@ -1,6 +1,6 @@
 // Gates & circuits (docs/spec/05): the gate the CAPEX faces, its criteria evaluated now, the submission of the gate on the
 // frozen dossier, the running circuit — each step, its deadline, its outcome — with the form of the step that is the viewer's,
-// and the earlier sessions.
+// the brief of the decision and the comparison with the CAPEX already built (AR-037, rules), and the earlier sessions.
 import { and, eq } from 'drizzle-orm';
 import Link from 'next/link';
 import { EmptyState } from '@/components/app/EmptyState';
@@ -13,9 +13,15 @@ import { canActOn, isSigned, OUTCOMES_OF, OUTCOME_LABEL, STEP_KIND_LABEL, type O
 import { DOSSIER_LABEL, DOSSIER_OF_GATE } from '@/domain/dossiers';
 import { DECISION_LABEL, GATE_LABEL, currentGate, type CriterionState, type GateDecision } from '@/domain/lifecycle';
 import { loadCapexPage } from '@/features/capex/page-data';
+import { GateBriefCard, ReferenceCard } from '@/features/decision/aid';
 import { StepForm, SubmitGateForm } from '@/features/gates/forms';
 import { dataText } from '@/i18n/data-text';
-import { fmtDate } from '@/lib/format';
+import { fmtDate, fmtInstant } from '@/lib/format';
+import { Callout } from '@/components/app/Callout';
+import { isAdvancedStep, REQUEST_STATUS_LABEL, type RequestStatus } from '@/domain/signature';
+import { SignatureRequestActions } from '@/features/gates/signature-forms';
+import { getConfig } from '@/server/config';
+import { signatureRequestsOf } from '@/server/signature/advanced';
 import { businessToday } from '@/server/clock';
 import { currentEvaluation } from '@/server/cycle/evaluation';
 import { dossierVersions, roleAssignments, users } from '@/server/db/schema';
@@ -23,17 +29,23 @@ import { gatesOf, teamOf } from '@/server/dal/cycle';
 import { dossierVersionsOf, stepsOf } from '@/server/dal/dossiers';
 import { standInFor, standInsOf } from '@/server/dal/absences';
 import { circuitFor } from '@/server/dal/designs';
+import { decisionAidOf } from '@/server/dal/decision-aid';
 
 const STATE_LABEL: Record<CriterionState, string> = { met: 'Met', unmet: 'Not met', forced: 'Forced', not_evaluated: 'Not evaluated yet' };
 const STATUS_LABEL: Record<string, string> = { waiting: 'Waiting', open: 'Open', done: 'Done', cancelled: 'Cancelled' };
 const SESSION_LABEL: Record<string, string> = { in_review: 'Circuit running', decided: 'Decided', returned: 'Sent back', open: 'Open', submitted: 'Submitted' };
 
-export default async function GatesPage({ params }: PageProps<'/capex/[code]/gates'>) {
+export default async function GatesPage({ params, searchParams }: PageProps<'/capex/[code]/gates'>) {
   const { t, lang, viewer, db, c, can } = await loadCapexPage(params);
+  const notice = (await searchParams).signature;
   const gate = currentGate(c);
-  const [sessions, ev, team, today] = await Promise.all([gatesOf(db, c.id), currentEvaluation(db, c), teamOf(db, c.id), businessToday()]);
+  const today = await businessToday();
+  const [sessions, ev, team, aid] = await Promise.all([gatesOf(db, c.id), currentEvaluation(db, c), teamOf(db, c.id), gate ? decisionAidOf(db, viewer, c, today) : null]);
   const running = sessions.find((g) => g.status === 'in_review') ?? null;
   const allSteps = await stepsOf(db, sessions.map((g) => g.id));
+  // Advanced signatures (AR-037): the requests of every session's steps.
+  const provider = getConfig().signature.provider;
+  const requests = await signatureRequestsOf(db, allSteps.map((s) => s.id));
   const kind = gate ? DOSSIER_OF_GATE[gate] : undefined;
   const [latest] = kind ? await dossierVersionsOf(db, c.id, kind) : [];
   const actor = { role: viewer.role, userId: viewer.userId, assignments: viewer.assignments, internalClient: team.some((m) => m.userId === viewer.userId && m.capexRole === 'internal_client') };
@@ -70,6 +82,7 @@ export default async function GatesPage({ params }: PageProps<'/capex/[code]/gat
           forcible={forcible}
           proposed={proposed}
           returnTo={returnTo}
+          advanced={isAdvancedStep(provider, running.code, { kind: s.kind, decides: s.decides })}
         />
       ))
     : [];
@@ -115,6 +128,32 @@ export default async function GatesPage({ params }: PageProps<'/capex/[code]/gat
           <span className="text-muted">{t('Freeze the dossier, complete at 100 %, before submitting the gate.')}</span>
         )}
       </SectionCard>
+
+      {aid && <GateBriefCard aid={aid} t={t} lang={lang} />}
+      {aid && (gate === 'G1' || gate === 'G2') && <ReferenceCard aid={aid} t={t} lang={lang} />}
+
+      {notice === 'signed' && <Callout tone="accent">{t('Advanced signature done: the decision is recorded.')}</Callout>}
+      {running && (() => {
+        const mine = requests.filter((r) => runningSteps.some((s) => s.id === r.circuitStepId) && r.status !== 'cancelled');
+        if (!mine.length) return null;
+        return (
+          <SectionCard title={t('Advanced signature')} hint={t(provider === 'simulation' ? 'Simulated provider (demonstration): no legal value' : 'At the signature provider (Yousign); the signed PDF and its proof stay there')}>
+            <Table>
+              <thead><tr><Th>{t('Signer')}</Th><Th>{t('Status')}</Th><Th>{t('Asked on')}</Th><Th /></tr></thead>
+              <tbody>
+                {mine.map((r) => (
+                  <tr key={r.id}>
+                    <Td>{`${r.signerName}${r.onBehalfOfName ? ` (${t('on behalf of')} ${r.onBehalfOfName})` : ''}`}</Td>
+                    <Td><Tag tone={r.status === 'pending' ? 'accent' : 'outline'} size="sm">{t(REQUEST_STATUS_LABEL[r.status as RequestStatus])}</Tag>{r.status === 'failed' && r.error ? <span className="text-muted"> {r.error}</span> : null}</Td>
+                    <Td nowrap>{fmtInstant(r.createdAt, lang)}</Td>
+                    <Td align="right">{r.signerUserId === viewer.userId && r.status === 'pending' && <SignatureRequestActions requestId={r.id} signingUrl={r.signingUrl} />}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </SectionCard>
+        );
+      })()}
 
       {running && (
         <SectionCard title={`${running.code} · ${t('session')} ${running.session} — ${t(SESSION_LABEL.in_review)}`} subtitle={runningVersion ? `v${runningVersion.number} · SHA-256 ${runningVersion.contentHash}` : undefined} scroll>
@@ -176,6 +215,14 @@ export default async function GatesPage({ params }: PageProps<'/capex/[code]/gat
                     {g.takenOver
                       ? <><Tag tone="outline" size="xs">{t('Taken over')}</Tag> {`${t('Decided before Arche by')} ${g.decidedByName ?? '—'}`}</>
                       : allSteps.filter((s) => s.gateId === g.id && s.status === 'done').map((s) => `${t(s.label)}: ${t(OUTCOME_LABEL[s.outcome as Outcome])}`).join(' · ') || '—'}
+                    {requests.filter((r) => r.status === 'completed' && allSteps.some((s) => s.id === r.circuitStepId && s.gateId === g.id)).map((r) => (
+                      <div key={r.id}>
+                        <Tag tone="outline" size="xs">{t('Advanced signature')}</Tag>{' '}
+                        {r.provider === 'yousign'
+                          ? <><a href={`/signature/${r.id}/files/document`}>{t('Signed PDF')}</a> · <a href={`/signature/${r.id}/files/proof`}>{t('Audit trail')}</a></>
+                          : <span className="text-muted">{t('simulation')}</span>}
+                      </div>
+                    ))}
                   </Td>
                 </tr>
               ))}

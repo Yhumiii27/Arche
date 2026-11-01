@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-22",
-  "updated": "2026-10-30",
+  "updated": "2026-11-01",
   "branch": "claude/brave-curie-chxbck",
   "history": [
     {
@@ -140,7 +140,15 @@
       "text": "Lot 7e : backlog d’idées (AR-051), gains réalisés et post-audit (AR-046), import Sage par extraction (AR-047). Les 14 points AR-039 à AR-052 sont livrés."
     },
     {
-      "date": "2026-10-30",
+      "date": "2026-10-31",
+      "text": "AR-037 lancé : lot 037a, aide à la décision par règles (prévision, dérive, comparaison aux CAPEX réalisés, synthèse du jalon)."
+    },
+    {
+      "date": "2026-10-31",
+      "text": "AR-037 : lot 037b, signature avancée du G2 / AFE (Yousign ou simulation) ; développement d'AR-037 fait, reste la clé Yousign et l'IA (C-13)."
+    },
+    {
+      "date": "2026-11-01",
       "text": "Dépôt dans Codex (CX-03) : depuis une section d’un dossier, un fichier est déposé dans Codex et rattaché ; le PDF d’une version figée est déposé et son identifiant gardé sur la version. Variables CODEX_API_URL, CODEX_DOCUMENTS_TOKEN, CODEX_DOCUMENTS_SECRET."
     }
   ],
@@ -914,15 +922,17 @@
       "category": "ia_signature",
       "kind": "fonction",
       "priority": "plus_tard",
-      "status": "non_commence",
-      "waiting_on": "",
+      "status": "bloque_attente_proprietaire",
+      "waiting_on": "Responsable produit (contrat Yousign ; fournisseur IA conforme, C-13)",
       "effort": "M",
       "sources": [
         "docs/PLAN.md"
       ],
       "evidence": [],
       "progress": {
-        "state": "a_faire"
+        "state": "en_cours",
+        "delivery": "L7",
+        "note": "31 oct. 2026 : développement fait. 037a — aide à la décision par règles (sans IA, rien envoyé) : prévision de la courbe en S et de l'EAC, dérive des coûts et du planning en alertes, comparaison avec les CAPEX déjà réalisés, synthèse de la décision sur la page du jalon. 037b — signature avancée du G2 / AFE par Yousign (ou sa simulation) : décision vérifiée, PDF du dossier d'investissement envoyé, retour dans Arche et signature « avancée » avec la référence Yousign ; PDF signé et preuve lus chez Yousign. Reste : la clé du contrat Yousign du groupe (responsable produit / DSI) et l'IA quand un fournisseur conforme est validé (C-13)."
       }
     },
     {

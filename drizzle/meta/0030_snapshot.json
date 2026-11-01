@@ -1,5 +1,5 @@
 {
-  "id": "6741dc85-0115-4617-8ad8-914ff4ce5d41",
+  "id": "9ebbb40e-1684-46de-b208-d97a543d99bc",
   "prevId": "b5d68cd3-fedb-4862-851c-e66faae61ef6",
   "version": "7",
   "dialect": "postgresql",
@@ -2633,24 +2633,6 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false
-        },
-        "codex_document_id": {
-          "name": "codex_document_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "codex_deposited_at": {
-          "name": "codex_deposited_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "codex_deposited_by_name": {
-          "name": "codex_deposited_by_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {},
@@ -2765,6 +2747,182 @@
           ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "arche.signature_requests": {
+      "name": "signature_requests",
+      "schema": "arche",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "circuit_step_id": {
+          "name": "circuit_step_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'creating'"
+        },
+        "provider_status": {
+          "name": "provider_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "provider_ref": {
+          "name": "provider_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "signer_ref": {
+          "name": "signer_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "document_ref": {
+          "name": "document_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "signing_url": {
+          "name": "signing_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "input": {
+          "name": "input",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "statement": {
+          "name": "statement",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_hash": {
+          "name": "content_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "signer_user_id": {
+          "name": "signer_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "signer_name": {
+          "name": "signer_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "on_behalf_of_name": {
+          "name": "on_behalf_of_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error": {
+          "name": "error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "signature_requests_step_idx": {
+          "name": "signature_requests_step_idx",
+          "columns": [
+            {
+              "expression": "circuit_step_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "signature_requests_circuit_step_id_circuit_steps_id_fk": {
+          "name": "signature_requests_circuit_step_id_circuit_steps_id_fk",
+          "tableFrom": "signature_requests",
+          "tableTo": "circuit_steps",
+          "schemaTo": "arche",
+          "columnsFrom": [
+            "circuit_step_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "signature_requests_signer_user_id_users_id_fk": {
+          "name": "signature_requests_signer_user_id_users_id_fk",
+          "tableFrom": "signature_requests",
+          "tableTo": "users",
+          "schemaTo": "arche",
+          "columnsFrom": [
+            "signer_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
