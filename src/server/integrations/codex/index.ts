@@ -2,8 +2,8 @@ import 'server-only';
 // Codex connector (docs/CONTRATS.md §2.3; N-17: Codex hosts every document of Arche). Arche keeps references only — the
 // identifier TYPE-CONTEXT-SEQ, the revision and the deep link — and checks them against `codex.pub_documents` when Codex
 // shares its schema with Arche on the EPC2I server (CX-05). Without it (development, tests, before the grant), the
-// demonstration data set uses a simulated catalogue and other references stay "not verified". Read-only: Arche never writes
-// to Codex; the deposit of frozen dossiers waits for Codex's API (CX-03, CX-07).
+// demonstration data set uses a simulated catalogue and other references stay "not verified". Arche writes to Codex only by
+// its deposit API (./deposit.ts, CX-03): a file from a section, the PDF of a frozen version; CX-07 (frozen in Codex) is open.
 import { sql } from 'drizzle-orm';
 import { databaseSeedMode } from '@/server/db/seed/mode';
 import type { DB, Tx } from '@/server/db/types';

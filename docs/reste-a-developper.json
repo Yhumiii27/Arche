@@ -153,6 +153,10 @@
     },
     {
       "date": "2026-11-01",
+      "text": "Dépôt dans Codex (CX-03) : depuis une section d’un dossier, un fichier est déposé dans Codex et rattaché ; le PDF d’une version figée est déposé et son identifiant gardé sur la version. Variables CODEX_API_URL, CODEX_DOCUMENTS_TOKEN, CODEX_DOCUMENTS_SECRET."
+    },
+    {
+      "date": "2026-11-01",
       "text": "AR-033 : demandes VG-01 à VG-05 (Vigie) et M-15 (Matrix) déposées, validées par le responsable produit."
     }
   ],
@@ -668,12 +672,14 @@
         "docs/DEMANDES-CODEX.md"
       ],
       "evidence": [
-        "docs/DELIVERY-3.md"
+        "docs/DELIVERY-3.md",
+        "src/features/dossiers/actions.ts",
+        "src/server/integrations/codex/deposit.ts"
       ],
       "progress": {
         "state": "en_cours",
         "delivery": "Livraison 3",
-        "note": "Références Codex vérifiées dans codex.pub_documents (ou la simulation de démo), liens profonds ; dépôt des dossiers figés en attente de CX-03 / CX-07."
+        "note": "Références Codex vérifiées (pub_documents ou simulation), liens profonds ; dépôt dans Codex depuis une section et dépôt du PDF de la version figée (CX-03, POST /api/documents). Reste : rattachement CAPEX (CX-01) et version figée dans Codex (CX-07)."
       }
     },
     {
@@ -691,7 +697,8 @@
       ],
       "evidence": [],
       "progress": {
-        "state": "a_faire"
+        "state": "en_cours",
+        "note": "CX-03, CX-04 et CX-08 traitées par Codex (Yhumiii27/Codex#12) ; CX-01, CX-02, CX-06 et CX-07 attendent une décision."
       }
     },
     {

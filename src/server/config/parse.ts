@@ -130,6 +130,11 @@ const VARS = {
   ENTRA_CLIENT_SECRET: z.string().optional(),
   ENTRA_REDIRECT_URI: httpUrl.optional(),
   ENTRA_POST_LOGOUT_REDIRECT_URI: httpUrl.optional(),
+  // Deposit of documents in Codex (CX-03, src/server/integrations/codex/deposit.ts): server URL (credentials = HTTP
+  // authentication of the host), bearer token and/or HMAC secret of POST /api/documents; neither proof = deposit off.
+  CODEX_API_URL: httpUrl.optional(),
+  CODEX_DOCUMENTS_TOKEN: z.string().optional(),
+  CODEX_DOCUMENTS_SECRET: z.string().min(16, 'must be at least 16 characters').optional(),
   // Schema declaration to Matrix, the data catalogue (read by src/server/integrations/matrix after migrations and at start-up).
   MATRIX_URL: httpUrl.optional(),
   // Backups of the schema by the job worker (npm run worker): off unless the folder is set.
@@ -164,7 +169,7 @@ export type ConfigVariable = keyof typeof VARS;
 /** Every variable the configuration reads (the cache key of src/server/config/index.ts). */
 export const CONFIG_VARIABLES = Object.keys(VARS) as ConfigVariable[];
 /** Variables whose value is a secret (masked in logs, never echoed in messages). */
-const SECRET_VARIABLES: ConfigVariable[] = ['ARCHE_SESSION_SECRET', 'ENTRA_CLIENT_SECRET', 'MATRIX_TOKEN', 'ARCHE_YOUSIGN_API_KEY'];
+const SECRET_VARIABLES: ConfigVariable[] = ['ARCHE_SESSION_SECRET', 'ENTRA_CLIENT_SECRET', 'MATRIX_TOKEN', 'ARCHE_YOUSIGN_API_KEY', 'CODEX_DOCUMENTS_TOKEN', 'CODEX_DOCUMENTS_SECRET'];
 
 type Values = { [K in ConfigVariable]: z.output<(typeof VARS)[K]> };
 
@@ -242,6 +247,9 @@ export function parseConfig(env: Record<string, string | undefined>, opts: { cwd
       if (!value && !errors.some((e) => e.variable === name)) errors.push({ variable: name, message: name === 'ENTRA_TENANT_ID' ? 'is required with ARCHE_AUTH=entra (or ENTRA_ISSUER)' : 'is required with ARCHE_AUTH=entra' });
   } else if (v.ARCHE_ADMIN_EMAILS?.length) warnings.push({ variable: 'ARCHE_ADMIN_EMAILS', message: 'is ignored outside ARCHE_AUTH=entra' });
 
+  // The deposit token goes in the Authorization header, which credentials in the Codex URL (HTTP authentication) use already.
+  if (v.CODEX_DOCUMENTS_TOKEN && v.CODEX_API_URL && new URL(v.CODEX_API_URL).username)
+    errors.push({ variable: 'CODEX_DOCUMENTS_TOKEN', message: 'cannot go with credentials in CODEX_API_URL (both use the Authorization header): use CODEX_DOCUMENTS_SECRET' });
   // A pinned date in production is a demonstration setting; real use needs the real clock.
   if (v.ARCHE_MAIL_TRANSPORT === 'file' && !v.ARCHE_MAIL_DIR) errors.push({ variable: 'ARCHE_MAIL_DIR', message: 'is required with ARCHE_MAIL_TRANSPORT=file' });
   if (v.ARCHE_PUBLIC_URL && !isUrlWith(v.ARCHE_PUBLIC_URL, ['http:', 'https:'])) errors.push({ variable: 'ARCHE_PUBLIC_URL', message: 'must be an http(s) URL' });
@@ -254,7 +262,7 @@ export function parseConfig(env: Record<string, string | undefined>, opts: { cwd
     warnings.push({ variable: 'ARCHE_SIGNATURE_PROVIDER', message: 'is "simulation" with real users: the G2 signature is not an advanced electronic signature' });
   if (production && v.ARCHE_CLOCK?.kind === 'fixed')
     warnings.push({ variable: 'ARCHE_CLOCK', message: 'pins the business date in production: lateness, due dates and dated writes ignore the real date' });
-  const secrets = [...SECRET_VARIABLES.map((n) => v[n] as string | undefined), urlPassword(v.DATABASE_URL), urlPassword(v.MATRIX_URL)].filter((s): s is string => !!s && s.length >= 4);
+  const secrets = [...SECRET_VARIABLES.map((n) => v[n] as string | undefined), urlPassword(v.DATABASE_URL), urlPassword(v.MATRIX_URL), urlPassword(v.CODEX_API_URL)].filter((s): s is string => !!s && s.length >= 4);
 
   return {
     errors,

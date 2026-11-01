@@ -3,7 +3,7 @@ import { inboxFigures, sortInbox, type ApprovalItem } from './approvals';
 import { irr, npv, payback, checkBusinessPlan, type BpYear } from './bp';
 import { addWorkingDays, canActOn, checkOutcome, circuitFacts, circuitState, circuitTemplate, decisionOf, dueOf, openGroup, refreshStatuses, type StepActor, type StepState } from './circuits';
 import { checkChange, checkMatrix, deciderOf, DEFAULT_MATRIX, readMatrix } from './delegation';
-import { canonicalJson, checkCodexRef, completeness, emptyContent, readContent, SECTIONS } from './dossiers';
+import { canonicalJson, checkCodexDeposit, checkCodexRef, completeness, depositSourceRef, emptyContent, readContent, SECTIONS } from './dossiers';
 import { DEFAULT_VALUES } from './lifecycle';
 
 const steps = (tpl: ReturnType<typeof circuitTemplate>): (StepState & { actor: StepActor })[] =>
@@ -33,6 +33,17 @@ describe('living dossiers', () => {
     expect(checkCodexRef({ codexId: ' pid-cpx-apm-2026-01-003 ', revision: 'b' })).toEqual({ ok: true, value: { id: 'PID-CPX-APM-2026-01-003', revision: 'B' } });
     expect(checkCodexRef({ codexId: 'hello' }).ok).toBe(false);
     expect(checkCodexRef({ codexId: 'AUT-APM-12', revision: '3' }).ok).toBe(false);
+  });
+  it('Codex deposits (CX-03): metadata typed, replayable reference', () => {
+    const fields = { title: ' P&ID hall 2 ', typeCode: 'pid', department: 'dir', owner: 'EMP-0042' };
+    expect(checkCodexDeposit(fields, { titleRequired: true })).toEqual({ ok: true, value: { title: 'P&ID hall 2', typeCode: 'PID', department: 'DIR', owner: 'EMP-0042', conf: 'interne' } });
+    expect(checkCodexDeposit({ ...fields, title: '' }, { titleRequired: true }).ok).toBe(false);
+    expect(checkCodexDeposit({ ...fields, title: '' }, { titleRequired: false }).ok).toBe(true);
+    expect(checkCodexDeposit({ ...fields, typeCode: 'P1D' }, { titleRequired: true }).ok).toBe(false);
+    expect(checkCodexDeposit({ ...fields, department: 'DIRE' }, { titleRequired: true }).ok).toBe(false);
+    expect(checkCodexDeposit({ ...fields, owner: 'two words' }, { titleRequired: true }).ok).toBe(false);
+    expect(checkCodexDeposit({ ...fields, conf: 'public' }, { titleRequired: true }).ok).toBe(false);
+    expect(depositSourceRef('CPX-APM-2026-01', 'business_case', 'v2')).toBe('arche:dossier/CPX-APM-2026-01/business_case/v2');
   });
 });
 

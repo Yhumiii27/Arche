@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
   // Security headers on every response, static assets included (the per-request Content-Security-Policy is set by
   // src/proxy.ts). HSTS only in production builds.
   poweredByHeader: false,
+  // Files deposited in Codex from a dossier go through a Server Function (src/features/dossiers/actions.ts, 20 MB at most):
+  // the body limit (1 MB by default) and the body buffered by the proxy (10 MB) leave room for the form around the file.
+  experimental: { serverActions: { bodySizeLimit: '21mb' }, proxyClientMaxBodySize: '21mb' },
   async headers() {
     return [{ source: '/:path*', headers: staticSecurityHeaders(process.env.NODE_ENV === 'production') }];
   },

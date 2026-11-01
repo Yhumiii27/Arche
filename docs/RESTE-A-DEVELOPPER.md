@@ -6,7 +6,7 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-11-01 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 41 faits, 8 en cours, 3 à faire, sur 52 points.
+**Avancement** : 41 faits, 9 en cours, 2 à faire, sur 52 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
@@ -208,11 +208,11 @@ Livraison 4.
 
 **AR-025 · Connecteur codex : références de documents, vérification, dépôt des dossiers figés** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 3)**  
 Tous les documents d’Arche dans Codex (N-17) ; simulation tant que l’API manque. Analyse comparative du 25 oct. 2026 : le dépôt réel des dossiers figés dans Codex (aujourd’hui simulé) fait partie des intégrations attendues en standard (gestion documentaire intégrée chez Unifier, Finario, CapEx360). Priorité suggérée : prochaine étape, inchangée.  
-*Avancement : Références Codex vérifiées dans codex.pub_documents (ou la simulation de démo), liens profonds ; dépôt des dossiers figés en attente de CX-03 / CX-07. · Sources : docs/DEMANDES-CODEX.md*
+*Avancement : Références Codex vérifiées (pub_documents ou simulation), liens profonds ; dépôt dans Codex depuis une section et dépôt du PDF de la version figée (CX-03, POST /api/documents). Reste : rattachement CAPEX (CX-01) et version figée dans Codex (CX-07). · Sources : docs/DEMANDES-CODEX.md*
 
-**AR-026 · API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants** — *Prochaine étape · attend un système externe · effort M*  
+**AR-026 · API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants** — *Prochaine étape · attend un système externe · effort M* · **en cours**  
 CX-01 à CX-07. Analyse comparative du 25 oct. 2026 : les pièces jointes et devis fournisseurs sur la demande d’investissement sont un standard du marché ; Arche les délègue à Codex, mais le lien de dépôt depuis Arche n’est pas branché tant que CX-03 et CX-07 manquent. Priorité suggérée : prochaine étape, haute pour CX-03.  
-*Attend : Codex · Sources : docs/DEMANDES-CODEX.md*
+*Avancement : CX-03, CX-04 et CX-08 traitées par Codex (Yhumiii27/Codex#12) ; CX-01, CX-02, CX-06 et CX-07 attendent une décision. · Attend : Codex · Sources : docs/DEMANDES-CODEX.md*
 
 ### 2.7 Jalons de sécurité (Vigie) (1 restants, 1 faits)
 
@@ -299,6 +299,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 ## 3. Mises à jour
 
 - 2026-11-01 — AR-033 : demandes VG-01 à VG-05 (Vigie) et M-15 (Matrix) déposées, validées par le responsable produit.
+- 2026-11-01 — Dépôt dans Codex (CX-03) : depuis une section d’un dossier, un fichier est déposé dans Codex et rattaché ; le PDF d’une version figée est déposé et son identifiant gardé sur la version. Variables CODEX_API_URL, CODEX_DOCUMENTS_TOKEN, CODEX_DOCUMENTS_SECRET.
 - 2026-11-01 — AR-033 lancé : connecteur Vigie des études de sécurité des procédés côté Arche (contrat, miroir, jalons HS pris de Vigie, alerte des recommandations en retard) ; demandes à Vigie et à Matrix à déposer.
 - 2026-10-31 — AR-037 : lot 037b, signature avancée du G2 / AFE (Yousign ou simulation) ; développement d'AR-037 fait, reste la clé Yousign et l'IA (C-13).
 - 2026-10-31 — AR-037 lancé : lot 037a, aide à la décision par règles (prévision, dérive, comparaison aux CAPEX réalisés, synthèse du jalon).

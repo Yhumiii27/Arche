@@ -12,7 +12,7 @@ import { Table, Td, Th } from '@/components/ds/Table';
 import { Tag } from '@/components/ds/Tag';
 import { completeness, DOSSIER_LABEL, isDossierKind, readContent, VERSION_STATE_LABEL } from '@/domain/dossiers';
 import { ComputedValues, readSnapshot } from '@/features/dossiers/computed';
-import { FreezeButton, ReferenceForm, RemoveReferenceButton, SectionForm } from '@/features/dossiers/forms';
+import { DepositReferenceForm, DepositVersionForm, FreezeButton, ReferenceForm, RemoveReferenceButton, SectionForm } from '@/features/dossiers/forms';
 import { loadCapexPage } from '@/features/capex/page-data';
 import { dataText } from '@/i18n/data-text';
 import { fmtInstant } from '@/lib/format';
@@ -20,6 +20,7 @@ import { circuitSteps, gates, signatures } from '@/server/db/schema';
 import { computedFacts, computedSnapshot, dossierVersionsOf, versionHash } from '@/server/dal/dossiers';
 import { currentSections, sectionsFor } from '@/server/dal/designs';
 import { codexDocumentUrl } from '@/server/integrations/codex';
+import { codexDepositEnabled } from '@/server/integrations/codex/deposit';
 
 export default async function DossierPage({ params, searchParams }: PageProps<'/capex/[code]/dossiers/[kind]'>) {
   const { kind } = await params;
@@ -43,6 +44,8 @@ export default async function DossierPage({ params, searchParams }: PageProps<'/
     ? await db.select({ s: signatures, label: circuitSteps.label }).from(signatures).innerJoin(circuitSteps, eq(circuitSteps.id, signatures.circuitStepId)).where(inArray(circuitSteps.gateId, sessions.map((s) => s.id)))
     : [];
   const base = `/capex/${encodeURIComponent(c.code)}/dossiers/${kind}`;
+  const deposit = codexDepositEnabled();
+  const versionDoc = v?.codexDocumentId ? { id: v.codexDocumentId, href: codexDocumentUrl(v.codexDocumentId) } : null;
   return (
     <>
       <PageHeader
@@ -76,6 +79,14 @@ export default async function DossierPage({ params, searchParams }: PageProps<'/
             : t('No version yet: the first saved section starts version 1.')}
         </span>
         {v && !draft && <span className="text-muted">{`${t('Frozen by')} ${v.frozenByName ?? '—'} · ${v.frozenAt ? fmtInstant(v.frozenAt, lang) : ''} · SHA-256 ${v.contentHash}`}</span>}
+        {versionDoc && (
+          <span className="text-muted">
+            {`${t('In Codex')} `}
+            {versionDoc.href ? <a href={versionDoc.href} target="_blank" rel="noreferrer">{versionDoc.id}</a> : versionDoc.id}
+            {` · ${v?.codexDepositedByName ?? '—'} · ${v?.codexDepositedAt ? fmtInstant(v.codexDepositedAt, lang) : ''}`}
+          </span>
+        )}
+        {edit && deposit && v && (v.state === 'frozen' || v.state === 'approved') && !versionDoc && <DepositVersionForm code={c.code} kind={kind} version={v.number} />}
         {edit && v && !draft && <span className="text-muted">{t('Editing a section starts the next version; a circuit running on this version is then cancelled.')}</span>}
       </SectionCard>
       {secs.map((s) => {
@@ -118,6 +129,7 @@ export default async function DossierPage({ params, searchParams }: PageProps<'/
               </Table>
             )}
             {edit && s.mode !== 'circuit' && <ReferenceForm code={c.code} kind={kind} section={s.key} />}
+            {edit && deposit && s.mode !== 'circuit' && <DepositReferenceForm code={c.code} kind={kind} section={s.key} codexTypes={s.codexTypes} />}
           </SectionCard>
         );
       })}
