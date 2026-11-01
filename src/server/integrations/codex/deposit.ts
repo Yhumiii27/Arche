@@ -7,10 +7,13 @@
 //   CODEX_DOCUMENTS_TOKEN   bearer token of the deposit endpoint. It uses the Authorization header too, so it cannot be
 //                           combined with credentials in the URL: behind HTTP authentication, use the signature instead.
 //   CODEX_DOCUMENTS_SECRET  HMAC-SHA256 signature of the raw body (X-Codex-Timestamp, X-Codex-Signature: v1=…).
+//   CODEX_CAPEX             "on" once Codex accepts the CAPEX attachment (`attachment: "capex"`, `capexCode`, CX-01) and the
+//                           legal hold of a deposit (`legalHold: true`, CX-07): the fields are sent only then, Codex refusing
+//                           unknown fields; off, a deposit goes to the owner's department context as a draft.
 // Codex demands every proof it has set; Arche sends every proof it has. Neither token nor secret → the deposit is off.
 import { createHash, createHmac } from 'node:crypto';
 
-/** The variables read: CODEX_API_URL, NEXT_PUBLIC_CODEX_URL, CODEX_DOCUMENTS_TOKEN, CODEX_DOCUMENTS_SECRET. */
+/** The variables read: CODEX_API_URL, NEXT_PUBLIC_CODEX_URL, CODEX_DOCUMENTS_TOKEN, CODEX_DOCUMENTS_SECRET, CODEX_CAPEX. */
 export type CodexDepositEnv = Record<string, string | undefined>;
 
 /** Metadata of a deposit (Codex docs/api.md "Métadonnées"); `sha256` is added by Arche from the file. */
@@ -25,6 +28,27 @@ export interface CodexDepositMeta {
   owner: string;
   conf?: string;
   comment?: string;
+  /** Sub-type of the registry (CX-02). */
+  subtype?: string | null;
+  /** The CAPEX the document belongs to (CX-01), sent with CODEX_CAPEX=on. */
+  capexCode?: string;
+  /** A milestone dossier stays as deposited: legal hold (CX-07), sent with CODEX_CAPEX=on. */
+  legalHold?: boolean;
+}
+
+/** True when Codex accepts the CAPEX attachment and the legal hold (CX-01, CX-07). */
+export const codexCapexEnabled = (env: CodexDepositEnv = process.env): boolean => clean(env.CODEX_CAPEX) === 'on';
+
+/** The `meta` sent to Codex: optional fields left out when empty, the CAPEX ones only when Codex accepts them. */
+export function depositMetaOf(meta: CodexDepositMeta, sha256: string, env: CodexDepositEnv = process.env): Record<string, unknown> {
+  const { owner, subtype, capexCode, legalHold, ...rest } = meta;
+  const capex = codexCapexEnabled(env);
+  return {
+    ...rest, ...ownerField(owner), sha256,
+    ...(subtype ? { subtype } : {}),
+    ...(capex && capexCode ? { attachment: 'capex', capexCode } : {}),
+    ...(capex && legalHold ? { legalHold: true } : {}),
+  };
 }
 
 export interface CodexDepositFile {
@@ -79,10 +103,9 @@ export async function depositToCodex({ meta, file, env = process.env, fetchImpl 
       url.username = '';
       url.password = '';
     } else if (token) headers.authorization = `Bearer ${token}`;
-    const { owner, ...rest } = meta;
     const sha256 = createHash('sha256').update(file.bytes).digest('hex');
     const form = new FormData();
-    form.set('meta', JSON.stringify({ ...rest, ...ownerField(owner), sha256 }));
+    form.set('meta', JSON.stringify(depositMetaOf(meta, sha256, env)));
     form.set('file', new Blob([file.bytes as BlobPart], { type: file.type || 'application/octet-stream' }), file.name);
     // The signature covers the exact bytes sent: the multipart body is built once, signed, then sent as is.
     const encoded = new Response(form);

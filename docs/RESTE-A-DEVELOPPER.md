@@ -59,7 +59,7 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 ### 1.3 Ce qui attend les autres applications
 
 - **AR-014** Arche sur le serveur PostgreSQL commun (Matrix) — Matrix (M-1 à M-8)
-- **AR-026** API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants — Codex
+- **AR-026** API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants — Codex (CX-01, CX-02, CX-07) ; CX-06 : organigramme O-04 et Entra O-02
 - **AR-029** Vues Keystone pour Arche (catalogue, réponses, jalons, avancement, avenants, réserves, pack) — Keystone (R-185 à R-193)
 - **AR-033** Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite — Vigie (VG-01 à VG-05) puis Matrix (M-15)
 - **AR-038** Socle partagé @epc2i/socle — Keystone (R-194)
@@ -212,7 +212,7 @@ Tous les documents d’Arche dans Codex (N-17) ; simulation tant que l’API man
 
 **AR-026 · API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants** — *Prochaine étape · attend un système externe · effort M* · **en cours**  
 CX-01 à CX-07. Analyse comparative du 25 oct. 2026 : les pièces jointes et devis fournisseurs sur la demande d’investissement sont un standard du marché ; Arche les délègue à Codex, mais le lien de dépôt depuis Arche n’est pas branché tant que CX-03 et CX-07 manquent. Priorité suggérée : prochaine étape, haute pour CX-03.  
-*Avancement : CX-03, CX-04 et CX-08 traitées par Codex (Yhumiii27/Codex#12) ; CX-01, CX-02, CX-06 et CX-07 attendent une décision. · Attend : Codex · Sources : docs/DEMANDES-CODEX.md*
+*Avancement : 1er nov. 2026 : AR-026 lancé. Choix du responsable produit : CX-01 rattachement capex propre, CX-02 sous-types des types existants, CX-07 conservation légale. Côté Arche fait : sous-type au dépôt (déjà accepté par Codex), « Dossier de jalon G1/G2/G3 » pour une version figée, rattachement capex et gel juridique envoyés dès CODEX_CAPEX=on. Reste : Codex les réalise (demande à déposer), CX-06 attend O-04 et O-02. · Attend : Codex (CX-01, CX-02, CX-07) ; CX-06 : organigramme O-04 et Entra O-02 · Sources : docs/DEMANDES-CODEX.md*
 
 ### 2.7 Jalons de sécurité (Vigie) (1 restants, 1 faits)
 
@@ -298,6 +298,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-11-01 — AR-026 lancé : choix CX-01 (rattachement capex), CX-02 (sous-types), CX-07 (conservation légale) ; Arche envoie le sous-type et, dès CODEX_CAPEX=on, le rattachement capex et le gel juridique.
 - 2026-11-01 — AR-033 : demandes VG-01 à VG-05 (Vigie) et M-15 (Matrix) déposées, validées par le responsable produit.
 - 2026-11-01 — Dépôt dans Codex (CX-03) : depuis une section d’un dossier, un fichier est déposé dans Codex et rattaché ; le PDF d’une version figée est déposé et son identifiant gardé sur la version. Variables CODEX_API_URL, CODEX_DOCUMENTS_TOKEN, CODEX_DOCUMENTS_SECRET.
 - 2026-11-01 — AR-033 lancé : connecteur Vigie des études de sécurité des procédés côté Arche (contrat, miroir, jalons HS pris de Vigie, alerte des recommandations en retard) ; demandes à Vigie et à Matrix à déposer.

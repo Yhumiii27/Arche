@@ -39,3 +39,19 @@ garde la référence telle quelle avec la mention « non vérifiée ».
 
 Questions de Codex qui touchent Arche : O-01 (SharePoint), O-02 (Entra ID), O-03 (contrat de dépôt et de synchronisation),
 O-04 (organigramme), O-05 (registre).
+
+## 1er nov. 2026 — AR-026 lancé : choix du responsable produit sur CX-01, CX-02 et CX-07
+
+| # | Choix | Ce que Codex fait | Ce que fait Arche |
+|---|---|---|---|
+| CX-01 | **Rattachement `capex` propre** (pas un CAPEX traité comme un projet) | 4ᵉ rattachement `capex` à côté de `none`, `project`, `research` ; contexte = code CAPEX (`PID-CPX-APM-2026-01-001`) ; liste des CAPEX lue dans `arche.pub_capex` (lien de lecture de `codex_app` à demander à Matrix, M-18) ; au dépôt : `attachment: "capex"` et `capexCode` | envoie `attachment: "capex"` et `capexCode` à chaque dépôt depuis un dossier, dès `CODEX_CAPEX=on` |
+| CX-02 | **Sous-types des types existants** (pas de nouveaux types) | ajoute au registre les sous-types ci-dessous (graphie de Codex) | le formulaire de dépôt propose ces sous-types (champ `subtype`, déjà accepté par Codex, valeur libre normalisée) ; le dépôt d'une version figée prend « Dossier de jalon G1 / G2 / G3 » du type `DEF` |
+| CX-07 | **Conservation légale** (gel juridique, pas d'approbation d'office) | au dépôt d'une version figée : `legalHold: true` pose le gel juridique sur le document (ni modification ni suppression ; levée par l'archiviste de Codex seulement) | envoie `legalHold: true` au dépôt d'une version figée, dès `CODEX_CAPEX=on` |
+
+Sous-types proposés (type parent → sous-type) : `GA` → Plan de masse ; `RSQ` → HazID, HazOp / AMDEC, Zonage ATEX (DRPCE),
+PSSR / RSPDI, Audit ASPD ; `AUT` → Dossier ICPE, Permis de construire / PLU ; `FIN` → AFE (autorisation de dépense) ; `DEF` →
+Business case (existe), Dossier d’investissement, Dossier de jalon G1, Dossier de jalon G2, Dossier de jalon G3 ; `REM` → PV de
+transfert d’actif (`src/domain/dossiers.ts`, `CAPEX_SUBTYPES`).
+
+CX-06 (accès des filiales) reste ouverte : elle attend l’organigramme avec les filiales (O-04) et Entra ID (O-02). Demande à
+déposer dans le `REQUESTS.md` de Codex après le « validé » du responsable produit.

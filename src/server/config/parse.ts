@@ -135,6 +135,9 @@ const VARS = {
   CODEX_API_URL: httpUrl.optional(),
   CODEX_DOCUMENTS_TOKEN: z.string().optional(),
   CODEX_DOCUMENTS_SECRET: z.string().min(16, 'must be at least 16 characters').optional(),
+  // Codex accepts the CAPEX attachment and the legal hold of a deposit (CX-01, CX-07; owner's choices of 1 Nov 2026): set it
+  // to "on" once Codex delivers them; until then a deposit goes to the owner's department context, as a draft.
+  CODEX_CAPEX: z.enum(['on', 'off'], { message: 'must be "on" or "off"' }).optional(),
   // Schema declaration to Matrix, the data catalogue (read by src/server/integrations/matrix after migrations and at start-up).
   MATRIX_URL: httpUrl.optional(),
   // Backups of the schema by the job worker (npm run worker): off unless the folder is set.

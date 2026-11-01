@@ -21,7 +21,8 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   BP `src/domain/bp.ts`, "My approvals" `src/server/dal/approvals.ts`, Codex connector `src/server/integrations/codex/`
   (simulated catalogue in the demo data set); deposit in Codex `src/server/integrations/codex/deposit.ts` (CX-03,
   `POST /api/documents`: a file from a section, the PDF of a frozen version; called before the write transaction,
-  `capexBeforeCall`; Arche keeps the identifier only).
+  `capexBeforeCall`; Arche keeps the identifier only). AR-026 (owner, 1 Nov 2026): sub-types of existing Codex types
+  (`CAPEX_SUBTYPES`, `DOSSIER_CODEX`), the CAPEX attachment and the legal hold of a frozen version sent once `CODEX_CAPEX=on`.
 - **Delivery 4 (machine needs, Keystone connector) is done** (`docs/DELIVERY-4.md`): needs `src/domain/needs.ts`,
   `src/features/needs/`, view `pub_besoins_machines`; Keystone connector `src/server/integrations/keystone/` — the mirror
   (`keystone_mirror`, written only by `mirror.ts`), modes `ARCHE_KEYSTONE` off / simulation / views (a missing view is

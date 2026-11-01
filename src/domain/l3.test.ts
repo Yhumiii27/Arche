@@ -36,7 +36,9 @@ describe('living dossiers', () => {
   });
   it('Codex deposits (CX-03): metadata typed, replayable reference', () => {
     const fields = { title: ' P&ID hall 2 ', typeCode: 'pid', department: 'dir', owner: 'EMP-0042' };
-    expect(checkCodexDeposit(fields, { titleRequired: true })).toEqual({ ok: true, value: { title: 'P&ID hall 2', typeCode: 'PID', department: 'DIR', owner: 'EMP-0042', conf: 'interne' } });
+    expect(checkCodexDeposit(fields, { titleRequired: true })).toEqual({ ok: true, value: { title: 'P&ID hall 2', typeCode: 'PID', department: 'DIR', owner: 'EMP-0042', conf: 'interne', subtype: null } });
+    expect(checkCodexDeposit({ ...fields, subtype: ' HazID ' }, { titleRequired: true })).toMatchObject({ ok: true, value: { subtype: 'HazID' } });
+    expect(checkCodexDeposit({ ...fields, subtype: 'x'.repeat(201) }, { titleRequired: true }).ok).toBe(false);
     expect(checkCodexDeposit({ ...fields, title: '' }, { titleRequired: true }).ok).toBe(false);
     expect(checkCodexDeposit({ ...fields, title: '' }, { titleRequired: false }).ok).toBe(true);
     expect(checkCodexDeposit({ ...fields, typeCode: 'P1D' }, { titleRequired: true }).ok).toBe(false);
