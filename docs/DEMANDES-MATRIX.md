@@ -121,9 +121,10 @@ le coffre de la DSI) qui lit **seulement** les vues `pub_` des outils (Arche : `
 `pub_rampup`, `pub_rex_v2`, `pub_journal`), sans accès aux tables ; Power BI s'y connecte avec son connecteur PostgreSQL.
 Sans ce rôle, Power BI lit l'API métier d'Arche (`docs/API.md` §7).
 
-## M-15 · Lecture de `vigie.pub_etudes_securite` par Arche (AR-033, 1er nov. 2026)
+## M-15 · Publication `vigie.pub_etudes_securite` et lecture par Arche (AR-033, 1er nov. 2026)
 
-À déposer dans le `REQUESTS.md` de Matrix après le « validé » du responsable produit, une fois la vue publiée par Vigie (VG-03).
-Accorder `USAGE` sur le schéma `vigie` et `SELECT` sur `vigie.pub_etudes_securite` au lecteur `arche_app` (`partage/90-droits.sql`,
-contrôle de `droits.verifier()`), et recopier la vue dans `partage/50-vigie.sql`. Sans ce droit, Arche reste en déclaratif
-(N-13) pour les jalons HS. Contrat : `CONTRATS.md` §2.5.
+**Déposée le 1er nov. 2026** dans le `REQUESTS.md` de Matrix (validée par le responsable produit ; Yhumiii27/Matrix#52). Selon
+la décision M-18 de Matrix (Matrix définit les vues `pub_` et applique les liens), elle demande : définir la publication
+`vigie.pub_etudes_securite` sur les tables de Vigie (contrat `CONTRATS.md` §2.5) une fois les études tenues dans Vigie
+(VG-01 à VG-05), et autoriser le lien `arche_app` → `vigie.pub_etudes_securite` (lecture). Sans elle, Arche reste en
+déclaratif (N-13) pour les jalons HS.
