@@ -1,12 +1,12 @@
 # Arche — reste à développer
 
-Inventaire initial du 2026-10-22, mis à jour le 2026-10-31 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
+Inventaire initial du 2026-10-22, mis à jour le 2026-11-01 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
 
 **Lecture.** Priorité : Bloquant production, Prochaine étape, À décider (il faut d'abord trancher), Plus tard. Effort, pour un développeur qui connaît le code : S < 2 jours, M ≤ 1 semaine, L ≤ 3 semaines, XL > 3 semaines. Les identifiants entre parenthèses renvoient aux décisions (`docs/DECISIONS.md`) et aux demandes (`docs/DEMANDES-*.md`).
 
 ## 1. En bref
 
-**Avancement** : 41 faits, 7 en cours, 4 à faire, sur 52 points.
+**Avancement** : 41 faits, 8 en cours, 3 à faire, sur 52 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
@@ -53,7 +53,7 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 - **AR-002** Réponses du responsable produit aux questions de DECISIONS.md — Responsable produit
 - **AR-003** Données de référence des filiales — Responsable produit / DAF groupe
 - **AR-015** Hébergement en France et choix du serveur de production — Responsable produit et DSI
-- **AR-033** Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite — Responsable produit (AC-3) puis Vigie
+- **AR-033** Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite — Vigie (VG-01 à VG-05) puis Matrix (M-15)
 - **AR-037** Aide à la décision (règles puis IA conforme) et signature avancée G2 / AFE — Responsable produit (contrat Yousign ; fournisseur IA conforme, C-13)
 
 ### 1.3 Ce qui attend les autres applications
@@ -61,7 +61,7 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 - **AR-014** Arche sur le serveur PostgreSQL commun (Matrix) — Matrix (M-1 à M-8)
 - **AR-026** API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants — Codex
 - **AR-029** Vues Keystone pour Arche (catalogue, réponses, jalons, avancement, avenants, réserves, pack) — Keystone (R-185 à R-193)
-- **AR-033** Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite — Responsable produit (AC-3) puis Vigie
+- **AR-033** Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite — Vigie (VG-01 à VG-05) puis Matrix (M-15)
 - **AR-038** Socle partagé @epc2i/socle — Keystone (R-194)
 
 ## 2. Liste détaillée par domaine
@@ -216,9 +216,9 @@ CX-01 à CX-07. Analyse comparative du 25 oct. 2026 : les pièces jointes et dev
 
 ### 2.7 Jalons de sécurité (Vigie) (1 restants, 1 faits)
 
-**AR-033 · Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite** — *À décider · attend un système externe · effort L*  
+**AR-033 · Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite** — *À décider · attend un système externe · effort L* · **en cours (L7)**  
 VG-01 à VG-05 ; Vigie ne les modélise pas aujourd’hui. Analyse comparative du 25 oct. 2026 : les jalons HS lus depuis Vigie (aujourd’hui déclarés à la main avec un champ texte de référence) relèvent des intégrations standard attendues ; l’arbitrage AC-3 conditionne le périmètre. Priorité suggérée : à décider, inchangée.  
-*Attend : Responsable produit (AC-3) puis Vigie · Sources : docs/DEMANDES-VIGIE.md*
+*Avancement : 1er nov. 2026 : AR-033 lancé (études tenues dans Vigie, réponse à AC-3). Côté Arche fait : contrat de vigie.pub_etudes_securite (CONTRATS.md §2.5), connecteur Vigie (ARCHE_VIGIE, miroir, tâche vigie-sync, simulation sur la démo), jalons HS pris de Vigie quand il a des études, alerte des recommandations en retard, études et recommandations sur la page Jalons sécurité. Reste : Vigie publie les études et la vue (VG-01 à VG-05, son CNF-12 à CNF-14 et INT-18), Matrix accorde la lecture (M-15). · Attend : Vigie (VG-01 à VG-05) puis Matrix (M-15) · Sources : docs/DEMANDES-VIGIE.md*
 
 **~~AR-032 · Jalons HS (déclaratifs) et registre des autorisations~~** — *Prochaine étape · non commencé · effort M* · **fait (L5)**  
 Livraison 5 (C-3, N-13).  
@@ -298,6 +298,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-11-01 — AR-033 lancé : connecteur Vigie des études de sécurité des procédés côté Arche (contrat, miroir, jalons HS pris de Vigie, alerte des recommandations en retard) ; demandes à Vigie et à Matrix à déposer.
 - 2026-10-31 — AR-037 : lot 037b, signature avancée du G2 / AFE (Yousign ou simulation) ; développement d'AR-037 fait, reste la clé Yousign et l'IA (C-13).
 - 2026-10-31 — AR-037 lancé : lot 037a, aide à la décision par règles (prévision, dérive, comparaison aux CAPEX réalisés, synthèse du jalon).
 - 2026-10-29 — Lot 7e : backlog d’idées (AR-051), gains réalisés et post-audit (AR-046), import Sage par extraction (AR-047). Les 14 points AR-039 à AR-052 sont livrés.

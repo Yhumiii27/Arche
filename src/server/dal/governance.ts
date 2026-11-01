@@ -9,6 +9,8 @@ import { missingStaff } from '@/domain/budget';
 import { addWorkingDays } from '@/domain/circuits';
 import { uncertaintyGap } from '@/domain/execution';
 import { forecastOf } from '@/domain/forecast';
+import { recommendationsOf } from '@/domain/process-safety';
+import { studiesOf } from '@/server/integrations/vigie/sync';
 import { needRef } from '@/domain/needs';
 import { packSummary, type PackItemState } from '@/domain/pack';
 import type { HsState } from '@/domain/safety';
@@ -72,12 +74,13 @@ async function dashboardData(q: Q, cs: readonly { id: string; code: string }[], 
   ]);
   const lotIds = lots.map((l) => l.id);
   const sessionIds = running.map((g) => g.id);
-  const [stored, days, steps, env, phased] = await Promise.all([
+  const [stored, days, steps, env, phased, studies] = await Promise.all([
     lotIds.length ? q.select().from(lotActuals).where(inArray(lotActuals.lotId, lotIds)).orderBy(asc(lotActuals.month)) : [],
     daysOf(q, lines.map((l) => l.id)),
     sessionIds.length ? q.select().from(circuitSteps).where(and(inArray(circuitSteps.gateId, sessionIds), eq(circuitSteps.status, 'open'))) : [],
     envelopeData(q),
     none ? Promise.resolve([]) : phasedCapex(q, today, ids),
+    studiesOf(q, cs.map((c) => c.code)),
   ]);
   // Envelope control of each CAPEX (AR-040), against every CAPEX of the group.
   const envelopeOverOf = (id: string, tolerancePct: number) => {
@@ -113,6 +116,8 @@ async function dashboardData(q: Q, cs: readonly { id: string; code: string }[], 
     days: by.days.get(c.id) ?? [],
     steps: (g: string) => by.steps.get(g) ?? [],
     envelopeOver: (tolerancePct: number) => envelopeOverOf(c.id, tolerancePct),
+    // Vigie's process safety studies (AR-033): their late recommendations.
+    safetyLate: recommendationsOf(studies.filter((x) => x.capexCode === c.code)).late,
   });
 }
 
@@ -154,6 +159,7 @@ function dashboardFrom(c: CapexFull, d: DashboardData, values: ModelValues, toda
     lateConditions: d.lateConditions,
     rampup: c.phase === 'demarrage' && startup.result.mesStartedOn ? { alertOn: startup.result.alertOn, limitOn: startup.result.limitOn, reached: !!startup.result.reachedOn } : null,
     envelopeOver: d.envelopeOver(values.envelopeBlockPct),
+    safetyLate: d.safetyLate,
     drift: drift ? { ...drift.drift, eacDeltaPct: drift.eacTrend?.deltaPct ?? null, delayMonths: drift.delayMonths } : null,
   }, today));
   const board = hsBoard(d.hs);

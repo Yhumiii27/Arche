@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-22",
-  "updated": "2026-10-31",
+  "updated": "2026-11-01",
   "branch": "claude/brave-curie-chxbck",
   "history": [
     {
@@ -146,6 +146,10 @@
     {
       "date": "2026-10-31",
       "text": "AR-037 : lot 037b, signature avancée du G2 / AFE (Yousign ou simulation) ; développement d'AR-037 fait, reste la clé Yousign et l'IA (C-13)."
+    },
+    {
+      "date": "2026-11-01",
+      "text": "AR-033 lancé : connecteur Vigie des études de sécurité des procédés côté Arche (contrat, miroir, jalons HS pris de Vigie, alerte des recommandations en retard) ; demandes à Vigie et à Matrix à déposer."
     }
   ],
   "items": [
@@ -829,14 +833,16 @@
       "kind": "integration",
       "priority": "a_decider",
       "status": "bloque_systeme_externe",
-      "waiting_on": "Responsable produit (AC-3) puis Vigie",
+      "waiting_on": "Vigie (VG-01 à VG-05) puis Matrix (M-15)",
       "effort": "L",
       "sources": [
         "docs/DEMANDES-VIGIE.md"
       ],
       "evidence": [],
       "progress": {
-        "state": "a_faire"
+        "state": "en_cours",
+        "delivery": "L7",
+        "note": "1er nov. 2026 : AR-033 lancé (études tenues dans Vigie, réponse à AC-3). Côté Arche fait : contrat de vigie.pub_etudes_securite (CONTRATS.md §2.5), connecteur Vigie (ARCHE_VIGIE, miroir, tâche vigie-sync, simulation sur la démo), jalons HS pris de Vigie quand il a des études, alerte des recommandations en retard, études et recommandations sur la page Jalons sécurité. Reste : Vigie publie les études et la vue (VG-01 à VG-05, son CNF-12 à CNF-14 et INT-18), Matrix accorde la lecture (M-15)."
       }
     },
     {
