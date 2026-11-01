@@ -212,7 +212,7 @@ Tous les documents d’Arche dans Codex (N-17) ; simulation tant que l’API man
 
 **AR-026 · API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants** — *Prochaine étape · attend un système externe · effort M* · **en cours**  
 CX-01 à CX-07. Analyse comparative du 25 oct. 2026 : les pièces jointes et devis fournisseurs sur la demande d’investissement sont un standard du marché ; Arche les délègue à Codex, mais le lien de dépôt depuis Arche n’est pas branché tant que CX-03 et CX-07 manquent. Priorité suggérée : prochaine étape, haute pour CX-03.  
-*Avancement : 1er nov. 2026 : AR-026 lancé. Choix du responsable produit : CX-01 rattachement capex propre, CX-02 sous-types des types existants, CX-07 conservation légale. Côté Arche fait : sous-type au dépôt (déjà accepté par Codex), « Dossier de jalon G1/G2/G3 » pour une version figée, rattachement capex et gel juridique envoyés dès CODEX_CAPEX=on. Reste : Codex les réalise (demande à déposer), CX-06 attend O-04 et O-02. · Attend : Codex (CX-01, CX-02, CX-07) ; CX-06 : organigramme O-04 et Entra O-02 · Sources : docs/DEMANDES-CODEX.md*
+*Avancement : 1er nov. 2026 : AR-026 lancé. Choix du responsable produit : CX-01 rattachement capex propre, CX-02 sous-types des types existants, CX-07 conservation légale. Côté Arche fait : sous-type au dépôt (déjà accepté par Codex), « Dossier de jalon G1/G2/G3 » pour une version figée, rattachement capex et gel juridique envoyés dès CODEX_CAPEX=on. Demande déposée à Codex le 1er nov. 2026 (Yhumiii27/Codex#20). Reste : Codex la réalise ; CX-06 attend O-04 et O-02. · Attend : Codex (CX-01, CX-02, CX-07) ; CX-06 : organigramme O-04 et Entra O-02 · Sources : docs/DEMANDES-CODEX.md*
 
 ### 2.7 Jalons de sécurité (Vigie) (1 restants, 1 faits)
 
@@ -298,6 +298,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-11-01 — AR-026 : demande CX-01, CX-02, CX-07 déposée à Codex, validée par le responsable produit.
 - 2026-11-01 — AR-026 lancé : choix CX-01 (rattachement capex), CX-02 (sous-types), CX-07 (conservation légale) ; Arche envoie le sous-type et, dès CODEX_CAPEX=on, le rattachement capex et le gel juridique.
 - 2026-11-01 — AR-033 : demandes VG-01 à VG-05 (Vigie) et M-15 (Matrix) déposées, validées par le responsable produit.
 - 2026-11-01 — Dépôt dans Codex (CX-03) : depuis une section d’un dossier, un fichier est déposé dans Codex et rattaché ; le PDF d’une version figée est déposé et son identifiant gardé sur la version. Variables CODEX_API_URL, CODEX_DOCUMENTS_TOKEN, CODEX_DOCUMENTS_SECRET.

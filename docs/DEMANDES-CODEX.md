@@ -53,5 +53,6 @@ PSSR / RSPDI, Audit ASPD ; `AUT` → Dossier ICPE, Permis de construire / PLU ; 
 Business case (existe), Dossier d’investissement, Dossier de jalon G1, Dossier de jalon G2, Dossier de jalon G3 ; `REM` → PV de
 transfert d’actif (`src/domain/dossiers.ts`, `CAPEX_SUBTYPES`).
 
-CX-06 (accès des filiales) reste ouverte : elle attend l’organigramme avec les filiales (O-04) et Entra ID (O-02). Demande à
-déposer dans le `REQUESTS.md` de Codex après le « validé » du responsable produit.
+CX-06 (accès des filiales) reste ouverte : elle attend l’organigramme avec les filiales (O-04) et Entra ID (O-02). **Demande
+déposée le 1er nov. 2026** dans le `REQUESTS.md` de Codex (validée par le responsable produit ; Yhumiii27/Codex#20) ; la
+lecture de `arche.pub_capex` par `codex_app` est un lien à déclarer à Matrix (M-18).
