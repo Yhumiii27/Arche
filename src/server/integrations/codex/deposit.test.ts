@@ -1,7 +1,7 @@
 // Deposit in Codex (CX-03): what Arche sends to POST /api/documents and how it reads Codex's answers.
 import { createHash, createHmac } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
-import { codexDepositEnabled, depositToCodex, ownerField, type CodexDepositMeta } from './deposit';
+import { codexCapexEnabled, codexDepositEnabled, depositMetaOf, depositToCodex, ownerField, type CodexDepositMeta } from './deposit';
 
 const meta: CodexDepositMeta = { sourceRef: 'arche:dossier/CPX-APM-2026-01/business_case/v2', title: 'Business case v2', typeCode: 'NOT', department: 'DIR', owner: 'emp-0042', conf: 'interne' };
 const bytes = new TextEncoder().encode('%PDF-1.7 test');
@@ -87,5 +87,20 @@ describe('Deposit in Codex', () => {
     });
     const r = await depositToCodex({ meta, file, env: { NEXT_PUBLIC_CODEX_URL: 'http://localhost:1', CODEX_DOCUMENTS_TOKEN: 'tok' }, fetchImpl: f as unknown as typeof fetch });
     expect(r).toEqual({ ok: false, reason: 'unavailable', message: 'Codex could not be reached (fetch failed)' });
+  });
+
+  it('sends the sub-type; the CAPEX attachment and the legal hold only once Codex accepts them (CX-01, CX-02, CX-07)', async () => {
+    const m = { ...meta, subtype: 'Dossier de jalon G1', capexCode: 'CPX-APM-2026-01', legalHold: true };
+    expect(codexCapexEnabled({})).toBe(false);
+    const off = depositMetaOf(m, 'abc', {});
+    expect(off).toMatchObject({ subtype: 'Dossier de jalon G1', ownerMatricule: 'EMP-0042', sha256: 'abc' });
+    expect(off).not.toHaveProperty('attachment');
+    expect(off).not.toHaveProperty('capexCode');
+    expect(off).not.toHaveProperty('legalHold');
+    expect(depositMetaOf({ ...meta, subtype: null }, 'abc', {})).not.toHaveProperty('subtype');
+    expect(depositMetaOf(m, 'abc', { CODEX_CAPEX: 'on' })).toMatchObject({ attachment: 'capex', capexCode: 'CPX-APM-2026-01', legalHold: true });
+    const f = codex(201, { id: 'DEF-CPX-APM-2026-01-001' });
+    expect(await depositToCodex({ meta: m, file, env: { CODEX_API_URL: 'https://codex.example', CODEX_DOCUMENTS_TOKEN: 't', CODEX_CAPEX: 'on' }, fetchImpl: f as unknown as typeof fetch })).toEqual({ ok: true, id: 'DEF-CPX-APM-2026-01-001', replayed: false });
+    expect((await received(call(f)[1])).meta).toMatchObject({ typeCode: 'NOT', subtype: 'Dossier de jalon G1', attachment: 'capex', capexCode: 'CPX-APM-2026-01', legalHold: true, sha256: sha });
   });
 });

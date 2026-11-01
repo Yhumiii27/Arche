@@ -173,3 +173,10 @@ données. Choix par défaut, modifiables par le responsable produit :
 | Point | Ajout | Choix par défaut | ★ |
 |---|---|---|---|
 | AR-033 | Études de sécurité des procédés lues dans Vigie | Vigie tient les études HazID, HazOp / AMDEC, contrôle chantier, PSSR avec RSPDI et ASPD, leurs recommandations et leur levée (actions QSE) ; Arche les lit dans `vigie.pub_etudes_securite` (contrat `CONTRATS.md` §2.5) par le connecteur Vigie (`ARCHE_VIGIE` : `simulation` par défaut, sur le jeu de démonstration seulement ; `views` quand Vigie publie la vue et que Matrix accorde la lecture ; `off`), toutes les 15 min ; un jalon HS qui a des études dans Vigie en prend le statut (franchi : une étude validée, non défavorable, sans réserve bloquante) et n’est plus déclarable dans Arche ; les autres restent déclarés par la SSE groupe ; une recommandation en retard lève une alerte sur le CAPEX ; la page Jalons sécurité liste les études avec leurs recommandations, le rapport (Codex) et le lien vers Vigie | **retenu** |
+
+### AR-026 lancé le 1er nov. 2026 (Codex : rattachement CAPEX, types, version figée)
+
+| Point | Ajout | Choix du responsable produit | ★ |
+|---|---|---|---|
+| AR-026 | Documents d’un CAPEX dans Codex | **CX-01** : rattachement `capex` propre dans Codex (contexte = code CAPEX), pas un CAPEX traité comme un projet ; **CX-02** : les pièces d’un CAPEX sont des **sous-types** de types existants (GA, RSQ, AUT, FIN, DEF, REM), pas de nouveaux types ; **CX-07** : un dossier de jalon déposé par Arche est placé sous **conservation légale** (gel juridique), pas approuvé d’office. Côté Arche : sous-type proposé au dépôt, « Dossier de jalon G1 / G2 / G3 » pour une version figée ; rattachement CAPEX et gel juridique envoyés dès que Codex les accepte (`CODEX_CAPEX=on`). CX-06 (accès des filiales) attend O-04 et O-02 | **retenu** |
+

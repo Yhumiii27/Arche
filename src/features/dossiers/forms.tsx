@@ -4,7 +4,7 @@
 import { ActionButton, ActionForm, Folded } from '@/components/app/ActionForm';
 import { Field, Input, Select, Textarea } from '@/components/ds/Field';
 import { SECTION_BASE_FIELD } from '@/domain/concurrency';
-import { CODEX_CONF_LEVELS } from '@/domain/dossiers';
+import { CAPEX_SUBTYPES, CODEX_CONF_LEVELS, DOSSIER_CODEX, type DossierKind } from '@/domain/dossiers';
 import { useI18n } from '@/i18n/client';
 import { addReferenceAction, depositFrozenVersionAction, depositReferenceAction, freezeVersionAction, removeReferenceAction, saveSectionAction } from './actions';
 
@@ -48,13 +48,19 @@ const CONF_LABEL: Record<(typeof CODEX_CONF_LEVELS)[number], string> = {
   restreint: 'Restricted', interne: 'Internal', confidentiel: 'Confidential', tres_confidentiel: 'Highly confidential',
 };
 
-/** Codex metadata of a deposit: type, owner's department, owner, confidentiality, and the file. */
-function DepositFields({ id, typeHint, pdf }: { id: string; typeHint?: string; pdf: boolean }) {
+/** Codex metadata of a deposit: type and sub-type, owner's department, owner, confidentiality, and the file. */
+function DepositFields({ id, typeHint, pdf, defaults }: { id: string; typeHint?: string; pdf: boolean; defaults?: { type: string; subtype: string } }) {
   const { t } = useI18n();
   return (
     <>
       <Field label={t('Codex document type')} htmlFor={`type-${id}`} required hint={typeHint ?? t('Code of the Codex registry, e.g. NOT, PID, AUT')}>
-        <Input id={`type-${id}`} name="typeCode" required />
+        <Input id={`type-${id}`} name="typeCode" required defaultValue={defaults?.type} />
+      </Field>
+      <Field label={t('Sub-type')} htmlFor={`sub-${id}`} hint={t('A document of a CAPEX: choose its sub-type (Codex registry)')}>
+        <Input id={`sub-${id}`} name="subtype" list={`subtypes-${id}`} maxLength={200} defaultValue={defaults?.subtype} />
+        <datalist id={`subtypes-${id}`}>
+          {CAPEX_SUBTYPES.map((x) => <option key={`${x.type}-${x.subtype}`} value={x.subtype}>{x.type}</option>)}
+        </datalist>
       </Field>
       <Field label={t('Department in Codex')} htmlFor={`dep-${id}`} required hint={t('3 letters, e.g. DIR')}>
         <Input id={`dep-${id}`} name="department" required maxLength={3} />
@@ -94,7 +100,7 @@ export function DepositVersionForm({ code, kind, version }: { code: string; kind
         <Field label={t('Title')} htmlFor={`title-v${version}`} span="full" hint={t('Empty: the CAPEX code, the dossier and the version')}>
           <Input id={`title-v${version}`} name="title" maxLength={300} />
         </Field>
-        <DepositFields id={`v${version}`} pdf />
+        <DepositFields id={`v${version}`} pdf defaults={DOSSIER_CODEX[kind as DossierKind]} />
       </ActionForm>
     </Folded>
   );

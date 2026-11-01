@@ -6,7 +6,7 @@
 import { createHash } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import type { Check } from '@/domain/admin';
-import { checkCodexDeposit, checkCodexRef, checkSectionText, completeness, depositSourceRef, DOSSIER_LABEL, emptyContent, isDossierKind, readContent, type DossierContent, type DossierKind, type Sections } from '@/domain/dossiers';
+import { checkCodexDeposit, checkCodexRef, checkSectionText, completeness, depositSourceRef, DOSSIER_CODEX, DOSSIER_LABEL, emptyContent, isDossierKind, readContent, type DossierContent, type DossierKind, type Sections } from '@/domain/dossiers';
 import { recordActivity, writeAudit } from '@/server/db/helpers';
 import { circuitSteps, dossierVersions, gates } from '@/server/db/schema';
 import type { Tx } from '@/server/db/types';
@@ -161,7 +161,7 @@ export async function depositReferenceAction(code: string, kind: string, key: st
   const sha = createHash('sha256').update(file.value.bytes).digest('hex');
   const { c } = pre;
   const r = await depositToCodex({
-    meta: { ...meta.value, sourceRef: depositSourceRef(c.code, kind, `${key}/${sha.slice(0, 16)}`), comment: `${c.code} — ${DOSSIER_LABEL[kind]}` },
+    meta: { ...meta.value, sourceRef: depositSourceRef(c.code, kind, `${key}/${sha.slice(0, 16)}`), comment: `${c.code} — ${DOSSIER_LABEL[kind]}`, capexCode: c.code },
     file: file.value,
   });
   if (!r.ok) return { ok: false, error: r.message };
@@ -181,7 +181,8 @@ export async function depositReferenceAction(code: string, kind: string, key: st
 
 /**
  * Deposits the PDF of the latest frozen version (its print view) in Codex (CX-03) and records the document on the version.
- * The version stays as frozen — the PDF is its proof in Codex, where it starts as a draft its owner submits (CX-07 open).
+ * The version stays as frozen — the PDF is its proof in Codex: under legal hold in the CAPEX's context once Codex accepts it
+ * (CODEX_CAPEX=on, CX-01 and CX-07), a draft its owner submits until then. Sub-type: the gate's dossier (CX-02).
  */
 export async function depositFrozenVersionAction(code: string, kind: string, _prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
   if (!isDossierKind(kind)) return BAD_KIND;
@@ -197,7 +198,7 @@ export async function depositFrozenVersionAction(code: string, kind: string, _pr
   if (!file.ok) return file;
   const title = meta.value.title || `${c.code} — ${DOSSIER_LABEL[kind]} v${target.number}`;
   const r = await depositToCodex({
-    meta: { ...meta.value, title, sourceRef: depositSourceRef(c.code, kind, `v${target.number}`), comment: `${DOSSIER_LABEL[kind]} v${target.number}, SHA-256 of the content ${target.contentHash ?? '—'}` },
+    meta: { ...meta.value, subtype: meta.value.subtype ?? DOSSIER_CODEX[kind].subtype, title, sourceRef: depositSourceRef(c.code, kind, `v${target.number}`), comment: `${DOSSIER_LABEL[kind]} v${target.number}, SHA-256 of the content ${target.contentHash ?? '—'}`, capexCode: c.code, legalHold: true },
     file: file.value,
   });
   if (!r.ok) return { ok: false, error: r.message };

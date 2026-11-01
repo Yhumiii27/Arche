@@ -184,7 +184,38 @@ export interface CodexDepositFields {
   /** Owner in Codex: matricule (EMP-0042) or Codex identifier. */
   owner: string;
   conf: CodexConf;
+  /** Sub-type of the registry (Codex normalises it to its spelling; another value is kept and proposed to its admins). */
+  subtype: string | null;
 }
+
+/**
+ * The documents of a CAPEX as sub-types of Codex's existing types (CX-02, owner's choice of 1 Nov 2026: sub-types, not new
+ * types). Labels in Codex's French spelling: they are Codex vocabulary, shown as typed.
+ */
+export const CAPEX_SUBTYPES: readonly { type: string; subtype: string }[] = [
+  { type: 'GA', subtype: 'Plan de masse' },
+  { type: 'RSQ', subtype: 'HazID' },
+  { type: 'RSQ', subtype: 'HazOp / AMDEC' },
+  { type: 'RSQ', subtype: 'Zonage ATEX (DRPCE)' },
+  { type: 'RSQ', subtype: 'PSSR / RSPDI' },
+  { type: 'RSQ', subtype: 'Audit ASPD' },
+  { type: 'AUT', subtype: 'Dossier ICPE' },
+  { type: 'AUT', subtype: 'Permis de construire / PLU' },
+  { type: 'FIN', subtype: 'AFE (autorisation de dépense)' },
+  { type: 'DEF', subtype: 'Business case' },
+  { type: 'DEF', subtype: 'Dossier d’investissement' },
+  { type: 'REM', subtype: 'PV de transfert d’actif' },
+  { type: 'DEF', subtype: 'Dossier de jalon G1' },
+  { type: 'DEF', subtype: 'Dossier de jalon G2' },
+  { type: 'DEF', subtype: 'Dossier de jalon G3' },
+];
+
+/** Type and sub-type of the frozen version of a living dossier deposited in Codex (its gate's dossier, CX-02). */
+export const DOSSIER_CODEX: Record<DossierKind, { type: string; subtype: string }> = {
+  business_case: { type: 'DEF', subtype: 'Dossier de jalon G1' },
+  investment: { type: 'DEF', subtype: 'Dossier de jalon G2' },
+  transfer: { type: 'DEF', subtype: 'Dossier de jalon G3' },
+};
 
 /** The Codex metadata of a deposit typed by a person (CX-03); the title is given by the caller or typed (`title`). */
 export function checkCodexDeposit(raw: Record<string, unknown>, opts: { titleRequired: boolean }): Check<CodexDepositFields & { title: string }> {
@@ -199,7 +230,9 @@ export function checkCodexDeposit(raw: Record<string, unknown>, opts: { titleReq
   if (!owner || owner.length > 64 || /\s/.test(owner)) return { ok: false, error: 'Enter the owner’s matricule (EMP-…) or Codex identifier' };
   const conf = String(raw.conf ?? 'interne');
   if (!(CODEX_CONF_LEVELS as readonly string[]).includes(conf)) return { ok: false, error: 'Unknown confidentiality level' };
-  return { ok: true, value: { title, typeCode, department, owner, conf: conf as CodexConf } };
+  const subtype = String(raw.subtype ?? '').trim() || null;
+  if (subtype && subtype.length > 200) return { ok: false, error: 'The sub-type is too long (200 characters at most)' };
+  return { ok: true, value: { title, typeCode, department, owner, conf: conf as CodexConf, subtype } };
 }
 
 /** `arche:` reference of a deposit (Codex `sourceRef`, ≤ 200 characters): it makes the deposit replayable. */
