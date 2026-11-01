@@ -162,6 +162,10 @@
     {
       "date": "2026-11-01",
       "text": "AR-026 lancé : choix CX-01 (rattachement capex), CX-02 (sous-types), CX-07 (conservation légale) ; Arche envoie le sous-type et, dès CODEX_CAPEX=on, le rattachement capex et le gel juridique."
+    },
+    {
+      "date": "2026-11-01",
+      "text": "AR-026 : demande CX-01, CX-02, CX-07 déposée à Codex, validée par le responsable produit."
     }
   ],
   "items": [
@@ -702,7 +706,7 @@
       "evidence": [],
       "progress": {
         "state": "en_cours",
-        "note": "1er nov. 2026 : AR-026 lancé. Choix du responsable produit : CX-01 rattachement capex propre, CX-02 sous-types des types existants, CX-07 conservation légale. Côté Arche fait : sous-type au dépôt (déjà accepté par Codex), « Dossier de jalon G1/G2/G3 » pour une version figée, rattachement capex et gel juridique envoyés dès CODEX_CAPEX=on. Reste : Codex les réalise (demande à déposer), CX-06 attend O-04 et O-02."
+        "note": "1er nov. 2026 : AR-026 lancé. Choix du responsable produit : CX-01 rattachement capex propre, CX-02 sous-types des types existants, CX-07 conservation légale. Côté Arche fait : sous-type au dépôt (déjà accepté par Codex), « Dossier de jalon G1/G2/G3 » pour une version figée, rattachement capex et gel juridique envoyés dès CODEX_CAPEX=on. Demande déposée à Codex le 1er nov. 2026 (Yhumiii27/Codex#20). Reste : Codex la réalise ; CX-06 attend O-04 et O-02."
       }
     },
     {
