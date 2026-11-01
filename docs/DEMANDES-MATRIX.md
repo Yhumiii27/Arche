@@ -1,5 +1,9 @@
 # Demandes d’Arche à Matrix (socle du serveur PostgreSQL commun)
 
+> **1er nov. 2026 — décisions M-17 et M-18 de Matrix appliquées** (`REQUESTS.md`, `CLAUDE.md`) : Matrix définit et applique les vues
+> `pub_` (plus de vue dans les migrations d’Arche, plus de copie dans `partage/`) ; un besoin d’accès se déclare à Matrix comme un
+> lien (lecteur, objet, nature `lecture` | `execution`, raison).
+
 > 22 oct. 2026. Décision M-01 du dépôt Matrix : base `epc2i`, un schéma par outil, partage par vues `pub_`. Arche **n’écrit
 > pas** dans le dépôt Matrix : ces demandes sont à transmettre au chat Matrix par le responsable produit (règle M-05 : une
 > branche et une PR par outil). Relevé du dépôt `Yhumiii27/Matrix` au commit `403ff37`.

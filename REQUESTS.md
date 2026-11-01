@@ -16,7 +16,7 @@ Format d'une entrée :
 
 
 ## [2026-10-30] Matrix → Arche — M-17 : accès entre outils décidés par Matrix (plus de copie de vue, écritures par API ou fonction `pub_`)
-- Statut : OUVERTE
+- Statut : FAITE
 - Demande : appliquer dans Arche la décision M-17 de Matrix (`docs/decisions.md` et `docs/architecture-postgres.md` § 8 sexies du dépôt Matrix) :
   1. **Lire** les données d'un autre outil uniquement par ses vues `pub_` (R2), jamais par ses tables ;
   2. **Écrire** chez un autre outil uniquement par son API ou par une fonction `pub_` qu'il fournit (R4), jamais par `INSERT` / `UPDATE` / `DELETE` dans son schéma ;
@@ -26,9 +26,10 @@ Format d'une entrée :
 - Justification : décision du responsable produit du 30/10/2026 (M-17) : Matrix décide de chaque accès d'un outil aux données d'un autre, PostgreSQL l'applique. Les vues `pub_` restent les contrats de lecture, mais leur copie par Matrix (quatre étapes par échange, dont deux à la main) disparaît, et l'écriture entre outils devient possible sous le contrôle de Matrix sans contourner les règles métier du propriétaire.
 - Détails techniques : relevé du 30/10/2026 sur `main` de Arche (requêtes SQL vers d'autres schémas) : `codex.pub_documents`, `keystone.pub_*` (connecteur en mode `views`), `matrix.pub_sites` ; écriture chez Codex par son API de dépôt (Yhumiii27/Arche#19) : conforme à R4. Toutes ces lectures passent déjà par des vues `pub_` et aucune écriture directe dans un autre schéma n'a été trouvée : aucune correction urgente. Les vues, droits et fichiers de partage actuels restent en place pendant la transition (lots M17-1 à M17-5 côté Matrix) ; une vue `pub_` existante ne change pas.
 - Validé par Guillaume le : 2026-10-30
+- Réponse d'Arche (2026-11-01, validée par Guillaume) : règles reprises dans le `CLAUDE.md` d'Arche (« Exchanges between tools »). Inventaire confirmé : lectures `codex.pub_documents`, `keystone.pub_*` (mode `views`), `matrix.pub_sites`, `vigie.pub_etudes_securite` (connecteur Vigie, mode `views`, lien demandé dans M-15 de Matrix) ; écriture chez Codex par `POST /api/documents` (R4) ; aucune écriture reçue d'un autre outil ; aucun accès non conforme. Le point 3 est remplacé par M-18.
 
 ## [2026-11-01] Matrix → Arche — M-18 : Matrix définit vos vues `pub_` et décide de vos écritures croisées (plus de vue `pub_` dans vos migrations)
-- Statut : OUVERTE
+- Statut : FAITE
 - Demande : appliquer dans Arche la décision M-18 de Matrix (`docs/decisions.md` et `docs/architecture-postgres.md` § 8 septies du dépôt Matrix), qui **remplace le point 3 de la demande M-17** du 30/10/2026 (« la migration reste la seule définition des vues `pub_` ») :
   1. **ne plus créer, modifier ni supprimer de vue `pub_` dans vos migrations** (les migrations déjà appliquées ne changent pas) : une nouvelle publication, ou une colonne de plus, se demande à Matrix, qui la définit dans son écran « Publications » (`matrix.publications`) et l'applique lui-même (rôle `matrix_gestion`). Votre migration crée les tables et colonnes ; la vue est celle de Matrix ;
   2. **avant de modifier ou de supprimer une colonne lue par une vue `pub_`**, le signaler à Matrix (entrée dans son `REQUESTS.md`) : la migration échouerait, la vue en dépend. Une colonne publiée ne se retire ni ne se renomme ; un changement incompatible passe par une vue `…_v2` ;
@@ -38,4 +39,4 @@ Format d'une entrée :
 - Justification : décision du responsable produit du 01/11/2026 (M-18) : « matrix [doit] être le seul outil qui permette d'administrer la base de données postgre […] c'est matrix qui doit avoir la main sur ce que chaque outil publie, lie, écrit ». Matrix est en place (lots P1 à P4 fusionnés le 01/11/2026 : rôle `matrix_gestion`, registre et écran « Publications », liens appliqués tout de suite, liens d'écriture). Tant que la reprise n'est pas faite, rien ne change pour Arche ; après la reprise, une migration qui recréerait une vue `pub_` échouerait (« must be owner of view »), d'où le point 1 d'abord.
 - Détails techniques : vues de Arche reprises par Matrix : pub_besoins_machines, pub_capex, pub_journal, pub_rampup, pub_rex, pub_rex_v2 (6 vues). Écritures reçues d'autres outils : aucune aujourd'hui. Une vue reprise garde son nom, ses colonnes, son commentaire et ses lecteurs ; seule sa propriété change. Contrôles : `droits.verifier()` (vue `pub_` encore à l'outil : attention, « pas encore reprise »). Pour un essai local (PGlite, base de démonstration), vos migrations anciennes continuent de créer les vues : seule une **nouvelle** migration ne doit plus en créer ni en modifier.
 - Validé par Guillaume le : 2026-11-01
-
+- Réponse d'Arche (2026-11-01, validée par Guillaume) : règles reprises dans le `CLAUDE.md` d'Arche ; aucune migration n'a créé ni modifié de vue `pub_` depuis la décision (dernières : `0030_signature_requests`, `0031_vigie_studies`, `0032_codex_deposit`, tables seulement) ; une nouvelle publication ou colonne sera demandée à Matrix. Matrix peut reprendre les 6 vues (`pub_besoins_machines`, `pub_capex`, `pub_journal`, `pub_rampup`, `pub_rex`, `pub_rex_v2`).
