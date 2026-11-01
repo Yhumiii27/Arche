@@ -298,6 +298,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-11-01 — Demandes M-17 et M-18 de Matrix appliquées (validées par le responsable produit) : règles d'échange entre outils dans CLAUDE.md, plus de vue pub_ dans les migrations ; Matrix peut reprendre les 6 vues d'Arche.
 - 2026-11-01 — AR-026 : demande CX-01, CX-02, CX-07 déposée à Codex, validée par le responsable produit.
 - 2026-11-01 — AR-026 lancé : choix CX-01 (rattachement capex), CX-02 (sous-types), CX-07 (conservation légale) ; Arche envoie le sous-type et, dès CODEX_CAPEX=on, le rattachement capex et le gel juridique.
 - 2026-11-01 — AR-033 : demandes VG-01 à VG-05 (Vigie) et M-15 (Matrix) déposées, validées par le responsable produit.

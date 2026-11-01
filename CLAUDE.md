@@ -120,6 +120,21 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
 - Nothing outside the CDC without the owner's approval (additions are listed in `DECISIONS.md` §5).
 - Arche writes only in its schema (`arche`, role `arche_app`) and reads other tools only through their `pub_` views.
   Its own `pub_` views are contracts: never drop or rename a column; new columns go at the end.
+- **Exchanges between tools (Matrix's decisions M-17 and M-18, applied 1 Nov 2026; `REQUESTS.md`)**:
+  - read another tool only through its `pub_` views, never its tables; write to another tool only through its API or a
+    `pub_` function it provides, never by `INSERT` / `UPDATE` / `DELETE` in its schema;
+  - **no migration creates, changes or drops a `pub_` view any more**: Matrix defines and applies the publications
+    (`pub_capex`, `pub_besoins_machines`, `pub_journal`, `pub_rampup`, `pub_rex`, `pub_rex_v2` are Matrix's since M-18); a
+    new publication or a new column is asked of Matrix (entry in its `REQUESTS.md`); the migrations already applied stay;
+  - before changing or dropping a column a `pub_` view reads, tell Matrix first (the migration would fail); an
+    incompatible change is a `…_v2` view;
+  - a write another tool must make in Arche goes through Arche's API (`/api/v1/`, `docs/API.md`) or a function
+    `arche.pub_<verb>_<object>` created by migration (`SECURITY DEFINER`, `SET search_path = arche, pg_temp`, caller
+    `session_user`, Arche's rules and audit, `REVOKE EXECUTE … FROM PUBLIC`); none exists today;
+  - a need to read or execute in another tool is declared to Matrix as a link (screen « Liens entre outils », or a short
+    entry in its `REQUESTS.md`: reader, object `schema.pub_…`, nature `lecture` | `execution`, reason), never as a copy.
+  - Inventory (1 Nov 2026): reads `codex.pub_documents`, `keystone.pub_*` (mode `views`), `matrix.pub_sites`,
+    `vigie.pub_etudes_securite` (mode `views`); writes to Codex through `POST /api/documents`; no write received.
 - Copy only the **platform** from Keystone (`docs/SOCLE.md`, record the origin commit), never business modules.
 - Typed text is displayed as typed (never through `t()`); the audit trail is append-only; every Server Function validates
   input and rights server-side; migrations are generated, never edited.
