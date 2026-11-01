@@ -15,6 +15,7 @@ import { getDb } from '@/server/db/client';
 import { writeAudit } from '@/server/db/helpers';
 import { capex, delegationMatrices, exchangeRates, lifecycleModels, referenceRevenues, roleAssignments, sites, subsidiaries, users, zones } from '@/server/db/schema';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
+import { syncVigie } from '@/server/integrations/vigie/sync';
 import { getViewer, type Viewer } from '@/server/session';
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -240,6 +241,18 @@ export async function syncKeystoneAction(): Promise<ActionResult> {
   const db = await getDb();
   const reports = await syncKeystone(db, { now: await businessNow() });
   await writeAudit(db, audit(v, 'Keystone connector', 'mirror synchronised', { after: { views: reports.map((r) => `${r.view}: ${r.source} ${r.rows}${r.error ? ' (error)' : ''}`) } }));
+  revalidatePath('/admin/connectors');
+  revalidatePath('/capex', 'layout');
+  return { ok: true };
+}
+
+/** Synchronises Vigie's process safety studies now (AR-033): the administrator only; the worker does it on its schedule. */
+export async function syncVigieAction(): Promise<ActionResult> {
+  const v = await asRole(['admin']);
+  if (!v) return REFUSED;
+  const db = await getDb();
+  const r = await db.transaction((tx) => syncVigie(tx));
+  await writeAudit(db, audit(v, 'Vigie connector', 'process safety studies synchronised', { after: { source: r.source, studies: r.rows, milestones: r.milestones } }));
   revalidatePath('/admin/connectors');
   revalidatePath('/capex', 'layout');
   return { ok: true };

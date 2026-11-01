@@ -12,12 +12,13 @@ import { PageHeader } from '@/components/app/shell/page-header';
 import { Table, Td, Th } from '@/components/ds/Table';
 import { Tag } from '@/components/ds/Tag';
 import { canSee } from '@/config/screens';
-import { syncKeystoneAction } from '@/features/admin/actions';
+import { syncKeystoneAction, syncVigieAction } from '@/features/admin/actions';
 import { fmtInstant } from '@/lib/format';
 import { getConfig } from '@/server/config';
 import { getDb } from '@/server/db/client';
 import { databaseSeedMode } from '@/server/db/seed/mode';
 import { syncState } from '@/server/integrations/keystone';
+import { vigieSyncState } from '@/server/integrations/vigie/sync';
 import { KEYSTONE_VIEW_NAMES } from '@/server/integrations/keystone/views';
 import { getI18n, getViewer } from '@/server/session';
 
@@ -29,9 +30,11 @@ export default async function ConnectorsPage() {
   if (!canSee(viewer.role, 'admin-connectors')) notFound();
   const db = await getDb();
   const cfg = getConfig().keystone;
-  const [state, seed, codex] = await Promise.all([
+  const vigieMode = getConfig().vigie.mode;
+  const [state, seed, codex, vigie] = await Promise.all([
     syncState(db), databaseSeedMode(db),
     db.execute(sql`select to_regclass('codex.pub_documents') is not null and has_table_privilege(current_user, 'codex.pub_documents', 'select') as ok`),
+    vigieSyncState(db),
   ]);
   // E-mail notifications (AR-041): the transport and the latest messages of the outbox.
   const mail = getConfig().mail;
@@ -43,7 +46,7 @@ export default async function ConnectorsPage() {
   const codexShared = !!(codex.rows[0] as { ok?: boolean } | undefined)?.ok;
   return (
     <>
-      <PageHeader screen="admin-connectors" crumbs={['Administration']} actions={viewer.role === 'admin' && <ActionButton run={syncKeystoneAction} label="Synchronise now" done="Synchronised" />} />
+      <PageHeader screen="admin-connectors" crumbs={['Administration']} actions={viewer.role === 'admin' && [<ActionButton key="k" run={syncKeystoneAction} label="Synchronise now" done="Synchronised" />, <ActionButton key="v" run={syncVigieAction} label="Synchronise Vigie" done="Synchronised" />]} />
       <SectionCard title="Keystone" subtitle={`${t('Mode')}: ${t(MODE[cfg.mode])} · ${t('every')} ${cfg.syncEveryMin} min`} scroll>
         <Table>
           <thead>
@@ -70,6 +73,14 @@ export default async function ConnectorsPage() {
             })}
           </tbody>
         </Table>
+      </SectionCard>
+      <SectionCard title="Vigie" subtitle={`${t('Mode')}: ${t(MODE[vigieMode])} · ${t('every')} 15 min`}>
+        <KeyValueList
+          items={[
+            { k: 'vigie.pub_etudes_securite', v: vigie ? `${t(SOURCE[vigie.source])} · ${vigie.rows} ${t('rows')} · ${fmtInstant(vigie.syncedAt, lang)}${vigie.error ? ` · ${t(vigie.error)}` : ''}` : t('Never') },
+            { k: t('Deep links'), v: process.env.NEXT_PUBLIC_VIGIE_URL ?? t('NEXT_PUBLIC_VIGIE_URL is not set') },
+          ]}
+        />
       </SectionCard>
       <SectionCard title="Codex">
         <KeyValueList

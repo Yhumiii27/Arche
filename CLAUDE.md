@@ -93,6 +93,11 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `src/server/cycle/step.ts` shared by every step action, `src/server/signature/advanced.ts`, Yousign client
   `src/server/integrations/signature/yousign.ts`, routes `/signature/[id]/…`, job `signature-status`). Left: the group's
   Yousign key, and AI once a compliant provider is validated (C-13).
+- **AR-033 has started** (owner, 1 Nov 2026): process safety studies are held in Vigie; Arche reads
+  `vigie.pub_etudes_securite` (contract `docs/CONTRATS.md` §2.5, `src/domain/process-safety.ts`) through the Vigie connector
+  (`src/server/integrations/vigie/sync.ts`, mirror `vigie_studies`, `ARCHE_VIGIE` off | simulation | views, job `vigie-sync`):
+  a milestone with studies takes its status from Vigie (`hs_statuses.source = vigie`), alert `safety_recommendations_late`.
+  Left: Vigie publishes the view (VG-01 to VG-05) and Matrix grants `arche_app` its reading.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.
