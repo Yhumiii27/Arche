@@ -59,6 +59,14 @@ describe('parseConfig', () => {
     expect(vars(r.warnings)).toEqual(['NEXT_PUBLIC_KEYSTONE_URL', 'NEXT_PUBLIC_CODEX_URL', 'NEXT_PUBLIC_VIGIE_URL', 'ARCHE_AUTH', 'ARCHE_CLOCK']);
   });
 
+  it('the Codex deposit token cannot go with credentials in CODEX_API_URL; its proofs are secrets', () => {
+    expect(vars(parse({ CODEX_API_URL: 'https://bot:pw-of-traefik@codex.example', CODEX_DOCUMENTS_TOKEN: 'tok-tok' }).errors)).toEqual(['CODEX_DOCUMENTS_TOKEN']);
+    const ok = parse({ CODEX_API_URL: 'https://bot:pw-of-traefik@codex.example', CODEX_DOCUMENTS_SECRET: 's'.repeat(32) });
+    expect(ok.errors).toEqual([]);
+    expect(ok.config.secrets).toEqual(expect.arrayContaining(['s'.repeat(32), 'pw-of-traefik']));
+    expect(vars(parse({ CODEX_DOCUMENTS_SECRET: 'short' }).errors)).toEqual(['CODEX_DOCUMENTS_SECRET']);
+  });
+
   it('production with the production data set refuses the demo mode', () => {
     expect(vars(parse({ NODE_ENV: 'production', ARCHE_SEED: 'production' }).errors)).toEqual(['ARCHE_AUTH']);
     expect(vars(parse({ NODE_ENV: 'production', ARCHE_SEED: 'production', ARCHE_AUTH: 'demo' }).errors)).toEqual(['ARCHE_AUTH']);

@@ -24,9 +24,18 @@
 | CX-07 | **Version figée non modifiable** : un dossier de jalon déposé par Arche (signé, empreinte SHA-256 connue d’Arche) reste en l’état (révision approuvée d’office, ou conservation légale `legal_hold`) | La preuve d’une décision G1 / G2 / G3 ne doit pas changer | L3 | moyenne |
 | CX-08 | **Lien profond stable** `/documents/{id}` (existe ; il résout aussi les alias) — confirmer qu’il reste le contrat | Liens d’Arche vers Codex | L3 | basse |
 
-En attendant CX-03 / CX-04 (connecteur `codex` d’Arche en simulation, comme celui de Keystone) : l’utilisateur dépose la
-pièce dans Codex, puis colle son identifiant dans Arche ; Arche vérifie l’identifiant dans `codex.pub_documents` dès que
-CX-05 est accordé, sinon il garde la référence telle quelle avec la mention « non vérifiée ».
+**État au 23 oct. 2026.** Codex traite CX-03 (`POST /api/documents`), CX-04 (état lu dans `pub_documents`,
+`pub_revisions_document`, `pub_validations`) et CX-08 (`/documents/{id}` confirmé) dans Yhumiii27/Codex#12. Côté Arche
+(`src/server/integrations/codex/deposit.ts`) : depuis une section d’un dossier, un fichier est déposé dans Codex (brouillon
+A.1) et le document créé est rattaché à la section ; le PDF de la vue imprimable d’une version figée est déposé et son
+identifiant Codex est gardé sur la version (`dossier_versions.codex_document_id`). Le dépôt est rejouable : même référence
+`arche:dossier/<CAPEX>/<dossier>/…` et même fichier → le document déjà créé. Restent ouvertes : CX-01 (rattachement
+`capex` ; le dépôt se fait en attendant au contexte du département), CX-02 (types), CX-06 (accès des filiales), CX-07 (un
+dépôt d’Arche reste un brouillon que son propriétaire soumet à un circuit dans Codex).
+
+Sans le dépôt configuré (`CODEX_DOCUMENTS_TOKEN` ou `CODEX_DOCUMENTS_SECRET`), l’utilisateur dépose la pièce dans Codex, puis
+colle son identifiant dans Arche ; Arche vérifie l’identifiant dans `codex.pub_documents` dès que CX-05 est accordé, sinon il
+garde la référence telle quelle avec la mention « non vérifiée ».
 
 Questions de Codex qui touchent Arche : O-01 (SharePoint), O-02 (Entra ID), O-03 (contrat de dépôt et de synchronisation),
 O-04 (organigramme), O-05 (registre).

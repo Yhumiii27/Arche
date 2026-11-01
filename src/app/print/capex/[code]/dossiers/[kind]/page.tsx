@@ -1,7 +1,7 @@
 // Print view of a dossier version (docs/spec/04 §1): A4, black on white, the sections, the values as frozen, the Codex
 // references and the fingerprint; "Download as PDF" writes the same document as a PDF on the server (AR-042). Same visibility
-// as the dossier page (outside the viewer's scope: 404). The frozen and signed version is deposited in Codex by the user until
-// Codex offers a deposit API (CX-03, CX-07).
+// as the dossier page (outside the viewer's scope: 404). The frozen and signed version is deposited in Codex from the dossier
+// page (CX-03; frozen in Codex: CX-07).
 import { notFound } from 'next/navigation';
 import { isDossierKind } from '@/domain/dossiers';
 import { loadCapexPage } from '@/features/capex/page-data';

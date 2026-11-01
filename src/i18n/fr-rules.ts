@@ -25,4 +25,10 @@ export const FR_RULES: [RegExp, string][] = [
   [/^Enter the date of (G1|G2|K3|G3) \(not in the future\)$/, 'Saisissez la date du $1 (pas dans le futur)'],
   [/^The date of (G1|G2|K3|G3) comes before the previous step$/, 'La date du $1 est antérieure à l’étape précédente'],
   [/^Name who decided (G1|G2|K3|G3)$/, 'Nommez qui a décidé le $1'],
+  [/^Expected types: (.+)$/, 'Types attendus : $1'],
+  [/^Another file was already deposited in Codex under this reference \((.+)\)$/, 'Un autre fichier a déjà été déposé dans Codex sous cette référence ($1)'],
+  [/^Codex refused Arche's credentials \((.+)\)$/, 'Codex a refusé les identifiants d’Arche ($1)'],
+  [/^Codex is unavailable \((.+)\)$/, 'Codex est indisponible ($1)'],
+  [/^Codex refused the deposit: (.+)$/, 'Codex a refusé le dépôt : $1'],
+  [/^Codex could not be reached \((.+)\)$/, 'Codex est injoignable ($1)'],
 ];
