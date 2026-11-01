@@ -26,5 +26,6 @@ Le responsable produit a lancé AR-033 : **les études de sécurité des procéd
 question CNF-12 à CNF-14 / INT-18 du `docs/RESTE-A-FAIRE.md` de Vigie). Arche est prêt à les lire : contrat de
 `vigie.pub_etudes_securite` dans [`CONTRATS.md`](CONTRATS.md) §2.5 (colonnes, valeurs, règle de franchissement des jalons),
 connecteur `src/server/integrations/vigie/` (mode `ARCHE_VIGIE`, simulation sur le jeu de démonstration), tâche `vigie-sync`.
-La demande VG-01 à VG-05 est à déposer dans le `REQUESTS.md` de Vigie (après le « validé » du responsable produit), et le
-droit de lecture d’`arche_app` dans celui de Matrix.
+**Déposée le 1er nov. 2026** (validée par le responsable produit) dans le `REQUESTS.md` de Vigie (Yhumiii27/Vigie#27). Depuis la
+décision M-18 de Matrix (1er nov. 2026), c’est Matrix qui définit la vue sur les tables de Vigie et le lien de lecture
+d’`arche_app` : demande M-15 (Yhumiii27/Matrix#52).

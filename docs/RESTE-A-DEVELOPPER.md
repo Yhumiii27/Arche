@@ -218,7 +218,7 @@ CX-01 à CX-07. Analyse comparative du 25 oct. 2026 : les pièces jointes et dev
 
 **AR-033 · Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite** — *À décider · attend un système externe · effort L* · **en cours (L7)**  
 VG-01 à VG-05 ; Vigie ne les modélise pas aujourd’hui. Analyse comparative du 25 oct. 2026 : les jalons HS lus depuis Vigie (aujourd’hui déclarés à la main avec un champ texte de référence) relèvent des intégrations standard attendues ; l’arbitrage AC-3 conditionne le périmètre. Priorité suggérée : à décider, inchangée.  
-*Avancement : 1er nov. 2026 : AR-033 lancé (études tenues dans Vigie, réponse à AC-3). Côté Arche fait : contrat de vigie.pub_etudes_securite (CONTRATS.md §2.5), connecteur Vigie (ARCHE_VIGIE, miroir, tâche vigie-sync, simulation sur la démo), jalons HS pris de Vigie quand il a des études, alerte des recommandations en retard, études et recommandations sur la page Jalons sécurité. Reste : Vigie publie les études et la vue (VG-01 à VG-05, son CNF-12 à CNF-14 et INT-18), Matrix accorde la lecture (M-15). · Attend : Vigie (VG-01 à VG-05) puis Matrix (M-15) · Sources : docs/DEMANDES-VIGIE.md*
+*Avancement : 1er nov. 2026 : AR-033 lancé (études tenues dans Vigie, réponse à AC-3). Côté Arche fait : contrat de vigie.pub_etudes_securite (CONTRATS.md §2.5), connecteur Vigie (ARCHE_VIGIE, miroir, tâche vigie-sync, simulation sur la démo), jalons HS pris de Vigie quand il a des études, alerte des recommandations en retard, études et recommandations sur la page Jalons sécurité. Demandes déposées le 1er nov. 2026 : VG-01 à VG-05 à Vigie (Yhumiii27/Vigie#27), M-15 à Matrix (Yhumiii27/Matrix#52 ; Matrix définit la vue, M-18). Reste : leur traitement. · Attend : Vigie (VG-01 à VG-05) puis Matrix (M-15) · Sources : docs/DEMANDES-VIGIE.md*
 
 **~~AR-032 · Jalons HS (déclaratifs) et registre des autorisations~~** — *Prochaine étape · non commencé · effort M* · **fait (L5)**  
 Livraison 5 (C-3, N-13).  
@@ -298,6 +298,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-11-01 — AR-033 : demandes VG-01 à VG-05 (Vigie) et M-15 (Matrix) déposées, validées par le responsable produit.
 - 2026-11-01 — Dépôt dans Codex (CX-03) : depuis une section d’un dossier, un fichier est déposé dans Codex et rattaché ; le PDF d’une version figée est déposé et son identifiant gardé sur la version. Variables CODEX_API_URL, CODEX_DOCUMENTS_TOKEN, CODEX_DOCUMENTS_SECRET.
 - 2026-11-01 — AR-033 lancé : connecteur Vigie des études de sécurité des procédés côté Arche (contrat, miroir, jalons HS pris de Vigie, alerte des recommandations en retard) ; demandes à Vigie et à Matrix à déposer.
 - 2026-10-31 — AR-037 : lot 037b, signature avancée du G2 / AFE (Yousign ou simulation) ; développement d'AR-037 fait, reste la clé Yousign et l'IA (C-13).

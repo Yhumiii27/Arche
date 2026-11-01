@@ -154,6 +154,10 @@
     {
       "date": "2026-11-01",
       "text": "Dépôt dans Codex (CX-03) : depuis une section d’un dossier, un fichier est déposé dans Codex et rattaché ; le PDF d’une version figée est déposé et son identifiant gardé sur la version. Variables CODEX_API_URL, CODEX_DOCUMENTS_TOKEN, CODEX_DOCUMENTS_SECRET."
+    },
+    {
+      "date": "2026-11-01",
+      "text": "AR-033 : demandes VG-01 à VG-05 (Vigie) et M-15 (Matrix) déposées, validées par le responsable produit."
     }
   ],
   "items": [
@@ -849,7 +853,7 @@
       "progress": {
         "state": "en_cours",
         "delivery": "L7",
-        "note": "1er nov. 2026 : AR-033 lancé (études tenues dans Vigie, réponse à AC-3). Côté Arche fait : contrat de vigie.pub_etudes_securite (CONTRATS.md §2.5), connecteur Vigie (ARCHE_VIGIE, miroir, tâche vigie-sync, simulation sur la démo), jalons HS pris de Vigie quand il a des études, alerte des recommandations en retard, études et recommandations sur la page Jalons sécurité. Reste : Vigie publie les études et la vue (VG-01 à VG-05, son CNF-12 à CNF-14 et INT-18), Matrix accorde la lecture (M-15)."
+        "note": "1er nov. 2026 : AR-033 lancé (études tenues dans Vigie, réponse à AC-3). Côté Arche fait : contrat de vigie.pub_etudes_securite (CONTRATS.md §2.5), connecteur Vigie (ARCHE_VIGIE, miroir, tâche vigie-sync, simulation sur la démo), jalons HS pris de Vigie quand il a des études, alerte des recommandations en retard, études et recommandations sur la page Jalons sécurité. Demandes déposées le 1er nov. 2026 : VG-01 à VG-05 à Vigie (Yhumiii27/Vigie#27), M-15 à Matrix (Yhumiii27/Matrix#52 ; Matrix définit la vue, M-18). Reste : leur traitement."
       }
     },
     {
