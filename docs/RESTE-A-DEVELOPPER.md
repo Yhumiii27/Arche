@@ -1,6 +1,6 @@
 # Arche — reste à développer
 
-Inventaire initial du 2026-10-22, mis à jour le 2026-11-01 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
+Inventaire initial du 2026-10-22, mis à jour le 2026-11-02 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
 
 **Lecture.** Priorité : Bloquant production, Prochaine étape, À décider (il faut d'abord trancher), Plus tard. Effort, pour un développeur qui connaît le code : S < 2 jours, M ≤ 1 semaine, L ≤ 3 semaines, XL > 3 semaines. Les identifiants entre parenthèses renvoient aux décisions (`docs/DECISIONS.md`) et aux demandes (`docs/DEMANDES-*.md`).
 
@@ -285,8 +285,8 @@ Livraison 7 (C-7, C-13). Analyse comparative du 25 oct. 2026 : la signature éle
 ### 2.11 Cadrage, décisions et données attendues (2 restants, 1 faits)
 
 **AR-002 · Réponses du responsable produit aux questions de DECISIONS.md** — *À décider · attend le responsable produit · effort S* · **en cours**  
-Restent ouvertes : N-26 à N-35 ; données à fournir D-1 à D-8. Analyse comparative du 25 oct. 2026 : les décisions N-2 (devise des filiales), N-33 (provision pour aléas), N-34 (jours fériés dans les échéances) et N-35 (relances par e-mail) correspondent à des fonctions standard des logiciels CAPEX du commerce (CapEx360, eCapEx, SAP IM) ; la provision pour aléas et les calendriers de jours fériés des filiales sont attendus dès la mise en production (priorité suggérée : à décider avant le pilote élargi), la devise et les relances font l’objet des points AR-039 et AR-041.  
-*Avancement : 22 oct. 2026 : réponse par défaut confirmée pour 51 questions. Restent N-26 à N-35 et les données D-1 à D-8. · Attend : Responsable produit · Sources : docs/DECISIONS.md*
+Restent les données à fournir D-1 à D-8 (N-26 à N-38 confirmées le 2 nov. 2026). Analyse comparative du 25 oct. 2026 : les décisions N-2 (devise des filiales), N-33 (provision pour aléas), N-34 (jours fériés dans les échéances) et N-35 (relances par e-mail) correspondent à des fonctions standard des logiciels CAPEX du commerce (CapEx360, eCapEx, SAP IM) ; la provision pour aléas et les calendriers de jours fériés des filiales sont attendus dès la mise en production (priorité suggérée : à décider avant le pilote élargi), la devise et les relances font l’objet des points AR-039 et AR-041.  
+*Avancement : 22 oct. 2026 : réponse par défaut confirmée pour 51 questions. Restent N-26 à N-35 et les données D-1 à D-8. 2 nov. 2026 : réponse par défaut confirmée pour N-26 à N-38 ; toutes les questions sont tranchées. Restent les données D-1 à D-8. · Attend : Responsable produit · Sources : docs/DECISIONS.md*
 
 **AR-003 · Données de référence des filiales** — *À décider · attend le responsable produit · effort S*  
 Liste des filiales (code, pays, zone, devise), sites, CA de référence par exercice (C-5). Analyse comparative du 25 oct. 2026 : prérequis bloquant du pilote avec AR-014, AR-015 et AR-034 ; la liste des filiales avec leur devise conditionne aussi le multi-devises (AR-039). Priorité suggérée : bloquant, inchangée.  
@@ -298,6 +298,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-11-02 — Le responsable produit confirme la réponse par défaut de N-26 à N-38 : toutes les questions de DECISIONS.md sont tranchées ; restent les données D-1 à D-8.
 - 2026-11-01 — Demandes M-17 et M-18 de Matrix appliquées (validées par le responsable produit) : règles d'échange entre outils dans CLAUDE.md, plus de vue pub_ dans les migrations ; Matrix peut reprendre les 6 vues d'Arche.
 - 2026-11-01 — AR-026 : demande CX-01, CX-02, CX-07 déposée à Codex, validée par le responsable produit.
 - 2026-11-01 — AR-026 lancé : choix CX-01 (rattachement capex), CX-02 (sous-types), CX-07 (conservation légale) ; Arche envoie le sous-type et, dès CODEX_CAPEX=on, le rattachement capex et le gel juridique.
