@@ -1,8 +1,8 @@
 // Vigie's process safety studies of the demonstration data set (AR-033), as vigie.pub_etudes_securite would publish them: the
 // milestones the group HSE declared in the demo seed (src/server/db/seed/demo.ts), now held in Vigie with their recommendations
 // — the HazOp of the tomato plant with one recommendation late. Used only on the demonstration data set.
-const VIGIE = process.env.NEXT_PUBLIC_VIGIE_URL?.replace(/\/+$/, '') || 'http://localhost:3200';
-const link = (ref: string) => `${VIGIE}/securite-procedes?etude=${encodeURIComponent(ref)}`;
+// Like Vigie (docs/specs/etudes-securite.md of its repository), the link is a path that Arche prefixes with Vigie's address.
+const link = (ref: string) => `/risques?vue=etudes&etude=${encodeURIComponent(ref)}`;
 
 type Row = Record<string, unknown>;
 const study = (ref: string, capex: string, jalon: string, type: string, statut: string, o: Partial<Row> = {}): Row => ({

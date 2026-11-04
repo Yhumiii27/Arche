@@ -29,3 +29,17 @@ connecteur `src/server/integrations/vigie/` (mode `ARCHE_VIGIE`, simulation sur 
 **Déposée le 1er nov. 2026** (validée par le responsable produit) dans le `REQUESTS.md` de Vigie (Yhumiii27/Vigie#27). Depuis la
 décision M-18 de Matrix (1er nov. 2026), c’est Matrix qui définit la vue sur les tables de Vigie et le lien de lecture
 d’`arche_app` : demande M-15 (Yhumiii27/Matrix#52).
+
+## 1er nov. 2026 — VG-01 à VG-05 traitées par Vigie
+
+Vigie a traité les cinq demandes (statut **FAITE** dans son `REQUESTS.md`, Yhumiii27/Vigie#28) :
+- **VG-01** : table `process_safety_studies` (migration `0023`), références `ES-001`, saisie par l'animateur QHSE et la direction ;
+- **VG-02** : recommandations = actions QSE de l'étude (source « HAZOP » pour l'instant), réserve bloquante ;
+- **VG-03** : pas de vue dans Vigie (M-18) ; la requête de référence de `pub_etudes_securite` suit notre contrat, colonne par
+  colonne (§ 6 de `docs/specs/etudes-securite.md` dans Vigie) ;
+- **VG-04** : lien profond `/risques?vue=etudes&etude=ES-002`, publié en **chemin relatif**. Arche le préfixe par
+  `NEXT_PUBLIC_VIGIE_URL` (4 nov. 2026, `studyLink` de `src/domain/process-safety.ts`) ;
+- **VG-05** : `sites.code` de Vigie = `matrix.sites.code`.
+
+Reste **M-15** à Matrix : appliquer la vue et accorder sa lecture à `arche_app`. Arche passe alors en `ARCHE_VIGIE=views`.
+

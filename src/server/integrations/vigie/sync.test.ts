@@ -12,7 +12,7 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
 import pg from 'pg';
 import { and, eq } from 'drizzle-orm';
-import { milestonesFromStudies, recommendationsOf, studyOf } from '@/domain/process-safety';
+import { milestonesFromStudies, recommendationsOf, studyLink, studyOf } from '@/domain/process-safety';
 import { auditEntries, capex, hsStatuses } from '@/server/db/schema';
 import { capexDashboards } from '@/server/dal/governance';
 import { testDatabase, type TestDatabase } from '@/test/db';
@@ -42,6 +42,16 @@ describe('process safety studies (AR-033): rules', () => {
     expect(milestonesFromStudies([s({ statut: 'annulee' })]).has('HS3')).toBe(false);
     expect(studyOf({ etude_ref: 'X', jalon: 'HS9', type: 'hazop', statut: 'validee' })).toBeNull();
     expect(recommendationsOf([s({ recommandations: 5, recommandations_ouvertes: 2, recommandations_en_retard: 1 }), s({ statut: 'annulee', recommandations_en_retard: 4 })])).toEqual({ total: 5, open: 2, late: 1 });
+  });
+
+  it("the deep link: Vigie's path prefixed with its address, an absolute http(s) address kept, anything else dropped", () => {
+    expect(studyLink('/risques?vue=etudes&etude=ES-002', 'https://vigie.example/')).toBe('https://vigie.example/risques?vue=etudes&etude=ES-002');
+    expect(studyLink('/risques?vue=etudes&etude=ES-002', undefined)).toBeNull();
+    expect(studyLink('https://vigie.example/x', undefined)).toBe('https://vigie.example/x');
+    expect(studyLink('javascript:alert(1)', 'https://vigie.example')).toBeNull();
+    expect(studyLink('//evil.example/x', 'https://vigie.example')).toBeNull();
+    expect(s({ lien: '/risques?vue=etudes&etude=E' }).link).toBeNull();
+    expect(studyOf({ etude_ref: 'E', jalon: 'HS3', type: 'hazop', statut: 'validee', lien: '/risques?vue=etudes&etude=E' }, 'http://localhost:3200')!.link).toBe('http://localhost:3200/risques?vue=etudes&etude=E');
   });
 });
 
