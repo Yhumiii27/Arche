@@ -1,6 +1,6 @@
 # Arche — reste à développer
 
-Inventaire initial du 2026-10-22, mis à jour le 2026-11-02 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
+Inventaire initial du 2026-10-22, mis à jour le 2026-11-04 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
 
 **Lecture.** Priorité : Bloquant production, Prochaine étape, À décider (il faut d'abord trancher), Plus tard. Effort, pour un développeur qui connaît le code : S < 2 jours, M ≤ 1 semaine, L ≤ 3 semaines, XL > 3 semaines. Les identifiants entre parenthèses renvoient aux décisions (`docs/DECISIONS.md`) et aux demandes (`docs/DEMANDES-*.md`).
 
@@ -53,7 +53,7 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 - **AR-002** Réponses du responsable produit aux questions de DECISIONS.md — Responsable produit
 - **AR-003** Données de référence des filiales — Responsable produit / DAF groupe
 - **AR-015** Hébergement en France et choix du serveur de production — Responsable produit et DSI
-- **AR-033** Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite — Vigie (VG-01 à VG-05) puis Matrix (M-15)
+- **AR-033** Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite — Matrix (M-15)
 - **AR-037** Aide à la décision (règles puis IA conforme) et signature avancée G2 / AFE — Responsable produit (contrat Yousign ; fournisseur IA conforme, C-13)
 
 ### 1.3 Ce qui attend les autres applications
@@ -61,7 +61,7 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 - **AR-014** Arche sur le serveur PostgreSQL commun (Matrix) — Matrix (M-1 à M-8)
 - **AR-026** API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants — Codex (CX-01, CX-02, CX-07) ; CX-06 : organigramme O-04 et Entra O-02
 - **AR-029** Vues Keystone pour Arche (catalogue, réponses, jalons, avancement, avenants, réserves, pack) — Keystone (R-185 à R-193)
-- **AR-033** Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite — Vigie (VG-01 à VG-05) puis Matrix (M-15)
+- **AR-033** Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite — Matrix (M-15)
 - **AR-038** Socle partagé @epc2i/socle — Keystone (R-194)
 
 ## 2. Liste détaillée par domaine
@@ -218,7 +218,7 @@ CX-01 à CX-07. Analyse comparative du 25 oct. 2026 : les pièces jointes et dev
 
 **AR-033 · Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite** — *À décider · attend un système externe · effort L* · **en cours (L7)**  
 VG-01 à VG-05 ; Vigie ne les modélise pas aujourd’hui. Analyse comparative du 25 oct. 2026 : les jalons HS lus depuis Vigie (aujourd’hui déclarés à la main avec un champ texte de référence) relèvent des intégrations standard attendues ; l’arbitrage AC-3 conditionne le périmètre. Priorité suggérée : à décider, inchangée.  
-*Avancement : 1er nov. 2026 : AR-033 lancé (études tenues dans Vigie, réponse à AC-3). Côté Arche fait : contrat de vigie.pub_etudes_securite (CONTRATS.md §2.5), connecteur Vigie (ARCHE_VIGIE, miroir, tâche vigie-sync, simulation sur la démo), jalons HS pris de Vigie quand il a des études, alerte des recommandations en retard, études et recommandations sur la page Jalons sécurité. Demandes déposées le 1er nov. 2026 : VG-01 à VG-05 à Vigie (Yhumiii27/Vigie#27), M-15 à Matrix (Yhumiii27/Matrix#52 ; Matrix définit la vue, M-18). Reste : leur traitement. · Attend : Vigie (VG-01 à VG-05) puis Matrix (M-15) · Sources : docs/DEMANDES-VIGIE.md*
+*Avancement : 1er nov. 2026 : AR-033 lancé (études tenues dans Vigie, réponse à AC-3). Côté Arche fait : contrat de vigie.pub_etudes_securite (CONTRATS.md §2.5), connecteur Vigie (ARCHE_VIGIE, miroir, tâche vigie-sync, simulation sur la démo), jalons HS pris de Vigie quand il a des études, alerte des recommandations en retard, études et recommandations sur la page Jalons sécurité. Demandes déposées le 1er nov. 2026 : VG-01 à VG-05 à Vigie (Yhumiii27/Vigie#27), M-15 à Matrix (Yhumiii27/Matrix#52 ; Matrix définit la vue, M-18). Vigie a traité VG-01 à VG-05 le 1er nov. 2026 (Yhumiii27/Vigie#28 : table des études, recommandations, requête de référence de la vue, lien profond, sites aux codes Matrix). 4 nov. 2026 : Arche préfixe le lien profond (chemin relatif publié par Vigie) par NEXT_PUBLIC_VIGIE_URL. Reste M-15 : Matrix applique la vue et accorde sa lecture à arche_app, puis ARCHE_VIGIE=views. · Attend : Matrix (M-15) · Sources : docs/DEMANDES-VIGIE.md*
 
 **~~AR-032 · Jalons HS (déclaratifs) et registre des autorisations~~** — *Prochaine étape · non commencé · effort M* · **fait (L5)**  
 Livraison 5 (C-3, N-13).  
@@ -298,6 +298,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-11-04 — AR-033 : Vigie a traité VG-01 à VG-05 ; Arche préfixe le lien profond des études (chemin relatif) par l’adresse de Vigie ; reste M-15 (Matrix).
 - 2026-11-02 — Le responsable produit confirme la réponse par défaut de N-26 à N-38 : toutes les questions de DECISIONS.md sont tranchées ; restent les données D-1 à D-8.
 - 2026-11-01 — Demandes M-17 et M-18 de Matrix appliquées (validées par le responsable produit) : règles d'échange entre outils dans CLAUDE.md, plus de vue pub_ dans les migrations ; Matrix peut reprendre les 6 vues d'Arche.
 - 2026-11-01 — AR-026 : demande CX-01, CX-02, CX-07 déposée à Codex, validée par le responsable produit.

@@ -39,8 +39,20 @@ const str = (v: unknown): string | null => (v == null || v === '' ? null : Strin
 const int = (v: unknown): number => (Number.isFinite(Number(v)) && v !== null && v !== '' ? Math.max(0, Math.trunc(Number(v))) : 0);
 const day = (v: unknown): string | null => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v) ? v.slice(0, 10) : null);
 
+/**
+ * The deep link of a study: Vigie publishes a path (`/risques?vue=etudes&etude=ES-002`) to prefix with its public address
+ * (`NEXT_PUBLIC_VIGIE_URL`); an absolute http(s) address is kept. Anything else (no address for a path, another scheme) is null.
+ */
+export function studyLink(lien: unknown, vigieUrl: string | null | undefined): string | null {
+  const v = str(lien)?.trim();
+  if (!v) return null;
+  if (/^https?:\/\//i.test(v)) return v;
+  if (v.startsWith('/') && !v.startsWith('//')) return vigieUrl ? `${vigieUrl.replace(/\/+$/, '')}${v}` : null;
+  return null;
+}
+
 /** A row of the view as Arche reads it; null when it cannot be read (unknown milestone, type or status). */
-export function studyOf(r: Record<string, unknown>): Study | null {
+export function studyOf(r: Record<string, unknown>, vigieUrl?: string | null): Study | null {
   const milestone = String(r.jalon ?? '').toUpperCase().replace(/\s+/g, '') as HsCode;
   const type = String(r.type ?? '').toLowerCase() as StudyType;
   const status = String(r.statut ?? '').toLowerCase() as StudyStatus;
@@ -50,7 +62,7 @@ export function studyOf(r: Record<string, unknown>): Study | null {
     ref: String(r.etude_ref), capexCode: str(r.capex_code), projectCode: str(r.projet_code), milestone, type, status,
     heldOn: day(r.seance_le), concludedOn: day(r.conclue_le), conclusion: conclusion in STUDY_CONCLUSION_LABEL ? (conclusion as StudyConclusion) : null,
     leaderName: str(r.animateur), reportRef: str(r.rapport_ref), recommendations: int(r.recommandations), openRecommendations: int(r.recommandations_ouvertes),
-    lateRecommendations: int(r.recommandations_en_retard), blockingReservations: int(r.reserves_bloquantes), link: str(r.lien), updatedAt: str(r.maj_le),
+    lateRecommendations: int(r.recommandations_en_retard), blockingReservations: int(r.reserves_bloquantes), link: studyLink(r.lien, vigieUrl), updatedAt: str(r.maj_le),
   };
 }
 

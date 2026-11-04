@@ -169,14 +169,16 @@ santé.
 | `animateur` | text | nom affiché |
 | `rapport_ref` | text | référence Codex du rapport |
 | `recommandations`, `recommandations_ouvertes`, `recommandations_en_retard`, `reserves_bloquantes` | integer | registre des recommandations (actions QSE de l’étude) |
-| `lien` | text | lien profond vers la fiche de l’étude dans Vigie |
+| `lien` | text | chemin du lien profond vers la fiche de l’étude (`/risques?vue=etudes&etude=ES-002`), qu’Arche préfixe par l’adresse de Vigie (`NEXT_PUBLIC_VIGIE_URL`) ; une adresse http(s) complète est gardée, toute autre valeur ignorée |
 | `maj_le` | timestamptz | dernière mise à jour |
 
 Règle d’Arche : un jalon qui a des études dans Vigie prend son statut de Vigie (`source = vigie`) — **franchi** quand une étude
 est validée, non défavorable et sans réserve bloquante (date et preuve : la dernière), **en cours** sinon ; les études annulées
 ne comptent pas ; les autres jalons restent déclarés par la SSE groupe (N-13). Une recommandation en retard lève une alerte
 sur le CAPEX. Lecteur : `arche_app`. Depuis la décision M-18 de Matrix, la vue est définie par Matrix sur les tables de Vigie
-(demandes VG-01 à VG-05 à Vigie et M-15 à Matrix, déposées le 1er nov. 2026).
+(demandes VG-01 à VG-05 à Vigie et M-15 à Matrix, déposées le 1er nov. 2026). **Vigie a traité VG-01 à VG-05 le 1er nov. 2026** (migration
+`0023_process_safety_studies`, requête de référence de la vue au § 6 de son `docs/specs/etudes-securite.md`, références `ES-001`) ;
+reste M-15 : Matrix applique la vue et accorde sa lecture à `arche_app`.
 
 ### 2.4 Matrix — existent (référentiels du groupe)
 

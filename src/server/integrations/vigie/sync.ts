@@ -82,7 +82,7 @@ export async function syncVigie(q: Q, opts: { mode?: VigieMode } = {}): Promise<
       source = 'views';
     } else if (demo) raw = demoStudies();
     else if (mode === 'views') error = `vigie.${VIEW} is not shared with Arche yet`;
-    const studies = raw.map(studyOf).filter((s): s is Study => !!s);
+    const studies = raw.map((r) => studyOf(r)).filter((s): s is Study => !!s);
     await q.delete(vigieStudies);
     if (studies.length) await q.insert(vigieStudies).values(raw.filter((r) => studyOf(r)).map((r) => ({ ref: String(r.etude_ref), capexCode: (r.capex_code as string | null) ?? null, data: r, syncedAt: at })).filter((r, i, all) => all.findIndex((x) => x.ref === r.ref) === i));
     const milestones = await applyStudies(q, studies);
@@ -97,7 +97,7 @@ export async function syncVigie(q: Q, opts: { mode?: VigieMode } = {}): Promise<
 export async function studiesOf(q: Q, capexCodes: readonly string[]): Promise<Study[]> {
   if (!capexCodes.length) return [];
   const rows = await q.select({ data: vigieStudies.data }).from(vigieStudies).where(inArray(vigieStudies.capexCode, [...capexCodes]));
-  return rows.map((r) => studyOf(r.data)).filter((s): s is Study => !!s);
+  return rows.map((r) => studyOf(r.data, process.env.NEXT_PUBLIC_VIGIE_URL)).filter((s): s is Study => !!s);
 }
 
 /** The last synchronisation (Administration › Connectors). */
