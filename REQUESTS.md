@@ -53,3 +53,29 @@ Format d'une entrée :
 - Détails techniques : uniquement la démo / simulation d'Arche, aucun contrat de vue `pub_` ne change. Valeurs exactes : dépôt Keystone, `src/server/db/seed/capex-k14.ts` et `src/server/integrations/capex/simulation.ts` (branche `main`).
 - Validé par Guillaume le : 2026-11-04
 - Réponse d'Arche (2026-11-05) : les cinq points sont repris dans `src/server/integrations/keystone/keystone-demo.ts` avec les valeurs de `capex-k14.ts` et de son test (lignes des vues `pub_` de Keystone) : `CPX-APM-2025-01/B01` dans `KEYSTONE_DEMO_NEEDS` (plus de `APM-25011` généré) ; RB-006 ; APM-008 (`pub_projets`, phase Garantie, client interne, `pays = 'Morocco'` comme la vue) et ses huit jalons (`pv_reception` vide) ; MCH-045 dans `pub_parc_machines` et sur la ligne de ramp-up « Ageing oven » du jeu de démonstration (plus de `MCH-443`) ; SAT de RCF-019 prévue le 2026-11-16 (critère K3 de `CPX-SAI-2026-01` rempli, 1 / 1). Une base de démonstration déjà remplie garde l'ancien numéro sur sa ligne de ramp-up : `npm run db:reset-demo` en local.
+
+## [2026-11-05] Matrix → Arche — M-19 · Fonction d'édition `arche.pub_editer` : corriger les données de Arche depuis Matrix, par vos règles
+- Statut : OUVERTE
+- Demande : fournir, par une migration de Arche, la fonction
+  `arche.pub_editer(p_table text, p_action text, p_cle jsonb, p_valeurs jsonb, p_par text, p_motif text) RETURNS jsonb`
+  (`SECURITY DEFINER`, `SET search_path = arche, pg_temp`, `REVOKE EXECUTE … FROM PUBLIC`), qui ajoute, corrige ou retire une ligne
+  d'une table de Arche en appliquant vos règles et votre journal :
+  - `p_action` = `ajouter` | `corriger` | `retirer` (un retrait peut être un archivage) ; `p_cle` = clé primaire de la ligne
+    (null pour `ajouter`) ; `p_valeurs` = colonnes à écrire (null pour `retirer`) ;
+  - `p_par` = nom de la personne connectée à Matrix (Microsoft Entra ID, rôle Administrateur) ; `p_motif` = motif saisi
+    (obligatoire) ;
+  - refus par `RAISE EXCEPTION` (message montré tel quel dans Matrix) ; la fonction renvoie la ligne après modification,
+    sans colonne sensible ;
+  - elle refuse les tables que Arche ne veut pas ouvrir et toute colonne de `droits.colonnes_sensibles` (Matrix ne les
+    transmet jamais, mais la fonction ne doit pas en dépendre) ;
+  - règle propre à Arche à respecter : journal d'audit en ajout seul et visibilité par filiale : une modification hors du périmètre attendu est refusée.
+  Une fonction par table (`arche.pub_editer_<table>`, mêmes paramètres sans `p_table`) reste possible et passe avant la
+  générique. Une fois la migration passée, passer cette entrée à FAITE : la DSI autorise alors le lien d'écriture dans Matrix.
+- Justification : décision M-19 du 05/11/2026 (responsable produit) : « pour le moment, l'admin IT peut modifier toutes les
+  données à l'exception des données sensibles RGPD », **par les outils** : Matrix n'écrit jamais lui-même dans vos tables
+  (M-18) ; la DSI corrige depuis la visionneuse de Matrix, Arche garde ses règles et son journal.
+- Détails techniques : convention complète et exemple dans `docs/edition-par-les-outils.md` du dépôt Matrix. Le droit
+  d'exécution est un lien « écriture » `matrix_app` → `arche.pub_editer`, décidé dans Matrix (« Liens entre outils ») et posé
+  par `droits.accorder_execution` ; `droits.verifier()` signale une fonction `pub_` exécutable par tous ou sans
+  `search_path` fixé. Rien ne change pour Arche tant que la fonction n'existe pas : la visionneuse reste en lecture seule.
+- Validé par Guillaume le : 2026-11-05
