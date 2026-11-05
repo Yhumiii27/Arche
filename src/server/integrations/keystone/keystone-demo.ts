@@ -1,7 +1,9 @@
 // Keystone's demonstration data that concerns Arche (owner's pilot feedback, 25 Oct 2026: "align every link" with Keystone's
 // fictitious projects): the rows its share views return on its demo database (Keystone origin/main 4af0f31, demo seed, clock
 // 25 Sep 2026) — the machine catalogue, its five answers to the needs of CPX-APM-2026-01 and CPX-SAI-2026-01, and RCF-019, the
-// EPC2i project that delivers CPX-SAI-2026-01/B01. Exported read-only from the views (contract column order); `maj_le` stamps of
+// EPC2i project that delivers CPX-SAI-2026-01/B01 (its SAT planned on 16 Nov 2026: criterion K3 of CPX-SAI-2026-01). Since K-14
+// (Keystone's request of 4 Nov 2026, src/server/db/seed/capex-k14.ts of Keystone): the oven of CPX-APM-2025-01 — answer RB-006,
+// project APM-008 (in warranty, internal client Atlas Process Maroc) and machine MCH-045 of the installed base. Exported read-only from the views (contract column order); `maj_le` stamps of
 // rows computed at read time are set to the demo day and the client's database id is left out. The simulation returns these rows
 // as they are for the needs Keystone knows, and generates the others (src/server/integrations/keystone/simulation.ts).
 import type { KeystoneRow, KeystoneViewName } from './views';
@@ -18,9 +20,11 @@ export const KEYSTONE_DEMO: Partial<Record<KeystoneViewName, readonly KeystoneRo
     { besoin_ref: 'CPX-SAI-2026-01/B01', capex_code: 'CPX-SAI-2026-01', numero: 'RB-003', nature: 'offre_ferme', qualification: 'faisable', motif: null, classe_estimation: 'E10', montant_central_keur: 1945, montant_bas_keur: 1847.8, montant_haut_keur: 2139.5, delai_semaines: 36, valide_jusqu_au: '2026-12-31', document_ref: 'OFF-CPX-SAI-2026-01-001', projet_code: 'RCF-019', statut: 'acceptee', repondu_le: '2026-07-02T09:00:00+00:00', maj_le: '2026-07-02T09:00:00+00:00' },
     { besoin_ref: 'CPX-APM-2026-01/B01', capex_code: 'CPX-APM-2026-01', numero: 'RB-004', nature: 'indicatif', qualification: 'faisable', motif: null, classe_estimation: 'E50', montant_central_keur: 4218, montant_bas_keur: 2109, montant_haut_keur: 6327, delai_semaines: 52, valide_jusqu_au: null, document_ref: null, projet_code: null, statut: 'remise', repondu_le: '2026-09-10T09:00:00+00:00', maj_le: '2026-09-10T09:00:00+00:00' },
     { besoin_ref: 'CPX-APM-2026-01/B01', capex_code: 'CPX-APM-2026-01', numero: 'RB-005', nature: 'devis', qualification: 'faisable', motif: null, classe_estimation: 'E30', montant_central_keur: 4150, montant_bas_keur: 2905, montant_haut_keur: 5395, delai_semaines: 50, valide_jusqu_au: '2027-01-31', document_ref: 'DEV-CPX-APM-2026-01-001', projet_code: null, statut: 'remise', repondu_le: '2026-09-24T09:00:00+00:00', maj_le: '2026-09-24T09:00:00+00:00' },
+    { besoin_ref: 'CPX-APM-2025-01/B01', capex_code: 'CPX-APM-2025-01', numero: 'RB-006', nature: 'offre_ferme', qualification: 'faisable', motif: null, classe_estimation: 'E10', montant_central_keur: 663, montant_bas_keur: 629.9, montant_haut_keur: 729.3, delai_semaines: 26, valide_jusqu_au: '2025-11-29', document_ref: 'OFF-CPX-APM-2025-01-001', projet_code: 'APM-008', statut: 'acceptee', repondu_le: '2025-08-01T09:00:00+00:00', maj_le: '2025-09-15T09:00:00+00:00' },
   ],
   pub_projets: [
     { code: 'RCF-019', numero: '#019', code_analytique: 'CPL002', nature: 'client', nom: 'Clinique Pasteur Lyon Fit-out', client_id: null, client: 'Health trust', client_code3: 'CPL', phase_code: 'chantier', phase: 'Chantier', imputable: true, chef_projet_matricule: null, chef_projet_nom: 'C. Moreau', ville: 'Lyon', pays: 'France', fournisseurs: 'Cotswold Fire Systems · Meridian Medical Interiors', maj_le: '2026-09-25T06:00:00.000Z', capex_code: 'CPX-SAI-2026-01', besoin_ref: 'CPX-SAI-2026-01/B01', client_interne: false, filiale_code: null },
+    { code: 'APM-008', numero: '#008', code_analytique: 'APM001', nature: 'client', nom: 'Ageing oven and finishing line — Ageing oven 2 × 6 m', client_id: null, client: 'Atlas Process Maroc', client_code3: 'APM', phase_code: 'garantie', phase: 'Garantie', imputable: true, chef_projet_matricule: null, chef_projet_nom: 'C. Moreau', ville: 'Kénitra', pays: 'Morocco', fournisseurs: null, maj_le: '2026-06-29T09:00:00.000Z', capex_code: 'CPX-APM-2025-01', besoin_ref: 'CPX-APM-2025-01/B01', client_interne: true, filiale_code: 'APM' },
   ],
   pub_jalons_projets: [
     { projet_code: 'RCF-019', jalon_code: 'commande', prevu_le: '2026-05-04', reference_le: null, reel_le: '2026-05-04', maj_le: '2026-09-25T06:00:00.000Z' },
@@ -28,9 +32,17 @@ export const KEYSTONE_DEMO: Partial<Record<KeystoneViewName, readonly KeystoneRo
     { projet_code: 'RCF-019', jalon_code: 'fat', prevu_le: '2026-08-24', reference_le: null, reel_le: '2026-08-24', maj_le: '2026-09-25T06:00:00.000Z' },
     { projet_code: 'RCF-019', jalon_code: 'expedition', prevu_le: '2026-08-24', reference_le: null, reel_le: '2026-08-24', maj_le: '2026-09-25T06:00:00.000Z' },
     { projet_code: 'RCF-019', jalon_code: 'arrivee_site', prevu_le: '2026-09-07', reference_le: null, reel_le: '2026-09-07', maj_le: '2026-09-25T06:00:00.000Z' },
-    { projet_code: 'RCF-019', jalon_code: 'sat', prevu_le: null, reference_le: null, reel_le: null, maj_le: '2026-09-25T06:00:00.000Z' },
+    { projet_code: 'RCF-019', jalon_code: 'sat', prevu_le: '2026-11-16', reference_le: null, reel_le: null, maj_le: '2026-09-25T06:00:00.000Z' },
     { projet_code: 'RCF-019', jalon_code: 'pv_reception', prevu_le: null, reference_le: null, reel_le: null, maj_le: '2026-09-25T06:00:00.000Z' },
     { projet_code: 'RCF-019', jalon_code: 'fin_garantie', prevu_le: null, reference_le: null, reel_le: null, maj_le: '2026-09-25T06:00:00.000Z' },
+    { projet_code: 'APM-008', jalon_code: 'commande', prevu_le: '2025-09-15', reference_le: null, reel_le: '2025-09-15', maj_le: '2026-09-25T06:00:00.000Z' },
+    { projet_code: 'APM-008', jalon_code: 'fin_etudes', prevu_le: '2025-11-14', reference_le: null, reel_le: '2025-11-14', maj_le: '2026-09-25T06:00:00.000Z' },
+    { projet_code: 'APM-008', jalon_code: 'fat', prevu_le: '2026-04-13', reference_le: null, reel_le: '2026-04-13', maj_le: '2026-09-25T06:00:00.000Z' },
+    { projet_code: 'APM-008', jalon_code: 'expedition', prevu_le: '2026-04-13', reference_le: null, reel_le: '2026-04-13', maj_le: '2026-09-25T06:00:00.000Z' },
+    { projet_code: 'APM-008', jalon_code: 'arrivee_site', prevu_le: '2026-05-11', reference_le: null, reel_le: '2026-05-11', maj_le: '2026-09-25T06:00:00.000Z' },
+    { projet_code: 'APM-008', jalon_code: 'sat', prevu_le: '2026-06-19', reference_le: null, reel_le: '2026-06-19', maj_le: '2026-09-25T06:00:00.000Z' },
+    { projet_code: 'APM-008', jalon_code: 'pv_reception', prevu_le: null, reference_le: null, reel_le: null, maj_le: '2026-09-25T06:00:00.000Z' },
+    { projet_code: 'APM-008', jalon_code: 'fin_garantie', prevu_le: '2028-05-10', reference_le: null, reel_le: null, maj_le: '2026-09-25T06:00:00.000Z' },
   ],
   pub_avancement_projets: [
     { projet_code: 'RCF-019', date_situation: null, avancement_physique_pct: null, spi: null, fin_prevue_le: '2026-12-27', montant_contrat_keur: 1500, montant_avenants_keur: null, facture_keur: 900, maj_le: '2026-09-25T06:00:00.000Z' },
@@ -53,6 +65,7 @@ export const KEYSTONE_DEMO: Partial<Record<KeystoneViewName, readonly KeystoneRo
     { projet_code: 'RCF-019', famille: 'pid', attendues: 1, validees: 0, poids: 20, pct_pondere: 0, maj_le: '2026-09-25T06:00:00.000Z' },
   ],
   pub_parc_machines: [
+    { number: 'MCH-045', name: 'Ageing oven 2 × 6 m', client_name: 'Atlas Process Maroc', site_text: 'Kénitra · finishing hall', project_code: 'APM-008', warranty_status: 'in_warranty', part_ref: null, fitted_revision: null, type_machine_code: 'AUTRE', livree_le: '2026-05-11', maj_le: '2026-05-11T09:00:00.000Z' },
   ],
 };
 
@@ -61,5 +74,5 @@ export const KEYSTONE_DEMO: Partial<Record<KeystoneViewName, readonly KeystoneRo
  * nothing for them — Keystone's answers above are all they get (CPX-APM-2026-01/B02 is still waiting for one).
  */
 export const KEYSTONE_DEMO_NEEDS: ReadonlySet<string> = new Set([
-  'CPX-APM-2026-01/B01', 'CPX-APM-2026-01/B02', 'CPX-SAI-2026-01/B01', 'CPX-SAI-2026-01/B02', 'CPX-SAI-2026-01/B03',
+  'CPX-APM-2025-01/B01', 'CPX-APM-2026-01/B01', 'CPX-APM-2026-01/B02', 'CPX-SAI-2026-01/B01', 'CPX-SAI-2026-01/B02', 'CPX-SAI-2026-01/B03',
 ]);
