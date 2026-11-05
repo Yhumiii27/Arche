@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-22",
-  "updated": "2026-11-04",
+  "updated": "2026-11-05",
   "branch": "claude/brave-curie-chxbck",
   "history": [
     {
@@ -178,6 +178,10 @@
     {
       "date": "2026-11-04",
       "text": "AR-033 : Vigie a traité VG-01 à VG-05 ; Arche préfixe le lien profond des études (chemin relatif) par l’adresse de Vigie ; reste M-15 (Matrix)."
+    },
+    {
+      "date": "2026-11-05",
+      "text": "Démo alignée avec Keystone (sa demande du 4 nov., suite de K-14) : le four de CPX-APM-2025-01 est le projet APM-008 de Keystone (réponse RB-006, machine MCH-045 sur la ligne de ramp-up) ; SAT de RCF-019 prévue le 16 nov. (critère K3 de CPX-SAI-2026-01 rempli)."
     }
   ],
   "items": [

@@ -19,7 +19,6 @@ import { addDaysIso } from '@/lib/dates';
 import { takeSnapshots, weekOf } from '@/server/dal/governance';
 import { recomputeLines } from '@/server/dal/rampup';
 import { readValues } from '@/domain/lifecycle';
-import { simulatedMachineNumber, simulatedProjectCode } from '@/server/integrations/keystone/simulation';
 import type { Tx } from '../types';
 
 export const DEMO_ZONES = [
@@ -376,7 +375,8 @@ export async function seedStartup(tx: Tx, capexId: string, nameOf: (k: string) =
   const lead = nameOf('project_lead');
   const [line] = await tx.insert(productionLines).values({
     capexId, number: 1, name: 'Ageing oven', nominalPerDay: 48, unit: 't', scrapTargetPct: 2,
-    machineNumbers: [simulatedMachineNumber(simulatedProjectCode('CPX-APM-2025-01/B01'), 0)], updatedByName: lead,
+    // The oven of Keystone's demo project APM-008 (K-14: Keystone's own demo, src/server/integrations/keystone/keystone-demo.ts).
+    machineNumbers: ['MCH-045'], updatedByName: lead,
   }).returning({ id: productionLines.id });
   const start = Date.parse('2026-07-01T12:00:00Z');
   const days = Array.from({ length: 114 }, (_, i) => new Date(start + i * 86_400_000).toISOString().slice(0, 10));

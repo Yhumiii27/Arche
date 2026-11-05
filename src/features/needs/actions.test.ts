@@ -57,7 +57,7 @@ describe('delivery 4: machine needs and the Keystone connector', () => {
     ]);
   });
 
-  it('the demo mirror: the demo of Keystone itself — its catalogue, its answers RB-001 to RB-005 and RCF-019 (owner, 25 Oct 2026)', async () => {
+  it('the demo mirror: the demo of Keystone itself — its catalogue, its answers RB-001 to RB-006, RCF-019 and APM-008 (owner, 25 Oct 2026; K-14)', async () => {
     const sheets = await catalogue(t.db);
     expect(sheets.map((s) => `${s.code}@${s.version} ${s.status}`)).toEqual(['EMP-40T@1 publie', 'MEMU-16@1 publie', 'SPUR-2X@1 retire']);
     const apm = await answersOf(t.db, APM);
@@ -70,8 +70,11 @@ describe('delivery 4: machine needs and the Keystone connector', () => {
     expect(projects.map((p) => p.code)).toEqual(['RCF-019']);
     expect(projects[0]).toMatchObject({ needRef: `${SAI}/B01`, phase: 'Chantier' });
     expect(projects[0].milestones.map((m) => m.code)).toEqual(['commande', 'fin_etudes', 'fat', 'expedition', 'arrivee_site', 'sat', 'pv_reception', 'fin_garantie']);
-    // The oven of CPX-APM-2025-01, unknown to Keystone's demo, keeps a generated project.
-    expect((await projectsOf(t.db, 'CPX-APM-2025-01')).map((p) => p.code)).toEqual([simulatedProjectCode('CPX-APM-2025-01/B01')]);
+    // K-14 (Keystone, 4 Nov 2026): the oven of CPX-APM-2025-01 is Keystone's APM-008, in warranty, with its machine MCH-045.
+    const oven = await projectsOf(t.db, 'CPX-APM-2025-01');
+    expect(oven.map((p) => p.code)).toEqual(['APM-008']);
+    expect(oven[0]).toMatchObject({ needRef: 'CPX-APM-2025-01/B01', phase: 'Garantie' });
+    expect(latestAnswer(await answersOf(t.db, 'CPX-APM-2025-01'), 'CPX-APM-2025-01/B01')).toMatchObject({ number: 'RB-006', estimateClass: 'E10', centralKeur: 663, projectCode: 'APM-008' });
   });
 
   it('the project lead enters a need: checks on the catalogue, the quantity, the right', async () => {
@@ -143,8 +146,8 @@ describe('delivery 4: machine needs and the Keystone connector', () => {
   it('K3 and G3 read the EPC2i projects: SATs planned, reservations', async () => {
     const ev = await currentEvaluation(t.db, await capexOf(SAI));
     expect(ev?.gate).toBe('K3');
-    // Keystone's demo: RCF-019 has no SAT date yet (its project for B03 is still to be created).
-    expect(ev?.results.find((r) => r.code === 'k3_sat_planned')).toMatchObject({ state: 'unmet', value: '0 / 1' });
+    // Keystone's demo (K-14): RCF-019's SAT is planned on 16 Nov 2026; the project for B03 is still to be created.
+    expect(ev?.results.find((r) => r.code === 'k3_sat_planned')).toMatchObject({ state: 'met', value: '1 / 1' });
   });
 
   it('views mode: a view Keystone shares is read, the missing ones stay simulated on the demo data set', async () => {
