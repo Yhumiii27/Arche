@@ -1,6 +1,6 @@
 # Arche — reste à développer
 
-Inventaire initial du 2026-10-22, mis à jour le 2026-11-05 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
+Inventaire initial du 2026-10-22, mis à jour le 2026-11-06 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
 
 **Lecture.** Priorité : Bloquant production, Prochaine étape, À décider (il faut d'abord trancher), Plus tard. Effort, pour un développeur qui connaît le code : S < 2 jours, M ≤ 1 semaine, L ≤ 3 semaines, XL > 3 semaines. Les identifiants entre parenthèses renvoient aux décisions (`docs/DECISIONS.md`) et aux demandes (`docs/DEMANDES-*.md`).
 
@@ -59,7 +59,7 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 ### 1.3 Ce qui attend les autres applications
 
 - **AR-014** Arche sur le serveur PostgreSQL commun (Matrix) — Matrix (M-1 à M-8)
-- **AR-026** API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants — Codex (CX-01, CX-02, CX-07) ; CX-06 : organigramme O-04 et Entra O-02
+- **AR-026** API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants — Mise en service (CODEX_CAPEX=on) ; CX-06 : organigramme O-04 et Entra O-02
 - **AR-029** Vues Keystone pour Arche (catalogue, réponses, jalons, avancement, avenants, réserves, pack) — Keystone (R-185 à R-193)
 - **AR-033** Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite — Matrix (M-15)
 - **AR-038** Socle partagé @epc2i/socle — Keystone (R-194)
@@ -208,11 +208,11 @@ Livraison 4.
 
 **AR-025 · Connecteur codex : références de documents, vérification, dépôt des dossiers figés** — *Prochaine étape · non commencé · effort M* · **en cours (Livraison 3)**  
 Tous les documents d’Arche dans Codex (N-17) ; simulation tant que l’API manque. Analyse comparative du 25 oct. 2026 : le dépôt réel des dossiers figés dans Codex (aujourd’hui simulé) fait partie des intégrations attendues en standard (gestion documentaire intégrée chez Unifier, Finario, CapEx360). Priorité suggérée : prochaine étape, inchangée.  
-*Avancement : Références Codex vérifiées (pub_documents ou simulation), liens profonds ; dépôt dans Codex depuis une section et dépôt du PDF de la version figée (CX-03, POST /api/documents). Reste : rattachement CAPEX (CX-01) et version figée dans Codex (CX-07). · Sources : docs/DEMANDES-CODEX.md*
+*Avancement : Références Codex vérifiées (pub_documents ou simulation), liens profonds ; dépôt dans Codex depuis une section et dépôt du PDF de la version figée (CX-03, POST /api/documents). Rattachement CAPEX (CX-01) et gel juridique de la version figée (CX-07) faits par Codex le 5 nov. 2026, actifs avec CODEX_CAPEX=on. · Sources : docs/DEMANDES-CODEX.md*
 
 **AR-026 · API de dépôt et de lecture de Codex, rattachement CAPEX, types manquants** — *Prochaine étape · attend un système externe · effort M* · **en cours**  
 CX-01 à CX-07. Analyse comparative du 25 oct. 2026 : les pièces jointes et devis fournisseurs sur la demande d’investissement sont un standard du marché ; Arche les délègue à Codex, mais le lien de dépôt depuis Arche n’est pas branché tant que CX-03 et CX-07 manquent. Priorité suggérée : prochaine étape, haute pour CX-03.  
-*Avancement : 1er nov. 2026 : AR-026 lancé. Choix du responsable produit : CX-01 rattachement capex propre, CX-02 sous-types des types existants, CX-07 conservation légale. Côté Arche fait : sous-type au dépôt (déjà accepté par Codex), « Dossier de jalon G1/G2/G3 » pour une version figée, rattachement capex et gel juridique envoyés dès CODEX_CAPEX=on. Demande déposée à Codex le 1er nov. 2026 (Yhumiii27/Codex#20). Reste : Codex la réalise ; CX-06 attend O-04 et O-02. · Attend : Codex (CX-01, CX-02, CX-07) ; CX-06 : organigramme O-04 et Entra O-02 · Sources : docs/DEMANDES-CODEX.md*
+*Avancement : 1er nov. 2026 : AR-026 lancé. Choix du responsable produit : CX-01 rattachement capex propre, CX-02 sous-types des types existants, CX-07 conservation légale. Côté Arche fait : sous-type au dépôt (déjà accepté par Codex), « Dossier de jalon G1/G2/G3 » pour une version figée, rattachement capex et gel juridique envoyés dès CODEX_CAPEX=on. Demande déposée à Codex le 1er nov. 2026 (Yhumiii27/Codex#20). 5 nov. 2026 : Codex a fait CX-01 (rattachement capex, miroir de arche.pub_capex), CX-02 (sous-types, même graphie qu’Arche) et CX-07 (legalHold). Reste : poser CODEX_CAPEX=on à la mise en service, une fois que Codex lit arche.pub_capex sur le serveur commun ; CX-06 attend O-04 et O-02. · Attend : Mise en service (CODEX_CAPEX=on) ; CX-06 : organigramme O-04 et Entra O-02 · Sources : docs/DEMANDES-CODEX.md*
 
 ### 2.7 Jalons de sécurité (Vigie) (1 restants, 1 faits)
 
@@ -298,6 +298,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-11-06 — Codex a traité CX-01, CX-02 et CX-07 (5 nov.) : rattachement capex, sous-types, gel juridique ; contrat vérifié, rien à changer côté Arche ; reste CODEX_CAPEX=on à la mise en service.
 - 2026-11-05 — Démo alignée avec Keystone (sa demande du 4 nov., suite de K-14) : le four de CPX-APM-2025-01 est le projet APM-008 de Keystone (réponse RB-006, machine MCH-045 sur la ligne de ramp-up) ; SAT de RCF-019 prévue le 16 nov. (critère K3 de CPX-SAI-2026-01 rempli).
 - 2026-11-04 — AR-033 : Vigie a traité VG-01 à VG-05 ; Arche préfixe le lien profond des études (chemin relatif) par l’adresse de Vigie ; reste M-15 (Matrix).
 - 2026-11-02 — Le responsable produit confirme la réponse par défaut de N-26 à N-38 : toutes les questions de DECISIONS.md sont tranchées ; restent les données D-1 à D-8.

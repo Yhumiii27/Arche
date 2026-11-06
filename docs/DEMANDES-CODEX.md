@@ -56,3 +56,19 @@ transfert d’actif (`src/domain/dossiers.ts`, `CAPEX_SUBTYPES`).
 CX-06 (accès des filiales) reste ouverte : elle attend l’organigramme avec les filiales (O-04) et Entra ID (O-02). **Demande
 déposée le 1er nov. 2026** dans le `REQUESTS.md` de Codex (validée par le responsable produit ; Yhumiii27/Codex#20) ; la
 lecture de `arche.pub_capex` par `codex_app` est un lien à déclarer à Matrix (M-18).
+
+## 5 nov. 2026 — CX-01, CX-02 et CX-07 traitées par Codex
+
+L’entrée du 1er nov. est arrivée dans le `REQUESTS.md` de Codex, qui l’a traitée le 5 nov. 2026 (statut **FAITE** ; migration
+`0003_capex`, `docs/api.md` de Codex) :
+- **CX-01** : rattachement `capex` (`documents.capex_code`), identifiant `TYPE-<code CAPEX>-SEQ` (`PID-CPX-APM-2026-01-001`),
+  admis par chaque type qui admet `project` et par `FIN` (AFE) ; Codex tient un miroir de `arche.pub_capex` rafraîchi toutes
+  les 15 minutes ; au dépôt, `capex_required` sans `capexCode`, `capex_unknown` pour un code qu’Arche ne publie pas ;
+- **CX-02** : sous-types ajoutés dans la graphie demandée, identique à `CAPEX_SUBTYPES` d’Arche (vérifié le 6 nov. 2026) ;
+- **CX-07** : `legalHold: true` pose le gel juridique dès le dépôt (brouillon A.1, levée par le droit Archiver de Codex) ; la
+  réponse 201 porte `"legalHold": true`.
+
+Côté Arche, rien à changer : les champs envoyés depuis le 1er nov. sont ceux que Codex accepte. **Reste à la mise en service** :
+poser `CODEX_CAPEX=on` une fois que Codex lit `arche.pub_capex` sur le serveur commun (lien de lecture de `codex_app` à déclarer
+à Matrix par Codex, M-18) ; avant cela, un dépôt rattaché à un CAPEX serait refusé (`capex_unknown`). CX-06 (accès des
+filiales) attend toujours O-04 et O-02. La PR Yhumiii27/Codex#20, qui portait l’entrée, est devenue sans objet.

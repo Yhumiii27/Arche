@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-22",
-  "updated": "2026-11-05",
+  "updated": "2026-11-06",
   "branch": "claude/brave-curie-chxbck",
   "history": [
     {
@@ -182,6 +182,10 @@
     {
       "date": "2026-11-05",
       "text": "Démo alignée avec Keystone (sa demande du 4 nov., suite de K-14) : le four de CPX-APM-2025-01 est le projet APM-008 de Keystone (réponse RB-006, machine MCH-045 sur la ligne de ramp-up) ; SAT de RCF-019 prévue le 16 nov. (critère K3 de CPX-SAI-2026-01 rempli)."
+    },
+    {
+      "date": "2026-11-06",
+      "text": "Codex a traité CX-01, CX-02 et CX-07 (5 nov.) : rattachement capex, sous-types, gel juridique ; contrat vérifié, rien à changer côté Arche ; reste CODEX_CAPEX=on à la mise en service."
     }
   ],
   "items": [
@@ -703,7 +707,7 @@
       "progress": {
         "state": "en_cours",
         "delivery": "Livraison 3",
-        "note": "Références Codex vérifiées (pub_documents ou simulation), liens profonds ; dépôt dans Codex depuis une section et dépôt du PDF de la version figée (CX-03, POST /api/documents). Reste : rattachement CAPEX (CX-01) et version figée dans Codex (CX-07)."
+        "note": "Références Codex vérifiées (pub_documents ou simulation), liens profonds ; dépôt dans Codex depuis une section et dépôt du PDF de la version figée (CX-03, POST /api/documents). Rattachement CAPEX (CX-01) et gel juridique de la version figée (CX-07) faits par Codex le 5 nov. 2026, actifs avec CODEX_CAPEX=on."
       }
     },
     {
@@ -714,7 +718,7 @@
       "kind": "integration",
       "priority": "prochaine_etape",
       "status": "bloque_systeme_externe",
-      "waiting_on": "Codex (CX-01, CX-02, CX-07) ; CX-06 : organigramme O-04 et Entra O-02",
+      "waiting_on": "Mise en service (CODEX_CAPEX=on) ; CX-06 : organigramme O-04 et Entra O-02",
       "effort": "M",
       "sources": [
         "docs/DEMANDES-CODEX.md"
@@ -722,7 +726,7 @@
       "evidence": [],
       "progress": {
         "state": "en_cours",
-        "note": "1er nov. 2026 : AR-026 lancé. Choix du responsable produit : CX-01 rattachement capex propre, CX-02 sous-types des types existants, CX-07 conservation légale. Côté Arche fait : sous-type au dépôt (déjà accepté par Codex), « Dossier de jalon G1/G2/G3 » pour une version figée, rattachement capex et gel juridique envoyés dès CODEX_CAPEX=on. Demande déposée à Codex le 1er nov. 2026 (Yhumiii27/Codex#20). Reste : Codex la réalise ; CX-06 attend O-04 et O-02."
+        "note": "1er nov. 2026 : AR-026 lancé. Choix du responsable produit : CX-01 rattachement capex propre, CX-02 sous-types des types existants, CX-07 conservation légale. Côté Arche fait : sous-type au dépôt (déjà accepté par Codex), « Dossier de jalon G1/G2/G3 » pour une version figée, rattachement capex et gel juridique envoyés dès CODEX_CAPEX=on. Demande déposée à Codex le 1er nov. 2026 (Yhumiii27/Codex#20). 5 nov. 2026 : Codex a fait CX-01 (rattachement capex, miroir de arche.pub_capex), CX-02 (sous-types, même graphie qu’Arche) et CX-07 (legalHold). Reste : poser CODEX_CAPEX=on à la mise en service, une fois que Codex lit arche.pub_capex sur le serveur commun ; CX-06 attend O-04 et O-02."
       }
     },
     {
