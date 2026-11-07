@@ -1,6 +1,6 @@
 // Start-up, ramp-up and transfer of a CAPEX (docs/spec/02 §6, 06 §6; delivery 6): production lines and their daily entries,
 // the controller's accounting closure statement (N-15) and the lessons learned (REX, D22, published in pub_rex).
-import { boolean, date, integer, jsonb, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
+import { boolean, date, integer, jsonb, primaryKey, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { arche } from './_schema';
 import { id, keur, timestamps } from './_common';
 import { capex, capexLots } from './capex';
@@ -42,7 +42,7 @@ export const rampupDays = arche.table('rampup_days', {
   source: text('source').$type<'manual' | 'import'>().notNull().default('manual'),
   enteredByName: text('entered_by_name').notNull(),
   enteredAt: timestamp('entered_at', { withTimezone: true }).notNull().defaultNow(),
-}, (t) => [unique('rampup_days_uq').on(t.lineId, t.day)]);
+}, (t) => [primaryKey({ name: 'rampup_days_pk', columns: [t.lineId, t.day] })]);
 
 /** The controller's accounting closure statement (N-15): one per CAPEX, final costs by lot in lot_final_costs. */
 export const closureStatements = arche.table('closure_statements', {

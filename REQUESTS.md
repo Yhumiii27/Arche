@@ -55,7 +55,7 @@ Format d'une entrée :
 - Réponse d'Arche (2026-11-05) : les cinq points sont repris dans `src/server/integrations/keystone/keystone-demo.ts` avec les valeurs de `capex-k14.ts` et de son test (lignes des vues `pub_` de Keystone) : `CPX-APM-2025-01/B01` dans `KEYSTONE_DEMO_NEEDS` (plus de `APM-25011` généré) ; RB-006 ; APM-008 (`pub_projets`, phase Garantie, client interne, `pays = 'Morocco'` comme la vue) et ses huit jalons (`pv_reception` vide) ; MCH-045 dans `pub_parc_machines` et sur la ligne de ramp-up « Ageing oven » du jeu de démonstration (plus de `MCH-443`) ; SAT de RCF-019 prévue le 2026-11-16 (critère K3 de `CPX-SAI-2026-01` rempli, 1 / 1). Une base de démonstration déjà remplie garde l'ancien numéro sur sa ligne de ramp-up : `npm run db:reset-demo` en local.
 
 ## [2026-11-05] Matrix → Arche — M-19 · Fonction d'édition `arche.pub_editer` : corriger les données de Arche depuis Matrix, par vos règles
-- Statut : OUVERTE
+- Statut : FAITE
 - Demande : fournir, par une migration de Arche, la fonction
   `arche.pub_editer(p_table text, p_action text, p_cle jsonb, p_valeurs jsonb, p_par text, p_motif text) RETURNS jsonb`
   (`SECURITY DEFINER`, `SET search_path = arche, pg_temp`, `REVOKE EXECUTE … FROM PUBLIC`), qui ajoute, corrige ou retire une ligne
@@ -79,3 +79,8 @@ Format d'une entrée :
   par `droits.accorder_execution` ; `droits.verifier()` signale une fonction `pub_` exécutable par tous ou sans
   `search_path` fixé. Rien ne change pour Arche tant que la fonction n'existe pas : la visionneuse reste en lecture seule.
 - Validé par Guillaume le : 2026-11-05
+- Réponse d'Arche (2026-11-07, choix de Guillaume du même jour, `docs/PROPOSITION-M19.md`) : fonction générique `arche.pub_editer` (migration `0034_pub_editer` ; `SECURITY DEFINER`, `SET search_path = arche, pg_temp`, `REVOKE EXECUTE … FROM PUBLIC`). Elle ouvre :
+  - les listes de référence (`asset_classes` : ajouter, corriger, retirer = archivage ; `exchange_rates`, `reference_revenues` : ajouter, corriger ; `scoring_weights`, `kpi_baselines` : corriger) ;
+  - la correction des saisies d'un CAPEX (`capex` : intitulé, description, date de besoin ; `risks`, `capex_actions`, `wbs_tasks`, `authorizations`, `reviews`, `lot_actuals`, `rampup_days`, `benefit_actuals`, `ideas`, `rex_entries`, `absences`), sur des colonnes listées, avec les règles d'Arche (bornes, CAPEX clos, REX publié, idée décidée…).
+
+  Restent fermés : les preuves du cycle (décisions, circuits, signatures, versions figées, journal), les droits et secrets, les miroirs (`subsidiaries`, `zones`, `sites` : Matrix fait foi) et les tables calculées. `p_par` doit être le nom ou l'adresse d'un compte Arche actif qui a le rôle `admin` sur le groupe. Chaque correction est journalisée (`audit_entries`, zone « Matrix », avant / après, motif) ; celle d'un CAPEX va aussi au fil d'activité du CAPEX et par e-mail à son chef de projet. Clés primaires ajoutées (migration `0033_primary_keys`) à `exchange_rates`, `reference_revenues`, `lot_actuals` et `rampup_days` pour la visionneuse. La DSI peut autoriser le lien d'écriture `matrix_app` → `arche.pub_editer`.

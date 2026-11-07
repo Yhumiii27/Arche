@@ -11,6 +11,8 @@ import { getConfig } from '@/server/config';
 import { businessNow, businessToday } from '@/server/clock';
 import { syncKeystone } from '@/server/integrations/keystone/mirror';
 import { takeSnapshots } from '@/server/dal/governance';
+import { modelValues } from '@/server/dal/cycle';
+import { recomputeStaleLines } from '@/server/dal/rampup';
 import { deliverWebhooks, raiseAlerts } from '@/server/api/deliver';
 import { deliverEmails } from '@/server/notify/deliver';
 import { planNotices } from '@/server/notify/plan';
@@ -67,7 +69,10 @@ export function archeJobs(h: PostgresHandle): Job[] {
       everyMin: 60,
       enabled: !!cfg.database,
       async run() {
-        return `${await raiseAlerts(h.db, await businessToday(), new Date())} new alert(s)`;
+        const today = await businessToday();
+        // Ramp-up lines whose days were corrected from Matrix (M-19) first, so that their alerts read the new results.
+        const stale = await recomputeStaleLines(h.db, await modelValues(h.db), today);
+        return `${await raiseAlerts(h.db, today, new Date())} new alert(s)${stale ? `, ${stale} CAPEX ramp-up recomputed` : ''}`;
       },
     },
     {

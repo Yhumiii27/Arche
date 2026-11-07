@@ -1,12 +1,12 @@
 # Arche — reste à développer
 
-Inventaire initial du 2026-10-22, mis à jour le 2026-11-06 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
+Inventaire initial du 2026-10-22, mis à jour le 2026-11-07 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
 
 **Lecture.** Priorité : Bloquant production, Prochaine étape, À décider (il faut d'abord trancher), Plus tard. Effort, pour un développeur qui connaît le code : S < 2 jours, M ≤ 1 semaine, L ≤ 3 semaines, XL > 3 semaines. Les identifiants entre parenthèses renvoient aux décisions (`docs/DECISIONS.md`) et aux demandes (`docs/DEMANDES-*.md`).
 
 ## 1. En bref
 
-**Avancement** : 41 faits, 9 en cours, 2 à faire, sur 52 points.
+**Avancement** : 42 faits, 9 en cours, 2 à faire, sur 53 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
@@ -27,7 +27,7 @@ L'effort est un ordre de grandeur (S = 1,5 j, M = 4 j, L = 12 j, XL = 30 j) : il
 
 | Domaine | Bloquant production | Prochaine étape | À décider | Plus tard | Restants | Faits |
 |---|---:|---:|---:|---:|---:|---:|
-| Plateforme et mise en production | 2 | 0 | 0 | 1 | 3 | 7 |
+| Plateforme et mise en production | 2 | 0 | 0 | 1 | 3 | 8 |
 | Connexion, profils et isolation par filiale | 0 | 0 | 0 | 0 | 0 | 4 |
 | CAPEX et cycle DIG-PRODI | 0 | 0 | 0 | 0 | 0 | 8 |
 | Dossiers vivants et circuits de décision | 0 | 0 | 0 | 0 | 0 | 6 |
@@ -66,7 +66,7 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 
 ## 2. Liste détaillée par domaine
 
-### 2.1 Plateforme et mise en production (3 restants, 7 faits)
+### 2.1 Plateforme et mise en production (3 restants, 8 faits)
 
 **AR-014 · Arche sur le serveur PostgreSQL commun (Matrix)** — *Bloquant production · attend un système externe · effort S* · **en cours (Livraison 3)**  
 Rôle, schéma, droits, partage, journal unifié, sauvegarde, déclaration des tables. Analyse comparative du 25 oct. 2026 : le serveur PostgreSQL commun est un prérequis d’échelle que les solutions du commerce apportent en SaaS ; sans lui, Arche reste une démonstration. Priorité suggérée : bloquant, inchangée.  
@@ -107,6 +107,10 @@ API REST authentifiée par clé signée (comme `POST /api/import` de Codex) expo
 **~~AR-049 · Verrouillage optimiste (champ version) et performance des vues de portefeuille~~** — *Prochaine étape · non commencé · effort M* · **fait (Livraison 7, lot 7a)**  
 Champ `version` sur les objets modifiés par plusieurs profils (CAPEX, budget, dossiers, étapes de circuit) vérifié par chaque Server Function pour refuser une écriture sur une version périmée ; lecture des portefeuilles et des alertes en une requête par vue au lieu d’une par CAPEX (`portfolioDashboard`, `alertsForViewer` : N+1), avec un test de charge sur un jeu de 200 CAPEX. Analyse comparative du 25 oct. 2026 : prérequis d’échelle avant un déploiement à toutes les filiales ; priorité suggérée : à décider (avant le pilote élargi).  
 *Avancement : Colonne row_version (CAPEX, versions de budget, versions de dossier, étapes de circuit) et déclencheur ; écriture refusée sur une version périmée (fiche, budget, étape ; dossier par section) ; portefeuilles, alertes, registre et Gantt en un nombre fixe de requêtes (test de charge : 200 CAPEX). · Sources : Analyse comparative avec les solutions du commerce, 25 oct. 2026*
+
+**~~AR-053 · Corrections des données d’Arche depuis Matrix (M-19, arche.pub_editer)~~** — *Prochaine étape · non commencé · effort M* · **fait (M-19)**  
+Demande M-19 de Matrix (5 nov. 2026) : l’administrateur IT corrige les données d’Arche depuis la visionneuse de Matrix, par une fonction pub_ d’Arche qui applique ses règles et son journal.  
+*Avancement : 7 nov. 2026 : périmètre choisi par le responsable produit (listes de référence, saisies d’un CAPEX ; administrateurs groupe d’Arche ; journal et avis au chef de projet) ; fonction arche.pub_editer et clés primaires des tables sans clé ; reste à la DSI d’autoriser le lien d’écriture dans Matrix. · Sources : REQUESTS.md (M-19), docs/PROPOSITION-M19.md*
 
 ### 2.2 Connexion, profils et isolation par filiale (0 restants, 4 faits)
 
@@ -298,6 +302,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-11-07 — M-19 (Matrix) : arche.pub_editer — l’administrateur IT corrige depuis Matrix les listes de référence et les saisies d’un CAPEX, par les règles et le journal d’Arche ; preuves, droits et miroirs fermés.
 - 2026-11-06 — Codex a traité CX-01, CX-02 et CX-07 (5 nov.) : rattachement capex, sous-types, gel juridique ; contrat vérifié, rien à changer côté Arche ; reste CODEX_CAPEX=on à la mise en service.
 - 2026-11-05 — Démo alignée avec Keystone (sa demande du 4 nov., suite de K-14) : le four de CPX-APM-2025-01 est le projet APM-008 de Keystone (réponse RB-006, machine MCH-045 sur la ligne de ramp-up) ; SAT de RCF-019 prévue le 16 nov. (critère K3 de CPX-SAI-2026-01 rempli).
 - 2026-11-04 — AR-033 : Vigie a traité VG-01 à VG-05 ; Arche préfixe le lien profond des études (chemin relatif) par l’adresse de Vigie ; reste M-15 (Matrix).

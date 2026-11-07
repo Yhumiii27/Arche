@@ -282,3 +282,12 @@ figurent.
 Pour les outils qui ne lisent pas le serveur commun (Power BI, un connecteur Sage, un script) : API `/api/v1/` par clé
 d'application cliente et webhooks signés (`capex.opened`, `gate.decided`, `alert.raised`). Contrat détaillé :
 [`API.md`](API.md). Les vues `pub_` restent le contrat des outils du groupe.
+
+## 5. Fonctions `pub_` d'Arche (écritures reçues, M-17)
+
+**`arche.pub_editer(p_table, p_action, p_cle, p_valeurs, p_par, p_motif) RETURNS jsonb`** (M-19, migration `0034_pub_editer`) —
+appelant : `matrix_app` (lien « écriture » décidé dans Matrix). La convention est celle de `docs/edition-par-les-outils.md`
+dans Matrix. `p_action` vaut `ajouter`, `corriger` ou `retirer`. Les tables et colonnes ouvertes et les règles sont dans
+[`PROPOSITION-M19.md`](PROPOSITION-M19.md). Un refus est un `RAISE EXCEPTION` en français. La fonction renvoie la ligne après
+écriture. Une colonne ouverte ne se renomme ni ne se supprime sans en prévenir Matrix.
+

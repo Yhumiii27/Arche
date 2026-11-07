@@ -1,6 +1,6 @@
 // Group organisation (docs/spec/02-objets.md §1–2): zones, subsidiaries, their sites and reference revenue, users and their
 // role assignments with a scope (docs/spec/01 §2).
-import { boolean, date, doublePrecision, index, integer, numeric, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
+import { boolean, date, doublePrecision, index, integer, numeric, primaryKey, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import type { ExpertSpeciality, RoleKey, ScopeKind } from '@/config/roles';
 import { arche } from './_schema';
 import { id, keur, timestamps } from './_common';
@@ -49,7 +49,7 @@ export const exchangeRates = arche.table('exchange_rates', {
   note: text('note'),
   enteredByName: text('entered_by_name').notNull(),
   enteredAt: timestamp('entered_at', { withTimezone: true }).notNull().defaultNow(),
-}, (t) => [unique('exchange_rates_uq').on(t.currency, t.period)]);
+}, (t) => [primaryKey({ name: 'exchange_rates_pk', columns: [t.currency, t.period] })]);
 
 /** Reference revenue of a subsidiary for one fiscal year (typology, C-5), entered by the group CFO. */
 export const referenceRevenues = arche.table('reference_revenues', {
@@ -59,7 +59,7 @@ export const referenceRevenues = arche.table('reference_revenues', {
   enteredByName: text('entered_by_name').notNull(),
   enteredAt: timestamp('entered_at', { withTimezone: true }).notNull().defaultNow(),
   sourceNote: text('source_note'),
-}, (t) => [unique('reference_revenues_uq').on(t.subsidiaryCode, t.fiscalYear)]);
+}, (t) => [primaryKey({ name: 'reference_revenues_pk', columns: [t.subsidiaryCode, t.fiscalYear] })]);
 
 export const users = arche.table('users', {
   id: id(),

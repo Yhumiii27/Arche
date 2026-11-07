@@ -3,7 +3,7 @@ import 'server-only';
 // results of each line (read by pub_rampup) recomputed after every write, the accounting closure statement, the lessons
 // learned of a CAPEX and the library (the published entries of the CAPEX the viewer sees). Callers pass the CAPEX of a row
 // already read through the visibility filter.
-import { and, asc, desc, eq, inArray, isNotNull } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 import { accountsFact, closureSummary, rexFact } from '@/domain/closure';
 import { capexRampup, DEFAULT_CAPACITY_PCT, rampupFacts, type LineDef, type RampupDay, type RampupRules } from '@/domain/rampup';
 import type { ModelValues } from '@/domain/lifecycle';
@@ -53,6 +53,17 @@ export async function recomputeLines(q: Q, c: { id: string; mesStartedOn: string
     const status = l.reachedOn ? 'atteint' : r.result.status === 'overdue' ? 'hors_delai' : 'en_cours';
     await q.update(productionLines).set({ reachedOn: l.reachedOn, avgCapacityPct: l.avgCapacityPct, avgOeePct: l.avgOeePct, avgScrapPct: l.avgScrapPct, rampupStatus: status, computedAt: at }).where(eq(productionLines.id, l.lineId));
   }
+}
+
+/**
+ * Recomputes the lines marked stale (computed_at null): a ramp-up day corrected from Matrix (arche.pub_editer, M-19) clears it.
+ * Job alerts-raised; returns the number of CAPEX recomputed.
+ */
+export async function recomputeStaleLines(q: Q, values: ModelValues, today: string): Promise<number> {
+  const stale = await q.selectDistinct({ id: capex.id, mesStartedOn: capex.mesStartedOn }).from(productionLines)
+    .innerJoin(capex, eq(capex.id, productionLines.capexId)).where(isNull(productionLines.computedAt));
+  for (const c of stale) await recomputeLines(q, c, values, today);
+  return stale.length;
 }
 
 /** The accounting closure statement of a CAPEX with its lots and the G2 budget. */
