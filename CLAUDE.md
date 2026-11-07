@@ -130,11 +130,14 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
     incompatible change is a `…_v2` view;
   - a write another tool must make in Arche goes through Arche's API (`/api/v1/`, `docs/API.md`) or a function
     `arche.pub_<verb>_<object>` created by migration (`SECURITY DEFINER`, `SET search_path = arche, pg_temp`, caller
-    `session_user`, Arche's rules and audit, `REVOKE EXECUTE … FROM PUBLIC`); none exists today;
+    `session_user`, Arche's rules and audit, `REVOKE EXECUTE … FROM PUBLIC`); one exists: `arche.pub_editer` (M-19, migration
+    `0034_pub_editer`, `docs/PROPOSITION-M19.md`), the IT administrator's corrections from Matrix's viewer — the tables and
+    columns it opens are listed in the function (an Arche group admin, a reason, `audit_entries` area Matrix); keep it in step
+    when a table it opens changes;
   - a need to read or execute in another tool is declared to Matrix as a link (screen « Liens entre outils », or a short
     entry in its `REQUESTS.md`: reader, object `schema.pub_…`, nature `lecture` | `execution`, reason), never as a copy.
   - Inventory (1 Nov 2026): reads `codex.pub_documents`, `keystone.pub_*` (mode `views`), `matrix.pub_sites`,
-    `vigie.pub_etudes_securite` (mode `views`); writes to Codex through `POST /api/documents`; no write received.
+    `vigie.pub_etudes_securite` (mode `views`); writes to Codex through `POST /api/documents`; write received: `arche.pub_editer` (`matrix_app`, M-19).
 - Copy only the **platform** from Keystone (`docs/SOCLE.md`, record the origin commit), never business modules.
 - Typed text is displayed as typed (never through `t()`); the audit trail is append-only; every Server Function validates
   input and rights server-side; migrations are generated, never edited.

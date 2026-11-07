@@ -1,7 +1,7 @@
 // Delivery and safety of a CAPEX (docs/spec/02 §3; delivery 5): the permits register, the subsidiary's part of the engineering
 // pack, the safety milestones declared by the group HSE (N-13) and the monthly committed / spent / physical % of the lots
 // (N-14). Documents stay in Codex: only their references are kept.
-import { date, index, integer, jsonb, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
+import { date, index, integer, jsonb, primaryKey, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { arche } from './_schema';
 import { id, keur, timestamps } from './_common';
 import { capex, capexLots } from './capex';
@@ -88,7 +88,7 @@ export const lotActuals = arche.table('lot_actuals', {
   spentLocal: keur('spent_local'),
   currency: text('currency'),
   rate: keur('rate'),
-}, (t) => [unique('lot_actuals_uq').on(t.lotId, t.month)]);
+}, (t) => [primaryKey({ name: 'lot_actuals_pk', columns: [t.lotId, t.month] })]);
 
 /**
  * Reviews held (docs/spec/06 §2, N-19): the project steering committees (cadence by typology) and the cross-functional audits

@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-22",
-  "updated": "2026-11-06",
+  "updated": "2026-11-07",
   "branch": "claude/brave-curie-chxbck",
   "history": [
     {
@@ -186,6 +186,10 @@
     {
       "date": "2026-11-06",
       "text": "Codex a traité CX-01, CX-02 et CX-07 (5 nov.) : rattachement capex, sous-types, gel juridique ; contrat vérifié, rien à changer côté Arche ; reste CODEX_CAPEX=on à la mise en service."
+    },
+    {
+      "date": "2026-11-07",
+      "text": "M-19 (Matrix) : arche.pub_editer — l’administrateur IT corrige depuis Matrix les listes de référence et les saisies d’un CAPEX, par les règles et le journal d’Arche ; preuves, droits et miroirs fermés."
     }
   ],
   "items": [
@@ -1330,6 +1334,30 @@
         "state": "fait",
         "delivery": "Livraison 7, lot 7d",
         "note": "Page Concepteur des dossiers et circuits : modèles versionnés par dossier et par jalon, brouillon, aperçu, publication ; appliqués aux versions et sessions commencées ensuite ; verrous de la méthode."
+      }
+    },
+    {
+      "id": "AR-053",
+      "title": "Corrections des données d’Arche depuis Matrix (M-19, arche.pub_editer)",
+      "description": "Demande M-19 de Matrix (5 nov. 2026) : l’administrateur IT corrige les données d’Arche depuis la visionneuse de Matrix, par une fonction pub_ d’Arche qui applique ses règles et son journal.",
+      "category": "plateforme_production",
+      "kind": "integration",
+      "priority": "prochaine_etape",
+      "status": "non_commence",
+      "waiting_on": "",
+      "effort": "M",
+      "sources": [
+        "REQUESTS.md (M-19)",
+        "docs/PROPOSITION-M19.md"
+      ],
+      "evidence": [
+        "drizzle/0034_pub_editer.sql",
+        "src/server/db/pub-editer.test.ts"
+      ],
+      "progress": {
+        "state": "fait",
+        "delivery": "M-19",
+        "note": "7 nov. 2026 : périmètre choisi par le responsable produit (listes de référence, saisies d’un CAPEX ; administrateurs groupe d’Arche ; journal et avis au chef de projet) ; fonction arche.pub_editer et clés primaires des tables sans clé ; reste à la DSI d’autoriser le lien d’écriture dans Matrix."
       }
     }
   ]

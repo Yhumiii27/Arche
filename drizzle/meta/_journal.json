@@ -232,6 +232,20 @@
       "when": 1793533844497,
       "tag": "0032_codex_deposit",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1794045829243,
+      "tag": "0033_primary_keys",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1794045834712,
+      "tag": "0034_pub_editer",
+      "breakpoints": true
     }
   ]
 }
