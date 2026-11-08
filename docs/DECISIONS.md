@@ -62,7 +62,7 @@ type du pack, définitions RSPDI / ASPD, relevé de l’existant).
 | C-10 | Objectifs −40 % / −50 % / 100 % sans référence | Arche mesure : délai soumission → décision par jalon ; nombre de documents hors dossier ; part des décisions tracées. Référence mesurée pendant le pilote (relevé de l’existant à fournir) — **confirmé** | pilote |
 | C-11 | Lien CAPEX ↔ EPC2i et catalogue | spec 07 ; catalogue = module de Keystone (R-186) — **confirmé** | L4 |
 | C-12 | Interfaces (Sage, GED, HSE, RH) | Codex (références de documents), Vigie (HS), Keystone ; Sage hors v1 (N-14, N-15) ; Cursus inutile en v1 — **confirmé** | L4 |
-| C-13 | Hébergement en France, IA, annuaire | données et sauvegardes en **France** ; IA **désactivée** tant qu’aucun fournisseur conforme (région UE/France) n’est validé ; annuaire **Entra ID accepté** ; même hébergeur que Keystone (I-1a de Keystone) — **confirmé** | production |
+| C-13 | Hébergement en France, IA, annuaire | données et sauvegardes en **France** ; IA **désactivée** tant qu’aucun fournisseur conforme (région UE/France) n’est validé ; annuaire **Entra ID accepté** ; même hébergeur que Keystone (I-1a de Keystone) — **confirmé** ; **8 nov. 2026** : le responsable produit accepte pour Arche le serveur commun déjà en service (Coolify, `epc2i-postgres`, où Cursus est passé le 2 nov.) | production |
 
 ## 3. Questions de l’architecture (§4) — numérotées AC-1 à AC-5
 

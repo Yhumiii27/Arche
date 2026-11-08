@@ -1,6 +1,6 @@
 # Arche — reste à développer
 
-Inventaire initial du 2026-10-22, mis à jour le 2026-11-07 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
+Inventaire initial du 2026-10-22, mis à jour le 2026-11-08 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
 
 **Lecture.** Priorité : Bloquant production, Prochaine étape, À décider (il faut d'abord trancher), Plus tard. Effort, pour un développeur qui connaît le code : S < 2 jours, M ≤ 1 semaine, L ≤ 3 semaines, XL > 3 semaines. Les identifiants entre parenthèses renvoient aux décisions (`docs/DECISIONS.md`) et aux demandes (`docs/DEMANDES-*.md`).
 
@@ -52,7 +52,7 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 
 - **AR-002** Réponses du responsable produit aux questions de DECISIONS.md — Responsable produit
 - **AR-003** Données de référence des filiales — Responsable produit / DAF groupe
-- **AR-015** Hébergement en France et choix du serveur de production — Responsable produit et DSI
+- **AR-015** Hébergement en France et choix du serveur de production — Mise en ligne d’Arche sur le serveur commun (responsable produit)
 - **AR-033** Études de sécurité des procédés dans Vigie (HazID, HazOp, PSSR, ASPD) et vue pub_etudes_securite — Matrix (M-15)
 - **AR-037** Aide à la décision (règles puis IA conforme) et signature avancée G2 / AFE — Responsable produit (contrat Yousign ; fournisseur IA conforme, C-13)
 
@@ -70,11 +70,11 @@ Décisions à prendre et données à fournir avant de pouvoir développer (`docs
 
 **AR-014 · Arche sur le serveur PostgreSQL commun (Matrix)** — *Bloquant production · attend un système externe · effort S* · **en cours (Livraison 3)**  
 Rôle, schéma, droits, partage, journal unifié, sauvegarde, déclaration des tables. Analyse comparative du 25 oct. 2026 : le serveur PostgreSQL commun est un prérequis d’échelle que les solutions du commerce apportent en SaaS ; sans lui, Arche reste une démonstration. Priorité suggérée : bloquant, inchangée.  
-*Avancement : Kit Coolify du serveur commun (deploy/compose.shared.yaml, EXPLOITATION.md § 4.1) essayé en local contre le socle de Matrix : migrations, jeu de démonstration, santé, sauvegarde, partage 70/90/95. Reste : mise en service dans Coolify. · Attend : Matrix (M-1 à M-8) · Sources : docs/DEMANDES-MATRIX.md*
+*Avancement : Kit Coolify du serveur commun (deploy/compose.shared.yaml, EXPLOITATION.md § 4.1) essayé en local contre le socle de Matrix : migrations, jeu de démonstration, santé, sauvegarde, partage 70/90/95. Reste : mise en service dans Coolify. 8 nov. 2026 : serveur accepté ; procédure de partage mise à jour (reprise des vues par Matrix, 14-reprise-publications.sql, M-18 ; liens M-14, M-15, M-19). · Attend : Matrix (M-1 à M-8) · Sources : docs/DEMANDES-MATRIX.md*
 
 **AR-015 · Hébergement en France et choix du serveur de production** — *Bloquant production · attend le responsable produit · effort S* · **en cours**  
 D-11 / C-13 ; même décision que Keystone (I-1a). Analyse comparative du 25 oct. 2026 : l’hébergement en France est le prérequis de tout déploiement réel (les solutions du commerce sont hébergées en SaaS, souvent hors UE) ; à trancher avant toute autre évolution. Priorité suggérée : bloquant, inchangée.  
-*Avancement : 24 oct. 2026 : déploiement automatique prêt (workflow Deploy → webhook Coolify, ou Auto Deploy de Coolify ; EXPLOITATION.md § 4.4). Reste le serveur (hébergement en France, C-13). · Attend : Responsable produit et DSI · Sources : docs/DECISIONS.md C-13*
+*Avancement : 24 oct. 2026 : déploiement automatique prêt (workflow Deploy → webhook Coolify, ou Auto Deploy de Coolify ; EXPLOITATION.md § 4.4). Reste le serveur (hébergement en France, C-13). 8 nov. 2026 : le responsable produit accepte le serveur commun déjà en service (Coolify, epc2i-postgres) ; reste la mise en ligne d’Arche (EXPLOITATION.md § 4.1). · Attend : Mise en ligne d’Arche sur le serveur commun (responsable produit) · Sources : docs/DECISIONS.md C-13*
 
 **AR-038 · Socle partagé @epc2i/socle** — *Plus tard · attend un système externe · effort M*  
 Remplacer les copies du socle par le paquet (R-194 de Keystone).  
@@ -302,6 +302,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-11-08 — Le responsable produit accepte le serveur commun déjà en service pour Arche ; EXPLOITATION.md § 4.1 : partage selon M-18 (reprise des vues par Matrix) et liens à ouvrir.
 - 2026-11-07 — M-19 (Matrix) : arche.pub_editer — l’administrateur IT corrige depuis Matrix les listes de référence et les saisies d’un CAPEX, par les règles et le journal d’Arche ; preuves, droits et miroirs fermés.
 - 2026-11-06 — Codex a traité CX-01, CX-02 et CX-07 (5 nov.) : rattachement capex, sous-types, gel juridique ; contrat vérifié, rien à changer côté Arche ; reste CODEX_CAPEX=on à la mise en service.
 - 2026-11-05 — Démo alignée avec Keystone (sa demande du 4 nov., suite de K-14) : le four de CPX-APM-2025-01 est le projet APM-008 de Keystone (réponse RB-006, machine MCH-045 sur la ligne de ramp-up) ; SAT de RCF-019 prévue le 16 nov. (critère K3 de CPX-SAI-2026-01 rempli).
