@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-22",
-  "updated": "2026-11-07",
+  "updated": "2026-11-08",
   "branch": "claude/brave-curie-chxbck",
   "history": [
     {
@@ -190,6 +190,10 @@
     {
       "date": "2026-11-07",
       "text": "M-19 (Matrix) : arche.pub_editer — l’administrateur IT corrige depuis Matrix les listes de référence et les saisies d’un CAPEX, par les règles et le journal d’Arche ; preuves, droits et miroirs fermés."
+    },
+    {
+      "date": "2026-11-08",
+      "text": "Le responsable produit accepte le serveur commun déjà en service pour Arche ; EXPLOITATION.md § 4.1 : partage selon M-18 (reprise des vues par Matrix) et liens à ouvrir."
     }
   ],
   "items": [
@@ -470,7 +474,7 @@
       "progress": {
         "state": "en_cours",
         "delivery": "Livraison 3",
-        "note": "Kit Coolify du serveur commun (deploy/compose.shared.yaml, EXPLOITATION.md § 4.1) essayé en local contre le socle de Matrix : migrations, jeu de démonstration, santé, sauvegarde, partage 70/90/95. Reste : mise en service dans Coolify."
+        "note": "Kit Coolify du serveur commun (deploy/compose.shared.yaml, EXPLOITATION.md § 4.1) essayé en local contre le socle de Matrix : migrations, jeu de démonstration, santé, sauvegarde, partage 70/90/95. Reste : mise en service dans Coolify. 8 nov. 2026 : serveur accepté ; procédure de partage mise à jour (reprise des vues par Matrix, 14-reprise-publications.sql, M-18 ; liens M-14, M-15, M-19)."
       }
     },
     {
@@ -481,7 +485,7 @@
       "kind": "decision",
       "priority": "bloquant_production",
       "status": "bloque_attente_proprietaire",
-      "waiting_on": "Responsable produit et DSI",
+      "waiting_on": "Mise en ligne d’Arche sur le serveur commun (responsable produit)",
       "effort": "S",
       "sources": [
         "docs/DECISIONS.md C-13"
@@ -489,7 +493,7 @@
       "evidence": [],
       "progress": {
         "state": "en_cours",
-        "note": "24 oct. 2026 : déploiement automatique prêt (workflow Deploy → webhook Coolify, ou Auto Deploy de Coolify ; EXPLOITATION.md § 4.4). Reste le serveur (hébergement en France, C-13)."
+        "note": "24 oct. 2026 : déploiement automatique prêt (workflow Deploy → webhook Coolify, ou Auto Deploy de Coolify ; EXPLOITATION.md § 4.4). Reste le serveur (hébergement en France, C-13). 8 nov. 2026 : le responsable produit accepte le serveur commun déjà en service (Coolify, epc2i-postgres) ; reste la mise en ligne d’Arche (EXPLOITATION.md § 4.1)."
       }
     },
     {
