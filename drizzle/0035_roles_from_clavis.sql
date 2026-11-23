@@ -1,0 +1,2 @@
+ALTER TABLE "arche"."users" ADD COLUMN "granted_roles" text[];--> statement-breakpoint
+ALTER TABLE "arche"."users" ADD CONSTRAINT "users_granted_roles_known" CHECK ("arche"."users"."granted_roles" is null or "arche"."users"."granted_roles" <@ array['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'epc2i_pmo', 'expert', 'admin']::text[]);
