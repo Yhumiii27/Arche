@@ -166,3 +166,37 @@ describe('Entra ID sign-in', () => {
     expect(res.headers.get('location')).toBe(`${ORIGIN}/sign-in?error=state`);
   });
 });
+
+describe('central sign-in of Clavis (ARCHE_ROLES_FROM_TOKEN=on)', () => {
+  beforeEach(() => useEntra({ ARCHE_ROLES_FROM_TOKEN: 'on' }));
+
+  it('takes the roles from the token: an unknown e-mail gets an account with its group role', async () => {
+    const r = await signIn({ oid: 'oid-copil', email: 'copil.member@epc-groupe.example', name: 'Copil Member', roles: ['copil_member'] });
+    expect(r.res.headers.get('location')).toBe(`${ORIGIN}/capex`);
+    const u = await userByEmail('copil.member@epc-groupe.example');
+    expect(u).toMatchObject({ displayName: 'Copil Member', entraObjectId: 'oid-copil', grantedRoles: ['copil_member'] });
+    expect(await t.db.select().from(roleAssignments).where(eq(roleAssignments.userId, u.id))).toHaveLength(0);
+    useSession(r);
+    expect(await getViewer()).toMatchObject({ role: 'copil_member', roles: ['copil_member'] });
+  });
+
+  it('keeps a scoped role only while Clavis grants it; the scope still comes from the Arche assignment', async () => {
+    const granted = await signIn({ oid: 'oid-leila', preferred_username: 'l.haddad@atlas-process.example', roles: ['Arche.Project_Lead'] });
+    useSession(granted);
+    const v = await getViewer();
+    expect(v).toMatchObject({ role: 'project_lead' });
+    expect(v.assignments.every((a) => a.scopeKind === 'capex' && a.scopeRef)).toBe(true);
+
+    jar.clear();
+    const withdrawn = await signIn({ oid: 'oid-leila', preferred_username: 'l.haddad@atlas-process.example', roles: ['copil_member'] });
+    useSession(withdrawn);
+    expect(await getViewer()).toMatchObject({ role: 'copil_member', roles: ['copil_member'] });
+  });
+
+  it('refuses a token without an Arche role, and a scoped role nobody gave a scope to yet', async () => {
+    expect((await signIn({ oid: 'oid-none', email: 'none@epc-groupe.example', roles: [] })).res.headers.get('location')).toBe(`${ORIGIN}/sign-in?error=no_role`);
+    expect((await signIn({ oid: 'oid-lead', email: 'new.lead@epc-groupe.example', roles: ['project_lead'] })).res.headers.get('location')).toBe(`${ORIGIN}/sign-in?error=no_scope`);
+    expect(await userByEmail('new.lead@epc-groupe.example')).toBeUndefined();
+  });
+});
+

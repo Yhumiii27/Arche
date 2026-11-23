@@ -1,6 +1,7 @@
 // Group organisation (docs/spec/02-objets.md §1–2): zones, subsidiaries, their sites and reference revenue, users and their
 // role assignments with a scope (docs/spec/01 §2).
-import { boolean, date, doublePrecision, index, integer, numeric, primaryKey, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
+import { boolean, check, date, doublePrecision, index, integer, numeric, primaryKey, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import type { ExpertSpeciality, RoleKey, ScopeKind } from '@/config/roles';
 import { arche } from './_schema';
 import { id, keur, timestamps } from './_common';
@@ -73,8 +74,15 @@ export const users = arche.table('users', {
   subsidiaryCode: text('subsidiary_code').references(() => subsidiaries.code),
   active: boolean('active').notNull().default(true),
   lastSignInAt: timestamp('last_sign_in_at', { withTimezone: true }),
+  /**
+   * Roles granted by the central sign-in (Clavis, ARCHE_ROLES_FROM_TOKEN=on) at the last sign-in; null when Arche alone keeps
+   * the roles (Entra ID). With them, group roles apply directly and scoped assignments only for these roles.
+   */
+  grantedRoles: text('granted_roles').array().$type<RoleKey[]>(),
   ...timestamps,
-});
+}, (t) => [
+  check('users_granted_roles_known', sql`${t.grantedRoles} is null or ${t.grantedRoles} <@ array['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'epc2i_pmo', 'expert', 'admin']::text[]`),
+]);
 
 export const roleAssignments = arche.table('role_assignments', {
   id: id(),
