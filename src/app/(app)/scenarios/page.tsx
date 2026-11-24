@@ -68,7 +68,7 @@ export default async function ScenariosPage() {
               <tr key={s.id}>
                 <Td>
                   {dataText(s.name, lang)} {s.retained && <Tag tone="accent" size="xs">{t('Retained')}</Tag>}
-                  {s.description && <div style={{ fontSize: 11.5, color: 'var(--neutral-400)' }}>{dataText(s.description, lang)}</div>}
+                  {s.description && <div style={{ fontSize: 11.5, color: 'var(--color-neutral-400)' }}>{dataText(s.description, lang)}</div>}
                 </Td>
                 <Td>{t(SCENARIO_KIND_LABEL[s.kind])}</Td>
                 <Td align="right" numeric>{`${s.result.kept}${s.result.left ? ` (−${s.result.left})` : ''}`}</Td>
@@ -78,7 +78,7 @@ export default async function ScenariosPage() {
                   return (
                     <Td key={y} align="right" numeric nowrap>
                       {over > 0 ? <Tag tone="accent" size="sm">{k(s.result.byYear[y] ?? 0)}</Tag> : k(s.result.byYear[y] ?? 0)}
-                      {env != null && <div style={{ fontSize: 11, color: 'var(--neutral-400)' }}>{`${t('env.')} ${k(env)}`}</div>}
+                      {env != null && <div style={{ fontSize: 11, color: 'var(--color-neutral-400)' }}>{`${t('env.')} ${k(env)}`}</div>}
                     </Td>
                   );
                 })}
@@ -140,7 +140,7 @@ export default async function ScenariosPage() {
         ) : (
           <EmptyState>{t('No CAPEX with a phased budget yet.')}</EmptyState>
         )}
-        {retained && <p style={{ fontSize: 12, color: 'var(--neutral-400)', marginTop: 8 }}>{`${t('Retained on')} ${fmtDate(retained.updatedAt, lang)}`}</p>}
+        {retained && <p style={{ fontSize: 12, color: 'var(--color-neutral-400)', marginTop: 8 }}>{`${t('Retained on')} ${fmtDate(retained.updatedAt, lang)}`}</p>}
       </SectionCard>
     </>
   );

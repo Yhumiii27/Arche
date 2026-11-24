@@ -19,7 +19,8 @@
     "questionnaire:page": "tsx scripts/questionnaire/build.ts",
     "worker": "tsx --conditions=react-server scripts/worker.ts",
     "backup": "tsx --conditions=react-server scripts/backup.ts",
-    "restore": "tsx --conditions=react-server scripts/restore.ts"
+    "restore": "tsx --conditions=react-server scripts/restore.ts",
+    "norma:check": "node norma/outils/norma.mjs verifier"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
@@ -27,7 +28,7 @@
     "d3-selection": "^3.0.0",
     "d3-zoom": "^3.0.0",
     "drizzle-orm": "^0.45.3",
-    "next": "16.4.3",
+    "next": "16.4.6",
     "pg": "8.23.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -50,7 +51,7 @@
     "@types/topojson-specification": "^1.0.5",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
-    "eslint-config-next": "16.4.3",
+    "eslint-config-next": "16.4.6",
     "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.3"

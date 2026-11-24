@@ -198,6 +198,10 @@
     {
       "date": "2026-11-24",
       "text": "Une seule base : avec ARCHE_ACCESS_FROM_CLAVIS=on, les rôles accordés par Clavis sont lus dans clavis.pub_acces à la connexion et à chaque requête (un rôle de périmètre compte toujours par une affectation d'Arche) ; lecture impossible = refus."
+    },
+    {
+      "date": "2026-11-24",
+      "text": "Norma 1.0.0 : copie du socle commun (norma/, npm run norma:check en CI), Next.js 16.4.6, charte lue dans norma/charte/nocturne.css et bouton d'affichage sombre / clair (cookie epc2i-theme) à droite du sélecteur FR / EN ; audit des règles communes. AR-038 en cours."
     }
   ],
   "items": [
@@ -998,9 +1002,15 @@
       "sources": [
         "docs/SOCLE.md"
       ],
-      "evidence": [],
+      "evidence": [
+        "norma.config.json",
+        "norma/MANIFEST.json",
+        "src/app/layout.tsx"
+      ],
       "progress": {
-        "state": "a_faire"
+        "state": "en_cours",
+        "delivery": "Norma 1.0.0",
+        "note": "Socle commun Norma adopté (24 nov. 2026) : copie norma/ contrôlée par npm run norma:check (CI), charte Nocturne lue dans norma/charte/nocturne.css (thèmes sombre et clair), bouton d'affichage sombre / clair de Norma. Reste : remplacer src/components/ds par norma/charte/ds et la police par norma/charte/fonts."
       }
     },
     {

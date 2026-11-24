@@ -22,7 +22,7 @@
 | Règles de connexion | `src/domain/auth.ts` | `decideSignIn` d’Arche (compte par objet Entra, sinon par e-mail) | repris et adapté (L1) |
 | Session et « Voir en tant que » | `src/server/session.ts`, `src/config/personas.ts` (mécanisme) | personnes de démonstration lues en base, une par profil | repris et adapté (L1) |
 | Coquille et registre d’écrans | `src/config/screens.ts`, `src/components/app/shell/` | registre de la spec 08, barre latérale et en-tête simplifiés (sans tiroir tablette ; recherche ⌘K ajoutée avec le lot UI) | repris et adapté (L1) |
-| Design Nocturne | `src/styles/nocturne.css`, `src/components/ds/`, composants génériques de `src/components/app/` | sans les composants des écrans Keystone ; police Inter locale de Codex | repris (L1) |
+| Design Nocturne | `norma/charte/nocturne.css` (copie de Norma 1.0.0 depuis le 24 nov. 2026 ; avant : `src/styles/nocturne.css`), `src/components/ds/`, composants génériques de `src/components/app/` | sans les composants des écrans Keystone ; police Inter locale de Codex | repris (L1) |
 | i18n et complétude du français | `src/i18n/` | moteur simplifié (dictionnaires par domaine dans `src/i18n/fr/`, règles, segments) ; contrôle de complétude | repris et adapté (L1) |
 | Base de données | `src/server/db/{client,types,transactions,migrations,server-schema,postgres,migrate-command}.ts` | PostgreSQL seul ; verrous `arche.migrations` / `arche.ecritures` ; `npm run db:local` | repris et adapté (L1) |
 | Piste d’audit append-only | `writeAudit` (`src/server/db/helpers.ts`), `audit_entries`, déclencheur de `drizzle/0017_audit_append_only.sql` | migration `0001_audit_append_only` d’Arche | repris (L1) |
