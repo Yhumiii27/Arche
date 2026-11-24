@@ -7,7 +7,7 @@ import { useRef, useState } from 'react';
 import { Callout } from '@/components/app/Callout';
 import { Eyebrow } from '@/components/app/Eyebrow';
 import { CapexMap, type CapexMapHandle, type CapexMapLabels, type CapexMapPoint } from '@/components/charts/capex-map';
-import { Tag } from '@/components/ds/Tag';
+import { Tag } from '@norma/charte/ds/Tag';
 import type { GeoBounds } from '@/domain/capex-map';
 import s from './map.module.css';
 

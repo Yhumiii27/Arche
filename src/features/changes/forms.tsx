@@ -1,7 +1,7 @@
 'use client';
 // Management of change forms: a new change (project lead), the decision of the level the delegation matrix names.
 import { ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { CHANGE_KINDS, CHANGE_KIND_LABEL } from '@/domain/delegation';
 import { useI18n } from '@/i18n/client';
 import { createChangeAction, decideChangeAction } from './actions';

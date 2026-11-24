@@ -5,13 +5,13 @@
 import { DownloadSimple, Flag, NotePencil, Plus, PlusCircle, Printer } from '@phosphor-icons/react/dist/ssr';
 import { createContext, useActionState, useContext, useEffect, useState, useTransition, type ReactNode } from 'react';
 import type { Icon } from '@phosphor-icons/react';
-import { Button, ButtonLink, type ButtonSize, type ButtonVariant } from '@/components/ds/Button';
-import { Drawer } from '@/components/ds/Drawer';
-import { MenuItem } from '@/components/ds/Menu';
+import { Button, ButtonLink, type ButtonSize, type ButtonVariant } from '@norma/charte/ds/Button';
+import { Drawer } from '@norma/charte/ds/Drawer';
+import { MenuItem } from '@norma/charte/ds/Menu';
 import { useMenuMode } from './menu-mode';
-import { showToast } from '@/components/ds/Toast';
+import { showToast } from '@norma/charte/ds/Toast';
 import { useI18n } from '@/i18n/client';
-import pop from '@/components/ds/Popover.module.css';
+import pop from '@norma/charte/ds/Popover.module.css';
 import s from './ActionForm.module.css';
 
 export type ActionResult = { ok: true } | { ok: false; error: string };

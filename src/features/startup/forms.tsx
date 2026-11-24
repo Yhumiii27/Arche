@@ -3,7 +3,7 @@
 // closure statement, a lesson learned and its publication. The Server Functions check everything again.
 import { useState } from 'react';
 import { ActionButton, ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { REX_CATEGORIES, REX_CATEGORY_LABEL, type RexCategory } from '@/domain/closure';
 import { PHASES } from '@/domain/lifecycle';
 import { PHASE_LABEL } from '@/domain/capex-labels';

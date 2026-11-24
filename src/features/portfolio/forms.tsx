@@ -2,7 +2,7 @@
 // Portfolio decisions forms (delivery 7, lot 7c): the weights of the prioritisation grid and a CAPEX's scores (AR-044), a new
 // scenario and the CAPEX it keeps, leaves out or shifts (AR-043). The Server Functions check everything again.
 import { ActionButton, ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { SCENARIO_KINDS, SCENARIO_KIND_LABEL } from '@/domain/scenarios';
 import { MANUAL_CRITERIA, SCORING_CRITERIA } from '@/domain/scoring';
 import { useI18n } from '@/i18n/client';

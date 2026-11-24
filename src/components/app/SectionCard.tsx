@@ -2,8 +2,8 @@
 import Link from 'next/link';
 import type { Icon } from '@phosphor-icons/react';
 import type { CSSProperties, ReactNode } from 'react';
-import { CardTitle } from '@/components/ds/Card';
-import { cx } from '@/components/ds/cx';
+import { CardTitle } from '@norma/charte/ds/Card';
+import { cx } from '@norma/charte/ds/cx';
 import s from './SectionCard.module.css';
 
 export interface SectionCardProps {

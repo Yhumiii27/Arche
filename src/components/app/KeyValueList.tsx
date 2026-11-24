@@ -1,6 +1,6 @@
 // Key–value list (docs/spec/02 C-13). Server-compatible.
 import type { CSSProperties, ReactNode } from 'react';
-import { cx } from '@/components/ds/cx';
+import { cx } from '@norma/charte/ds/cx';
 import { Eyebrow } from './Eyebrow';
 import s from './KeyValueList.module.css';
 

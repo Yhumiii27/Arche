@@ -1,7 +1,7 @@
 // Callout / Notice / InsetPanel (docs/spec/02 C-24). Server-compatible.
 import type { Icon } from '@phosphor-icons/react';
 import type { CSSProperties, ReactNode } from 'react';
-import { cx } from '@/components/ds/cx';
+import { cx } from '@norma/charte/ds/cx';
 import { Eyebrow } from './Eyebrow';
 import s from './Callout.module.css';
 

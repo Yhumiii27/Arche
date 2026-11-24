@@ -19,8 +19,8 @@ import Link from 'next/link';
 import { memo, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type Ref } from 'react';
 import { feature } from 'topojson-client';
 import type { GeometryCollection, Topology } from 'topojson-specification';
-import { Tag, type TagTone } from '@/components/ds/Tag';
-import { cx } from '@/components/ds/cx';
+import { Tag, type TagTone } from '@norma/charte/ds/Tag';
+import { cx } from '@norma/charte/ds/cx';
 import {
   DEFAULT_SIZE, IDENTITY, MAP_VIEWS, SCALE_EXTENT, SPHERE_INSET, VIEW_MS, clusterClick, clusterKey, clusterPoints, focusTransform, homeView,
   markerAriaLabel, markerKeyAction, markerLabelText, markerTabIndex, placeTooltip, showMarkerLabels, tooltipTitle, viewTransform,

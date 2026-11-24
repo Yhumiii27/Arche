@@ -4,10 +4,10 @@
 // stays mounted while closed, so that the side panel an action opened (a portal) keeps its state.
 import { CaretDown, DotsThreeVertical } from '@phosphor-icons/react/dist/ssr';
 import { Children, Fragment, isValidElement, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { Button } from '@/components/ds/Button';
-import { useOverlay } from '@/components/ds/overlay';
-import pop from '@/components/ds/Popover.module.css';
-import { cx } from '@/components/ds/cx';
+import { Button } from '@norma/charte/ds/Button';
+import { useOverlay } from '@norma/charte/ds/overlay';
+import pop from '@norma/charte/ds/Popover.module.css';
+import { cx } from '@norma/charte/ds/cx';
 import { MenuModeCtx } from '@/components/app/menu-mode';
 import { useI18n } from '@/i18n/client';
 import styles from './header.module.css';

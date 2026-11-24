@@ -6,7 +6,7 @@ import { EmptyState } from '@/components/app/EmptyState';
 import { KpiGrid, KpiTile } from '@/components/app/Kpi';
 import { SectionCard } from '@/components/app/SectionCard';
 import { PageHeader } from '@/components/app/shell/page-header';
-import { Table, Td, Th } from '@/components/ds/Table';
+import { Table, Td, Th } from '@norma/charte/ds/Table';
 import { canSee, screenHref } from '@/config/screens';
 import { REX_CATEGORIES, REX_CATEGORY_LABEL, type RexCategory } from '@/domain/closure';
 import { PHASE_LABEL, labelOf } from '@/domain/capex-labels';

@@ -1,7 +1,7 @@
 // Empty states (docs/spec/02 C-25). Server-compatible; text is passed in translated.
 import type { Icon } from '@phosphor-icons/react';
 import type { CSSProperties, ReactNode } from 'react';
-import { cx } from '@/components/ds/cx';
+import { cx } from '@norma/charte/ds/cx';
 import s from './EmptyState.module.css';
 
 export interface EmptyStateProps {

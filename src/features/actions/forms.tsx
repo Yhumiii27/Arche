@@ -4,7 +4,7 @@
 // cancelled with a reason). The Server Functions check everything again.
 import { useState } from 'react';
 import { ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { ACTION_SOURCES, ACTION_SOURCE_LABEL, type ActionSource } from '@/domain/actions';
 import { useI18n } from '@/i18n/client';
 import { closeActionAction, saveActionAction } from './actions';

@@ -4,7 +4,7 @@
 import { Fragment, useState } from 'react';
 import { ActionButton, ActionForm, Folded } from '@/components/app/ActionForm';
 import styles from './forms.module.css';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { ESTIMATE_CLASSES } from '@/domain/budget';
 import { DECISION_BODIES, DECISION_BODY_LABEL, INVESTMENT_TYPES, LOT_KINDS, LOT_KIND_LABEL, RISK_CATEGORIES, RISK_CATEGORY_LABEL, RISK_STATUSES, RISK_STATUS_LABEL, TEAM_ROLES, TEAM_ROLE_LABEL } from '@/domain/capex';
 import { INVESTMENT_TYPE_LABEL } from '@/domain/capex-labels';

@@ -4,7 +4,7 @@
 // milestone (diamond); a milestones row with the cycle's dates and a today line. Server-compatible, no interaction (native
 // `title` tooltips, rows may link). Labels arrive translated.
 import Link from 'next/link';
-import { cx } from '@/components/ds/cx';
+import { cx } from '@norma/charte/ds/cx';
 import s from './capex-gantt.module.css';
 
 export interface GanttRow {

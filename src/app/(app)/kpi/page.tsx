@@ -4,8 +4,8 @@
 import { EmptyState } from '@/components/app/EmptyState';
 import { SectionCard } from '@/components/app/SectionCard';
 import { PageHeader } from '@/components/app/shell/page-header';
-import { Table, Td, Th } from '@/components/ds/Table';
-import { Tag } from '@/components/ds/Tag';
+import { Table, Td, Th } from '@norma/charte/ds/Table';
+import { Tag } from '@norma/charte/ds/Tag';
 import { KPI_LABEL, KPI_UNIT, OBJECTIVE_LABEL, type KpiState } from '@/domain/kpi';
 import { BaselineForm } from '@/features/pilot/forms';
 import { dataText } from '@/i18n/data-text';

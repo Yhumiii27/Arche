@@ -3,8 +3,8 @@
 // result. The Server Functions do every check again.
 import { useActionState, useState, useTransition } from 'react';
 import { ActionForm, Result } from '@/components/app/ActionForm';
-import { Button } from '@/components/ds/Button';
-import { Field, Input, Select } from '@/components/ds/Field';
+import { Button } from '@norma/charte/ds/Button';
+import { Field, Input, Select } from '@norma/charte/ds/Field';
 import { EXPERT_SPECIALITIES, ROLE_KEYS, ROLE_LABEL, ROLE_SCOPE, SPECIALITY_LABEL, type RoleKey } from '@/config/roles';
 import { LEVEL_LABEL, type DelegationMatrix } from '@/domain/delegation';
 import { GATES, VALUE_BOUNDS, type ModelValues } from '@/domain/lifecycle';

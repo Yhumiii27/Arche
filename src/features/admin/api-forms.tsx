@@ -3,8 +3,8 @@
 // the key or the signing secret is not kept by Arche in a readable form (the key) or never shown again (the secret).
 import { useActionState } from 'react';
 import { Folded, Result } from '@/components/app/ActionForm';
-import { Button } from '@/components/ds/Button';
-import { Field, Input, Select } from '@/components/ds/Field';
+import { Button } from '@norma/charte/ds/Button';
+import { Field, Input, Select } from '@norma/charte/ds/Field';
 import { useI18n } from '@/i18n/client';
 import { WEBHOOK_EVENTS } from '@/domain/api-events';
 import { createApiClientAction, createWebhookAction, type SecretResult } from './api-actions';

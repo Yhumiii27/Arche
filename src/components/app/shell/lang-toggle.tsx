@@ -2,7 +2,7 @@
 // Language toggle of the page header, top right (Keystone's LangToggle, header-islands.tsx): FR | EN, kept in a cookie.
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
-import { Segmented } from '@/components/ds/Segmented';
+import { Segmented } from '@norma/charte/ds/Segmented';
 import type { Lang } from '@/i18n/translate';
 import { setLang } from '@/server/actions/preferences';
 

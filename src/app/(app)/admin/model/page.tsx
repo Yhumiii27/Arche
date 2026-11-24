@@ -4,7 +4,7 @@
 import { notFound } from 'next/navigation';
 import { SectionCard } from '@/components/app/SectionCard';
 import { PageHeader } from '@/components/app/shell/page-header';
-import { Table, Td, Th } from '@/components/ds/Table';
+import { Table, Td, Th } from '@norma/charte/ds/Table';
 import { canSee } from '@/config/screens';
 import { CRITERIA, GATES, GATE_DECIDER, GATE_LABEL, MODEL_VERSION } from '@/domain/lifecycle';
 import { ROLE_LABEL } from '@/config/roles';

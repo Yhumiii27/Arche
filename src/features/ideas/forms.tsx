@@ -1,7 +1,7 @@
 'use client';
 // Ideas backlog forms (AR-051): propose an idea, decide on it. The Server Functions check everything again.
 import { ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { INVESTMENT_TYPE_LABEL } from '@/domain/capex-labels';
 import { INVESTMENT_TYPES } from '@/domain/capex';
 import { IDEA_DECISION_LABEL, type IdeaDecision } from '@/domain/ideas';

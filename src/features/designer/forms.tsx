@@ -2,7 +2,7 @@
 // No-code designer forms (AR-052): the draft of a dossier's sections or of a gate's circuit, edited row by row; start, publish,
 // discard. The Server Functions check everything again (src/domain/designer.ts).
 import { ActionButton, ActionForm } from '@/components/app/ActionForm';
-import { Field, Input, Select } from '@/components/ds/Field';
+import { Field, Input, Select } from '@norma/charte/ds/Field';
 import { EXPERT_SPECIALITIES, ROLE_KEYS, ROLE_LABEL, SPECIALITY_LABEL } from '@/config/roles';
 import { STEP_KIND_LABEL, type StepKind, type StepTemplate } from '@/domain/circuits';
 import type { SectionDef } from '@/domain/dossiers';

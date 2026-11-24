@@ -3,7 +3,7 @@
 import { EmptyState } from '@/components/app/EmptyState';
 import { SectionCard } from '@/components/app/SectionCard';
 import { PageHeader } from '@/components/app/shell/page-header';
-import { Table, Td, Th } from '@/components/ds/Table';
+import { Table, Td, Th } from '@norma/charte/ds/Table';
 import { holdsOn, refOf } from '@/domain/capex';
 import { CHANGE_KIND_LABEL, DECIDER_ROLE_OF, LEVEL_LABEL, type ChangeKind, type DeciderLevel } from '@/domain/delegation';
 import { loadCapexPage } from '@/features/capex/page-data';

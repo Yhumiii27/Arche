@@ -1,7 +1,7 @@
 'use client';
 // Safety milestone form (N-13): the group HSE's declaration of a milestone.
 import { ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { HS_STATUSES, HS_STATUS_LABEL, type HsCode, type HsStatus } from '@/domain/safety';
 import { useI18n } from '@/i18n/client';
 import { declareHsAction } from './actions';

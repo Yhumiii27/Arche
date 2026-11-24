@@ -1,7 +1,7 @@
 'use client';
 // Sage connector forms (AR-047). The Server Functions check everything again.
 import { ActionButton, ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input } from '@/components/ds/Field';
+import { Field, Input } from '@norma/charte/ds/Field';
 import { SAGE_HEADER } from '@/domain/sage';
 import { useI18n } from '@/i18n/client';
 import { importSageAction, loadDemoSageAction, setSageCodeAction } from './actions';

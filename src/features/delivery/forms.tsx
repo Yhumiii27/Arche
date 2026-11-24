@@ -3,7 +3,7 @@
 // the import of Arche's CSV template. The Server Functions check everything again.
 import { useState } from 'react';
 import { ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { unitOf } from '@/domain/currency';
 import { ACTUALS_CSV_HEADER } from '@/domain/execution';
 import { PACK_ITEM_STATUSES, PACK_ITEM_STATUS_LABEL, type PackItemStatus } from '@/domain/pack';

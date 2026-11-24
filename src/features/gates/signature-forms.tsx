@@ -4,7 +4,7 @@
 import { useActionState } from 'react';
 import { Result, type ActionResult } from '@/components/app/ActionForm';
 import s from '@/components/app/ActionForm.module.css';
-import { Button } from '@/components/ds/Button';
+import { Button } from '@norma/charte/ds/Button';
 import { useI18n } from '@/i18n/client';
 import { cancelSignatureAction, finishSignatureAction, simulateSignatureAction } from './signature';
 

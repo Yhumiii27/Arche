@@ -1,4 +1,10 @@
 /* App-level globals (copied from Keystone). Tokens and DS classes live in norma/charte/nocturne.css (Norma's copy, dark and light themes). */
+/* Fallback of Inter (norma/charte/fonts/inter.ts): the size-adjusted Arial next/font/google used to declare. */
+@font-face {
+  font-family: 'Inter Fallback'; src: local('Arial');
+  ascent-override: 90.44%; descent-override: 22.52%; line-gap-override: 0%; size-adjust: 107.12%;
+}
+
 :root {
   --font-heading: var(--font-inter), 'Inter', system-ui, sans-serif;
   --font-body: var(--font-inter), 'Inter', system-ui, sans-serif;

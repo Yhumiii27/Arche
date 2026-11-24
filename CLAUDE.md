@@ -110,19 +110,22 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `ARCHE_ACCESS_FROM_CLAVIS=on` the roles Clavis grants are read in `clavis.pub_acces` (shared server, granted by Matrix) at
   sign-in and on every request (`src/server/integrations/clavis/access.ts`, `grantedRolesFromClavisAccess`), never in the
   token; a group role applies at once, a scoped one through an Arche assignment (`effectiveAssignments`); a failed read refuses.
-- **Norma 1.0.0 adopted (24 Nov 2026)**: `norma.config.json` (`arche`), copy `norma/` checked by `npm run norma:check` (CI),
+- **Norma adopted (1.0.0 on 24 Nov 2026, copy now 1.2.0)**: `norma.config.json` (`arche`), copy `norma/` checked by `npm run norma:check` (CI),
   Next.js 16.4.6; the Nocturne sheet is `norma/charte/nocturne.css` (alias `@norma/*`, dark and light themes); the dark /
   light display toggle (`norma/charte/ds/ThemeToggle.tsx`, cookie `epc2i-theme` read by `getTheme`, `data-theme` on
-  `<html>`) sits right after the FR / EN toggle of `PageHeader`. Colours come from the variables only.
+  `<html>`) sits right after the FR / EN toggle of `PageHeader`. Colours come from the variables only. The base components
+  and Inter come from the charter too (`@norma/charte/ds`, `@norma/charte/fonts/inter`): there is no local copy.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
-  before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.
+  before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`
+  (Norma's standard builder `norma/outils/questionnaire/build.mjs`, settings in `scripts/questionnaire/config.json`,
+  questions in `scripts/questionnaire/questions.json`, page `.artifacts/decisions-arche.html`).
 - Sources of the framing (Keystone repository, branch `main-2a2fep`): `docs/dig-prodi/CDC-DIG-PRODI-v4.0-draft.md`,
   `ANALYSE-DIG-PRODI.md`, `ARCHITECTURE-CAPEX-KEYSTONE.md` (the reference), `PROMPT-APP-CAPEX.md` (kick-off prompt).
-- **Remaining-work page**: after every development, update `docs/reste-a-developper.json` (`progress`, `history`, `updated`),
-  run `npm run remaining:page` (regenerates `docs/RESTE-A-DEVELOPPER.md` and `.artifacts/reste-a-developper.html`), commit,
-  and republish the HTML with the Artifact tool to the same page, https://claude.ai/artifact/NYa4xuAJicPTQcsJhBUBKh (pass it
-  as `url`).
+- **Remaining work**: Arche keeps no list of its own (Norma 1.2.0, `norma/REGLES.md` §3). The suite's single list is in
+  the Norma repository, `reste-a-faire/arche.json` (schema `reste-a-faire/SCHEMA.md`); after every development, update that
+  file in Norma (item states, a `history` line, `updated`), run `npm run reste-a-faire` there, open Norma's PR, and
+  republish `.artifacts/reste-a-faire.html` to the global page https://claude.ai/artifact/Rs7kooJdowShdYUqNS8jQf.
 
 ## Rules from the product owner
 
