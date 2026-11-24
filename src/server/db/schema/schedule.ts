@@ -2,8 +2,10 @@
 // with their dates, progress and owner. The lots keep their planned months (capex_lots); the EPC2i projects stay in Keystone
 // and appear as one summary bar each. Rules: src/domain/schedule.ts.
 import { boolean, date, integer, text, unique, uuid } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { arche } from './_schema';
 import { id, timestamps } from './_common';
+import { filled, rule, within } from './_checks';
 import { capex, capexLots } from './capex';
 import { users } from './organisation';
 
@@ -22,4 +24,12 @@ export const wbsTasks = arche.table('wbs_tasks', {
   milestone: boolean('milestone').notNull().default(false),
   updatedByName: text('updated_by_name').notNull(),
   ...timestamps,
-}, (t) => [unique('wbs_tasks_number_uq').on(t.capexId, t.number)]);
+}, (t) => [
+  unique('wbs_tasks_number_uq').on(t.capexId, t.number),
+  within('wbs_tasks_number_positive', t.number, 1, null),
+  filled('wbs_tasks_name_filled', t.name),
+  rule('wbs_tasks_dates_order', sql`${t.endOn} >= ${t.startOn}`),
+  within('wbs_tasks_progress_range', t.progressPct, 0, 100),
+  rule('wbs_tasks_milestone_one_day', sql`not ${t.milestone} or ${t.endOn} = ${t.startOn}`),
+  filled('wbs_tasks_updated_by_filled', t.updatedByName),
+]);

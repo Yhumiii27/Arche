@@ -2,8 +2,10 @@
 // SHA-256 kept; read, or read and write; a subsidiary scope), the signed requests already received (anti-replay), the webhook
 // subscriptions of a client and the outbox of their deliveries, and the alerts already announced (`alert.raised`).
 import { boolean, date, index, integer, jsonb, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { arche } from './_schema';
 import { id, timestamps } from './_common';
+import { DELIVERY_STATUSES, WEBHOOK_EVENTS, filled, oneOf, rule, within, type OneOf } from './_checks';
 import { capex } from './capex';
 
 export const apiClients = arche.table('api_clients', {
@@ -21,7 +23,11 @@ export const apiClients = arche.table('api_clients', {
   revokedAt: timestamp('revoked_at', { withTimezone: true }),
   revokedByName: text('revoked_by_name'),
   ...timestamps,
-});
+}, (t) => [
+  filled('api_clients_name_filled', t.name),
+  rule('api_clients_key_hash_shape', sql`${t.keyHash} ~ '^[0-9a-f]{64}$'`),
+  filled('api_clients_created_by_filled', t.createdByName),
+]);
 
 /** Signed write requests already received, kept for the signature window (anti-replay). */
 export const apiSignatures = arche.table('api_signatures', {
@@ -35,13 +41,16 @@ export const webhookSubscriptions = arche.table('webhook_subscriptions', {
   clientId: uuid('client_id').notNull().references(() => apiClients.id, { onDelete: 'cascade' }),
   url: text('url').notNull(),
   /** Events sent (src/domain/api.ts WEBHOOK_EVENTS). */
-  events: text('events').array().notNull(),
+  events: text('events').array().$type<OneOf<typeof WEBHOOK_EVENTS>[]>().notNull(),
   /** Secret of the HMAC signature of the deliveries, shown once at the creation; kept to sign. */
   secret: text('secret').notNull(),
   active: boolean('active').notNull().default(true),
   createdByName: text('created_by_name').notNull(),
   ...timestamps,
-});
+}, (t) => [
+  rule('webhook_subscriptions_url_shape', sql`${t.url} ~ '^https?://'`),
+  rule('webhook_subscriptions_events_known', sql`cardinality(${t.events}) > 0 and ${t.events} <@ array[${sql.raw(WEBHOOK_EVENTS.map((e) => `'${e}'`).join(', '))}]::text[]`),
+]);
 
 /** Outbox: one delivery per subscription and event, written in the transaction of the change, sent by the job `webhooks`. */
 export const webhookDeliveries = arche.table('webhook_deliveries', {
@@ -49,14 +58,19 @@ export const webhookDeliveries = arche.table('webhook_deliveries', {
   subscriptionId: uuid('subscription_id').notNull().references(() => webhookSubscriptions.id, { onDelete: 'cascade' }),
   event: text('event').notNull(),
   payload: jsonb('payload').$type<Record<string, unknown>>().notNull(),
-  status: text('status').$type<'pending' | 'sent' | 'failed'>().notNull().default('pending'),
+  status: text('status').$type<OneOf<typeof DELIVERY_STATUSES>>().notNull().default('pending'),
   attempts: integer('attempts').notNull().default(0),
   nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull().defaultNow(),
   lastStatus: integer('last_status'),
   lastError: text('last_error'),
   sentAt: timestamp('sent_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-}, (t) => [index('webhook_deliveries_due_idx').on(t.status, t.nextAttemptAt)]);
+}, (t) => [
+  index('webhook_deliveries_due_idx').on(t.status, t.nextAttemptAt),
+  oneOf('webhook_deliveries_event_domain', t.event, WEBHOOK_EVENTS),
+  oneOf('webhook_deliveries_status_domain', t.status, DELIVERY_STATUSES),
+  within('webhook_deliveries_attempts_non_negative', t.attempts, 0, null),
+]);
 
 /** Alerts announced by `alert.raised`, so that an alert is announced once while it lasts (removed when it clears). */
 export const raisedAlerts = arche.table('raised_alerts', {

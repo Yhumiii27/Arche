@@ -54,7 +54,7 @@ async function addCapex(n: number) {
       code: `CPX-SAI-2099-${String(i + 1).padStart(3, '0')}`, subsidiaryCode: model.subsidiaryCode, siteId: model.siteId, title: `Load test ${i + 1}`,
       investmentType: model.investmentType, status: 'active', phase: i % 2 ? 'execution' : 'avant_projet', typology: 'strategic', openedAt: new Date('2026-01-05'),
     }).returning();
-    const lots = await t.db.insert(capexLots).values([1, 2, 3].map((k) => ({ capexId: c.id, number: k, kind: 'works', title: `Lot ${k}`, plannedStart: '2026-03', plannedEnd: '2026-12' }))).returning();
+    const lots = await t.db.insert(capexLots).values([1, 2, 3].map((k) => ({ capexId: c.id, number: k, kind: 'civil_works', title: `Lot ${k}`, plannedStart: '2026-03', plannedEnd: '2026-12' }))).returning();
     const [v] = await t.db.insert(budgetVersions).values({ capexId: c.id, number: 1, estimateClass: 'E10', status: 'validated', isG2Baseline: i % 2 === 1, createdByName: 'Test' }).returning();
     await t.db.insert(budgetLines).values(lots.map((l) => ({ budgetVersionId: v.id, lotId: l.id, amountKeur: 1000 })));
     await t.db.insert(lotActuals).values(lots.map((l) => ({ lotId: l.id, month: '2026-09', committedKeur: 500, spentKeur: 300, physicalPct: 30, enteredByName: 'Test' })));

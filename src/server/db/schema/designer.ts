@@ -2,16 +2,18 @@
 // a dossier kind or a gate — has at most one draft and one published version; the published one applies to the dossier versions
 // and gate sessions started afterwards. Version 0 is the built-in definition (src/domain/dossiers.ts, circuits.ts), never stored.
 import { index, integer, jsonb, text, timestamp, unique } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { arche } from './_schema';
 import { id } from './_common';
+import { DESIGN_KINDS, DESIGN_STATES, DOSSIER_KINDS, GATES, oneOf, rule, within, type OneOf } from './_checks';
 
 export const designs = arche.table('designs', {
   id: id(),
-  kind: text('kind').$type<'dossier' | 'circuit'>().notNull(),
+  kind: text('kind').$type<OneOf<typeof DESIGN_KINDS>>().notNull(),
   /** Dossier kind (business_case, investment, transfer) or gate (G1, G2, K3, G3). */
   target: text('target').notNull(),
   version: integer('version').notNull(),
-  state: text('state').$type<'draft' | 'published' | 'retired'>().notNull().default('draft'),
+  state: text('state').$type<OneOf<typeof DESIGN_STATES>>().notNull().default('draft'),
   /** { sections: SectionDef[] } or { steps: StepTemplate[] }. */
   definition: jsonb('definition').$type<Record<string, unknown>>().notNull(),
   note: text('note'),
@@ -20,4 +22,12 @@ export const designs = arche.table('designs', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   publishedByName: text('published_by_name'),
   publishedAt: timestamp('published_at', { withTimezone: true }),
-}, (t) => [unique('designs_version_uq').on(t.kind, t.target, t.version), index('designs_target_idx').on(t.kind, t.target)]);
+}, (t) => [
+  unique('designs_version_uq').on(t.kind, t.target, t.version),
+  index('designs_target_idx').on(t.kind, t.target),
+  oneOf('designs_kind_domain', t.kind, DESIGN_KINDS),
+  oneOf('designs_state_domain', t.state, DESIGN_STATES),
+  within('designs_version_positive', t.version, 1, null),
+  rule('designs_target_of_kind', sql`(${t.kind} = 'dossier' and ${t.target} in (${sql.raw(DOSSIER_KINDS.map((k) => `'${k}'`).join(', '))})) or (${t.kind} = 'circuit' and ${t.target} in (${sql.raw(GATES.map((g) => `'${g}'`).join(', '))}))`),
+  rule('designs_published_dated', sql`${t.state} = 'draft' or ${t.publishedAt} is not null`),
+]);
