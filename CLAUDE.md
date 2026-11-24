@@ -101,6 +101,10 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   (`src/server/integrations/vigie/sync.ts`, mirror `vigie_studies`, `ARCHE_VIGIE` off | simulation | views, job `vigie-sync`):
   a milestone with studies takes its status from Vigie (`hs_statuses.source = vigie`), alert `safety_recommendations_late`.
   Left: Vigie publishes the view (VG-01 to VG-05) and Matrix grants `arche_app` its reading.
+- **One database, rights from Clavis (owner, 23–24 Nov 2026)**: signed in through Clavis (`ENTRA_ISSUER` = Clavis), with
+  `ARCHE_ACCESS_FROM_CLAVIS=on` the roles Clavis grants are read in `clavis.pub_acces` (shared server, granted by Matrix) at
+  sign-in and on every request (`src/server/integrations/clavis/access.ts`, `grantedRolesFromClavisAccess`), never in the
+  token; a group role applies at once, a scoped one through an Arche assignment (`effectiveAssignments`); a failed read refuses.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.
