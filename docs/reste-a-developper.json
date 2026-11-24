@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-22",
-  "updated": "2026-11-08",
+  "updated": "2026-11-24",
   "branch": "claude/brave-curie-chxbck",
   "history": [
     {
@@ -194,6 +194,10 @@
     {
       "date": "2026-11-08",
       "text": "Le responsable produit accepte le serveur commun déjà en service pour Arche ; EXPLOITATION.md § 4.1 : partage selon M-18 (reprise des vues par Matrix) et liens à ouvrir."
+    },
+    {
+      "date": "2026-11-24",
+      "text": "Une seule base : avec ARCHE_ACCESS_FROM_CLAVIS=on, les rôles accordés par Clavis sont lus dans clavis.pub_acces à la connexion et à chaque requête (un rôle de périmètre compte toujours par une affectation d'Arche) ; lecture impossible = refus."
     }
   ],
   "items": [

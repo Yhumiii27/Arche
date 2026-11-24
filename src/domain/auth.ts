@@ -105,6 +105,15 @@ export function grantedRolesFromClaims(claims: { roles?: unknown }): RoleKey[] {
 }
 
 /**
+ * Roles granted by Clavis read in the database (ARCHE_ACCESS_FROM_CLAVIS=on): the person's row of clavis.pub_acces for
+ * Arche gives its role key when the access opens now (`ouvert`), else none.
+ */
+export function grantedRolesFromClavisAccess(row: Record<string, unknown> | null | undefined): RoleKey[] {
+  if (!row || row.ouvert !== true || typeof row.role !== 'string') return [];
+  return grantedRolesFromClaims({ roles: [row.role] });
+}
+
+/**
  * The assignments in force when Clavis grants the roles (owner, 23 Nov 2026: every application takes its roles from Clavis;
  * the scope stays an assignment in the application). A group role granted by Clavis applies at once; a scoped role
  * (subsidiary, zone, CAPEX) counts only through an Arche assignment, and only while Clavis grants it. `granted` null: roles

@@ -1,6 +1,6 @@
 # Arche — reste à développer
 
-Inventaire initial du 2026-10-22, mis à jour le 2026-11-08 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
+Inventaire initial du 2026-10-22, mis à jour le 2026-11-24 (branche `claude/brave-curie-chxbck`). Il recense ce qu'il reste à développer, à brancher, à décider ou à mettre en production pour Arche, aligné sur le plan de livraisons (`docs/PLAN.md`). Il est tenu à jour à chaque développement : un point passe « en cours » quand une livraison le prend, « fait » quand il est intégré et vérifié. Le détail est dans `docs/reste-a-developper.json` ; ce document et la page sont produits par `npm run remaining:page`.
 
 **Lecture.** Priorité : Bloquant production, Prochaine étape, À décider (il faut d'abord trancher), Plus tard. Effort, pour un développeur qui connaît le code : S < 2 jours, M ≤ 1 semaine, L ≤ 3 semaines, XL > 3 semaines. Les identifiants entre parenthèses renvoient aux décisions (`docs/DECISIONS.md`) et aux demandes (`docs/DEMANDES-*.md`).
 
@@ -302,6 +302,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-11-24 — Une seule base : avec ARCHE_ACCESS_FROM_CLAVIS=on, les rôles accordés par Clavis sont lus dans clavis.pub_acces à la connexion et à chaque requête (un rôle de périmètre compte toujours par une affectation d'Arche) ; lecture impossible = refus.
 - 2026-11-08 — Le responsable produit accepte le serveur commun déjà en service pour Arche ; EXPLOITATION.md § 4.1 : partage selon M-18 (reprise des vues par Matrix) et liens à ouvrir.
 - 2026-11-07 — M-19 (Matrix) : arche.pub_editer — l’administrateur IT corrige depuis Matrix les listes de référence et les saisies d’un CAPEX, par les règles et le journal d’Arche ; preuves, droits et miroirs fermés.
 - 2026-11-06 — Codex a traité CX-01, CX-02 et CX-07 (5 nov.) : rattachement capex, sous-types, gel juridique ; contrat vérifié, rien à changer côté Arche ; reste CODEX_CAPEX=on à la mise en service.
