@@ -405,8 +405,8 @@
   gap: 8px;
   align-items: center;
 }
-/* The FR / EN and dark / light toggles (segmented groups) take the height of the header's buttons: the display toggle has
-   icons only, which would make it shorter than the language toggle next to it. */
+/* The FR / EN and dark / light toggles (segmented groups) take the height of the header's buttons (30 px; 28.6 px
+   otherwise). Norma 1.1 gives an icon-only option the height of a text one, so both toggles already match each other. */
 .actions > [role='group'] { min-height: 30px; }
 
 /* "Next step" band under the header of a CAPEX page. */

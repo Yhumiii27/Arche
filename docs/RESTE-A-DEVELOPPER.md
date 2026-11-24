@@ -302,6 +302,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-11-24 — Norma 1.1.0 : options à icône seule de Segmented à la hauteur d'une option texte, textes secondaires à 68 % en thème clair, groupe du bouton d'affichage nommé « Affichage » par la clé Dark / light display ; installation directe sur le serveur interne sans Docker (docs/EXPLOITATION.md § 6 : arche.env, migrations, services epc2i-arche et epc2i-arche-worker, port 3400, inscription dans Clavis, lien clavis.pub_acces, sauvegarde).
 - 2026-11-24 — Norma 1.0.0 : copie du socle commun (norma/, npm run norma:check en CI), Next.js 16.4.6, charte lue dans norma/charte/nocturne.css et bouton d'affichage sombre / clair (cookie epc2i-theme) à droite du sélecteur FR / EN ; audit des règles communes. AR-038 en cours.
 - 2026-11-24 — Une seule base : avec ARCHE_ACCESS_FROM_CLAVIS=on, les rôles accordés par Clavis sont lus dans clavis.pub_acces à la connexion et à chaque requête (un rôle de périmètre compte toujours par une affectation d'Arche) ; lecture impossible = refus.
 - 2026-11-08 — Le responsable produit accepte le serveur commun déjà en service pour Arche ; EXPLOITATION.md § 4.1 : partage selon M-18 (reprise des vues par Matrix) et liens à ouvrir.
