@@ -16,7 +16,7 @@ import { ActionLink } from '@/components/app/ActionForm';
 import { ButtonLink } from '@norma/charte/ds/Button';
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { CRITERION_ACTION, nextCriterion } from '@/features/capex/next-step';
-import hs from '@/components/app/shell/header.module.css';
+import hs from '@/components/app/shell/picker.module.css';
 import { screenHref } from '@/config/screens';
 import { OpenCapexButton, SheetForm, SuspendForm, TakeoverForm } from '@/features/capex/forms';
 import { currentEvaluation } from '@/server/cycle/evaluation';

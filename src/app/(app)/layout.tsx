@@ -1,8 +1,11 @@
-// App shell: 232px sidebar | main (Keystone's Nocturne shell). Demo mode: "View as" at the bottom of the sidebar; Entra mode:
-// the signed-in user's account menu instead.
+// App shell: Norma 2.0's common shell (norma/charte/COQUE.md): 232 px sidebar | main, and up to 1024 px a top bar (menu
+// button, tool name, language / display pair) opening the sidebar as a drawer. Demo mode: "View as" at the bottom of the
+// sidebar; Entra mode: the signed-in user's account menu instead.
 import { ClockProvider } from '@/components/app/clock';
 import { Sidebar } from '@/components/app/shell/sidebar';
-import styles from '@/components/app/shell/shell.module.css';
+import { AppShell } from '@norma/charte/ds/AppShell';
+import { ArcheTopBar } from '@/components/app/shell/topbar';
+import { ArchePrefs } from '@/components/app/shell/prefs';
 import { ToastProvider } from '@norma/charte/ds/Toast';
 import { isRoleKey } from '@/config/roles';
 import { authMode } from '@/server/auth/config';
@@ -13,10 +16,11 @@ import { dataText } from '@/i18n/data-text';
 import { isMine, visibleCapex } from '@/server/dal/capex';
 import { subsidiaryChoice } from '@/server/dal/portfolio';
 import { initialsOf } from '@/server/viewer';
-import { DEMO_PERSONAS, getI18n, getSubsidiaryCookie, getViewer } from '@/server/session';
+import { DEMO_PERSONAS, getI18n, getSubsidiaryCookie, getTheme, getViewer } from '@/server/session';
 
 export default async function AppLayout({ children }: LayoutProps<'/'>) {
   const [viewer, today, jar, { t, lang }] = await Promise.all([getViewer(), businessToday(), cookies(), getI18n()]);
+  const theme = await getTheme();
   const capex = (await visibleCapex(viewer)).map((c) => ({
     code: c.code,
     title: dataText(c.title, lang),
@@ -31,7 +35,9 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
   return (
     <ClockProvider today={today}>
       <ToastProvider>
-        <div className={styles.root}>
+        <AppShell
+          topbar={<ArcheTopBar prefs={<ArchePrefs lang={lang} theme={theme} />} />}
+          sidebar={
           <Sidebar
             role={viewer.role}
             personas={personas}
@@ -42,8 +48,10 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
             subsidiaries={subs.options.map((o) => ({ code: o.code, name: dataText(o.name, lang) }))}
             subsidiary={subs.current}
           />
-          <main className={styles.main}>{children}</main>
-        </div>
+          }
+        >
+          {children}
+        </AppShell>
       </ToastProvider>
     </ClockProvider>
   );

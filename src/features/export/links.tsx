@@ -1,5 +1,5 @@
 // The export links of a page's header (AR-042): the page's table for Excel and as CSV (src/app/export/[dataset]/route.ts),
-// with the page's filters. Client elements, so that the header counts them (src/components/app/shell/header-actions.tsx).
+// with the page's filters. Client elements, so that the header counts them (HeaderActions of @norma/charte/ds).
 import { ActionLink } from '@/components/app/ActionForm';
 import type { T } from '@/i18n/translate';
 import type { Dataset } from '@/server/export/datasets';

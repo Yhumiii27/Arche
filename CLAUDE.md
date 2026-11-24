@@ -67,7 +67,8 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   (Keystone's Gantt look, origin `5b425d5`); an EPC2i project and, at subsidiary and group level, each CAPEX are one
   summary bar. Page actions (owner, 25 Oct 2026): every page passes the actions its viewer may take to `PageHeader`
   (`primary`, `actions`: client elements only, so that they can be counted); beyond 3 they go in the "Actions" list
-  (`src/components/app/shell/header-actions.tsx`; `Folded`, `ActionButton`, `ActionLink` render as menu rows there).
+  (`HeaderActions` of `@norma/charte/ds`, main action rightmost; `Folded`, `ActionButton`, `ActionLink` read `useHeaderMenu`
+  and render as menu rows there).
 - **Delivery 7 has started** (owner, 29 Oct 2026: the 14 points of the market gap analysis, AR-039 to AR-052, all retained;
   `docs/DECISIONS.md` §5 holds the default choice of each). Lot 7a: optimistic lock (`row_version` + trigger on capex,
   budget_versions, dossier_versions, circuit_steps; `src/domain/concurrency.ts`: a form sends `rowVersion`, a dossier section
@@ -110,10 +111,13 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `ARCHE_ACCESS_FROM_CLAVIS=on` the roles Clavis grants are read in `clavis.pub_acces` (shared server, granted by Matrix) at
   sign-in and on every request (`src/server/integrations/clavis/access.ts`, `grantedRolesFromClavisAccess`), never in the
   token; a group role applies at once, a scoped one through an Arche assignment (`effectiveAssignments`); a failed read refuses.
-- **Norma adopted (1.0.0 on 24 Nov 2026, copy now 1.2.0)**: `norma.config.json` (`arche`), copy `norma/` checked by `npm run norma:check` (CI),
-  Next.js 16.4.6; the Nocturne sheet is `norma/charte/nocturne.css` (alias `@norma/*`, dark and light themes); the dark /
-  light display toggle (`norma/charte/ds/ThemeToggle.tsx`, cookie `epc2i-theme` read by `getTheme`, `data-theme` on
-  `<html>`) sits right after the FR / EN toggle of `PageHeader`. Colours come from the variables only. The base components
+- **Norma adopted (1.0.0 on 24 Nov 2026, copy now 2.0.0)**: `norma.config.json` (`arche`), copy `norma/` checked by `npm run norma:check` (CI),
+  Next.js 16.4.6; the Nocturne sheet is `norma/charte/nocturne.css` (alias `@norma/*`, dark and light themes), then
+  `touch.css` and `coque.css`. Colours come from the variables only.
+- **Common shell (Norma 2.0, `norma/charte/COQUE.md`)**: `AppShell` + `ArcheTopBar` (menu button ≤ 1024 px) in `src/app/(app)/layout.tsx`,
+  the sidebar rendered with the charter's `Sidebar` / `PageSearch` / `NavSection` (`src/components/app/shell/sidebar.tsx`),
+  `PageHeader` wraps the charter's (crumbs without « Arche », `<h1>`, actions, then `ArchePrefs` = `PrefsStack`: FR | EN over
+  dark | light, cookie `epc2i-theme`, the last element of every page header and of the top bar, nowhere else). The base components
   and Inter come from the charter too (`@norma/charte/ds`, `@norma/charte/fonts/inter`): there is no local copy.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)

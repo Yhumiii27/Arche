@@ -8,7 +8,7 @@ import type { Icon } from '@phosphor-icons/react';
 import { Button, ButtonLink, type ButtonSize, type ButtonVariant } from '@norma/charte/ds/Button';
 import { Drawer } from '@norma/charte/ds/Drawer';
 import { MenuItem } from '@norma/charte/ds/Menu';
-import { useMenuMode } from './menu-mode';
+import { useHeaderMenu } from '@norma/charte/ds/HeaderActions';
 import { showToast } from '@norma/charte/ds/Toast';
 import { useI18n } from '@/i18n/client';
 import pop from '@norma/charte/ds/Popover.module.css';
@@ -53,7 +53,7 @@ export function ActionButton({ run, label, done, variant = 'secondary' }: { run:
   const { t } = useI18n();
   const [state, setState] = useState<ActionResult | null>(null);
   const [pending, start] = useTransition();
-  const menu = useMenuMode();
+  const menu = useHeaderMenu();
   if (menu) {
     // In the header's "Actions" list: the result comes as a toast (the list closes).
     return (
@@ -91,7 +91,7 @@ export function Folded({ summary, children, open, variant = 'secondary', size = 
 }) {
   const { t } = useI18n();
   const [isOpen, setOpen] = useState(!!open);
-  const menu = useMenuMode();
+  const menu = useHeaderMenu();
   const icon = CREATE.test(summary) ? Plus : /^Edit\b/.test(summary) ? NotePencil : undefined;
   return (
     <>
@@ -118,7 +118,7 @@ const LINK_ICONS: Record<string, Icon> = { plus: Plus, 'plus-circle': PlusCircle
  * icon is named (a component cannot cross from a Server Component). `download`: a file (an export, AR-042), never prefetched.
  */
 export function ActionLink({ href, label, icon, variant = 'secondary', newTab, download }: { href: string; label: string; icon?: keyof typeof LINK_ICONS; variant?: ButtonVariant; newTab?: boolean; download?: boolean }) {
-  const menu = useMenuMode();
+  const menu = useHeaderMenu();
   const I = icon ? LINK_ICONS[icon] : undefined;
   if (menu && (newTab || download)) return <a href={href} target={newTab ? '_blank' : undefined} rel={newTab ? 'noreferrer' : undefined} download={download || undefined} className={pop.item} onClick={menu.close}>{I && <I aria-hidden />}{label}</a>;
   if (menu) return <MenuItem href={href} icon={I}>{label}</MenuItem>;

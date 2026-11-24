@@ -75,7 +75,13 @@ async function main(): Promise<void> {
   const open = await get('/open', 'sponsor');
   check(open.status === 200 && open.body.includes('Reprendre un CAPEX en cours') && open.body.includes('Récapitulatif'), 'guided opening of a CAPEX for a sponsor');
   check((await get('/', 'sponsor')).body.includes('Ouvrir un CAPEX'), '"Open a CAPEX" on the home page of a sponsor');
-  check((await get('/', 'dir_ig')).body.includes('>FR<'), 'language toggle in the page header');
+  const shell = (await get('/', 'dir_ig')).body;
+  check(shell.includes('>FR<'), 'language toggle in the page header');
+  // Norma 2.0 common shell (norma/charte/COQUE.md): the language / display pair stacked (in the page header and the top
+  // bar), the menu button of the top bar (≤ 1024 px), the page's only <h1>.
+  check((shell.match(/class="coque-prefs"/g) ?? []).length === 2 && shell.includes('aria-label="Langue"') && shell.includes('aria-label="Affichage"'), 'language over display pair, in the page header and the top bar');
+  check(shell.includes('id="coque-nav-toggle"') && shell.includes('aria-controls="coque-sidebar"'), 'menu button of the top bar (compact layout)');
+  check((shell.match(/<h1[ >]/g) ?? []).length === 1 && shell.includes('class="coque-title"'), 'one page title <h1>');
   const map = await get('/map', 'dir_ig');
   check(map.status === 200 && map.body.includes('Carte des CAPEX') && map.body.includes('Kénitra'), 'CAPEX map with the sites of the CAPEX');
   const adminMap = await get('/map', 'admin');
