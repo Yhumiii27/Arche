@@ -13,5 +13,5 @@ export default defineConfig({
     hookTimeout: 60_000,
     env: { DATABASE_URL: 'postgres://arche_app:unused@127.0.0.1:5432/arche_unused', ARCHE_AUTH: '', ARCHE_CLOCK: '2026-10-22', ARCHE_SEED: '', MATRIX_URL: '', MATRIX_DECLARATIONS_DIR: '' },
   },
-  resolve: { alias: { '@': path.resolve(__dirname, 'src'), 'server-only': path.resolve(__dirname, 'src/test/server-only-stub.ts') } },
+  resolve: { alias: { '@': path.resolve(__dirname, 'src'), '@norma': path.resolve(__dirname, 'norma'), 'server-only': path.resolve(__dirname, 'src/test/server-only-stub.ts') } },
 });

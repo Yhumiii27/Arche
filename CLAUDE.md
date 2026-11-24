@@ -1,5 +1,10 @@
 # Arche — instructions for Claude sessions
 
+@norma/REGLES.md
+
+The line above imports the common rules of the EPC2I suite (Norma, versioned copy in `norma/`, checked by `npm run
+norma:check`): they are changed in `Yhumiii27/Norma`, never in this copy. The rules below are Arche's own.
+
 Arche is the group's application for steering subsidiaries' CAPEX with the **DIG-PRODI v4.0** method (level N1). EPC2i's
 Keystone (`Yhumiii27/Keystone`, read-only for Arche) owns the machine catalogue, the answers to machine needs and the EPC2i
 projects. Other group apps: Codex (documents), Vigie (QHSE), Cursus (HR), Matrix (shared PostgreSQL server). Their repositories can be
@@ -105,6 +110,10 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `ARCHE_ACCESS_FROM_CLAVIS=on` the roles Clavis grants are read in `clavis.pub_acces` (shared server, granted by Matrix) at
   sign-in and on every request (`src/server/integrations/clavis/access.ts`, `grantedRolesFromClavisAccess`), never in the
   token; a group role applies at once, a scoped one through an Arche assignment (`effectiveAssignments`); a failed read refuses.
+- **Norma 1.0.0 adopted (24 Nov 2026)**: `norma.config.json` (`arche`), copy `norma/` checked by `npm run norma:check` (CI),
+  Next.js 16.4.6; the Nocturne sheet is `norma/charte/nocturne.css` (alias `@norma/*`, dark and light themes); the dark /
+  light display toggle (`norma/charte/ds/ThemeToggle.tsx`, cookie `epc2i-theme` read by `getTheme`, `data-theme` on
+  `<html>`) sits right after the FR / EN toggle of `PageHeader`. Colours come from the variables only.
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`.

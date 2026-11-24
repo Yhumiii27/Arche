@@ -44,5 +44,8 @@
   "Subsidiary project lead": "Chef de projet filiale",
   "Subsidiary controller": "CDG filiale",
   "EPC2i PMO": "PMO EPC2i",
-  "Administrator": "Administrateur"
+  "Administrator": "Administrateur",
+  "Display": "Affichage",
+  "Dark display": "Affichage sombre",
+  "Light display": "Affichage clair"
 }

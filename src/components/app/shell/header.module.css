@@ -405,6 +405,9 @@
   gap: 8px;
   align-items: center;
 }
+/* The FR / EN and dark / light toggles (segmented groups) take the height of the header's buttons: the display toggle has
+   icons only, which would make it shorter than the language toggle next to it. */
+.actions > [role='group'] { min-height: 30px; }
 
 /* "Next step" band under the header of a CAPEX page. */
 .nextStep {

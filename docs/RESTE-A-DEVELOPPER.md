@@ -6,7 +6,7 @@ Inventaire initial du 2026-10-22, mis à jour le 2026-11-24 (branche `claude/bra
 
 ## 1. En bref
 
-**Avancement** : 42 faits, 9 en cours, 2 à faire, sur 53 points.
+**Avancement** : 42 faits, 10 en cours, 1 à faire, sur 53 points.
 
 | Priorité | Points restants | Effort estimé (jours) |
 |---|---:|---:|
@@ -76,9 +76,9 @@ Rôle, schéma, droits, partage, journal unifié, sauvegarde, déclaration des t
 D-11 / C-13 ; même décision que Keystone (I-1a). Analyse comparative du 25 oct. 2026 : l’hébergement en France est le prérequis de tout déploiement réel (les solutions du commerce sont hébergées en SaaS, souvent hors UE) ; à trancher avant toute autre évolution. Priorité suggérée : bloquant, inchangée.  
 *Avancement : 24 oct. 2026 : déploiement automatique prêt (workflow Deploy → webhook Coolify, ou Auto Deploy de Coolify ; EXPLOITATION.md § 4.4). Reste le serveur (hébergement en France, C-13). 8 nov. 2026 : le responsable produit accepte le serveur commun déjà en service (Coolify, epc2i-postgres) ; reste la mise en ligne d’Arche (EXPLOITATION.md § 4.1). · Attend : Mise en ligne d’Arche sur le serveur commun (responsable produit) · Sources : docs/DECISIONS.md C-13*
 
-**AR-038 · Socle partagé @epc2i/socle** — *Plus tard · attend un système externe · effort M*  
+**AR-038 · Socle partagé @epc2i/socle** — *Plus tard · attend un système externe · effort M* · **en cours (Norma 1.0.0)**  
 Remplacer les copies du socle par le paquet (R-194 de Keystone).  
-*Attend : Keystone (R-194) · Sources : docs/SOCLE.md*
+*Avancement : Socle commun Norma adopté (24 nov. 2026) : copie norma/ contrôlée par npm run norma:check (CI), charte Nocturne lue dans norma/charte/nocturne.css (thèmes sombre et clair), bouton d'affichage sombre / clair de Norma. Reste : remplacer src/components/ds par norma/charte/ds et la police par norma/charte/fonts. · Attend : Keystone (R-194) · Sources : docs/SOCLE.md*
 
 **~~AR-011 · Sauvegardes et restauration du schéma arche~~** — *Bloquant production · non commencé · effort S* · **fait (Livraison 1b)**  
 pg_dump du schéma, rétention, exercice de restauration ; sur le serveur commun, la sauvegarde de Matrix couvre arche après M-7.  
@@ -302,6 +302,7 @@ Spécification (docs/spec/00–08), décisions, contrats pub_, demandes aux autr
 
 ## 3. Mises à jour
 
+- 2026-11-24 — Norma 1.0.0 : copie du socle commun (norma/, npm run norma:check en CI), Next.js 16.4.6, charte lue dans norma/charte/nocturne.css et bouton d'affichage sombre / clair (cookie epc2i-theme) à droite du sélecteur FR / EN ; audit des règles communes. AR-038 en cours.
 - 2026-11-24 — Une seule base : avec ARCHE_ACCESS_FROM_CLAVIS=on, les rôles accordés par Clavis sont lus dans clavis.pub_acces à la connexion et à chaque requête (un rôle de périmètre compte toujours par une affectation d'Arche) ; lecture impossible = refus.
 - 2026-11-08 — Le responsable produit accepte le serveur commun déjà en service pour Arche ; EXPLOITATION.md § 4.1 : partage selon M-18 (reprise des vues par Matrix) et liens à ouvrir.
 - 2026-11-07 — M-19 (Matrix) : arche.pub_editer — l’administrateur IT corrige depuis Matrix les listes de référence et les saisies d’un CAPEX, par les règles et le journal d’Arche ; preuves, droits et miroirs fermés.

@@ -3,7 +3,8 @@
 import { Eye } from '@phosphor-icons/react/dist/ssr';
 import type { ReactNode } from 'react';
 import { SCREEN_BY_ID, canSee, type ScreenId } from '@/config/screens';
-import { getI18n, getViewer } from '@/server/session';
+import { ThemeToggle } from '@norma/charte/ds/ThemeToggle';
+import { getI18n, getTheme, getViewer } from '@/server/session';
 import styles from './header.module.css';
 import { HeaderActions } from './header-actions';
 import { LangToggle } from './lang-toggle';
@@ -26,7 +27,7 @@ export interface PageHeaderProps {
 }
 
 export async function PageHeader({ screen, title, crumbs = [], crumbData, primary, actions }: PageHeaderProps) {
-  const [{ t, lang }, viewer] = await Promise.all([getI18n(), getViewer()]);
+  const [{ t, lang }, viewer, theme] = await Promise.all([getI18n(), getViewer(), getTheme()]);
   const def = SCREEN_BY_ID[screen];
   const outside = !canSee(viewer.role, screen);
   const newAction = outside ? null : def.section === 'capex' && crumbData ? await newActionHeaderButton(screen, crumbData) : def.section !== 'admin' ? await newActionAnyCapexButton() : null;
@@ -67,6 +68,7 @@ export async function PageHeader({ screen, title, crumbs = [], crumbData, primar
             </HeaderActions>
           )}
           <LangToggle lang={lang} label={t('Language')} />
+          <ThemeToggle theme={theme} />
         </div>
       </header>
       {outside && (

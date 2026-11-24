@@ -17,7 +17,7 @@ function Secret({ state, note }: { state: SecretResult | null; note: string }) {
   return (
     <div role="status" style={{ gridColumn: '1 / -1', display: 'grid', gap: 6 }}>
       <span className={s.done}>{t(note)}</span>
-      <code style={{ userSelect: 'all', wordBreak: 'break-all', padding: 8, border: '1px solid var(--border-2, #444)', borderRadius: 6 }}>{state.secret}</code>
+      <code style={{ userSelect: 'all', wordBreak: 'break-all', padding: 8, border: '1px solid var(--color-divider)', borderRadius: 6 }}>{state.secret}</code>
     </div>
   );
 }

@@ -13,6 +13,8 @@ import { FR_RULES } from './fr-rules';
 import { frExact } from './translate';
 
 const SRC = path.join(process.cwd(), 'src');
+// Norma's shared components (theme toggle, dialogs…) translate their few labels through Arche's t(): scanned too.
+const NORMA_DS = path.join(process.cwd(), 'norma', 'charte', 'ds');
 const EXCLUDED_DIRS = new Set([path.join(SRC, 'test')]);
 const isSource = (f: string) => /\.(ts|tsx)$/.test(f) && !/\.test\.tsx?$/.test(f) && !f.endsWith('.d.ts');
 
@@ -66,14 +68,14 @@ function passes(s: string): boolean {
 }
 
 describe('French completeness', () => {
-  const literals = scanLiterals(walk(SRC));
+  const literals = scanLiterals([...walk(SRC), ...walk(NORMA_DS)]);
 
   it('the scan finds the t() literals', () => {
     expect(literals.length).toBeGreaterThan(20);
   });
 
   it('every t() literal has its French', () => {
-    const missing = [...new Set(literals.filter((l) => !passes(l.text)).map((l) => `${path.relative(SRC, l.file)}: ${l.text}`))];
+    const missing = [...new Set(literals.filter((l) => !passes(l.text)).map((l) => `${path.relative(process.cwd(), l.file)}: ${l.text}`))];
     expect(missing).toEqual([]);
   });
 
