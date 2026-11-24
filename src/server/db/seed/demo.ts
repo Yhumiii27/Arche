@@ -20,6 +20,8 @@ import { takeSnapshots, weekOf } from '@/server/dal/governance';
 import { recomputeLines } from '@/server/dal/rampup';
 import { readValues } from '@/domain/lifecycle';
 import type { Tx } from '../types';
+import type { ActionSource } from '@/domain/actions';
+import type { InvestmentType } from '@/domain/capex';
 
 export const DEMO_ZONES = [
   { code: 'AFN', name: 'North Africa', boundsWest: -18, boundsNorth: 38, boundsEast: 12, boundsSouth: 18 },
@@ -454,7 +456,7 @@ export async function seedSageCodes(tx: Tx, sai: string) {
 /** Ideas backlog (AR-051): APM and SAI ideas at every status, one retained ready to become a CAPEX. */
 export async function seedIdeas(tx: Tx, idOf: (k: string) => string, nameOf: (k: string) => string) {
   const at = (iso: string) => new Date(`${iso}T09:00:00Z`);
-  const i = (subsidiaryCode: string, number: number, by: string, title: string, stake: string, sizeKeur: number | null, investmentType: string | null, created: string) =>
+  const i = (subsidiaryCode: string, number: number, by: string, title: string, stake: string, sizeKeur: number | null, investmentType: InvestmentType | null, created: string) =>
     ({ subsidiaryCode, number, title, stake, sizeKeur, investmentType, proposedByName: nameOf(by), proposedByUserId: idOf(by), createdAt: at(created), updatedAt: at(created) });
   await tx.insert(ideas).values([
     { ...i('APM', 1, 'controller', 'Solar roof on the Kénitra warehouse', 'Cut the electricity bill of the plant by about 15 %; the warehouse roof is 6 000 m² and unshaded.', 900, 'other', '2026-09-02'), status: 'retained' as const, decidedByName: nameOf('sponsor'), decidedAt: at('2026-09-20'), decisionNote: 'Payback under 5 years: to open as a CAPEX' },
@@ -601,7 +603,7 @@ export function saiRex(plant: string, solar: string, nameOf: (k: string) => stri
 
 /** Action plans of the demonstration (owner's pilot feedback, 24 Oct 2026): open, late and done actions of APM and SAI. */
 export async function seedActions(tx: Tx, apm: string, sai: string, idOf: (k: string) => string, nameOf: (k: string) => string) {
-  const a = (capexId: string, number: number, title: string, source: string, sourceRef: string | null, owner: string, dueOn: string, status: 'open' | 'done' = 'open', closedOn: string | null = null) => ({
+  const a = (capexId: string, number: number, title: string, source: ActionSource, sourceRef: string | null, owner: string, dueOn: string, status: 'open' | 'done' = 'open', closedOn: string | null = null) => ({
     capexId, number, title, source, sourceRef, ownerUserId: idOf(owner), dueOn, status, closedOn, createdByName: nameOf(owner === 'sai_lead' ? 'sai_lead' : 'project_lead'),
   });
   await tx.insert(capexActions).values([

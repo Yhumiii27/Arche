@@ -206,6 +206,10 @@
     {
       "date": "2026-11-24",
       "text": "Norma 1.1.0 : options à icône seule de Segmented à la hauteur d'une option texte, textes secondaires à 68 % en thème clair, groupe du bouton d'affichage nommé « Affichage » par la clé Dark / light display ; installation directe sur le serveur interne sans Docker (docs/EXPLOITATION.md § 6 : arche.env, migrations, services epc2i-arche et epc2i-arche-worker, port 3400, inscription dans Clavis, lien clavis.pub_acces, sauvegarde)."
+    },
+    {
+      "date": "2026-11-24",
+      "text": "Formats en base (Norma § 4) : 302 contraintes CHECK (migration 0036) — domaines des états et types, formes des codes (CPX-…, filiale, zone, devise, pays, mois), noms non vides, bornes (pourcentages, probabilité, notes) et cohérences (dates de fin après le début, devise et taux ensemble, code CAPEX de sa filiale) ; listes dans src/server/db/schema/_checks.ts, comparées aux constantes du domaine et à la base migrée par src/server/db/formats.test.ts."
     }
   ],
   "items": [

@@ -3,6 +3,7 @@
 import { index, jsonb, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { arche } from './_schema';
 import { id } from './_common';
+import { JOB_STATUSES, filled, oneOf, type OneOf } from './_checks';
 import { capex } from './capex';
 import { users } from './organisation';
 
@@ -11,7 +12,7 @@ export const appSettings = arche.table('app_settings', {
   value: jsonb('value').$type<unknown>().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   updatedByName: text('updated_by_name').notNull(),
-});
+}, (t) => [filled('app_settings_key_filled', t.key), filled('app_settings_updated_by_filled', t.updatedByName)]);
 
 /** Append-only (database trigger): never updated nor deleted, in code or tests. */
 export const auditEntries = arche.table('audit_entries', {
@@ -38,6 +39,10 @@ export const auditEntries = arche.table('audit_entries', {
 }, (t) => [
   /** pub_journal (Matrix) is read by period. */
   index('audit_entries_occurred_at_idx').on(t.occurredAt),
+  filled('audit_entries_actor_filled', t.actorName),
+  filled('audit_entries_object_filled', t.objectRef),
+  filled('audit_entries_change_filled', t.change),
+  filled('audit_entries_area_filled', t.area),
 ]);
 
 export const activityEvents = arche.table('activity_events', {
@@ -49,7 +54,12 @@ export const activityEvents = arche.table('activity_events', {
   /** EN source sentence. */
   text: text('text').notNull(),
   capexId: uuid('capex_id').references(() => capex.id),
-}, (t) => [index('activity_events_occurred_at_idx').on(t.occurredAt)]);
+}, (t) => [
+  index('activity_events_occurred_at_idx').on(t.occurredAt),
+  filled('activity_events_actor_filled', t.actorName),
+  filled('activity_events_kind_filled', t.kind),
+  filled('activity_events_text_filled', t.text),
+]);
 
 /** Scheduled jobs (src/server/jobs): last run and a lease, so that several runners never run the same job at once. */
 export const jobRuns = arche.table('job_runs', {
@@ -57,6 +67,6 @@ export const jobRuns = arche.table('job_runs', {
   leaseUntil: timestamp('lease_until', { withTimezone: true }),
   lastStartedAt: timestamp('last_started_at', { withTimezone: true }),
   lastFinishedAt: timestamp('last_finished_at', { withTimezone: true }),
-  lastStatus: text('last_status').$type<'ok' | 'error'>(),
+  lastStatus: text('last_status').$type<OneOf<typeof JOB_STATUSES>>(),
   lastError: text('last_error'),
-});
+}, (t) => [oneOf('job_runs_last_status_domain', t.lastStatus, JOB_STATUSES)]);
