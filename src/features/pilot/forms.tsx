@@ -1,7 +1,7 @@
 'use client';
 // Pilot forms (C-10): the reference of an indicator measured on the existing process. The Server Function checks it again.
 import { ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Textarea } from '@/components/ds/Field';
+import { Field, Input, Textarea } from '@norma/charte/ds/Field';
 import { KPI_LABEL, KPI_UNIT, type KpiKey } from '@/domain/kpi';
 import { useI18n } from '@/i18n/client';
 import { saveBaselineAction } from './actions';

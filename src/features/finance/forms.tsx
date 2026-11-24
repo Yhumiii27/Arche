@@ -2,7 +2,7 @@
 // Finance forms (delivery 7, lot 7b): a lot's disbursement forecast for the months to come (AR-045), and the envelopes of the
 // group CFO — a new envelope, its amount, a carry-over or a reallocation (AR-040). The Server Functions check everything again.
 import { ActionButton, ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Select } from '@/components/ds/Field';
+import { Field, Input, Select } from '@norma/charte/ds/Field';
 import { unitOf } from '@/domain/currency';
 import { ENVELOPE_CATEGORIES, ENVELOPE_CATEGORY_LABEL } from '@/domain/envelopes';
 import { useI18n } from '@/i18n/client';

@@ -3,7 +3,7 @@
 // labels of the catalogue are Keystone's typed text: the page passes them already displayed (dataText).
 import { useState } from 'react';
 import { ActionButton, ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { useI18n } from '@/i18n/client';
 import { deleteNeedAction, saveNeedAction, submitNeedAction, withdrawNeedAction } from './actions';
 

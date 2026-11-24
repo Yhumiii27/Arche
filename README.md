@@ -5,8 +5,9 @@ G1 / G2 / G3, 3 dossiers vivants sous workflow, avis d’experts, matrice de dé
 Les besoins machines sont adressés à EPC2i, qui y répond dans **Keystone** ; les documents sont dans **Codex**.
 
 **État : livraison 1 (socle) faite** — [`docs/DELIVERY-1.md`](docs/DELIVERY-1.md). Cadrage : [`docs/spec/00-vue-ensemble.md`](docs/spec/00-vue-ensemble.md),
-questions ouvertes : [`docs/DECISIONS.md`](docs/DECISIONS.md), plan : [`docs/PLAN.md`](docs/PLAN.md), reste à développer :
-[`docs/RESTE-A-DEVELOPPER.md`](docs/RESTE-A-DEVELOPPER.md).
+questions ouvertes : [`docs/DECISIONS.md`](docs/DECISIONS.md), plan : [`docs/PLAN.md`](docs/PLAN.md), reste à faire : la liste
+commune de la suite, tenue dans Norma (`reste-a-faire/arche.json` du dépôt `Yhumiii27/Norma`, page
+https://claude.ai/artifact/Rs7kooJdowShdYUqNS8jQf).
 
 ```bash
 npm ci

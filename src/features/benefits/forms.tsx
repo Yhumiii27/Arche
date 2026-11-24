@@ -1,7 +1,7 @@
 'use client';
 // Benefits realised and post-audit forms (AR-046). The Server Functions check everything again.
 import { ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { POST_AUDIT_CONCLUSIONS, POST_AUDIT_CONCLUSION_LABEL } from '@/domain/benefits';
 import { useI18n } from '@/i18n/client';
 import { recordPostAuditAction, saveBenefitAction } from './actions';

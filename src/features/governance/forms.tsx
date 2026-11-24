@@ -1,7 +1,7 @@
 'use client';
 // Review form (docs/spec/06 §2): a project steering committee or, on a Strategic CAPEX, a cross-functional audit (N-19).
 import { ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { REVIEW_KIND_LABEL, type ReviewKind } from '@/domain/governance';
 import { useI18n } from '@/i18n/client';
 import { recordReviewAction } from './actions';

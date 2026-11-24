@@ -2,7 +2,7 @@
 // Zone selector of the portfolio views (Keystone's zone bar): every zone or one, with the number of CAPEX of each; the
 // choice is kept for the session's next views (cookie arche-zone).
 import { useTransition } from 'react';
-import { Segmented } from '@/components/ds/Segmented';
+import { Segmented } from '@norma/charte/ds/Segmented';
 import { useI18n } from '@/i18n/client';
 import { setZone } from '@/server/actions/preferences';
 

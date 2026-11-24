@@ -2,8 +2,8 @@
 import { EmptyState } from '@/components/app/EmptyState';
 import { SectionCard } from '@/components/app/SectionCard';
 import { PageHeader } from '@/components/app/shell/page-header';
-import { Table, Td, Th } from '@/components/ds/Table';
-import { Tag } from '@/components/ds/Tag';
+import { Table, Td, Th } from '@norma/charte/ds/Table';
+import { Tag } from '@norma/charte/ds/Tag';
 import { isMajorRisk, refOf, riskScore, RISK_CATEGORY_LABEL, RISK_STATUS_LABEL, type RiskCategory, type RiskStatus } from '@/domain/capex';
 import { labelOf } from '@/domain/capex-labels';
 import { RiskForm } from '@/features/capex/forms';

@@ -2,7 +2,7 @@
 // Living dossier forms (client islands of the dossier page): a section's text, its Codex references, the deposit of a file in
 // Codex (CX-03), freezing and the deposit of the frozen version's PDF.
 import { ActionButton, ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { SECTION_BASE_FIELD } from '@/domain/concurrency';
 import { CAPEX_SUBTYPES, CODEX_CONF_LEVELS, DOSSIER_CODEX, type DossierKind } from '@/domain/dossiers';
 import { useI18n } from '@/i18n/client';

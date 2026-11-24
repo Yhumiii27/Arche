@@ -1,6 +1,6 @@
 // The DIG-PRODI cycle of a CAPEX at a glance: four bars (phases 1 to 4), passed, current or to come; a draft shows none lit.
 import { PHASES } from '@/domain/lifecycle';
-import { cx } from '@/components/ds/cx';
+import { cx } from '@norma/charte/ds/cx';
 import s from './PhaseBar.module.css';
 
 export function PhaseBar({ status, phase, label }: { status: string; phase: string; label: string }) {

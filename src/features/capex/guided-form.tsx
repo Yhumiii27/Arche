@@ -5,8 +5,8 @@
 import { ArrowLeft, ArrowRight, Plus, Trash } from '@phosphor-icons/react/dist/ssr';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { Button } from '@/components/ds/Button';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Button } from '@norma/charte/ds/Button';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { INVESTMENT_TYPES, LOT_KINDS, LOT_KIND_LABEL, RISK_CATEGORIES, RISK_CATEGORY_LABEL, TEAM_ROLE_LABEL } from '@/domain/capex';
 import { INVESTMENT_TYPE_LABEL, PHASE_LABEL } from '@/domain/capex-labels';
 import { DOSSIER_LABEL, SECTIONS } from '@/domain/dossiers';
@@ -14,7 +14,7 @@ import { dossierOfPhase, GUIDED_STEPS, GUIDED_STEP_LABEL, GUIDED_TEAM_ROLES, tex
 import type { Phase } from '@/domain/lifecycle';
 import { gatesPassedBefore, takeoverClasses, TAKEOVER_PHASES } from '@/domain/takeover';
 import { useI18n } from '@/i18n/client';
-import { cx } from '@/components/ds/cx';
+import { cx } from '@norma/charte/ds/cx';
 import { openGuidedAction } from './guided';
 import s from './guided.module.css';
 

@@ -1,6 +1,6 @@
 // Eyebrows / section labels (docs/spec/02 C-06). Server-compatible.
 import type { CSSProperties, ReactNode } from 'react';
-import { cx } from '@/components/ds/cx';
+import { cx } from '@norma/charte/ds/cx';
 import s from './Eyebrow.module.css';
 
 /**

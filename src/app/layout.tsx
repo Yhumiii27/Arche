@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import '@norma/charte/nocturne.css';
 import './globals.css';
-import { interClassName } from '@/fonts/inter';
+import { interClassName } from '@norma/charte/fonts/inter';
 import { I18nProvider } from '@/i18n/client';
 import { getLang, getTheme } from '@/server/session';
 

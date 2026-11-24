@@ -2,7 +2,7 @@
 // WBS forms (owner's pilot feedback, 24 Oct 2026): add or edit a task — lot, dates (one date for a milestone), progress,
 // owner — and remove it. The Server Functions check everything again.
 import { ActionButton, ActionForm, Folded } from '@/components/app/ActionForm';
-import { Field, Input, Select } from '@/components/ds/Field';
+import { Field, Input, Select } from '@norma/charte/ds/Field';
 import { useI18n } from '@/i18n/client';
 import { deleteTaskAction, saveTaskAction } from './actions';
 

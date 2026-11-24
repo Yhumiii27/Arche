@@ -2,7 +2,7 @@
 
 > 22 oct. 2026. Aligné sur le §5 du CDC : cadrage et paramétrage (mois 1–2), conception et tests IT (mois 2–3), pilote sur
 > 1 à 2 CAPEX (mois 3–4), déploiement général. Chaque livraison : tests unitaires et de bout en bout, typecheck, lint, notes
-> de livraison (`docs/DELIVERY-<n>.md`), page « reste à développer » à jour (`docs/reste-a-developper.json`), PR fusionnée
+> de livraison (`docs/DELIVERY-<n>.md`), reste à faire à jour (`reste-a-faire/arche.json` du dépôt Norma), PR fusionnée
 > dans `main` une fois la CI verte. Tailles : S ≈ 1 semaine, M ≈ 2–3 semaines, L ≈ 1 mois (développement assisté, hors délais
 > de décision).
 

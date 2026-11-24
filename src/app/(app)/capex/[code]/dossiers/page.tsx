@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { SectionCard } from '@/components/app/SectionCard';
 import { PageHeader } from '@/components/app/shell/page-header';
-import { Table, Td, Th } from '@/components/ds/Table';
+import { Table, Td, Th } from '@norma/charte/ds/Table';
 import { DOSSIER_KINDS, DOSSIER_LABEL, VERSION_STATE_LABEL } from '@/domain/dossiers';
 import { loadCapexPage } from '@/features/capex/page-data';
 import { dataText } from '@/i18n/data-text';

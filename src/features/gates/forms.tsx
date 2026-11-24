@@ -4,8 +4,8 @@
 import { useActionState, useEffect } from 'react';
 import { Result, type ActionResult } from '@/components/app/ActionForm';
 import s from '@/components/app/ActionForm.module.css';
-import { Button } from '@/components/ds/Button';
-import { Field, Input, Select, Textarea } from '@/components/ds/Field';
+import { Button } from '@norma/charte/ds/Button';
+import { Field, Input, Select, Textarea } from '@norma/charte/ds/Field';
 import { OUTCOME_LABEL, REAUTH_ERROR, type Outcome } from '@/domain/circuits';
 import { useI18n } from '@/i18n/client';
 import { ROW_VERSION_FIELD } from '@/domain/concurrency';

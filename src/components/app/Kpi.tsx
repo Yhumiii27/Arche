@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import type { Icon } from '@phosphor-icons/react';
 import type { CSSProperties, ReactNode } from 'react';
-import { cx } from '@/components/ds/cx';
+import { cx } from '@norma/charte/ds/cx';
 import { Sparkline } from '@/components/charts/primitives/Sparkline';
 import { LO } from './tones';
 import s from './Kpi.module.css';

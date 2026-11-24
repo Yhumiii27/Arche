@@ -3,8 +3,8 @@
 // (risk titles) is shown as typed.
 import { KpiGrid, KpiTile } from '@/components/app/Kpi';
 import { SectionCard } from '@/components/app/SectionCard';
-import { Table, Td, Th } from '@/components/ds/Table';
-import { Tag } from '@/components/ds/Tag';
+import { Table, Td, Th } from '@norma/charte/ds/Table';
+import { Tag } from '@norma/charte/ds/Tag';
 import { type Forecast, COST_DRIFT_PCT, MIN_REFERENCES, SCHEDULE_DRIFT_MONTHS, TREND_MONTHS } from '@/domain/forecast';
 import { OUTCOME_LABEL } from '@/domain/circuits';
 import { dataText } from '@/i18n/data-text';

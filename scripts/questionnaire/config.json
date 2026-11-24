@@ -1,0 +1,22 @@
+{
+  "titre": "Décisions Arche",
+  "sousTitre": "Arche · questionnaire du responsable produit",
+  "introduction": "Chaque question porte la proposition par défaut (★) qu’Arche applique tant qu’il n’y a pas d’autre réponse. Choisissez une réponse, ajoutez une note si besoin : tout est enregistré à mesure et relu par Claude pour les prochaines livraisons. Les blocs « Données » attendent les référentiels à fournir.",
+  "decideTitre": "Déjà décidé le 22 octobre 2026",
+  "decide": [
+    "AC-1 — le système s’appelle Arche (dépôt Yhumiii27/Arche).",
+    "N-23 — PostgreSQL uniquement, pas de PGlite.",
+    "N-17 — Codex héberge tous les documents d’Arche ; Arche n’en garde que les références.",
+    "Tenir compte des environnements de Codex, Vigie, Cursus et Matrix (demandes envoyées à chacun)."
+  ],
+  "groupes": [
+    ["prio", "À traiter en priorité"],
+    ["archi", "Décisions d’architecture à confirmer"],
+    ["cdc", "Compléments au cahier des charges"],
+    ["keystone", "Liens avec Keystone"],
+    ["arche", "Questions propres à Arche"],
+    ["extra", "Ajouts au-delà du cahier des charges"],
+    ["data", "Données à fournir"]
+  ],
+  "sortie": ".artifacts/decisions-arche.html"
+}

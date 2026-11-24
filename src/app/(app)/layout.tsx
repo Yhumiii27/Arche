@@ -3,7 +3,7 @@
 import { ClockProvider } from '@/components/app/clock';
 import { Sidebar } from '@/components/app/shell/sidebar';
 import styles from '@/components/app/shell/shell.module.css';
-import { ToastProvider } from '@/components/ds/Toast';
+import { ToastProvider } from '@norma/charte/ds/Toast';
 import { isRoleKey } from '@/config/roles';
 import { authMode } from '@/server/auth/config';
 import { businessToday } from '@/server/clock';

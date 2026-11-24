@@ -5,7 +5,7 @@
 import { CheckCircle, Polygon, SignIn, WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { Card, CardTitle, cx } from '@/components/ds';
+import { Card, CardTitle, cx } from '@norma/charte/ds';
 import { AUTH_PATHS, SIGN_IN_ERROR, isSignInError, safeReturnTo } from '@/domain/auth';
 import s from '@/features/auth/sign-in.module.css';
 import { authMode } from '@/server/auth/config';
