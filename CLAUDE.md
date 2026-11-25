@@ -111,7 +111,7 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `ARCHE_ACCESS_FROM_CLAVIS=on` the roles Clavis grants are read in `clavis.pub_acces` (shared server, granted by Matrix) at
   sign-in and on every request (`src/server/integrations/clavis/access.ts`, `grantedRolesFromClavisAccess`), never in the
   token; a group role applies at once, a scoped one through an Arche assignment (`effectiveAssignments`); a failed read refuses.
-- **Norma adopted (1.0.0 on 24 Nov 2026, copy now 2.0.0)**: `norma.config.json` (`arche`), copy `norma/` checked by `npm run norma:check` (CI),
+- **Norma adopted (1.0.0 on 24 Nov 2026, copy now 2.3.0)**: `norma.config.json` (`arche`), copy `norma/` checked by `npm run norma:check` (CI),
   Next.js 16.4.6; the Nocturne sheet is `norma/charte/nocturne.css` (alias `@norma/*`, dark and light themes), then
   `touch.css` and `coque.css`. Colours come from the variables only.
 - **Common shell (Norma 2.0, `norma/charte/COQUE.md`)**: `AppShell` + `ArcheTopBar` (menu button ≤ 1024 px) in `src/app/(app)/layout.tsx`,
@@ -119,6 +119,9 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `PageHeader` wraps the charter's (crumbs without « Arche », `<h1>`, actions, then `ArchePrefs` = `PrefsStack`: FR | EN over
   dark | light, cookie `epc2i-theme`, the last element of every page header and of the top bar, nowhere else). The base components
   and Inter come from the charter too (`@norma/charte/ds`, `@norma/charte/fonts/inter`): there is no local copy.
+- **Logo, Norma 2.3.0** (owner, 25 Nov 2026; `norma/charte/COQUE.md` § 8 bis): the brand of the sidebar and of the top bar is the
+  charter's `ToolLogo code="arche"` (`@norma/charte/ds/ToolLogo`, 26 px, 20 px in the top bar), also on the pages outside the shell
+  (sign-in…); the favicon is `src/app/icon.svg`, a copy of `norma/charte/logos/arche.svg` (checked by `src/app/icon.test.ts`).
 - **Owner's answers**: questionnaire "Décisions Arche", https://claude.ai/artifact/B2xm3cfZvTvXfRE6TinNNe — read its database
   (ArtifactData, collection `answers`, one document per question id: `choice` = default | altN | other | discuss, `note`)
   before each delivery and apply the answers to `docs/DECISIONS.md`; rebuild it with `npm run questionnaire:page`
