@@ -5,7 +5,7 @@
 // switcher (Keystone's project switcher: my CAPEX / my whole scope, search); its entries point at the CAPEX of the URL, else
 // the last one used (cookie arche-capex). At the bottom the "View as" switcher (demo mode) or the account menu (Entra mode).
 // Neither the language nor the display is here: the pair is the last element of every page header and of the top bar.
-import { Buildings, CaretDown, CaretUpDown, Check, Eye, FolderOpen, MagnifyingGlass, Polygon, SignOut } from '@phosphor-icons/react/dist/ssr';
+import { Buildings, CaretDown, CaretUpDown, Check, Eye, FolderOpen, MagnifyingGlass, SignOut } from '@phosphor-icons/react/dist/ssr';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
@@ -21,6 +21,7 @@ import { setSubsidiary, setViewAs, switchRole } from '@/server/actions/preferenc
 import { buildNav, swapCapexInPath, type NavEntry as NavEntryModel } from './nav-model';
 import picker from './picker.module.css';
 import styles from './sidebar.module.css';
+import { ToolLogo } from '@norma/charte/ds/ToolLogo';
 
 export interface SidebarPersona {
   role: RoleKey;
@@ -130,7 +131,7 @@ export function Sidebar({ role, personas, account, capex, lastCapex, folded: ini
   };
 
   return (
-    <CoqueSidebar name="Arche" icon={Polygon} footer={account ? <AccountMenu account={account} /> : <ViewAs role={role} personas={personas} />}>
+    <CoqueSidebar name="Arche" logo={<ToolLogo code="arche" />} footer={account ? <AccountMenu account={account} /> : <ViewAs role={role} personas={personas} />}>
       <PageSearch pages={pages}>
         <NavList>{nav.fixed.map((n) => entry(n, false))}</NavList>
         <NavSections>
