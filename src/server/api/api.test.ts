@@ -71,7 +71,7 @@ describe('business API (AR-048)', () => {
 
   it('writes the actuals of a lot by a signed request, accepted once; unsigned, replayed or read-only: refused', async () => {
     const [c] = await t.db.select().from(capex).where(eq(capex.code, 'CPX-APM-2026-01'));
-    const [lot] = (await t.db.select().from(capexLots).where(eq(capexLots.capexId, c.id))).filter((l) => !l.epc2i);
+    const [lot] = (await t.db.select().from(capexLots).where(eq(capexLots.capexId, c.id))).filter((l) => !l.fromKeystone);
     const path = '/api/v1/capex/CPX-APM-2026-01/actuals';
     const body = { lot: lot.number, month: '2026-09', currency: 'EUR', committedKeur: 120, spentKeur: 80 };
     const first = signed(apmKey, path, body);

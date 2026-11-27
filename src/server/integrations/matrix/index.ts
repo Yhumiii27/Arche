@@ -1,4 +1,4 @@
-// Matrix (the EPC2I data catalogue): Arche declares its database schema after its migrations and when a server starts
+// Matrix (the data catalogue of the Atrium suite): Arche declares its database schema after its migrations and when a server starts
 // (contract matrix.schema/1, ./declare-schema.ts; copied from Keystone). Matrix accepts `app: "arche"` once its server lists
 // Arche (docs/DEMANDES-MATRIX.md M-8). Send-only: no mirror, no outbox, no screen.
 import { log as appLog } from '@/server/log';

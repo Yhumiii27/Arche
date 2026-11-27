@@ -1,6 +1,6 @@
 // CAPEX Gantt (owner's pilot feedback, 24 Oct 2026) — adapted from Keystone's project Gantt (src/components/charts/
 // project-gantt.tsx, origin commit 5b425d5): a div grid — name · done · monthly timeline — whose positions are percentages of
-// the window (src/domain/schedule.ts). Rows: a summary bar (a CAPEX, an EPC2i project), a lot, a task (indented) or a
+// the window (src/domain/schedule.ts). Rows: a summary bar (a CAPEX, an Keystone project), a lot, a task (indented) or a
 // milestone (diamond); a milestones row with the cycle's dates and a today line. Server-compatible, no interaction (native
 // `title` tooltips, rows may link). Labels arrive translated.
 import Link from 'next/link';
@@ -14,7 +14,7 @@ export interface GanttRow {
   href?: string;
   /** 0: summary, 1: lot, 2: task. */
   level: 0 | 1 | 2;
-  kind: 'summary' | 'lot' | 'task' | 'epc2i';
+  kind: 'summary' | 'lot' | 'task' | 'keystone';
   pctText: string;
   bar: { left: string; width: string; clipped?: boolean } | null;
   fill?: string;

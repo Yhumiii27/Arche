@@ -14,7 +14,7 @@ déduite de la page — et élément, ex. R-02). *Plan d'actions* : actions ouve
 
 *WBS et Gantt* : **Ajouter une tâche** (lot ou CAPEX, dates, avancement, responsable ; case « Jalon » pour une date clé).
 Le Gantt montre le CAPEX en synthèse, ses lots (leurs tâches, ou leurs mois prévus de la page *Exécution*), chaque projet
-EPC2i en une barre de synthèse (le détail reste dans Keystone) et les jalons du cycle. Les portefeuilles groupe et filiale
+Keystone en une barre de synthèse (le détail reste dans Keystone) et les jalons du cycle. Les portefeuilles groupe et filiale
 montrent une barre de synthèse par CAPEX.
 
 ## Préparer un jalon
@@ -30,7 +30,7 @@ montrent une barre de synthèse par CAPEX.
 
 ## Livrer
 
-- *Besoins machines* : saisir les besoins adressés à EPC2i et les soumettre ; les offres reviennent de Keystone.
+- *Besoins machines* : saisir les besoins adressés à l’ingénierie du groupe et les soumettre ; les offres reviennent de Keystone.
 - *Risques* : registre probabilité × impact, responsable, échéance.
 - *Pack ingénierie*, *Autorisations*, *Exécution* : pièces du pack, permis et dates, engagé et réalisé mensuels (saisie ou
   import CSV), courbe en S, SPI / CPI / EAC.

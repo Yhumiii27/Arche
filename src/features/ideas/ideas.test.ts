@@ -53,7 +53,7 @@ describe('ideas backlog (AR-051)', () => {
     expect(await decideIdeaAction(i.id, null, form({ decision: 'qualify' }))).toMatchObject({ ok: false });
     jar.set('arche-role', 'sponsor');
     expect(await decideIdeaAction(i.id, null, form({ decision: 'reject' }))).toEqual({ ok: false, error: 'Say why the idea is set aside' });
-    expect(await decideIdeaAction(i.id, null, form({ decision: 'qualify', note: 'Size it with EPC2i' }))).toEqual({ ok: true });
+    expect(await decideIdeaAction(i.id, null, form({ decision: 'qualify', note: 'Size it with group engineering' }))).toEqual({ ok: true });
     expect(await decideIdeaAction(i.id, null, form({ decision: 'retain' }))).toEqual({ ok: true });
     expect(await ideaNamed('Heat recovery on the press')).toMatchObject({ status: 'retained', decidedByName: 'Karim Benali' });
   });

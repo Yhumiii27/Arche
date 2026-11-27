@@ -53,16 +53,16 @@ soumission ; le décideur peut le **forcer avec motif** (audité), sauf mention 
 | G1 | Avis d’experts requis rendus (défaut : HSE ; Stratégique : + DAF) | oui | circuit |
 | G2 | Dossier 2 complet et figé | oui, non forçable | Arche |
 | G2 | Budget **E10** validé par la DAF groupe | oui, non forçable | Arche |
-| G2 | Pack ingénierie **> 80 %** (pondéré, parts filiale + EPC2i) | oui | Arche + `pub_pack_ingenierie` |
+| G2 | Pack ingénierie **> 80 %** (pondéré, parts filiale + Keystone) | oui | Arche + `pub_pack_ingenierie` |
 | G2 | HS 3 HazOp / AMDEC franchi | oui | Vigie / déclaratif |
 | G2 | Autorisations : ICPE et permis de construire déposés (obtenus ou échéance connue) | oui | Arche |
-| G2 | Offres fermes EPC2i (`E10`) pour tous les besoins machines soumis | oui | `pub_reponses_besoins` |
+| G2 | Offres fermes de l’ingénierie du groupe (`E10`) pour tous les besoins machines soumis | oui | `pub_reponses_besoins` |
 | G2 | Avis d’experts Qualité, HSE, DAF, Exploitation rendus | oui | circuit |
-| G2 | Gabarit de staffing complet (Stratégique : CDG + PMO EPC2i nommés) | oui | Arche |
-| K3 | HS 4 contrôle chantier franchi ; lots de travaux ≥ 95 % ; SAT EPC2i planifiés | oui | Arche + `pub_jalons_projets` |
+| G2 | Gabarit de staffing complet (Stratégique : CDG + PMO ingénierie nommés) | oui | Arche |
+| K3 | HS 4 contrôle chantier franchi ; lots de travaux ≥ 95 % ; SAT des projets Keystone planifiés | oui | Arche + `pub_jalons_projets` |
 | G3 | PSSR (HS 4+5, RSPDI) franchi et **quitus PSSR** délivré par le SSE groupe | oui, non forçable | Vigie / déclaratif |
 | G3 | HS 6 ASPD franchi | oui | Vigie / déclaratif |
-| G3 | Réserves soldées : Arche (conditions, MoC) et **réserves A/B de tous les projets EPC2i** (`pub_reserves`) ; PV EPC2i acceptés (`pub_livrables`) | oui | Arche + Keystone |
+| G3 | Réserves soldées : Arche (conditions, MoC) et **réserves A/B de tous les projets Keystone** (`pub_reserves`) ; PV des projets Keystone acceptés (`pub_livrables`) | oui | Arche + Keystone |
 | G3 | **30 jours continus à capacité nominale** atteints (06 §6) | oui | Arche |
 | G3 | Au plus tard **6 mois** après le début de la MES | alerte à M+5, dépassement signalé au Dir.IG (n’empêche pas le G3) | Arche |
 | G3 | Clôture comptable attestée par le CDG filiale (N-15) | oui | Arche |
@@ -84,8 +84,8 @@ HS 1 n’existe pas dans le CDC : à confirmer (C-3). Définitions de RSPDI et A
 
 | Classe | Fourchette | Requise | Passage (base de la classe) |
 |---|---|---|---|
-| `E50` | −50 % / +50 % | au G1 | estimation par ratios, prix catalogue EPC2i |
-| `E30` | −30 % / +30 % | mi-Avant-Projet (pas un jalon) | variante retenue, pack ≥ 50 %, devis budgétaires EPC2i (APS) |
+| `E50` | −50 % / +50 % | au G1 | estimation par ratios, prix catalogue machines |
+| `E30` | −30 % / +30 % | mi-Avant-Projet (pas un jalon) | variante retenue, pack ≥ 50 %, devis budgétaires de l’ingénierie du groupe (APS) |
 | `E10` | −5 % / +10 % | au G2 | baseline technique gelée, pack > 80 %, offres fermes, BP DAF |
 
 Le chef de projet propose la classe d’une version ; la DAF groupe valide `E10`. Un jalon refuse un budget de classe
@@ -93,7 +93,7 @@ insuffisante.
 
 ## 6. Correspondance avec les étapes Keystone (lecture seule)
 
-| DIG-PRODI | Étapes du projet EPC2i (Keystone) |
+| DIG-PRODI | Étapes du projet (Keystone) |
 |---|---|
 | Phase 1 → G1 | `initiative` (réponse indicative E50) |
 | Phase 2 → G2 | `aps` (devis budgétaire E30), `apd` (offre ferme E10) |

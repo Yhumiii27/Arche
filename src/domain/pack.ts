@@ -1,5 +1,5 @@
 // Engineering pack of a CAPEX (C-9, confirmed; docs/spec/03 §3, 06 §5): the subsidiary's part is a standard list of items by
-// family, each with a weight; EPC2i's part is read in Keystone (pub_pack_ingenierie: expected / validated items by family and
+// family, each with a weight; Keystone's part is read in Keystone (pub_pack_ingenierie: expected / validated items by family and
 // the family's weight). % = Σ weight of the validated items / Σ weight of the expected items (items "not applicable" left out).
 // The standard list is to be provided by the owner (C-9): until then, the seed below — five families of equal weight.
 // Pure: labels are EN source strings.
@@ -46,8 +46,8 @@ export const PACK_TEMPLATE: readonly PackTemplateItem[] = [
 
 export const isPackItem = (code: string) => PACK_TEMPLATE.some((i) => i.code === code);
 
-/** EPC2i families of pub_pack_ingenierie (docs/CONTRATS.md §2.2). */
-export const EPC2I_FAMILY_LABEL: Record<string, string> = {
+/** Keystone families of pub_pack_ingenierie (docs/CONTRATS.md §2.2). */
+export const KEYSTONE_FAMILY_LABEL: Record<string, string> = {
   pid: 'P&ID', bom: 'Bill of materials', layout: 'Machine layout', electrique: 'Electrical diagrams and power balance', analyse_fonctionnelle: 'Functional analysis',
 };
 
@@ -58,8 +58,8 @@ export interface PackItemState {
   validatedOn: string | null;
 }
 
-/** A row of the EPC2i part (one per project and family). */
-export interface Epc2iPackRow {
+/** A row of the Keystone part (one per project and family). */
+export interface KeystonePackRow {
   projectCode: string;
   family: string;
   expected: number;
@@ -91,8 +91,8 @@ export function subsidiaryPart(items: readonly PackItemState[]): PackPart & { fa
   return { expectedWeight, validatedWeight, pct: pctOf(validatedWeight, expectedWeight), families: families.map((f) => ({ code: f.code, label: f.label, weight: f.weight, expected: f.expected, validated: f.validated, pct: f.pct })) };
 }
 
-/** EPC2i's part: Σ family weight × validated / expected over the projects' families. */
-export function epc2iPart(rows: readonly Epc2iPackRow[]): PackPart {
+/** Keystone's part: Σ family weight × validated / expected over the projects' families. */
+export function keystonePart(rows: readonly KeystonePackRow[]): PackPart {
   const live = rows.filter((r) => r.expected > 0 && r.weight > 0);
   const expectedWeight = live.reduce((s, r) => s + r.weight, 0);
   const validatedWeight = live.reduce((s, r) => s + r.weight * Math.min(1, r.validated / r.expected), 0);
@@ -101,18 +101,18 @@ export function epc2iPart(rows: readonly Epc2iPackRow[]): PackPart {
 
 export interface PackSummary {
   subsidiary: ReturnType<typeof subsidiaryPart>;
-  epc2i: PackPart;
+  keystone: PackPart;
   /** Weighted over both parts; null when nothing is expected. */
   pct: number | null;
-  /** EPC2i's share of the expected weight, in %. */
-  epc2iSharePct: number | null;
+  /** Keystone's share of the expected weight, in %. */
+  keystoneSharePct: number | null;
 }
 
-export function packSummary(items: readonly PackItemState[], rows: readonly Epc2iPackRow[]): PackSummary {
+export function packSummary(items: readonly PackItemState[], rows: readonly KeystonePackRow[]): PackSummary {
   const s = subsidiaryPart(items);
-  const e = epc2iPart(rows);
+  const e = keystonePart(rows);
   const expected = s.expectedWeight + e.expectedWeight;
-  return { subsidiary: s, epc2i: e, pct: pctOf(s.validatedWeight + e.validatedWeight, expected), epc2iSharePct: expected > 0 ? Math.round((e.expectedWeight / expected) * 1000) / 10 : null };
+  return { subsidiary: s, keystone: e, pct: pctOf(s.validatedWeight + e.validatedWeight, expected), keystoneSharePct: expected > 0 ? Math.round((e.expectedWeight / expected) * 1000) / 10 : null };
 }
 
 /** G2 criterion: the weighted pack strictly above the threshold (spec 03 §3: "> 80 %"). */

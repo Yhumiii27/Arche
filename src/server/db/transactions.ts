@@ -2,7 +2,7 @@ import 'server-only';
 // Concurrent writes (copied from Keystone, R-010). Every data-layer writer runs its checks and writes in one
 // `db.transaction()`. With several users (and several server instances on PostgreSQL) two transactions may read the same
 // state and both write — two "max + 1" numbers, two decisions of the same gate. Every transaction takes Arche's write lock
-// first and runs behind it one at a time (withWriteLockedTransactions below, shared EPC2I server); a serialization failure
+// first and runs behind it one at a time (withWriteLockedTransactions below, shared shared server); a serialization failure
 // (SQLSTATE 40001) or a deadlock (40P01) runs it again from the start on fresh data, up to TX_RETRY.attempts times.
 //
 // Consequence for writers: a transaction callback may run more than once. It must only touch the database through `tx`
@@ -64,7 +64,7 @@ const WRAPPED = Symbol.for('arche.lockedTransactions');
 const inWriteLock = new AsyncLocalStorage<true>();
 
 /**
- * PostgreSQL server (shared EPC2I server, plan § 4.5 in Matrix): every `db.transaction()` of this handle first takes Arche's
+ * PostgreSQL server (shared shared server, plan § 4.5 in Matrix): every `db.transaction()` of this handle first takes Arche's
  * write lock — pg_advisory_xact_lock(hashtext(lockName)), released at commit or rollback — so Arche's transactions run one
  * after the other while plain reads stay parallel (Keystone measured it: under SERIALIZABLE + retry alone, many simultaneous
  * writers of the same "max + 1" exhaust the retries; behind the lock none fails).

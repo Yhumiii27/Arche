@@ -45,7 +45,7 @@ export interface GuidedInput {
   finish: 'draft' | 'open' | 'takeover';
   sheet: CapexSheet;
   leadUserId: string | null;
-  lots: { kind: LotKind; title: string; epc2i: boolean }[];
+  lots: { kind: LotKind; title: string; fromKeystone: boolean }[];
   /** Indicative E50 budget (a draft version), by lot index; null when nothing was typed. */
   budget: { basis: string | null; amounts: number[] } | null;
   team: { userId: string; capexRole: TeamRole }[];

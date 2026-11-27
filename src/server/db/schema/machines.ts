@@ -1,5 +1,5 @@
 // Machine needs and the Keystone mirror (docs/spec/02 §6, 07; delivery 4). Arche owns the demand (machine_needs, published in
-// pub_besoins_machines); the catalogue, the answers and the EPC2i projects are Keystone's, copied read-only into the mirror.
+// pub_besoins_machines); the catalogue, the answers and the Keystone projects are Keystone's, copied read-only into the mirror.
 import { date, index, integer, jsonb, primaryKey, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { arche } from './_schema';

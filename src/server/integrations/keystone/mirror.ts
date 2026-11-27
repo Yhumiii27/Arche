@@ -1,6 +1,6 @@
 import 'server-only';
 // The only writer of the Keystone mirror (arche.keystone_mirror, arche.keystone_sync). For each view of the contract:
-// - `views` mode: keystone.<view> when the EPC2I server shares it with Arche; a view not shared yet is simulated on the
+// - `views` mode: keystone.<view> when the shared server shares it with Arche; a view not shared yet is simulated on the
 //   demonstration data set (mixed mode, spec 07 §2) and left empty elsewhere, with the reason recorded;
 // - `simulation` mode: every view simulated (demonstration data set only: real needs never get simulated answers);
 // - `off`: nothing is read, the mirror is kept as it is.

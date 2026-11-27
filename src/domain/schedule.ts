@@ -1,6 +1,6 @@
 // WBS and Gantt of a CAPEX (owner's pilot feedback, 24 Oct 2026; DECISIONS.md §5): the monthly window of the Gantt, the
 // position of a bar or a milestone in it, the roll-up of tasks into a lot and of lots into the CAPEX (duration-weighted
-// progress), the summary bar of an EPC2i project (from Keystone's milestones and progress, no detail) and the checks of a
+// progress), the summary bar of an Keystone project (from Keystone's milestones and progress, no detail) and the checks of a
 // task. Pure: dates are ISO days ("2026-10-22") or months ("2026-10"); labels and messages are EN source strings.
 import type { Check } from './admin';
 
@@ -89,10 +89,10 @@ export function lotSpan(lot: { start: string | null; end: string | null; physica
 }
 
 /**
- * The summary bar of an EPC2i project (no detail, owner 24 Oct 2026): from its order (or first milestone) to its forecast end
+ * The summary bar of an Keystone project (no detail, owner 24 Oct 2026): from its order (or first milestone) to its forecast end
  * (or last milestone), with its physical progress.
  */
-export function epc2iSpan(p: { milestones: readonly { code: string; plannedOn: string | null; actualOn: string | null }[]; progress: { physicalPct: number | null; endOn: string | null } | null }): Span | null {
+export function keystoneSpan(p: { milestones: readonly { code: string; plannedOn: string | null; actualOn: string | null }[]; progress: { physicalPct: number | null; endOn: string | null } | null }): Span | null {
   const on = (m: { plannedOn: string | null; actualOn: string | null }) => m.actualOn ?? m.plannedOn;
   const dated = p.milestones.map(on).filter((d): d is string => !!d).sort();
   const order = p.milestones.find((m) => m.code === 'commande');

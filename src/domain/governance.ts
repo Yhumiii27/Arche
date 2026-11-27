@@ -1,7 +1,7 @@
 // Project governance of a CAPEX (docs/spec/06 §2; CDC §3; N-19): the project steering committee's cadence by typology
 // (Light: quarterly, Strategic: monthly), the next review due and its delay (alert to the project lead and the sponsor when
 // due, flagged to the group industrial director 15 days later), the cross-functional audits of Strategic CAPEX (one per phase,
-// held by the group industrial director or the EPC2i PMO, recorded as a review of kind "audit"). Pure.
+// held by the group industrial director or the Engineering PMO, recorded as a review of kind "audit"). Pure.
 import type { Phase } from './lifecycle';
 
 export type ReviewKind = 'copil_projet' | 'audit';

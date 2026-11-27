@@ -19,10 +19,10 @@
 | `capex-gates` | `/capex/[code]/gates` | Jalons & circuits | G1, K3, G2, G3 : critères, circuit, historique, conditions |
 | `capex-dossiers` | `/capex/[code]/dossiers/[kind]` | Dossier vivant | sections, complétude, versions, figement, empreinte, vue imprimable |
 | `capex-budget` | `/capex/[code]/budget` | Budget & BP | versions, classes, fourchettes, lots, phasage, engagé / réalisé, BP |
-| `capex-execution` | `/capex/[code]/execution` | Exécution | S-curve, SPI / CPI / EAC, lots, projets EPC2i liés |
+| `capex-execution` | `/capex/[code]/execution` | Exécution | S-curve, SPI / CPI / EAC, lots, projets Keystone liés |
 | `capex-changes` | `/capex/[code]/changes` | MoC | registre, décideur calculé, décisions |
-| `capex-machines` | `/capex/[code]/machines` | Besoins machines | lignes, catalogue, réponses EPC2i, liens Keystone |
-| `capex-pack` | `/capex/[code]/pack` | Pack ingénierie | pièces par famille, % pondéré, part EPC2i |
+| `capex-machines` | `/capex/[code]/machines` | Besoins machines | lignes, catalogue, réponses de l’ingénierie du groupe, liens Keystone |
+| `capex-pack` | `/capex/[code]/pack` | Pack ingénierie | pièces par famille, % pondéré, part Keystone |
 | `capex-permits` | `/capex/[code]/permits` | Autorisations | ICPE, PC, PLU, ATEX, échéances |
 | `capex-safety` | `/capex/[code]/safety` | Sécurité (HS) | jalons HS, actions (miroir Vigie), liens Vigie |
 | `capex-risks` | `/capex/[code]/risks` | Risques | registre |

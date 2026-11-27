@@ -1,7 +1,7 @@
 # Arche — socle repris de Keystone
 
 > Décision A-3 : le **socle** de Keystone est copié **une fois** dans Arche ; aucun module métier n’est copié. Le socle sera
-> ensuite extrait en paquet partagé `@epc2i/socle` (lot R-194 de Keystone) et ces copies seront remplacées. Ce fichier note,
+> ensuite extrait en paquet partagé `@atrium/socle` (lot R-194 de Keystone) et ces copies seront remplacées. Ce fichier note,
 > pour chaque élément, son chemin dans Keystone, son adaptation et le **commit d’origine** de la copie.
 >
 > **Commit d’origine de toutes les copies de la livraison 1 : Keystone `63f43ad`** (pointe de `origin/main` le 22 oct. 2026,
@@ -38,7 +38,7 @@
 | Carte des projets (module métier, sur demande du responsable produit, 22 oct. 2026) | `src/components/charts/projects-map.tsx` (+ `.module.css`), `src/domain/worldmap.ts`, `src/features/worldmap/map-panels.tsx` (+ `worldmap.module.css`) au commit `6645cb6` | `src/components/charts/capex-map.tsx`, `src/domain/capex-map.ts` (style d'un marqueur par phase du CAPEX, indicateurs), `src/features/map/` ; mêmes dépendances (`d3-geo`, `d3-selection`, `d3-zoom`, `topojson-client`, `world-atlas` 2.0.2) | repris et adapté (UI) |
 | Barre latérale : recherche ⌘K, groupes, sélecteur de projet | `src/components/app/shell/sidebar.tsx`, `header-islands.tsx` (`ProjectSwitcher`, `ZoneSeg`) au commit `6645cb6` | sélecteur de CAPEX dans la section CAPEX, sélecteur de zone `src/components/app/ZoneSeg.tsx` | repris et adapté (UI) |
 | Courbe EVM (aspect seulement, livraison 5) | `src/components/charts/evm-s-curve.tsx` au commit `6645cb6` | `src/components/charts/s-curve.tsx` : mêmes couleurs Nocturne, budget à terminaison, « Aujourd'hui », EAC ; géométrie réécrite (nombre de mois variable, légende, info-bulle par mois) ; le calcul EVM de Keystone n'est pas repris (`src/domain/execution.ts`) | repris et adapté (UI) |
-| Gantt (aspect seulement, retour du pilote du 24 oct. 2026, exception de `DECISIONS.md` §5) | `src/components/charts/project-gantt.tsx` (+ `.module.css`) au commit `5b425d5` | `src/components/charts/capex-gantt.tsx` : même grille (nom · fait · frise), barres, ligne « Aujourd'hui », losanges des jalons ; nombre de mois variable, lignes de synthèse (CAPEX, projet EPC2i hachuré), lots et tâches en retrait ; la logique de planning de Keystone n'est pas reprise (`src/domain/schedule.ts`) | repris et adapté (UI) |
+| Gantt (aspect seulement, retour du pilote du 24 oct. 2026, exception de `DECISIONS.md` §5) | `src/components/charts/project-gantt.tsx` (+ `.module.css`) au commit `5b425d5` | `src/components/charts/capex-gantt.tsx` : même grille (nom · fait · frise), barres, ligne « Aujourd'hui », losanges des jalons ; nombre de mois variable, lignes de synthèse (CAPEX, projet Keystone hachuré), lots et tâches en retrait ; la logique de planning de Keystone n'est pas reprise (`src/domain/schedule.ts`) | repris et adapté (UI) |
 
 **Jamais copiés** : la voie PGlite, `src/domain/*` métier (EVM, cycle à 13 étapes, ITP…), `src/features/*`, `src/server/dal/*`
 métier, `src/server/prototype/`, les fournisseurs de validations Keystone, les connecteurs Codex / Vigie / Cursus / X3, les

@@ -82,7 +82,7 @@ export const DEMO_PEOPLE: DemoPerson[] = [
   { key: 'project_lead', name: 'Leïla Haddad', email: `l.haddad@${APM}`, title: 'Project lead', subsidiary: 'APM', roles: [{ role: 'project_lead', scope: 'capex', ref: 'CPX-APM-2026-01' }, { role: 'project_lead', scope: 'capex', ref: 'CPX-APM-2026-02' }, { role: 'project_lead', scope: 'capex', ref: 'CPX-APM-2025-01' }] },
   { key: 'controller', name: 'Nadia Tazi', email: `n.tazi@${APM}`, title: 'Management controller', subsidiary: 'APM', roles: [{ role: 'controller', scope: 'subsidiary', ref: 'APM' }] },
   { key: 'co_dig', name: 'Thomas Girard', email: `t.girard@${G}`, title: 'Co-DIG', subsidiary: null, roles: [{ role: 'co_dig', scope: 'capex', ref: 'CPX-APM-2026-01' }] },
-  { key: 'epc2i_pmo', name: 'Julien Roche', email: `j.roche@${G}`, title: 'EPC2i PMO', subsidiary: null, roles: [{ role: 'epc2i_pmo', scope: 'capex', ref: 'CPX-SAI-2026-01' }] },
+  { key: 'epc2i_pmo', name: 'Julien Roche', email: `j.roche@${G}`, title: 'Engineering PMO', subsidiary: null, roles: [{ role: 'epc2i_pmo', scope: 'capex', ref: 'CPX-SAI-2026-01' }] },
   { key: 'expert', name: 'Aminata Diop', email: `a.diop@${SAI}`, title: 'HSE manager', subsidiary: 'SAI', roles: [{ role: 'expert', scope: 'capex', ref: 'CPX-SAI-2026-01', speciality: 'hse' }] },
   { key: 'admin', name: 'Arche administrator', email: `admin.arche@${G}`, title: 'Arche administrator', subsidiary: null, roles: [{ role: 'admin', scope: 'group', ref: null }] },
   { key: 'sai_sponsor', name: 'Moussa Ndiaye', email: `m.ndiaye@${SAI}`, title: 'Managing director', subsidiary: 'SAI', roles: [{ role: 'sponsor', scope: 'subsidiary', ref: 'SAI' }] },
@@ -109,22 +109,22 @@ export const DEMO_CAPEX: DemoCapex[] = [
     code: 'CPX-APM-2025-01', subsidiary: 'APM', site: 'Kénitra plant', title: 'Ageing oven and finishing line', investmentType: 'new_line', status: 'active', phase: 'demarrage', typology: 'light',
     sponsor: 'sponsor', lead: 'project_lead', team: [['project_lead', 'lead'], ['controller', 'controller'], ['co_dig', 'co_dig']], openedOn: '2025-03-03', needDate: '2026-07-01',
     passed: [['G1', '2025-05-20'], ['G2', '2025-09-15'], ['K3', '2026-06-10']],
-    lots: [['civil_works', 'Finishing hall slab'], ['utilities', 'Gas and effluent treatment'], ['machines', 'Ageing oven (EPC2i)']],
+    lots: [['civil_works', 'Finishing hall slab'], ['utilities', 'Gas and effluent treatment'], ['machines', 'Ageing oven (group engineering)']],
     versions: [
-      { cls: 'E50', status: 'superseded', amounts: [280, 420, 600], on: '2025-05-05', basis: 'Ratios and EPC2i catalogue prices' },
-      { cls: 'E10', status: 'validated', amounts: [300, 450, 680], on: '2025-09-05', basis: 'Firm EPC2i offer, quotes for the works', g2: true },
+      { cls: 'E50', status: 'superseded', amounts: [280, 420, 600], on: '2025-05-05', basis: 'Ratios and machine catalogue prices' },
+      { cls: 'E10', status: 'validated', amounts: [300, 450, 680], on: '2025-09-05', basis: 'Firm group engineering offer, quotes for the works', g2: true },
     ],
-    risks: [{ title: 'Ageing cycle longer than planned', category: 'technical', p: 2, i: 2, owner: 'project_lead', response: 'Recipes tuned with EPC2i during the ramp-up' }],
+    risks: [{ title: 'Ageing cycle longer than planned', category: 'technical', p: 2, i: 2, owner: 'project_lead', response: 'Recipes tuned with group engineering during the ramp-up' }],
     decisions: [['2025-09-15', 'ceo', 'G2 Go: ageing oven ordered'], ['2026-06-10', 'dir_ig', 'K3: ready to start']],
   },
   {
     code: 'CPX-APM-2026-01', subsidiary: 'APM', site: 'Kénitra plant', title: 'Second extrusion line', investmentType: 'new_line', status: 'active', phase: 'avant_projet', typology: 'light',
     sponsor: 'sponsor', lead: 'project_lead', team: [['project_lead', 'lead'], ['controller', 'controller'], ['co_dig', 'co_dig']], openedOn: '2026-03-02', needDate: '2027-09-01',
     passed: [['G1', '2026-05-12']],
-    lots: [['civil_works', 'Foundations and slab'], ['utilities', 'Compressed air and cooling'], ['machines', 'Extrusion line (EPC2i)']],
+    lots: [['civil_works', 'Foundations and slab'], ['utilities', 'Compressed air and cooling'], ['machines', 'Extrusion line (group engineering)']],
     versions: [
-      { cls: 'E50', status: 'validated', amounts: [600, 400, 3800], on: '2026-04-28', basis: 'Ratios and EPC2i catalogue prices' },
-      { cls: 'E30', status: 'submitted', amounts: [650, 420, 4130], on: '2026-10-05', basis: 'Variant B retained, EPC2i budgetary quote (APS)' },
+      { cls: 'E50', status: 'validated', amounts: [600, 400, 3800], on: '2026-04-28', basis: 'Ratios and machine catalogue prices' },
+      { cls: 'E30', status: 'submitted', amounts: [650, 420, 4130], on: '2026-10-05', basis: 'Variant B retained, group engineering budgetary quote (APS)' },
     ],
     risks: [
       { title: 'Late delivery of the extruder die', category: 'schedule', p: 3, i: 3, owner: 'project_lead', response: 'Order the die with the APS', due: '2026-12-15' },
@@ -140,11 +140,11 @@ export const DEMO_CAPEX: DemoCapex[] = [
     code: 'CPX-SAI-2026-01', subsidiary: 'SAI', site: 'Thiès site', title: 'New tomato processing plant', investmentType: 'new_plant', status: 'active', phase: 'execution', typology: 'strategic',
     sponsor: 'sai_sponsor', lead: 'sai_lead', team: [['sai_lead', 'lead'], ['sai_controller', 'controller'], ['epc2i_pmo', 'epc2i_pmo'], ['expert', 'member']], openedOn: '2025-11-03', needDate: '2027-06-01',
     passed: [['G1', '2026-01-20'], ['G2', '2026-07-08']],
-    lots: [['land', 'Plot acquisition'], ['civil_works', 'Earthworks and civil works'], ['buildings', 'Process hall and offices'], ['utilities', 'Steam, water and power'], ['machines', 'Processing lines (EPC2i)'], ['recruitment', 'Recruitment and training']],
+    lots: [['land', 'Plot acquisition'], ['civil_works', 'Earthworks and civil works'], ['buildings', 'Process hall and offices'], ['utilities', 'Steam, water and power'], ['machines', 'Processing lines (group engineering)'], ['recruitment', 'Recruitment and training']],
     versions: [
       { cls: 'E50', status: 'superseded', amounts: [900, 2000, 3200, 1500, 8000, 400], on: '2026-01-10', basis: 'Ratios from the Kaolack plant' },
-      { cls: 'E30', status: 'superseded', amounts: [950, 2300, 3400, 1700, 8600, 450], on: '2026-04-15', basis: 'APS, EPC2i budgetary quotes' },
-      { cls: 'E10', status: 'validated', amounts: [980, 2400, 3550, 1800, 9100, 470], on: '2026-06-30', basis: 'APD, firm EPC2i offers, CFO business plan', g2: true },
+      { cls: 'E30', status: 'superseded', amounts: [950, 2300, 3400, 1700, 8600, 450], on: '2026-04-15', basis: 'APS, group engineering budgetary quotes' },
+      { cls: 'E10', status: 'validated', amounts: [980, 2400, 3550, 1800, 9100, 470], on: '2026-06-30', basis: 'APD, firm group engineering offers, CFO business plan', g2: true },
     ],
     risks: [
       { title: 'Grid connection later than planned', category: 'schedule', p: 3, i: 4, owner: 'sai_lead', response: 'Rental generators as a fallback', due: '2027-01-31' },
@@ -157,8 +157,8 @@ export const DEMO_CAPEX: DemoCapex[] = [
     // COPIL GPI demonstration: a CAPEX in phase 1 whose G1 waits for the committee (its circuit is seeded in seedCopil).
     code: 'CPX-SAI-2026-02', subsidiary: 'SAI', site: 'Kaolack plant', title: 'Aseptic packaging line', investmentType: 'new_line', status: 'active', phase: 'cadrage', typology: 'light',
     sponsor: 'sai_sponsor', lead: 'sai_lead', team: [['sai_lead', 'lead'], ['sai_controller', 'controller']], openedOn: '2026-08-17', needDate: '2027-11-01',
-    passed: [], lots: [['civil_works', 'Hall adaptation'], ['machines', 'Aseptic filler (EPC2i)']],
-    versions: [{ cls: 'E50', status: 'validated', amounts: [250, 1900], on: '2026-09-25', basis: 'Ratios and EPC2i catalogue prices' }],
+    passed: [], lots: [['civil_works', 'Hall adaptation'], ['machines', 'Aseptic filler (group engineering)']],
+    versions: [{ cls: 'E50', status: 'validated', amounts: [250, 1900], on: '2026-09-25', basis: 'Ratios and machine catalogue prices' }],
     risks: [{ title: 'Sterile water quality not demonstrated', category: 'technical', p: 2, i: 3, owner: 'sai_lead', response: 'Water analysis campaign before the G2' }],
     decisions: [],
   },
@@ -214,7 +214,7 @@ export async function seedCapex(tx: Tx, c: DemoCapex, siteId: ReadonlyMap<string
   }).returning({ id: capex.id });
   const capexId = row.id;
   await tx.insert(capexMembers).values(c.team.map(([key, capexRole]) => ({ capexId, userId: idOf(key), capexRole })));
-  const lotRows = await tx.insert(capexLots).values(c.lots.map(([kind, title], i) => ({ capexId, number: i + 1, kind, title, epc2i: kind === 'machines' })))
+  const lotRows = await tx.insert(capexLots).values(c.lots.map(([kind, title], i) => ({ capexId, number: i + 1, kind, title, fromKeystone: kind === 'machines' })))
     .returning({ id: capexLots.id, number: capexLots.number });
   const lotIds = lotRows.sort((a, b) => a.number - b.number).map((l) => l.id);
   for (const [i, v] of c.versions.entries()) {
@@ -361,7 +361,7 @@ export async function seedNeeds(tx: Tx, ids: { apm: string; sai: string; apm25: 
 
 /**
  * Delivery 6 demonstration (CPX-APM-2025-01): safety milestones to the PSSR, commissioning started on 1 July 2026, one line
- * (the ageing oven delivered by EPC2i, its machine number from Keystone) ramping up to its nominal capacity — a planned stop
+ * (the ageing oven delivered by group engineering, its machine number from Keystone) ramping up to its nominal capacity — a planned stop
  * on 15 August, the run of conforming days reached in October —, the lessons of three phases (two published). The accounting
  * closure is still to enter: it is the next step of the CAPEX.
  */
@@ -411,7 +411,7 @@ export async function seedStartup(tx: Tx, capexId: string, nameOf: (k: string) =
   const rex = (number: number, phase: string, category: string, title: string, text: string, published: string | null) => ({ capexId, number, phase, category, title, text, authorName: lead, publishedAt: published ? at(published) : null });
   await tx.insert(rexEntries).values([
     rex(1, 'cadrage', 'organisation', 'Involve the plant manager from the framing', 'The capacity target changed twice because production was not in the framing workshop.', '2025-06-10'),
-    rex(2, 'avant_projet', 'supplier', 'Ask EPC2i for the firm offer before the G2 dossier freezes', 'The firm offer arrived after the dossier was frozen: one more version was needed.', '2025-10-01'),
+    rex(2, 'avant_projet', 'supplier', 'Ask group engineering for the firm offer before the G2 dossier freezes', 'The firm offer arrived after the dossier was frozen: one more version was needed.', '2025-10-01'),
     rex(3, 'execution', 'hse', 'Plan the gas connection inspection early', 'The gas utility inspection slot was four weeks out; book it at the order.', null),
   ]);
 }
@@ -446,7 +446,7 @@ export async function seedBenefitsPlan(tx: Tx, apm25: string, nameOf: (k: string
   await tx.insert(businessPlans).values({ capexId: apm25, horizonYears: 9, discountRatePct: 9, flows, updatedByName: nameOf('controller'), validatedByName: nameOf('group_cfo'), validatedAt: new Date('2025-11-14T09:00:00Z') }).onConflictDoNothing();
 }
 
-/** The Sage analytic codes of the tomato plant's lots outside EPC2i (AR-047): the demonstration extraction uses two of them. */
+/** The Sage analytic codes of the tomato plant's lots outside Keystone (AR-047): the demonstration extraction uses two of them. */
 export const DEMO_SAGE_CODES: Record<number, string> = { 1: 'SAI-TR-01', 2: 'SAI-GC-01', 3: 'SAI-BT-01', 4: 'SAI-UT-01', 6: 'SAI-RH-01' };
 export async function seedSageCodes(tx: Tx, sai: string) {
   for (const [n, code] of Object.entries(DEMO_SAGE_CODES))
@@ -496,21 +496,21 @@ export async function seedGovernance(tx: Tx, apm: string, sai: string, nameOf: (
   await tx.insert(reviews).values([
     r(apm, 1, 'copil_projet', '2026-03-20', 'cadrage', 'Sponsor, project lead, controller, Co-DIG', 'Scope and E50 estimate reviewed; G1 dossier on track.', 'project_lead'),
     r(apm, 2, 'copil_projet', '2026-06-20', 'avant_projet', 'Sponsor, project lead, controller, Co-DIG', 'Variants A and B compared; soil survey ordered.', 'project_lead'),
-    r(sai, 1, 'audit', '2026-01-14', 'cadrage', 'Group industrial director, project lead, EPC2i PMO', 'Phase 1 audit: dossier complete, staffing template met.', 'dir_ig'),
-    r(sai, 2, 'copil_projet', '2026-08-27', 'execution', 'Sponsor, project lead, controller, EPC2i PMO', 'Earthworks started; grid connection risk escalated.', 'sai_lead'),
-    r(sai, 3, 'copil_projet', '2026-09-24', 'execution', 'Sponsor, project lead, controller, EPC2i PMO', 'Civil works at 25 %; second evaporator change submitted.', 'sai_lead'),
+    r(sai, 1, 'audit', '2026-01-14', 'cadrage', 'Group industrial director, project lead, Engineering PMO', 'Phase 1 audit: dossier complete, staffing template met.', 'dir_ig'),
+    r(sai, 2, 'copil_projet', '2026-08-27', 'execution', 'Sponsor, project lead, controller, Engineering PMO', 'Earthworks started; grid connection risk escalated.', 'sai_lead'),
+    r(sai, 3, 'copil_projet', '2026-09-24', 'execution', 'Sponsor, project lead, controller, Engineering PMO', 'Civil works at 25 %; second evaporator change submitted.', 'sai_lead'),
   ]);
   const weeks = Array.from({ length: 12 }, (_, i) => weekOf(new Date(Date.parse('2026-10-22T12:00:00Z') - (12 - i) * 7 * 86_400_000).toISOString().slice(0, 10)));
   await tx.insert(capexSnapshots).values(weeks.flatMap((week, i) => [
     { capexId: apm, week, status: 'active', phase: 'avant_projet', packPct: Math.round(20 + i * 3.5), subsidiaryPackPct: Math.round(20 + i * 3.5), alerts: 1, takenAt: at(week) },
-    { capexId: sai, week, status: 'active', phase: 'execution', packPct: 100, subsidiaryPackPct: 100, epc2iPackPct: Math.min(100, 70 + i * 3), alerts: 1, takenAt: at(week) },
+    { capexId: sai, week, status: 'active', phase: 'execution', packPct: 100, subsidiaryPackPct: 100, keystonePackPct: Math.min(100, 70 + i * 3), alerts: 1, takenAt: at(week) },
   ])).onConflictDoNothing();
   await takeSnapshots(tx, '2026-10-22');
 }
 
 /**
  * Delivery 5 demonstration: safety milestones declared by the group HSE, permits, the subsidiary's part of the engineering
- * pack, the lots' planned windows and the monthly actuals of SAI's lots outside EPC2i (cumulative to the end of each month).
+ * pack, the lots' planned windows and the monthly actuals of SAI's lots outside Keystone (cumulative to the end of each month).
  */
 export async function seedDelivery(tx: Tx, apm: string, sai: string, nameOf: (k: string) => string) {
   const hse = nameOf('group_hse');
@@ -595,7 +595,7 @@ export function saiRex(plant: string, solar: string, nameOf: (k: string) => stri
   return [
     rex(plant, 1, 'cadrage', 'cost', 'Budget the servicing of the plot from the framing', 'Water and power servicing of the plot was missing from the E50: four more per cent at the E30.', '2026-02-05'),
     rex(plant, 2, 'avant_projet', 'regulatory', 'File the environmental permit with the preliminary design', 'Waiting for the detailed design cost six weeks on the environmental permit.', '2026-07-20'),
-    rex(plant, 3, 'avant_projet', 'supplier', 'Align the validity of the EPC2i offer with the G2 date', 'The firm offer expired one week before the G2: EPC2i had to renew it.', '2026-07-20'),
+    rex(plant, 3, 'avant_projet', 'supplier', 'Align the validity of the group engineering offer with the G2 date', 'The firm offer expired one week before the G2: group engineering had to renew it.', '2026-07-20'),
     rex(plant, 4, 'execution', 'hse', 'Separate the site accesses of trucks and pedestrians', 'Two near misses between trucks and pedestrians in August; separate accesses since then.', '2026-09-05'),
     rex(solar, 1, 'cadrage', 'technical', 'Check the load capacity of roofs before the E50', 'The roof option was dropped at the G1: structure too weak, ground-mounted panels retained.', '2026-09-30'),
   ];
@@ -608,7 +608,7 @@ export async function seedActions(tx: Tx, apm: string, sai: string, idOf: (k: st
   });
   await tx.insert(capexActions).values([
     a(apm, 1, 'Order the soil survey of the extension', 'risk', 'R-02', 'project_lead', '2026-10-15'),
-    a(apm, 2, 'Send the E30 version to the controller with the EPC2i quote', 'budget', 'v2', 'project_lead', '2026-11-05'),
+    a(apm, 2, 'Send the E30 version to the controller with the group engineering quote', 'budget', 'v2', 'project_lead', '2026-11-05'),
     a(apm, 3, 'Hold the overdue project review', 'governance', null, 'sponsor', '2026-10-30'),
     a(apm, 4, 'Confirm the cooling variant with production', 'dossier', null, 'co_dig', '2026-09-30', 'done', '2026-09-18'),
     a(sai, 1, 'Book rental generators for the start-up', 'risk', 'R-01', 'sai_lead', '2026-12-15'),
@@ -627,7 +627,7 @@ export async function seedWbs(tx: Tx, apm: string, sai: string, idOf: (k: string
     t(apm, 2, null, 'Detailed design (APD)', '2026-10-01', '2027-01-29', 20, 'project_lead'),
     t(apm, 3, null, 'G2 dossier ready', '2027-02-15', '2027-02-15', 0, 'project_lead', true),
     t(apm, 4, await lotOf(apm, 'civil_works'), 'Soil survey', '2026-10-05', '2026-11-13', 30, 'project_lead'),
-    t(apm, 5, await lotOf(apm, 'machines'), 'EPC2i firm offer and negotiation', '2026-09-01', '2026-12-18', 50, 'co_dig'),
+    t(apm, 5, await lotOf(apm, 'machines'), 'Group engineering firm offer and negotiation', '2026-09-01', '2026-12-18', 50, 'co_dig'),
     t(sai, 1, await lotOf(sai, 'civil_works'), 'Earthworks', '2026-07-15', '2026-11-27', 80, 'sai_lead'),
     t(sai, 2, await lotOf(sai, 'buildings'), 'Process hall structure', '2026-10-01', '2027-02-26', 15, 'sai_lead'),
     t(sai, 3, await lotOf(sai, 'utilities'), 'Grid connection', '2026-11-02', '2027-03-31', 0, 'sai_lead'),

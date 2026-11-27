@@ -1,5 +1,5 @@
-// Machine needs and EPC2i projects (docs/spec/07): the needs of the CAPEX with the latest answer of EPC2i (the one that is
-// authoritative), and the follow-up of the projects EPC2i opened for them — milestones, progress, amendments, reservations,
+// Machine needs and Keystone projects (docs/spec/07): the needs of the CAPEX with the latest answer of group engineering (the one that is
+// authoritative), and the follow-up of the projects group engineering opened for them — milestones, progress, amendments, reservations,
 // acceptance reports — read in the Keystone mirror, with links to Keystone. Arche never writes to Keystone.
 import { ActionLink } from '@/components/app/ActionForm';
 import { EmptyState } from '@/components/app/EmptyState';
@@ -52,7 +52,7 @@ export default async function MachinesPage({ params }: PageProps<'/capex/[code]/
       <KpiGrid>
         <KpiTile label={t('Machine needs')} value={String(needs.filter((n) => n.status !== 'withdrawn').length)} sub={`${needs.filter((n) => n.status === 'draft').length} ${t('draft(s)')}`} />
         <KpiTile label={t('Firm offers')} value={offers.value} sub={t('valid E10 offers / submitted needs')} tone={offers.met ? 'default' : 'alert'} />
-        <KpiTile label={t('EPC2i projects')} value={String(projects.length)} />
+        <KpiTile label={t('Keystone projects')} value={String(projects.length)} />
         <KpiTile
           label={t('Keystone')}
           value={sources.length ? sources.map((s) => t(s === 'views' ? 'Shared views' : s === 'simulation' ? 'Simulation' : 'Off')).join(' + ') : t('Not synchronised')}
@@ -60,7 +60,7 @@ export default async function MachinesPage({ params }: PageProps<'/capex/[code]/
         />
       </KpiGrid>
 
-      <SectionCard title={t('Machine needs')} hint={t('Submitted to EPC2i in phases 1 and 2; ordered at the G2 Go when a valid firm offer covers them')} scroll>
+      <SectionCard title={t('Machine needs')} hint={t('Submitted to group engineering in phases 1 and 2; ordered at the G2 Go when a valid firm offer covers them')} scroll>
         {needs.length ? (
           <Table>
             <thead>
@@ -70,7 +70,7 @@ export default async function MachinesPage({ params }: PageProps<'/capex/[code]/
                 <Th align="right">{t('Qty')}</Th>
                 <Th>{t('Need date')}</Th>
                 <Th>{t('Status')}</Th>
-                <Th>{t('Latest answer of EPC2i')}</Th>
+                <Th>{t('Latest answer of group engineering')}</Th>
                 <Th align="right">{t('Amount')}</Th>
                 {edit && <Th />}
               </tr>
@@ -106,7 +106,7 @@ export default async function MachinesPage({ params }: PageProps<'/capex/[code]/
                           {a.reason && <div className="text-muted">{dataText(a.reason, lang)}</div>}
                           {a.documentRef && <div>{doc ? <a href={doc} target="_blank" rel="noreferrer">{a.documentRef}</a> : a.documentRef}</div>}
                         </>
-                      ) : n.status === 'draft' ? '—' : <span className="text-muted">{t('Waiting for EPC2i')}</span>}
+                      ) : n.status === 'draft' ? '—' : <span className="text-muted">{t('Waiting for group engineering')}</span>}
                     </Td>
                     <Td align="right" nowrap>{a?.centralKeur != null ? fmtKeur(a.centralKeur, lang) : '—'}</Td>
                     {edit && (
@@ -142,7 +142,7 @@ export default async function MachinesPage({ params }: PageProps<'/capex/[code]/
         return (
           <SectionCard
             key={p.code}
-            title={`${t('EPC2i project')} ${p.code} — ${dataText(p.name, lang)}`}
+            title={`${t('Keystone project')} ${p.code} — ${dataText(p.name, lang)}`}
             hint={[p.phase ? dataText(p.phase, lang) : null, p.leadName, p.needRef].filter(Boolean).join(' · ')}
             actions={href ? <a href={href} target="_blank" rel="noreferrer">{t('Open in Keystone')}</a> : undefined}
             scroll

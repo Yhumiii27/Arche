@@ -1,14 +1,14 @@
-// Dark / light display (Norma 1.0) and the common shell (Norma 2.0, norma/charte/COQUE.md § 4): the cookie epc2i-theme gives
-// the theme the server puts on <html data-theme>, dark by default; the language / display pair (PrefsStack: FR | EN over
+// Dark / light display (Norma 1.0) and the common shell (Norma 2.0, norma/charte/COQUE.md § 4): the cookie atrium-theme (Norma 3.0;
+// the former name still read as a fallback) gives the theme the server puts on <html data-theme>, dark by default; the language / display pair (PrefsStack: FR | EN over
 // dark | light) is the last element of every page header and of the top bar, nowhere else.
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_THEME, THEME_COOKIE, themeCookie, themeOf } from '@norma/charte/ds/theme';
+import { DEFAULT_THEME, LEGACY_THEME_COOKIE, THEME_COOKIE, themeCookie, themeFromCookies, themeOf } from '@norma/charte/ds/theme';
 
 describe('display theme', () => {
   it('reads the cookie value, dark by default', () => {
-    expect(THEME_COOKIE).toBe('epc2i-theme');
+    expect(THEME_COOKIE).toBe('atrium-theme');
     expect(DEFAULT_THEME).toBe('dark');
     expect(themeOf('light')).toBe('light');
     expect(themeOf('dark')).toBe('dark');
@@ -18,9 +18,22 @@ describe('display theme', () => {
     expect(themeOf('blue')).toBe('dark');
   });
 
-  it('writes a one-year cookie for the whole site', () => {
-    expect(themeCookie('light')).toBe('epc2i-theme=light; path=/; max-age=31536000; samesite=lax');
-    expect(themeCookie('dark')).toMatch(/^epc2i-theme=dark; path=\/; max-age=31536000/);
+  it('writes a one-year cookie for the whole site, under the new name only', () => {
+    expect(themeCookie('light')).toBe('atrium-theme=light; path=/; max-age=31536000; samesite=lax');
+    expect(themeCookie('dark')).toMatch(/^atrium-theme=dark; path=\/; max-age=31536000/);
+  });
+
+  it('reads the new cookie first, the former name as a fallback', () => {
+    const jar = (cookies: Record<string, string>) => (name: string) => cookies[name];
+    expect(themeFromCookies(jar({ [THEME_COOKIE]: 'light' }))).toBe('light');
+    expect(themeFromCookies(jar({ [LEGACY_THEME_COOKIE]: 'light' }))).toBe('light');
+    expect(themeFromCookies(jar({ [THEME_COOKIE]: 'dark', [LEGACY_THEME_COOKIE]: 'light' }))).toBe('dark');
+    expect(themeFromCookies(jar({}))).toBe('dark');
+  });
+
+  it('the server reads the theme through themeFromCookies', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/server/session.ts'), 'utf8');
+    expect(src).toContain('themeFromCookies(');
   });
 
   it('the pair is the stacked PrefsStack, saved by setLang', () => {

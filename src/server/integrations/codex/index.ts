@@ -1,7 +1,7 @@
 import 'server-only';
 // Codex connector (docs/CONTRATS.md §2.3; N-17: Codex hosts every document of Arche). Arche keeps references only — the
 // identifier TYPE-CONTEXT-SEQ, the revision and the deep link — and checks them against `codex.pub_documents` when Codex
-// shares its schema with Arche on the EPC2I server (CX-05). Without it (development, tests, before the grant), the
+// shares its schema with Arche on the shared server (CX-05). Without it (development, tests, before the grant), the
 // demonstration data set uses a simulated catalogue and other references stay "not verified". Arche writes to Codex only by
 // its deposit API (./deposit.ts, CX-03): a file from a section, the PDF of a frozen version (legal hold in Codex, CX-07, and
 // the CAPEX attachment, CX-01, with CODEX_CAPEX=on).
@@ -30,7 +30,7 @@ export const SIMULATED_DOCUMENTS: readonly CodexDocument[] = [
   { id: 'NOT-CPX-SAI-2026-01-001', title: 'Business case — Thiès tomato plant', typeCode: 'NOT', revision: 'D', status: 'in_force' },
 ];
 
-/** True when the EPC2I server exposes Codex's share view to Arche. */
+/** True when the shared server exposes Codex's share view to Arche. */
 async function codexShared(q: DB | Tx): Promise<boolean> {
   const r = await q.execute(sql`select to_regclass('codex.pub_documents') is not null and has_table_privilege(current_user, 'codex.pub_documents', 'select') as ok`);
   return !!(r.rows[0] as { ok?: boolean } | undefined)?.ok;

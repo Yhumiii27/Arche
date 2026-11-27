@@ -12,10 +12,10 @@
 | Niveau | Qui pilote | Objet | Outil |
 |---|---|---|---|
 | **N1 — CAPEX usine** | la filiale (sponsor, chef de projet filiale, CDG) ; le groupe arbitre (COPIL GPI, PDG, Dir.IG, DAF, SSE) | l’investissement complet : terrain, génie civil, bâtiments, utilités, VRD, machines, recrutement, montée en puissance | **Arche** |
-| **N2 — Besoin machine** | la filiale exprime (Arche), EPC2i qualifie et répond (Keystone) | une ou plusieurs machines du catalogue EPC2i | Arche (demande) + Keystone (réponse) |
-| **N3 — Projet EPC2i** | le chef de projet EPC2i | la fourniture des équipements (13 étapes) | Keystone |
+| **N2 — Besoin machine** | la filiale exprime (Arche), l’ingénierie du groupe qualifie et répond (Keystone) | une ou plusieurs machines du catalogue machines | Arche (demande) + Keystone (réponse) |
+| **N3 — Projet Keystone** | le chef de projet Keystone | la fourniture des équipements (13 étapes) | Keystone |
 
-Arche possède (décision A-4) : les CAPEX, leurs phases et jalons G1/G2/G3, les trois dossiers vivants, les lots hors EPC2i,
+Arche possède (décision A-4) : les CAPEX, leurs phases et jalons G1/G2/G3, les trois dossiers vivants, les lots hors Keystone,
 le budget par classe d’estimation et le BP, la typologie, la gouvernance (staffing, revues), le ramp-up, les besoins machines
 (côté demande) et le registre des autorisations du site.
 
@@ -23,7 +23,7 @@ le budget par classe d’estimation et le BP, la typologie, la gouvernance (staf
 
 | Propriétaire | Ce qu’il possède | Ce qu’Arche en fait |
 |---|---|---|
-| **Keystone** | catalogue machines, réponses aux besoins (qualification, devis, offre), projets EPC2i et tout leur contenu (jalons, avancement, avenants, réserves, livrables, pack ingénierie machine, parc installé) | lit les vues `pub_` (connecteur `keystone` : miroir, simulation tant que les vues manquent), affiche, ouvre Keystone par lien profond |
+| **Keystone** | catalogue machines, réponses aux besoins (qualification, devis, offre), projets Keystone et tout leur contenu (jalons, avancement, avenants, réserves, livrables, pack ingénierie machine, parc installé) | lit les vues `pub_` (connecteur `keystone` : miroir, simulation tant que les vues manquent), affiche, ouvre Keystone par lien profond |
 | **Codex** | **tous les documents d’Arche** (décision du responsable produit, 22 oct. 2026) : P&ID, plan de masse, schémas, AFE, permis, études de sécurité, PV, dossiers de jalon figés… | Arche ne stocke **aucun fichier** : il garde des références Codex (identifiant `TYPE-CONTEXTE-SEQ`, révision, lien `/documents/{id}`), lit leur état dans `codex.pub_documents` ; dépôt et lecture par API à obtenir de Codex ([`../DEMANDES-CODEX.md`](../DEMANDES-CODEX.md)) |
 | **Vigie** (à décider, AC-3) | QHSE ; HazID, HazOp, AMDEC, PSSR, RSPDI, ASPD **ne sont pas modélisés dans Vigie aujourd’hui** | jalons HS déclaratifs dans Arche en attendant ; miroir et liens profonds quand Vigie les porte ([`../DEMANDES-VIGIE.md`](../DEMANDES-VIGIE.md)) |
 | **Cursus** | salariés (matricule), formations, habilitations | rien en v1 : les utilisateurs d’Arche viennent d’Entra ID ([`../DEMANDES-CURSUS.md`](../DEMANDES-CURSUS.md)) |
@@ -31,7 +31,7 @@ le budget par classe d’estimation et le BP, la typologie, la gouvernance (staf
 | **Matrix** | socle du serveur PostgreSQL commun, droits, registre des tables, journal unifié ; référentiels pays, sites, organigramme (D14, D15, D17) | Arche s’y déclare, lit ses référentiels ; les changements sont **demandés** dans [`../DEMANDES-MATRIX.md`](../DEMANDES-MATRIX.md) (dont les filiales, N-22) |
 
 Arche tourne **sur PostgreSQL uniquement** (décision du 22 oct. 2026, N-23), dans son schéma `arche` — en production, en recette, en CI et sur un poste de développement. Arche **n’écrit que dans son schéma** (`arche`, N-1) et ne lit les autres outils que par leurs vues `pub_`. Arche ne crée rien
-chez les autres : un besoin machine passe à « commandé » chez Arche, c’est Keystone qui crée le projet EPC2i.
+chez les autres : un besoin machine passe à « commandé » chez Arche, c’est Keystone qui crée le projet Keystone.
 
 ## 3. Glossaire (propositions, à valider — C-6)
 
@@ -49,7 +49,7 @@ chez les autres : un besoin machine passe à « commandé » chez Arche, c’est
 | **COPIL GPI** | comité de pilotage groupe (« Grands Projets Industriels », à confirmer), mensuel, qui prononce le G1. |
 | **Copil projet** | comité propre à un CAPEX ; revues trimestrielles (Light) ou mensuelles (Stratégique) ; décide dans ses seuils délégués. |
 | **Client Interne** | l’exploitation de la filiale qui reçoit l’actif (directeur d’usine) ; contresigne le PV de transfert. |
-| **PMO EPC2i** | appui opérationnel d’EPC2i aux projets Stratégiques. |
+| **PMO ingénierie** | appui opérationnel de l’ingénierie du groupe aux projets Stratégiques. |
 | **Expert** | spécialiste Qualité, HSE, DAF ou Exploitation qui rend un avis asynchrone sur un dossier. |
 | **Dossier vivant** | ensemble structuré de données sous workflow (pas un document) ; figé et horodaté à chaque soumission. |
 | **Classe d’estimation** | précision d’un budget : `E50` (±50 %), `E30` (±30 %), `E10` (+10 % / −5 %) (C-8). |

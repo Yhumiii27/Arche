@@ -1,5 +1,5 @@
 // WBS & Gantt of a CAPEX (owner's pilot feedback, 24 Oct 2026; DECISIONS.md §5): the Gantt of the whole CAPEX — summary, lots
-// and their tasks, tasks of the CAPEX, one summary bar per EPC2i project (from Keystone, no detail), cycle milestones — and
+// and their tasks, tasks of the CAPEX, one summary bar per Keystone project (from Keystone, no detail), cycle milestones — and
 // the WBS table where the project lead, the sponsor and the Co-DIG add and update tasks (right `schedule`).
 import { EmptyState } from '@/components/app/EmptyState';
 import { KpiGrid, KpiTile } from '@/components/app/Kpi';
@@ -36,7 +36,7 @@ export default async function SchedulePage({ params }: PageProps<'/capex/[code]/
         <KpiTile label={t('Progress')} value={sched.summary ? `${sched.summary.progressPct} %` : '—'} sub={t('weighted by duration')} />
         <KpiTile label={t('Tasks late')} value={late.length} sub={`${tasks.length} ${t('task(s)')}`} tone={late.length ? 'alert' : 'default'} />
       </KpiGrid>
-      <SectionCard title={t('Gantt of the CAPEX')} hint={t('EPC2i projects: one summary bar each (detail in Keystone)')} scroll>
+      <SectionCard title={t('Gantt of the CAPEX')} hint={t('Keystone projects: one summary bar each (detail in Keystone)')} scroll>
         <CapexGantt {...g} />
       </SectionCard>
       <SectionCard title={t('WBS')} hint={t('Lots of the CAPEX and their tasks; a lot without task keeps its planned months (Execution page)')} scroll>
@@ -59,7 +59,7 @@ export default async function SchedulePage({ params }: PageProps<'/capex/[code]/
                 <tr key={l.id}>
                   <Td nowrap><strong>{`L${l.number}`}</strong></Td>
                   <Td><strong>{dataText(l.title, lang)}</strong></Td>
-                  <Td tone="secondary">{l.epc2i ? 'EPC2i' : '—'}</Td>
+                  <Td tone="secondary">{l.fromKeystone ? 'Keystone' : '—'}</Td>
                   <Td />
                   <Td nowrap>{l.span ? fmtDate(l.span.start, lang) : '—'}</Td>
                   <Td nowrap>{l.span ? fmtDate(l.span.end, lang) : '—'}</Td>

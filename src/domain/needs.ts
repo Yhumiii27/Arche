@@ -1,5 +1,5 @@
 // Machine needs (docs/spec/07): Arche owns the demand, Keystone the catalogue and the answer. A need line is a machine of
-// the EPC2i catalogue (code and version kept) or a free need; draft → submitted (published to Keystone in
+// the machine catalogue (code and version kept) or a free need; draft → submitted (published to Keystone in
 // pub_besoins_machines) → withdrawn, or ordered at the G2 Go when it has a valid firm offer. Pure: checks, refs, the latest
 // answer, the criteria facts. EN strings.
 import type { Check } from './admin';
@@ -79,7 +79,7 @@ export function canSubmitNeeds(c: { status: string; phase: string }): boolean {
   return c.status === 'active' && (c.phase === 'cadrage' || c.phase === 'avant_projet');
 }
 
-// ── Answers of EPC2i (pub_reponses_besoins) ───────────────────────────────────────────────────────────────────────────
+// ── Answers of group engineering (pub_reponses_besoins) ───────────────────────────────────────────────────────────────────────────
 
 export type AnswerNature = 'qualification' | 'indicatif' | 'devis' | 'offre_ferme';
 export const ANSWER_NATURE_LABEL: Record<AnswerNature, string> = { qualification: 'Qualification', indicatif: 'Indicative answer', devis: 'Budgetary quote', offre_ferme: 'Firm offer' };
@@ -112,27 +112,27 @@ export function latestAnswer(answers: readonly Answer[], ref: string): Answer | 
 /** A firm offer (E10) still valid on `today`. */
 export const isValidFirmOffer = (a: Answer | null, today: string) => !!a && a.nature === 'offre_ferme' && a.estimateClass === 'E10' && a.status !== 'caduque' && (!a.validUntil || a.validUntil >= today);
 
-/** G2 criterion "firm EPC2i offers for every submitted need" (spec 03 §3): met when there is none to cover. */
+/** G2 criterion "firm group engineering offers for every submitted need" (spec 03 §3): met when there is none to cover. */
 export function firmOffersFact(needs: readonly { ref: string; status: string }[], answers: readonly Answer[], today: string): { met: boolean; value: string } {
   const live = needs.filter((n) => n.status === 'submitted');
   const covered = live.filter((n) => isValidFirmOffer(latestAnswer(answers, n.ref), today)).length;
   return { met: covered === live.length, value: `${covered} / ${live.length}` };
 }
 
-// ── Follow-up of the EPC2i projects ───────────────────────────────────────────────────────────────────────────────────
+// ── Follow-up of the Keystone projects ───────────────────────────────────────────────────────────────────────────────────
 
 export const MILESTONE_LABEL: Record<string, string> = {
   commande: 'Order', fin_etudes: 'End of studies', fat: 'FAT', expedition: 'Shipping', arrivee_site: 'Arrival on site', sat: 'SAT', pv_reception: 'Acceptance report', fin_garantie: 'End of warranty',
 };
 
-/** K3 criterion "EPC2i SATs planned": every linked project has a planned SAT. */
+/** K3 criterion "SATs of the Keystone projects planned": every linked project has a planned SAT. */
 export function satPlannedFact(projects: readonly string[], milestones: readonly { projectCode: string; code: string; plannedOn: string | null }[]): { met: boolean; value: string } {
   const ok = projects.filter((p) => milestones.some((m) => m.projectCode === p && m.code === 'sat' && m.plannedOn)).length;
   return { met: ok === projects.length, value: `${ok} / ${projects.length}` };
 }
 
-/** G3 criterion part "EPC2i reservations": no open A or B reservation on the linked projects, every acceptance report accepted. */
-export function epc2iReservationsFact(
+/** G3 criterion part "reservations of the Keystone projects": no open A or B reservation on the linked projects, every acceptance report accepted. */
+export function keystoneReservationsFact(
   reserves: readonly { category: string; status: string }[],
   reports: readonly { status: string }[],
 ): { met: boolean; value: string } {

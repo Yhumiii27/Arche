@@ -4,7 +4,7 @@
 #   migration  : npm run db:migrate   (before the new version starts; ARCHE_SEED explicit on an empty schema)
 #   job worker : npm run worker       (backups when ARCHE_BACKUP_DIR is set, daily declaration to Matrix)
 #   backups    : npm run backup / npm run restore -- <file> --yes (pg_dump / pg_restore 16 are installed below)
-# Arche runs on PostgreSQL only: DATABASE_URL is a runtime variable (the shared EPC2I server, schema `arche`, role arche_app).
+# Arche runs on PostgreSQL only: DATABASE_URL is a runtime variable (the shared server of the Atrium suite, schema `arche`, role arche_app).
 # Coolify: deploy/compose.yaml.
 FROM node:22-bookworm-slim
 

@@ -1,14 +1,14 @@
 // Delivery 5 (lot 5a), pure rules: safety milestones (N-13), permits, engineering pack (C-9), execution — planned curve, EV,
 // SPI / CPI / EAC, works completion, uncertainty gap (CDC §4), the CSV import template (N-14); lot 5b: reviews, audits, alerts.
 import { describe, expect, it } from 'vitest';
-import { checkActual, checkWindow, epc2iLotValues, indicatorsAt, monthsBetween, parseActualsCsv, plannedAt, sCurve, uncertaintyGap, worksFact, type LotActual, type LotPlan } from './execution';
+import { checkActual, checkWindow, keystoneLotValues, indicatorsAt, monthsBetween, parseActualsCsv, plannedAt, sCurve, uncertaintyGap, worksFact, type LotActual, type LotPlan } from './execution';
 import { packFact, packSummary, PACK_TEMPLATE } from './pack';
 import { checkPermit, permitsDue, permitsFact } from './permits';
 import { checkHs, emptyHs, safetyFacts, withPssrDischarge } from './safety';
 import { addMonths, checkReview, missingAudits, nextReview } from './governance';
 import { alertsOf, sortAlerts, type AlertInput } from './alerts';
 
-const lot = (o: Partial<LotPlan>): LotPlan => ({ id: 'L1', number: 1, kind: 'civil_works', title: 'Slab', epc2i: false, budgetKeur: 1200, start: '2026-01', end: '2026-12', ...o });
+const lot = (o: Partial<LotPlan>): LotPlan => ({ id: 'L1', number: 1, kind: 'civil_works', title: 'Slab', fromKeystone: false, budgetKeur: 1200, start: '2026-01', end: '2026-12', ...o });
 const act = (o: Partial<LotActual>): LotActual => ({ lotId: 'L1', month: '2026-06', committedKeur: null, spentKeur: null, physicalPct: null, ...o });
 
 describe('safety milestones', () => {
@@ -53,9 +53,9 @@ describe('engineering pack', () => {
     // One family (2 items) fully validated = 20 % of the subsidiary's weight.
     expect(packSummary(all.slice(0, 2), []).pct).toBe(20);
     expect(packSummary([...all.slice(0, 2), ...all.slice(2).map((i) => ({ ...i, status: 'not_applicable' as const }))], []).pct).toBe(100);
-    // EPC2i: 100 of weight at 50 % next to the subsidiary's 100 at 100 % → 75 %.
+    // group engineering: 100 of weight at 50 % next to the subsidiary's 100 at 100 % → 75 %.
     const s = packSummary(all, [{ projectCode: 'P', family: 'pid', expected: 4, validated: 2, weight: 100 }]);
-    expect(s).toMatchObject({ pct: 75, epc2iSharePct: 50 });
+    expect(s).toMatchObject({ pct: 75, keystoneSharePct: 50 });
     expect(packFact(s, 80)).toEqual({ met: false, value: '75 %' });
     expect(packFact(packSummary(all, []), 80).met).toBe(true);
   });
@@ -81,8 +81,8 @@ describe('execution', () => {
     expect(curve.at(-1)).toEqual({ month: '2026-12', planned: 1200, earned: null, actual: null });
   });
 
-  it('K3: works lots outside EPC2i weighted by budget', () => {
-    const lots = [lot({}), lot({ id: 'L2', kind: 'buildings', budgetKeur: 800 }), lot({ id: 'M', kind: 'machines', epc2i: true, budgetKeur: 5000 })];
+  it('K3: works lots outside Keystone weighted by budget', () => {
+    const lots = [lot({}), lot({ id: 'L2', kind: 'buildings', budgetKeur: 800 }), lot({ id: 'M', kind: 'machines', fromKeystone: true, budgetKeur: 5000 })];
     const rows = [act({ physicalPct: 100 }), act({ lotId: 'L2', physicalPct: 90 }), act({ lotId: 'M', physicalPct: 10 })];
     expect(worksFact(lots, rows, '2026-06', 95)).toEqual({ met: true, value: '96 %' });
     expect(worksFact(lots, rows, '2026-06', 97)?.met).toBe(false);
@@ -102,20 +102,20 @@ describe('execution', () => {
     expect(checkWindow({})).toEqual({ ok: true, value: { start: null, end: null } });
   });
 
-  it('CSV import: the template, a line per lot and month; EPC2i lots and duplicates refused', () => {
-    const lots = [{ id: 'a', number: 1, epc2i: false }, { id: 'm', number: 2, epc2i: true }];
+  it('CSV import: the template, a line per lot and month; machine lots and duplicates refused', () => {
+    const lots = [{ id: 'a', number: 1, fromKeystone: false }, { id: 'm', number: 2, fromKeystone: true }];
     expect(parseActualsCsv('lot;month;committed_keur;spent_keur;physical_pct\n1;2026-09;1000;500;30\n1;2026-10;;600;40', lots, '2026-10')).toEqual({
       ok: true, value: [{ lotId: 'a', month: '2026-09', committedKeur: 1000, spentKeur: 500, physicalPct: 30 }, { lotId: 'a', month: '2026-10', committedKeur: null, spentKeur: 600, physicalPct: 40 }],
     });
-    expect(parseActualsCsv('2;2026-10;1;1;1', lots, '2026-10')).toEqual({ ok: false, error: 'EPC2i lots come from Keystone', line: 1 });
+    expect(parseActualsCsv('2;2026-10;1;1;1', lots, '2026-10')).toEqual({ ok: false, error: 'Machine lots come from Keystone', line: 1 });
     expect(parseActualsCsv('lot;month\n1;2026-10;1;;\n1;2026-10;2;;', lots, '2026-10')).toEqual({ ok: false, error: 'The same lot and month appear twice', line: 3 });
     expect(parseActualsCsv('9;2026-10;1;;', lots, '2026-10')).toMatchObject({ ok: false, error: 'Unknown lot number' });
   });
 
-  it('EPC2i lot values from the projects: committed = contract + signed amendments, spent = invoiced', () => {
-    expect(epc2iLotValues([{ contractKeur: 1000, amendmentsKeur: 50, invoicedKeur: 400, physicalPct: 60 }, { contractKeur: 3000, amendmentsKeur: 0, invoicedKeur: 900, physicalPct: 20 }]))
+  it('machine lot values from the projects: committed = contract + signed amendments, spent = invoiced', () => {
+    expect(keystoneLotValues([{ contractKeur: 1000, amendmentsKeur: 50, invoicedKeur: 400, physicalPct: 60 }, { contractKeur: 3000, amendmentsKeur: 0, invoicedKeur: 900, physicalPct: 20 }]))
       .toEqual({ committedKeur: 4050, spentKeur: 1300, physicalPct: 30 });
-    expect(epc2iLotValues([])).toBeNull();
+    expect(keystoneLotValues([])).toBeNull();
   });
 });
 

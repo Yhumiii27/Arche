@@ -1,17 +1,17 @@
 import 'server-only';
 // Reads of a CAPEX's delivery and safety (delivery 5): permits, safety milestones, engineering pack (the subsidiary's part and
-// EPC2i's, read in the Keystone mirror), lots with their planned window and budget, monthly actuals (EPC2i lots from their
+// Keystone's, read in the Keystone mirror), lots with their planned window and budget, monthly actuals (machine lots from their
 // projects), the S-curve and its indicators, and the facts of the gate criteria these data feed. Callers pass the CAPEX of a
 // row already read through the visibility filter.
 import { asc, eq, inArray } from 'drizzle-orm';
-import { actualAt, epc2iLotValues, indicatorsAt, monthOf, sCurve, worksFact, type LotActual, type LotPlan } from '@/domain/execution';
-import { packFact, packSummary, type Epc2iPackRow, type PackItemState } from '@/domain/pack';
+import { actualAt, keystoneLotValues, indicatorsAt, monthOf, sCurve, worksFact, type LotActual, type LotPlan } from '@/domain/execution';
+import { packFact, packSummary, type KeystonePackRow, type PackItemState } from '@/domain/pack';
 import { permitsFact, type PermitState } from '@/domain/permits';
 import { safetyFacts, type HsState } from '@/domain/safety';
 import type { CriterionFact, ModelValues } from '@/domain/lifecycle';
 import { authorizations, capexLots, hsStatuses, lotActuals, packItems } from '@/server/db/schema';
 import type { DB, Tx } from '@/server/db/types';
-import { projectsOf, type Epc2iProject } from '@/server/integrations/keystone';
+import { projectsOf, type KeystoneProject } from '@/server/integrations/keystone';
 import { envelopeFact } from '@/domain/envelopes';
 import { capexEnvelopeCheck } from './finance';
 import { needsOf } from './needs';
@@ -34,8 +34,8 @@ export async function packItemsOf(q: Q, capexId: string): Promise<PackItemState[
   return rows.map((r) => ({ code: r.itemCode, status: r.status, codexRef: r.codexRef, validatedOn: r.validatedOn }));
 }
 
-/** EPC2i's pack rows of the CAPEX's projects. */
-export const epc2iPackOf = (projects: readonly Epc2iProject[]): Epc2iPackRow[] =>
+/** Keystone's pack rows of the CAPEX's projects. */
+export const keystonePackOf = (projects: readonly KeystoneProject[]): KeystonePackRow[] =>
   projects.flatMap((p) => p.pack.map((f) => ({ projectCode: p.code, family: f.family, expected: f.expected, validated: f.validated, weight: f.weight })));
 
 /**
@@ -56,7 +56,7 @@ export function lotPlansFrom(lots: readonly LotRow[], versions: readonly Version
   const latest = latestValidated(versions);
   const ref = g2 ?? latest;
   return {
-    lots: lots.map((l) => ({ id: l.id, number: l.number, kind: l.kind, title: l.title, epc2i: l.epc2i, budgetKeur: ref?.lines[l.id] ?? 0, start: l.plannedStart, end: l.plannedEnd })),
+    lots: lots.map((l) => ({ id: l.id, number: l.number, kind: l.kind, title: l.title, fromKeystone: l.fromKeystone, budgetKeur: ref?.lines[l.id] ?? 0, start: l.plannedStart, end: l.plannedEnd })),
     budgetSource: g2 ? 'g2_baseline' : latest ? 'latest_validated' : 'none',
     g2Keur: g2?.centralKeur ?? null,
     latestClass: latest?.estimateClass ?? null,
@@ -77,13 +77,13 @@ export interface ExecutionView {
   month: string;
   indicators: ReturnType<typeof indicatorsAt>;
   curve: ReturnType<typeof sCurve>;
-  projects: Epc2iProject[];
-  /** EPC2i projects linked to no lot of the CAPEX (their need has no lot). */
+  projects: KeystoneProject[];
+  /** Keystone projects linked to no lot of the CAPEX (their need has no lot). */
   unassigned: string[];
 }
 
 /**
- * The execution of a CAPEX at `today`: actuals entered for the lots outside EPC2i; for each EPC2i lot, the values of its
+ * The execution of a CAPEX at `today`: actuals entered for the lots outside Keystone; for each machine lot, the values of its
  * projects (through the machine needs of the lot) as the current month's actuals.
  */
 export async function executionOf(q: Q, c: { id: string; code: string }, today: string): Promise<ExecutionView> {
@@ -94,21 +94,21 @@ export async function executionOf(q: Q, c: { id: string; code: string }, today: 
 
 type ActualRow = typeof lotActuals.$inferSelect;
 
-/** executionOf from rows already read (the lots' plans, the CAPEX's EPC2i projects and machine needs, its stored actuals). */
-export function executionFrom(d: { plans: LotPlans; projects: Epc2iProject[]; needs: readonly { ref: string; lotId: string | null }[]; stored: readonly ActualRow[] }, today: string): ExecutionView {
+/** executionOf from rows already read (the lots' plans, the CAPEX's Keystone projects and machine needs, its stored actuals). */
+export function executionFrom(d: { plans: LotPlans; projects: KeystoneProject[]; needs: readonly { ref: string; lotId: string | null }[]; stored: readonly ActualRow[] }, today: string): ExecutionView {
   const { plans, projects, needs, stored } = d;
   const month = monthOf(today);
   const rows: LotActual[] = stored.map((r) => ({ lotId: r.lotId, month: r.month, committedKeur: r.committedKeur, spentKeur: r.spentKeur, physicalPct: r.physicalPct }));
   const lotOfNeed = new Map(needs.map((n) => [n.ref, n.lotId]));
-  const projectsOfLot = new Map<string, Epc2iProject[]>();
+  const projectsOfLot = new Map<string, KeystoneProject[]>();
   const unassigned: string[] = [];
   for (const p of projects) {
     const lot = p.needRef ? lotOfNeed.get(p.needRef) : null;
     if (lot) projectsOfLot.set(lot, [...(projectsOfLot.get(lot) ?? []), p]);
     else unassigned.push(p.code);
   }
-  for (const l of plans.lots.filter((x) => x.epc2i)) {
-    const live = epc2iLotValues((projectsOfLot.get(l.id) ?? []).flatMap((p) => (p.progress ? [p.progress] : [])));
+  for (const l of plans.lots.filter((x) => x.fromKeystone)) {
+    const live = keystoneLotValues((projectsOfLot.get(l.id) ?? []).flatMap((p) => (p.progress ? [p.progress] : [])));
     if (!live) continue;
     const i = rows.findIndex((r) => r.lotId === l.id && r.month === month);
     const row = { lotId: l.id, month, ...live };
@@ -118,7 +118,7 @@ export function executionFrom(d: { plans: LotPlans; projects: Epc2iProject[]; ne
   const lots = plans.lots.map((l) => {
     const mine = stored.filter((r) => r.lotId === l.id);
     const last = mine.at(-1);
-    return { ...l, actual: actualAt(rows, l.id, month), projects: (projectsOfLot.get(l.id) ?? []).map((p) => p.code), source: l.epc2i && projectsOfLot.get(l.id)?.length ? ('keystone' as const) : last?.source ?? null, lastMonth: last?.month ?? null };
+    return { ...l, actual: actualAt(rows, l.id, month), projects: (projectsOfLot.get(l.id) ?? []).map((p) => p.code), source: l.fromKeystone && projectsOfLot.get(l.id)?.length ? ('keystone' as const) : last?.source ?? null, lastMonth: last?.month ?? null };
   });
   return {
     lots, rows, budgetSource: plans.budgetSource, g2Keur: plans.g2Keur, latestClass: plans.latestClass, month,
@@ -126,10 +126,10 @@ export function executionFrom(d: { plans: LotPlans; projects: Epc2iProject[]; ne
   };
 }
 
-/** The pack summary of a CAPEX (the subsidiary's items and EPC2i's part of its projects). */
-export async function packOf(q: Q, c: { id: string; code: string }, projects?: Epc2iProject[]) {
+/** The pack summary of a CAPEX (the subsidiary's items and Keystone's part of its projects). */
+export async function packOf(q: Q, c: { id: string; code: string }, projects?: KeystoneProject[]) {
   const [items, ps] = await Promise.all([packItemsOf(q, c.id), projects ? Promise.resolve(projects) : projectsOf(q, c.code)]);
-  return { items, projects: ps, summary: packSummary(items, epc2iPackOf(ps)) };
+  return { items, projects: ps, summary: packSummary(items, keystonePackOf(ps)) };
 }
 
 /** The G2 envelope criterion (AR-040): absent while no envelope covers the CAPEX. */

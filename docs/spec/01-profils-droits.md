@@ -16,7 +16,7 @@ Douze profils métier (prompt §2), plus l’administrateur (hors CDC, N-4). Les
 | `ceo` | PDG | groupe, **voit tout** | signe le G2 (Single Gate) ; décide au-delà des seuils délégués |
 | `group_cfo` | DAF groupe | groupe (vue croisée) | consolide le BP (classe E10) ; saisit le CA de référence des filiales ; expert DAF par défaut |
 | `group_hse` | SSE groupe | groupe (vue croisée) | jalons HS ; quitus PSSR ; expert HSE par défaut |
-| `epc2i_pmo` | PMO EPC2i | CAPEX nommés (Stratégiques) | appui opérationnel ; lecture des besoins machines et des projets EPC2i liés |
+| `epc2i_pmo` | PMO ingénierie | CAPEX nommés (Stratégiques) | appui opérationnel ; lecture des besoins machines et des projets Keystone liés |
 | `expert` | Expert (Qualité / HSE / DAF / Exploitation) | CAPEX où il est consulté | rend un avis motivé ; spécialité portée par l’affectation |
 | `copil_member` | Membre COPIL GPI | groupe (lecture) | examine les dossiers soumis au G1 ; donne un avis en séance ou en ligne |
 | `zone_director` | Directeur de Zone | filiales de ses zones (lecture) | lecteur ; portefeuille de sa zone |
@@ -33,7 +33,7 @@ Chaque affectation de rôle a une **portée** :
 | `group` | — | PDG, Dir.IG, DAF groupe, SSE groupe, membre COPIL GPI, admin |
 | `zone` | code de zone | Directeur de Zone « Afrique de l’Ouest » |
 | `subsidiary` | code filiale | Sponsor, CDG, expert de filiale |
-| `capex` | code CAPEX (équipe nommée) | CPF, Co-DIG, PMO EPC2i, expert consulté |
+| `capex` | code CAPEX (équipe nommée) | CPF, Co-DIG, PMO ingénierie, expert consulté |
 
 Règle de **visibilité** d’un CAPEX (`canSeeCapex`, règle pure dans `src/domain/rights.ts`) :
 
@@ -83,5 +83,5 @@ et pour tout CAPEX clos ou abandonné.
 ## 5. Personnes de démonstration (jeu `demo`)
 
 Deux filiales fictives (N-21) : **Atlas Process Maroc** (`APM`, zone Afrique du Nord) et **Sahel Agro Industries** (`SAI`, zone
-Afrique de l’Ouest), plus le groupe et EPC2i. Une personne par profil ; deux CAPEX de démonstration (un Light en Phase 2, un
+Afrique de l’Ouest), plus le groupe et l’ingénierie du groupe. Une personne par profil ; deux CAPEX de démonstration (un Light en Phase 2, un
 Stratégique en Phase 3) et un CAPEX en brouillon.

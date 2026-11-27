@@ -25,7 +25,7 @@ décision « déploiement général » prise en COPIL GPI.
 | Chiffre d'affaires de référence des filiales pilotes | DAF groupe | *Administration › Filiales, sites, zones* | à saisir |
 | Relevé de l'existant (C-10) : délai moyen d'un jalon, documents d'un dossier de jalon, part des décisions tracées | directeur industriel groupe | §4 ci-dessous | à fournir |
 | Choix des 1 à 2 CAPEX pilotes et de leur phase | responsable produit, Sponsors | — | à décider |
-| Vues Keystone (`pub_*`) si un CAPEX pilote a des machines EPC2i | Keystone | [`DEMANDES-KEYSTONE.md`](DEMANDES-KEYSTONE.md) | en cours (AR-029) |
+| Vues Keystone (`pub_*`) si un CAPEX pilote a des machines de l’ingénierie du groupe | Keystone | [`DEMANDES-KEYSTONE.md`](DEMANDES-KEYSTONE.md) | en cours (AR-029) |
 
 ## 3. Mise en place
 

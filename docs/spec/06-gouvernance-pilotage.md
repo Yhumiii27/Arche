@@ -18,7 +18,7 @@
 | Typologie | Gabarit de staffing | Cadence Copil projet | Audits |
 |---|---|---|---|
 | Light | CPF + Co-DIG | trimestrielle | — |
-| Stratégique | CP dédié + CDG filiale + PMO EPC2i | mensuelle | audit transversal par phase (N-19) |
+| Stratégique | CP dédié + CDG filiale + PMO ingénierie | mensuelle | audit transversal par phase (N-19) |
 
 - Contrôle **« équipe incomplète »** (tableau de bord, critère des jalons, 03 §3).
 - **Revue en retard** : `next_due_on` = dernière revue + période ; alerte au CPF et au Sponsor à `next_due_on`, signalement
@@ -28,7 +28,7 @@
 
 ## 3. Budget, engagé, réalisé, S-curve
 
-- **Lots hors EPC2i** : budget (baseline G2, phasage mensuel), engagé, réalisé et % physique, saisis chaque mois par le CDG
+- **Lots hors Keystone** : budget (baseline G2, phasage mensuel), engagé, réalisé et % physique, saisis chaque mois par le CDG
   ou importés (CSV d’un gabarit Arche ; import Sage plus tard, N-14).
 - **Lots machines** : lus dans Keystone — montant du contrat et des avenants (côté vente), facturé, % physique, SPI
   (`pub_avancement_projets`, `pub_avenants`).
@@ -49,7 +49,7 @@ le modèle de la DAF, s’il existe, définira le gabarit (N-11).
 | Tableau | Pour | Contenu |
 |---|---|---|
 | **Fiche CAPEX — synthèse** | équipe, groupe | phase, prochain jalon et son état, critères, budget et classe, écart d’incertitude, S-curve, pack %, HS, MoC, risques, revue suivante |
-| **Maturité des études** | CPF, Dir.IG | % pack pondéré par famille, part filiale / part EPC2i, tendance hebdomadaire |
+| **Maturité des études** | CPF, Dir.IG | % pack pondéré par famille, part filiale / part Keystone, tendance hebdomadaire |
 | **Portefeuille groupe** | PDG, Dir.IG, DAF, SSE, COPIL | CAPEX par filiale, zone, phase, typologie ; jalons G et HS à venir et en retard ; budget total et EAC ; MoC ; revues en retard |
 | **Portefeuille de zone** | Directeur de Zone | idem, limité à sa zone |
 | **Ma filiale** | Sponsor, CDG | CAPEX de la filiale |

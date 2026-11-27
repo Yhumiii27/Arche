@@ -21,7 +21,7 @@ describe('checks', () => {
     expect(checkSheet({ title: 'New line', investmentType: 'other', needDate: '2027-02-30' }, { sites: new Set() }).ok).toBe(false);
   });
   it('lots, budget lines, risks, decisions', () => {
-    expect(checkLot({ kind: 'machines', title: 'Extruders' })).toEqual({ ok: true, value: { kind: 'machines', title: 'Extruders', epc2i: true } });
+    expect(checkLot({ kind: 'machines', title: 'Extruders' })).toEqual({ ok: true, value: { kind: 'machines', title: 'Extruders', fromKeystone: true } });
     expect(checkLot({ kind: 'castle', title: 'x y' }).ok).toBe(false);
     expect(checkBudgetLines({ 'lot:a': '1 200', 'lot:b': '' }, ['a', 'b'])).toEqual({ ok: true, value: [{ lotId: 'a', amountKeur: 1200 }, { lotId: 'b', amountKeur: 0 }] });
     expect(checkBudgetLines({ 'lot:a': '-1' }, ['a']).ok).toBe(false);

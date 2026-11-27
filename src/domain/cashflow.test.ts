@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { byYear, cashflow, checkForecast } from './cashflow';
 
-const lot = { id: 'l1', number: 1, kind: 'civil_works', title: 'Civil works', epc2i: false, budgetKeur: 1200, start: '2026-07', end: '2026-12' };
+const lot = { id: 'l1', number: 1, kind: 'civil_works', title: 'Civil works', fromKeystone: false, budgetKeur: 1200, start: '2026-07', end: '2026-12' };
 
 describe('phased cash-flow (AR-045)', () => {
   it('the baseline spread over the window, the actuals month by month, the rest spread over the window when not forecast', () => {

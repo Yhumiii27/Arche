@@ -4,7 +4,8 @@
 > `pub_` (plus de vue dans les migrations d’Arche, plus de copie dans `partage/`) ; un besoin d’accès se déclare à Matrix comme un
 > lien (lecteur, objet, nature `lecture` | `execution`, raison).
 
-> 22 oct. 2026. Décision M-01 du dépôt Matrix : base `epc2i`, un schéma par outil, partage par vues `pub_`. Arche **n’écrit
+> 22 oct. 2026. Décision M-01 du dépôt Matrix : une base commune (`epc2i` à l’époque, `atrium` une fois
+> le serveur renommé par Matrix), un schéma par outil, partage par vues `pub_`. Arche **n’écrit
 > pas** dans le dépôt Matrix : ces demandes sont à transmettre au chat Matrix par le responsable produit (règle M-05 : une
 > branche et une PR par outil). Relevé du dépôt `Yhumiii27/Matrix` au commit `403ff37`.
 >
@@ -34,9 +35,9 @@ Aujourd’hui chaque outil est écrit en dur dans les scripts de Matrix ; ajoute
   de 16 caractères : avertissement) ; génération : `openssl rand -base64 30 | tr -d '/+=' | cut -c1-32`.
 - `arche_app` dans la liste des rôles créés, puis `ALTER ROLE arche_app LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE
   NOREPLICATION NOBYPASSRLS INHERIT PASSWORD …` (SCRAM).
-- `GRANT arche_app TO matrix_admin WITH INHERIT FALSE, SET TRUE;`, `GRANT CONNECT ON DATABASE epc2i TO arche_app;`
+- `GRANT arche_app TO matrix_admin WITH INHERIT FALSE, SET TRUE;`, `GRANT CONNECT ON DATABASE <base> TO arche_app;`
 - `COMMENT ON ROLE arche_app IS 'Connexion d''Arche (CAPEX des filiales) : propriétaire du schéma arche ; ailleurs, seulement SELECT sur les vues pub_ accordées.';`
-- `COMMENT ON DATABASE epc2i` : ajouter `arche` à la liste des schémas.
+- `COMMENT ON DATABASE <base>` : ajouter `arche` à la liste des schémas.
 
 ## M-2 · Schéma `arche` (`init/02-schemas.sql`)
 
@@ -45,8 +46,8 @@ CREATE SCHEMA IF NOT EXISTS arche AUTHORIZATION arche_app;
 ALTER SCHEMA arche OWNER TO arche_app;
 REVOKE ALL ON SCHEMA arche FROM PUBLIC;
 COMMENT ON SCHEMA arche IS 'Arche (CAPEX des filiales, DIG-PRODI) : tables, vues pub_ et journal des migrations (__drizzle_migrations). Propriétaire arche_app.';
-ALTER ROLE arche_app IN DATABASE epc2i SET search_path TO arche;
-ALTER ROLE arche_app IN DATABASE epc2i SET idle_in_transaction_session_timeout TO '5min';
+ALTER ROLE arche_app IN DATABASE <base> SET search_path TO arche;
+ALTER ROLE arche_app IN DATABASE <base> SET idle_in_transaction_session_timeout TO '5min';
 ```
 
 ## M-3 · Droits de base (`init/03-droits.sql`)
@@ -132,3 +133,26 @@ la décision M-18 de Matrix (Matrix définit les vues `pub_` et applique les lie
 `vigie.pub_etudes_securite` sur les tables de Vigie (contrat `CONTRATS.md` §2.5) une fois les études tenues dans Vigie
 (VG-01 à VG-05), et autoriser le lien `arche_app` → `vigie.pub_etudes_securite` (lecture). Sans elle, Arche reste en
 déclaratif (N-13) pour les jalons HS.
+
+## M-16 · Renommer les colonnes d’Arche qui portent l’ancien nom de la suite (Atrium, 27 nov. 2026) — **brouillon**
+
+**Brouillon, non déposé** : à présenter au propriétaire (note détaillée) et à porter dans le `REQUESTS.md` de Matrix après son
+« validé ». La suite s’appelle Atrium (propriétaire, 27 nov. 2026) ; Arche a retiré l’ancien nom de ses textes, de son code et
+de ses identifiants internes, mais garde trois noms **stockés** :
+
+- colonnes `arche.capex_lots.epc2i` (booléen : lot alimenté par un projet Keystone ; nom d’usage dans le code :
+  `fromKeystone`) et `arche.capex_snapshots.epc2i_pack_pct` (part Keystone du pack, instantané hebdomadaire ; dans le code
+  `keystonePackPct`). Le catalogue de Matrix les décrit (`data/catalogue.json`) ; aucune vue `pub_` ne les lit aujourd’hui
+  (vérifié dans `data/publications-depot.json` et les migrations d’Arche ; `arche.pub_editer` ne les ouvre pas) : seule la
+  déclaration du schéma (contrat `matrix.schema/1`) les fait connaître à Matrix.
+- Demande : accord de Matrix pour une migration d’Arche `ALTER TABLE arche.capex_lots RENAME COLUMN epc2i TO from_keystone` et
+  `ALTER TABLE arche.capex_snapshots RENAME COLUMN epc2i_pack_pct TO keystone_pack_pct`, puis mise à jour du catalogue par la
+  déclaration suivante d’Arche. Si une publication devait les lire d’ici là, Matrix la fait d’abord évoluer (une colonne
+  publiée ne se renomme pas : `…_v2`).
+- Hors de cette demande, à traiter avec Clavis : la clé de rôle `epc2i_pmo` (« PMO ingénierie ») est lue dans
+  `clavis.pub_acces` (`role`, correspondance de `src/domain/app-roles.ts` de Clavis) et stockée dans `role_assignments`,
+  `capex_members` et `circuit_steps` ; la renommer demande la même opération des deux côtés (nouvelle clé publiée par Clavis,
+  migration d’Arche des valeurs et des contraintes, lecture des deux clés pendant la transition). Le code de critère
+  `g2_epc2i_offers` (résultats de jalons stockés) et le champ / code d’erreur `epc2i` / `epc2i_lot` de l’API `/api/v1/`
+  (contrat publié, `docs/API.md`) restent aussi jusqu’à une version de l’API.
+- Sans cette demande : les noms stockés restent, sans effet pour les personnes (aucun n’est affiché).

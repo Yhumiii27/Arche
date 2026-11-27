@@ -22,7 +22,7 @@ export const ROLE_LABEL: Record<RoleKey, string> = {
   project_lead: 'Subsidiary project lead',
   controller: 'Subsidiary controller',
   co_dig: 'Co-DIG',
-  epc2i_pmo: 'EPC2i PMO',
+  epc2i_pmo: 'Engineering PMO',
   expert: 'Expert',
   admin: 'Administrator',
 };

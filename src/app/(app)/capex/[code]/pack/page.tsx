@@ -1,5 +1,5 @@
 // Engineering pack of a CAPEX (C-9, docs/spec/03 §3): the subsidiary's items of the standard list (weighted by family, each
-// validated item carrying its Codex reference) and EPC2i's part read in Keystone (pub_pack_ingenierie), with the weighted % that
+// validated item carrying its Codex reference) and Keystone's part read in Keystone (pub_pack_ingenierie), with the weighted % that
 // G2 needs above the threshold of the model.
 import { EmptyState } from '@/components/app/EmptyState';
 import { KpiGrid, KpiTile } from '@/components/app/Kpi';
@@ -7,7 +7,7 @@ import { SectionCard } from '@/components/app/SectionCard';
 import { PageHeader } from '@/components/app/shell/page-header';
 import { Table, Td, Th } from '@norma/charte/ds/Table';
 import { Tag } from '@norma/charte/ds/Tag';
-import { EPC2I_FAMILY_LABEL, PACK_FAMILIES, PACK_ITEM_STATUS_LABEL, PACK_TEMPLATE, packFact } from '@/domain/pack';
+import { KEYSTONE_FAMILY_LABEL, PACK_FAMILIES, PACK_ITEM_STATUS_LABEL, PACK_TEMPLATE, packFact } from '@/domain/pack';
 import { loadCapexPage } from '@/features/capex/page-data';
 import { PackItemForm } from '@/features/delivery/forms';
 import { dataText } from '@/i18n/data-text';
@@ -30,8 +30,8 @@ export default async function PackPage({ params }: PageProps<'/capex/[code]/pack
       <KpiGrid>
         <KpiTile label={t('Weighted pack')} value={pct(summary.pct, lang)} sub={`${t('G2 needs more than')} ${values.packThresholdPct} %`} tone={fact.met ? 'default' : 'alert'} />
         <KpiTile label={t('Subsidiary part')} value={pct(summary.subsidiary.pct, lang)} />
-        <KpiTile label={t('EPC2i part')} value={pct(summary.epc2i.pct, lang)} sub={projects.length ? `${projects.length} ${t('EPC2i project(s)')}` : t('No EPC2i project yet')} />
-        <KpiTile label={t('EPC2i share of the pack')} value={pct(summary.epc2iSharePct, lang)} />
+        <KpiTile label={t('Keystone part')} value={pct(summary.keystone.pct, lang)} sub={projects.length ? `${projects.length} ${t('Keystone project(s)')}` : t('No Keystone project yet')} />
+        <KpiTile label={t('Keystone share of the pack')} value={pct(summary.keystoneSharePct, lang)} />
       </KpiGrid>
       <SectionCard title={t('Subsidiary part')} hint={t('Standard list to be provided (C-9): five families of equal weight until then')} scroll>
         <Table>
@@ -66,12 +66,12 @@ export default async function PackPage({ params }: PageProps<'/capex/[code]/pack
           </tbody>
         </Table>
       </SectionCard>
-      <SectionCard title={t('EPC2i part')} hint={t('Read in Keystone: items expected and validated by family of each EPC2i project')} scroll>
+      <SectionCard title={t('Keystone part')} hint={t('Read in Keystone: items expected and validated by family of each Keystone project')} scroll>
         {projects.some((p) => p.pack.length) ? (
           <Table>
             <thead>
               <tr>
-                <Th>{t('EPC2i project')}</Th>
+                <Th>{t('Keystone project')}</Th>
                 <Th>{t('Family')}</Th>
                 <Th align="right">{t('Validated')}</Th>
                 <Th align="right">{t('Expected')}</Th>
@@ -84,7 +84,7 @@ export default async function PackPage({ params }: PageProps<'/capex/[code]/pack
                 return (
                   <tr key={`${p.code}/${f.family}`}>
                     <Td nowrap>{k === 0 ? (url ? <a href={url} target="_blank" rel="noreferrer">{p.code}</a> : p.code) : ''}</Td>
-                    <Td>{t(EPC2I_FAMILY_LABEL[f.family] ?? f.family)}</Td>
+                    <Td>{t(KEYSTONE_FAMILY_LABEL[f.family] ?? f.family)}</Td>
                     <Td align="right" numeric>{f.validated}</Td>
                     <Td align="right" numeric>{f.expected}</Td>
                     <Td align="right" numeric>{fmtNum(f.weight, lang)}</Td>
@@ -94,7 +94,7 @@ export default async function PackPage({ params }: PageProps<'/capex/[code]/pack
             </tbody>
           </Table>
         ) : (
-          <EmptyState>{t('EPC2i publishes its part of the pack for the projects of the CAPEX; none yet.')}</EmptyState>
+          <EmptyState>{t('Keystone publishes its part of the pack for the projects of the CAPEX; none yet.')}</EmptyState>
         )}
       </SectionCard>
     </>

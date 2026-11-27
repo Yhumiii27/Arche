@@ -1,6 +1,6 @@
 'use server';
 // Reviews of a CAPEX (docs/spec/06 §2, N-19): a project steering committee held, recorded by the project lead or the sponsor
-// (right `edit`); a cross-functional audit of a Strategic CAPEX, recorded by the group industrial director or the EPC2i PMO
+// (right `edit`); a cross-functional audit of a Strategic CAPEX, recorded by the group industrial director or the Engineering PMO
 // (right `audit`). Attendees, summary and decisions are kept; the decisions go to the decisions register of the CAPEX.
 import { eq } from 'drizzle-orm';
 import { canDo, nextNumber, refOf } from '@/domain/capex';

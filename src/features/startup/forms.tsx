@@ -51,7 +51,7 @@ export function LineForm({ code, line, machines }: { code: string; line?: LineVa
         <Field label={t('Scrap target (%)')} htmlFor={`ln-scrap-${p}`} required>
           <Input id={`ln-scrap-${p}`} name="scrapTargetPct" inputMode="decimal" defaultValue={line ? String(line.scrapTargetPct) : ''} required />
         </Field>
-        <Field label={t('Machines (Keystone numbers)')} htmlFor={`ln-mch-${p}`} span="full" hint={machines.length ? `${t('Delivered by EPC2i')} — ${machines.join(', ')}` : t('Separated by commas')}>
+        <Field label={t('Machines (Keystone numbers)')} htmlFor={`ln-mch-${p}`} span="full" hint={machines.length ? `${t('Delivered by group engineering')} — ${machines.join(', ')}` : t('Separated by commas')}>
           <Input id={`ln-mch-${p}`} name="machineNumbers" defaultValue={line?.machineNumbers.join(', ') ?? machines.join(', ')} />
         </Field>
       </ActionForm>

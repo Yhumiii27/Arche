@@ -55,7 +55,7 @@ describe('a CAPEX opened with the guided opening', () => {
     const r = await openGuidedAction('APM', {
       finish: 'open',
       sheet: { title: 'Anodising line', investmentType: 'new_line', leadUserId: lead, description: 'Anodising of the extruded profiles' },
-      lots: [{ kind: 'civil_works', title: 'Slab and pits' }, { kind: 'machines', title: 'Anodising line (EPC2i)' }, { kind: 'other', title: '' }],
+      lots: [{ kind: 'civil_works', title: 'Slab and pits' }, { kind: 'machines', title: 'Anodising line (group engineering)' }, { kind: 'other', title: '' }],
       budget: { basis: 'Ratios', amounts: ['300', '2 100'] },
       team: [{ userId: ctl, capexRole: 'controller' }, { userId: '', capexRole: 'member' }],
       risks: [{ title: 'Effluent treatment permit', category: 'regulatory', probability: '3', impact: '3', ownerUserId: lead }],
@@ -64,7 +64,7 @@ describe('a CAPEX opened with the guided opening', () => {
     expect(r).toEqual({ ok: true, code: 'CPX-APM-2026-03' });
     const c = await row('CPX-APM-2026-03');
     expect(c).toMatchObject({ status: 'active', phase: 'cadrage', leadUserId: lead, lifecycleModelVersion: '4.0' });
-    expect((await t.db.select().from(capexLots).where(eq(capexLots.capexId, c.id)).orderBy(asc(capexLots.number))).map((l) => [l.number, l.title, l.epc2i])).toEqual([[1, 'Slab and pits', false], [2, 'Anodising line (EPC2i)', true]]);
+    expect((await t.db.select().from(capexLots).where(eq(capexLots.capexId, c.id)).orderBy(asc(capexLots.number))).map((l) => [l.number, l.title, l.fromKeystone])).toEqual([[1, 'Slab and pits', false], [2, 'Anodising line (group engineering)', true]]);
     const [bv] = await t.db.select().from(budgetVersions).where(eq(budgetVersions.capexId, c.id));
     expect(bv).toMatchObject({ number: 1, estimateClass: 'E50', status: 'draft', basis: 'Ratios' });
     expect((await t.db.select().from(capexMembers).where(eq(capexMembers.capexId, c.id))).map((m) => m.capexRole).sort()).toEqual(['controller', 'lead']);
@@ -82,7 +82,7 @@ describe('a CAPEX opened with the guided opening', () => {
     const r = await openGuidedAction('APM', {
       mode: 'takeover', finish: 'takeover',
       sheet: { title: 'Press line already ordered', investmentType: 'new_line', leadUserId: lead },
-      lots: [{ kind: 'civil_works', title: 'Slab' }, { kind: 'machines', title: 'Press (EPC2i)' }],
+      lots: [{ kind: 'civil_works', title: 'Slab' }, { kind: 'machines', title: 'Press (group engineering)' }],
       takeover: { phase: 'execution', openedOn: '2025-11-03', 'G1:on': '2026-01-15', 'G1:by': 'Marc Delorme', 'G2:on': '2026-06-10', 'G2:by': 'Anne Morel', estimateClass: 'E10', validatedOn: '2026-06-02', validatedByName: 'Sophie Laurent', amounts: ['400', '1800'] },
       sections: { baseline: 'Not used in phase 3' },
     });

@@ -21,7 +21,7 @@
 | `lifecycle_models` | `code` (`dig-prodi`), `version` (`4.0`), `definition` (jsonb), `active` | cycle paramétré (03) ; une version par révision de la méthode |
 | `delegation_rules` | `id`, `typology`, `object_kind`, `max_pct_of_g2`, `max_keur`, `max_delay_days`, `decider_role`, `valid_from` | matrice de délégation (C-4) ; datée |
 | `staffing_templates` | `typology`, `role`, `required` | gabarit de staffing (CDC §3) |
-| `pack_templates` | `investment_type`, `family`, `item_code`, `label`, `weight`, `owner` (`subsidiary` / `epc2i`) | liste type du pack ingénierie (C-9) |
+| `pack_templates` | `investment_type`, `family`, `item_code`, `label`, `weight`, `owner` (`subsidiary`) | liste type du pack ingénierie (C-9) |
 | `hs_milestones` | `code` (HS2…HS6, PSSR), `phase`, `content`, `owner`, `blocks_gate` | table des jalons HS (C-3) |
 | `expert_specialities` | `code` (`quality`, `hse`, `finance`, `operations`) | |
 
@@ -38,15 +38,15 @@
 |---|---|---|
 | `capex` | `id`, `code`, `subsidiary_code`, `site_id`, `title`, `description`, `investment_type` (`new_plant` / `new_line` / `extension` / `other`), `status` (`draft` / `active` / `on_hold` / `closed` / `abandoned`), `phase` (`cadrage` / `avant_projet` / `execution` / `demarrage`), `typology` (`light` / `strategic`), `typology_source` (`computed` / `forced`), `typology_reason`, `lifecycle_model_version`, `sponsor_user_id`, `lead_user_id`, `need_date`, `mes_started_on`, `opened_at`, `closed_at` | code `CPX-<FIL>-<AAAA>-<NN>` calculé dans la transaction |
 | `capex_members` | `capex_id`, `user_id`, `capex_role` (`lead`, `controller`, `co_dig`, `epc2i_pmo`, `internal_client`, `member`) | équipe nommée ; contrôle du gabarit de staffing |
-| `capex_lots` | `id`, `capex_id`, `number`, `kind` (`civil_works`, `buildings`, `utilities`, `vrd`, `machines`, `recruitment`, `land`, `other`), `title`, `epc2i` (bool), `position` | lots (N-12 pour la liste) ; `machines` = lots alimentés par les projets EPC2i |
+| `capex_lots` | `id`, `capex_id`, `number`, `kind` (`civil_works`, `buildings`, `utilities`, `vrd`, `machines`, `recruitment`, `land`, `other`), `title`, `epc2i` (bool : lot d’un projet Keystone ; nom de colonne gardé, voir DEMANDES-MATRIX.md M-16), `position` | lots (N-12 pour la liste) ; `machines` = lots alimentés par les projets Keystone |
 | `budget_versions` | `id`, `capex_id`, `number`, `estimate_class` (`E50` / `E30` / `E10`), `status` (`draft` / `submitted` / `validated` / `superseded`), `basis` (texte), `validated_by`, `validated_at`, `is_g2_baseline` | entonnoir de précision |
 | `budget_lines` | `budget_version_id`, `lot_id`, `amount_keur`, `phasing` (jsonb : mois → k€) | central ; fourchette = classe × central |
-| `lot_actuals` | `lot_id`, `month`, `committed_keur`, `spent_keur`, `physical_pct`, `entered_by`, `source` (`manual` / `import`) | engagé, réalisé, % physique (lots hors EPC2i) ; mensuel |
+| `lot_actuals` | `lot_id`, `month`, `committed_keur`, `spent_keur`, `physical_pct`, `entered_by`, `source` (`manual` / `import`) | engagé, réalisé, % physique (lots hors Keystone) ; mensuel |
 | `business_plans` | `id`, `capex_id`, `dossier_version_id`, `horizon_years`, `discount_rate_pct`, `flows` (jsonb par année : capex, opex, revenue), `npv_keur`, `irr_pct`, `payback_years` | BP ; calculs dans `src/domain/bp.ts` (N-11) |
 | `risks` | `id`, `capex_id`, `number`, `title`, `category`, `probability`, `impact`, `owner_user_id`, `response`, `status`, `due_on` | registre simple |
 | `decisions` | `id`, `capex_id`, `number`, `taken_on`, `body` (`copil_projet` / `copil_gpi` / `dir_ig` / `ceo`), `text`, `review_id` | registre des décisions |
 | `authorizations` | `id`, `capex_id`, `kind` (`icpe`, `building_permit`, `plu`, `atex`, `other`), `authority`, `filed_on`, `due_on`, `obtained_on`, `status`, `codex_ref` | dossier réglementaire ; alerte d’échéance |
-| `pack_items` | `capex_id`, `item_code`, `status` (`expected` / `in_progress` / `validated` / `not_applicable`), `codex_ref`, `validated_on` | part filiale du pack ; part EPC2i lue dans `pub_pack_ingenierie` |
+| `pack_items` | `capex_id`, `item_code`, `status` (`expected` / `in_progress` / `validated` / `not_applicable`), `codex_ref`, `validated_on` | part filiale du pack ; part Keystone lue dans `pub_pack_ingenierie` |
 | `hs_statuses` | `capex_id`, `hs_code`, `status` (`not_started` / `in_progress` / `passed` / `waived`), `evidence_ref`, `source` (`vigie` / `declared`), `passed_on`, `open_actions`, `late_actions` | miroir Vigie ou déclaratif (N-13) |
 | `changes` | `id`, `capex_id`, `number`, `title`, `kind` (`cost` / `schedule` / `scope` / `contingency_draw`), `amount_keur`, `delay_days`, `status`, `required_decider`, `decided_by`, `decided_at`, `decision` | MoC après G2 ; décideur calculé par la matrice |
 
