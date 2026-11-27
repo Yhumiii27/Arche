@@ -82,14 +82,14 @@ export function NeedForm({ code, sheets, lots, draft, primary }: { code: string;
 }
 
 export function SubmitNeedButton({ code, needId }: { code: string; needId: string }) {
-  return <ActionButton run={() => submitNeedAction(code, needId)} label="Submit to EPC2i" done="Submitted" variant="primary" />;
+  return <ActionButton run={() => submitNeedAction(code, needId)} label="Submit to group engineering" done="Submitted" variant="primary" />;
 }
 
 export function DeleteNeedButton({ code, needId }: { code: string; needId: string }) {
   return <ActionButton run={() => deleteNeedAction(code, needId)} label="Delete" done="Deleted" variant="ghost" />;
 }
 
-/** "Withdraw…": a panel asking the reason (the withdrawal is traced, EPC2i sees it). */
+/** "Withdraw…": a panel asking the reason (the withdrawal is traced, group engineering sees it). */
 export function WithdrawNeedForm({ code, needId }: { code: string; needId: string }) {
   const { t } = useI18n();
   return (

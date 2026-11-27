@@ -15,7 +15,7 @@
 |---|---|---|
 | code CAPEX | `CPX-APM-2026-01` | Arche |
 | référence de besoin | `CPX-APM-2026-01/B01` | Arche |
-| code de projet EPC2i | `HLT-026` (`pub_projets.code`) | Keystone |
+| code de projet Keystone | `HLT-026` (`pub_projets.code`) | Keystone |
 | numéro de machine | `MCH-041` (`pub_parc_machines.number`) | Keystone |
 | code catalogue | `EMP-40T` + `version` | Keystone |
 
@@ -23,7 +23,7 @@
 
 ### 2.1 Keystone — existent
 
-**`pub_projets`** (contrat D02 v1) — utilisée pour l’étape courante et le chef de projet des projets EPC2i liés.
+**`pub_projets`** (contrat D02 v1) — utilisée pour l’étape courante et le chef de projet des projets Keystone liés.
 
 | Colonne | Type | Usage dans Arche |
 |---|---|---|
@@ -83,7 +83,7 @@ les PV d’acceptation. **Colonnes à ajouter** (K-06) : `type` (`client_accepta
 | `delai_semaines` | int | délai proposé |
 | `valide_jusqu_au` | date | validité de l’offre |
 | `document_ref` | text | référence Codex du devis ou de l’offre |
-| `projet_code` | text | projet EPC2i créé à la commande (sinon null) |
+| `projet_code` | text | projet Keystone créé à la commande (sinon null) |
 | `statut` | text | `en_cours` / `remise` / `acceptee` / `caduque` |
 | `repondu_le` | timestamptz | |
 | `maj_le` | timestamptz | |
@@ -160,7 +160,7 @@ santé.
 |---|---|---|
 | `etude_ref` | text | identifiant de l’étude dans Vigie (clé) |
 | `capex_code` | text | CAPEX concerné (`CPX-…`), ou null |
-| `projet_code` | text | projet EPC2i concerné (Keystone), ou null |
+| `projet_code` | text | projet Keystone concerné, ou null |
 | `jalon` | text | `HS2` (HazID), `HS3` (HazOp / AMDEC), `HS4` (contrôle chantier), `PSSR` (avec RSPDI), `HS6` (ASPD) |
 | `type` | text | `hazid`, `hazop`, `amdec`, `controle_chantier`, `pssr`, `rspdi`, `aspd` |
 | `statut` | text | `planifiee`, `realisee`, `validee`, `annulee` |

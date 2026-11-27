@@ -10,7 +10,7 @@
 | Contrôleur de gestion de la filiale (CDG) | [`controleur.md`](controleur.md) |
 | CEO, directeur industriel groupe, DAF groupe, membres du COPIL GPI, directeurs de zone | [`direction-groupe.md`](direction-groupe.md) |
 | HSE groupe | [`hse-groupe.md`](hse-groupe.md) |
-| Experts, Co-DIG, PMO EPC2i | [`experts-et-pmo.md`](experts-et-pmo.md) |
+| Experts, Co-DIG, PMO ingénierie | [`experts-et-pmo.md`](experts-et-pmo.md) |
 | Administrateur d'Arche | [`administrateur.md`](administrateur.md) |
 
 ## Ce qui vaut pour tous

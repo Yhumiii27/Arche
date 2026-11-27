@@ -1,6 +1,7 @@
-// npm run db:local — creates Arche's database on a developer's PostgreSQL server: database `epc2i` (ARCHE_LOCAL_DATABASE),
-// role arche_app (password ARCHE_LOCAL_PASSWORD, default "arche-dev") and schema `arche`, the layout of the shared EPC2I
-// server (Matrix). Connects with ARCHE_ADMIN_URL (a superuser; default postgres://postgres:postgres@127.0.0.1:5432/postgres)
+// npm run db:local — creates Arche's database on a developer's PostgreSQL server: database `atrium` (ARCHE_LOCAL_DATABASE),
+// role arche_app (password ARCHE_LOCAL_PASSWORD, default "arche-dev") and schema `arche`, the layout of the shared server
+// of the Atrium suite (Matrix; a database made before the rename keeps working with ARCHE_LOCAL_DATABASE=epc2i). Connects
+// with ARCHE_ADMIN_URL (a superuser; default postgres://postgres:postgres@127.0.0.1:5432/postgres)
 // — on a Mac with Homebrew's PostgreSQL, whose superuser is the macOS account without password, that account is tried when the
 // default fails — and prints the DATABASE_URL to put in .env.local. Then: npm run db:migrate. Never run it against the shared server: there,
 // Matrix's base layer creates the role and the schema.
@@ -16,7 +17,7 @@ async function main(): Promise<void> {
   const adminUrl = process.env.ARCHE_ADMIN_URL || (await defaultAdminUrl());
   const reset = process.argv.includes('--reset');
   if (reset && !['127.0.0.1', 'localhost', '::1', '[::1]'].includes(new URL(adminUrl).hostname)) throw new Error('--reset only runs against a local PostgreSQL server');
-  const database = process.env.ARCHE_LOCAL_DATABASE || 'epc2i';
+  const database = process.env.ARCHE_LOCAL_DATABASE || 'atrium';
   const password = process.env.ARCHE_LOCAL_PASSWORD || 'arche-dev';
   const admin = new pg.Client({ connectionString: adminUrl });
   await admin.connect();

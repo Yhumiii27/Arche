@@ -96,7 +96,7 @@ export default async function CapexOverviewPage({ params }: PageProps<'/capex/[c
             value={!d.gap ? '—' : d.gap.kind === 'range' ? `${d.gap.gapPts} pts` : `${d.gap.deviationPct > 0 ? '+' : ''}${fmtNum(d.gap.deviationPct, lang)} %`}
             sub={!d.gap ? undefined : d.gap.kind === 'range' ? `${d.gap.widthPct} % → ${d.gap.targetClass} ${d.gap.targetWidthPct} %` : t(d.gap.within ? 'EAC within the E10 range' : 'EAC outside the E10 range')}
           />
-          <KpiTile label={t('Weighted pack')} value={d.pack.pct == null ? '—' : `${fmtNum(d.pack.pct, lang)} %`} sub={`${t('EPC2i part')} ${d.pack.epc2i.pct == null ? '—' : `${fmtNum(d.pack.epc2i.pct, lang)} %`}`} />
+          <KpiTile label={t('Weighted pack')} value={d.pack.pct == null ? '—' : `${fmtNum(d.pack.pct, lang)} %`} sub={`${t('Keystone part')} ${d.pack.keystone.pct == null ? '—' : `${fmtNum(d.pack.keystone.pct, lang)} %`}`} />
           <KpiTile label={t('Safety milestones')} value={`${d.hs.passed} / ${d.hs.total}`} sub={d.hs.next ? `${t('next')} ${t(HS_LABEL[d.hs.next.code])}` : undefined} />
           <KpiTile label={t('Changes waiting')} value={d.openChanges} sub={`${d.majorRisks} ${t('major risk(s)')}`} />
           <KpiTile label={t('Next project review')} value={d.review.dueOn ? fmtDate(d.review.dueOn, lang) : '—'} tone={d.review.state === 'late' || d.review.state === 'escalated' ? 'alert' : 'default'} sub={d.review.state === 'ok' || d.review.state === 'none' ? undefined : `${d.review.daysLate} ${t('day(s) late')}`} />

@@ -49,7 +49,7 @@ export function accountsFact(i: { lots: number; costed: number; statement: boole
 export const REX_CATEGORIES = ['technical', 'schedule', 'cost', 'hse', 'organisation', 'supplier', 'regulatory', 'other'] as const;
 export type RexCategory = (typeof REX_CATEGORIES)[number];
 export const REX_CATEGORY_LABEL: Record<RexCategory, string> = {
-  technical: 'Technical', schedule: 'Schedule', cost: 'Cost', hse: 'HSE', organisation: 'Organisation', supplier: 'Suppliers and EPC2i', regulatory: 'Regulatory', other: 'Other',
+  technical: 'Technical', schedule: 'Schedule', cost: 'Cost', hse: 'HSE', organisation: 'Organisation', supplier: 'Suppliers and group engineering', regulatory: 'Regulatory', other: 'Other',
 };
 
 const PHASES: readonly Phase[] = ['cadrage', 'avant_projet', 'execution', 'demarrage'];

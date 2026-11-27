@@ -51,7 +51,7 @@ describe('typology (C-5)', () => {
 });
 
 describe('staffing template', () => {
-  it('Light: lead + Co-DIG; Strategic: lead + controller + EPC2i PMO', () => {
+  it('Light: lead + Co-DIG; Strategic: lead + controller + Engineering PMO', () => {
     expect(missingStaff('light', ['lead'])).toEqual(['co_dig']);
     expect(missingStaff('strategic', ['lead', 'co_dig'])).toEqual(['controller', 'epc2i_pmo']);
     expect(missingStaff(null, ['lead', 'co_dig'])).toEqual([]);

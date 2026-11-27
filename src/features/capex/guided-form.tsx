@@ -156,7 +156,7 @@ export function GuidedOpen({ role, today, subsidiaries, initialSubsidiary, sites
 
         {step === 'lots' && (
           <>
-            <p className={s.intro}>{t('The lots split the budget: works, buildings, utilities, machines (EPC2i)…')}</p>
+            <p className={s.intro}>{t('The lots split the budget: works, buildings, utilities, machines (group engineering)…')}</p>
             <div className={s.rows}>
               {lots.map((l, i) => (
                 <div key={i} className={s.row} style={{ gridTemplateColumns: '200px minmax(0, 1fr) auto' }}>
@@ -185,7 +185,7 @@ export function GuidedOpen({ role, today, subsidiaries, initialSubsidiary, sites
                   </Field>
                 ))}
                 <Field label={t('Basis of the estimate')} htmlFor="go-basis" span="full">
-                  <Input id="go-basis" value={budget.basis} onChange={(e) => setBudget({ ...budget, basis: e.target.value })} placeholder={t('Ratios, EPC2i catalogue prices…')} />
+                  <Input id="go-basis" value={budget.basis} onChange={(e) => setBudget({ ...budget, basis: e.target.value })} placeholder={t('Ratios, machine catalogue prices…')} />
                 </Field>
               </div>
             ) : <p className={s.intro}>{t('Add the lots first (step 3).')}</p>}

@@ -1,6 +1,6 @@
 // Execution follow-up of a CAPEX (docs/spec/06 §3, N-14): budget of each lot (G2 baseline, else the latest validated version),
 // planned over the lot's window (start and end months, spread evenly), the committed, spent and physical % of each month —
-// entered or imported by the controller for the lots outside EPC2i, read in Keystone for the machine lots — and the consolidated
+// entered or imported by the controller for the lots outside Keystone, read in Keystone for the machine lots — and the consolidated
 // S-curve with SPI, CPI and EAC; the works completion of K3 and the uncertainty gap (CDC §4). Values entered for a month are
 // cumulative to the end of that month. Pure.
 import { classWidthPct, parseKeur, round1, type EstimateClass } from './budget';
@@ -28,7 +28,7 @@ export interface LotPlan {
   number: number;
   kind: string;
   title: string;
-  epc2i: boolean;
+  fromKeystone: boolean;
   budgetKeur: number;
   start: Month | null;
   end: Month | null;
@@ -116,9 +116,9 @@ export function sCurve(lots: readonly LotPlan[], rows: readonly LotActual[], cur
   });
 }
 
-/** K3 criterion: the works lots (outside EPC2i) weighted by budget, at the threshold (spec 03 §3: ≥ 95 %). */
+/** K3 criterion: the works lots (outside Keystone) weighted by budget, at the threshold (spec 03 §3: ≥ 95 %). */
 export function worksFact(lots: readonly LotPlan[], rows: readonly LotActual[], m: Month, thresholdPct: number): { met: boolean; value: string } | undefined {
-  const works = lots.filter((l) => !l.epc2i && (WORKS_KINDS as readonly string[]).includes(l.kind) && l.budgetKeur > 0);
+  const works = lots.filter((l) => !l.fromKeystone && (WORKS_KINDS as readonly string[]).includes(l.kind) && l.budgetKeur > 0);
   if (!works.length) return { met: true, value: 'No works lot' };
   const budget = works.reduce((s, l) => s + l.budgetKeur, 0);
   const pct = Math.round((works.reduce((s, l) => s + l.budgetKeur * actualAt(rows, l.id, m).physicalPct, 0) / budget) * 10) / 10;
@@ -193,9 +193,9 @@ export const ACTUALS_CSV_HEADER = 'lot;month;committed_keur;spent_keur;physical_
 
 /**
  * Parses Arche's import template: one line per lot and month, `;`-separated (decimal comma accepted), the lot by its number.
- * Lines of EPC2i lots are refused (they come from Keystone). Every line is checked; one error refuses the whole file.
+ * Lines of machine lots are refused (they come from Keystone). Every line is checked; one error refuses the whole file.
  */
-export function parseActualsCsv(csv: string, lots: readonly { id: string; number: number; epc2i: boolean }[], current: Month): { ok: true; value: LotActual[] } | { ok: false; error: string; line?: number } {
+export function parseActualsCsv(csv: string, lots: readonly { id: string; number: number; fromKeystone: boolean }[], current: Month): { ok: true; value: LotActual[] } | { ok: false; error: string; line?: number } {
   const lines = csv.replace(/^﻿/, '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   if (!lines.length) return { ok: false, error: 'The file is empty' };
   const body = /^lot\s*;/i.test(lines[0]) ? lines.slice(1) : lines;
@@ -210,7 +210,7 @@ export function parseActualsCsv(csv: string, lots: readonly { id: string; number
     const n = Number(text(lot));
     const target = lots.find((x) => x.number === n);
     if (!target) return { ok: false, error: 'Unknown lot number', line };
-    if (target.epc2i) return { ok: false, error: 'EPC2i lots come from Keystone', line };
+    if (target.fromKeystone) return { ok: false, error: 'Machine lots come from Keystone', line };
     const ch = checkActual({ month, committedKeur, spentKeur, physicalPct }, current);
     if (!ch.ok) return { ok: false, error: ch.error, line };
     const key = `${target.id}@${ch.value.month}`;
@@ -221,8 +221,8 @@ export function parseActualsCsv(csv: string, lots: readonly { id: string; number
   return { ok: true, value: out };
 }
 
-/** Values of an EPC2i lot from its projects (Keystone, AC-2): committed = contract + signed amendments, spent = invoiced. */
-export function epc2iLotValues(projects: readonly { contractKeur: number | null; amendmentsKeur: number | null; invoicedKeur: number | null; physicalPct: number | null }[]): { committedKeur: number; spentKeur: number; physicalPct: number } | null {
+/** Values of an machine lot from its projects (Keystone, AC-2): committed = contract + signed amendments, spent = invoiced. */
+export function keystoneLotValues(projects: readonly { contractKeur: number | null; amendmentsKeur: number | null; invoicedKeur: number | null; physicalPct: number | null }[]): { committedKeur: number; spentKeur: number; physicalPct: number } | null {
   if (!projects.length) return null;
   const committed = projects.reduce((s, p) => s + (p.contractKeur ?? 0) + (p.amendmentsKeur ?? 0), 0);
   const spent = projects.reduce((s, p) => s + (p.invoicedKeur ?? 0), 0);

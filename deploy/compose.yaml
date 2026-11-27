@@ -1,8 +1,10 @@
 # Arche on Coolify — a "Docker Compose" resource (derived from Keystone's kit). Runbook in French: docs/EXPLOITATION.md.
 #
-#   db       PostgreSQL 16 (named volume arche-db); postgres-init/ creates the database epc2i, the role arche_app and the
-#            schema `arche` on an empty volume. To use the shared EPC2I server instead (decision M-01), drop this service and
-#            set DATABASE_URL to postgres://arche_app:…@<host>:5432/epc2i (Matrix creates the role and the schema).
+#   db       PostgreSQL 16 (named volume arche-db); postgres-init/ creates the database ATRIUM_PG_DATABASE (default
+#            `epc2i`, today's name of the shared server's database; `atrium` once Matrix has renamed it), the role arche_app
+#            and the schema `arche` on an empty volume. A volume already initialised keeps its database: leave the variable
+#            at the name it was created with. To use the shared server of the Atrium suite instead (decision M-01), use
+#            deploy/compose.shared.yaml (Matrix creates the role and the schema).
 #   migrate  one-shot `npm run db:migrate` before every start (migrations, then the seed of an EMPTY schema: ARCHE_SEED must
 #            be set — demo for the beta, production for reference data only); left out of Coolify's health status
 #   app      the web server (port 3400, behind Coolify's proxy and TLS); starts once the migration has succeeded
@@ -14,7 +16,7 @@
 
 x-arche-env: &arche-env
   NODE_ENV: production
-  DATABASE_URL: postgresql://arche_app:${ARCHE_APP_PASSWORD:?ARCHE_APP_PASSWORD is required}@db:5432/epc2i
+  DATABASE_URL: postgresql://arche_app:${ARCHE_APP_PASSWORD:?ARCHE_APP_PASSWORD is required}@db:5432/${ATRIUM_PG_DATABASE:-epc2i}
   DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-}
   ARCHE_SEED: ${ARCHE_SEED:?ARCHE_SEED is required (demo or production)}
   ARCHE_AUTH: ${ARCHE_AUTH:-}
@@ -61,11 +63,12 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       ARCHE_APP_PASSWORD: ${ARCHE_APP_PASSWORD:?ARCHE_APP_PASSWORD is required}
+      ARCHE_DATABASE: ${ATRIUM_PG_DATABASE:-epc2i}
     volumes:
       - arche-db:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d epc2i"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d \"$$ARCHE_DATABASE\""]
       interval: 10s
       timeout: 5s
       retries: 12

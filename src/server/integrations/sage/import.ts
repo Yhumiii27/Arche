@@ -1,7 +1,7 @@
 import 'server-only';
 // Sage connector (AR-047, DECISIONS.md §5): the import of an extraction file of a subsidiary — uploaded by its controller or
 // the group CFO, dropped by the planned extraction in ARCHE_SAGE_DIR, or the demonstration extraction. Every line is checked:
-// kept when its analytic code is a lot's Sage code (a CAPEX of the subsidiary, a lot outside EPC2i) and its currency has a
+// kept when its analytic code is a lot's Sage code (a CAPEX of the subsidiary, a lot outside Keystone) and its currency has a
 // reference rate for its month, skipped when already imported, rejected otherwise (journal of the rejects). The lots touched
 // get their cumulative committed and spent amounts at the end of each month, converted to k€ (AR-039); the physical progress
 // typed by the controller is kept.
@@ -25,11 +25,11 @@ export interface SageImportResult {
   lots: number;
 }
 
-/** The lots of the subsidiary by Sage code (lots outside EPC2i: those come from Keystone). */
+/** The lots of the subsidiary by Sage code (lots outside Keystone: those come from Keystone). */
 export async function sageCodesOf(q: Q, subsidiaryCode: string) {
-  const rows = await q.select({ id: capexLots.id, sageCode: capexLots.sageCode, epc2i: capexLots.epc2i, capexCode: capex.code, number: capexLots.number })
+  const rows = await q.select({ id: capexLots.id, sageCode: capexLots.sageCode, fromKeystone: capexLots.fromKeystone, capexCode: capex.code, number: capexLots.number })
     .from(capexLots).innerJoin(capex, eq(capex.id, capexLots.capexId)).where(eq(capex.subsidiaryCode, subsidiaryCode));
-  return new Map(rows.filter((r) => r.sageCode && !r.epc2i).map((r) => [r.sageCode!, r]));
+  return new Map(rows.filter((r) => r.sageCode && !r.fromKeystone).map((r) => [r.sageCode!, r]));
 }
 
 export async function importSage(

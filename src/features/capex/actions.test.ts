@@ -76,7 +76,7 @@ describe('a CAPEX through the DIG-PRODI cycle', () => {
     as('project_lead');
     expect(await newVersion(CODE, 'E50', [])).toEqual({ ok: false, error: 'Add the lots of the CAPEX first' });
     expect(await addLotAction(CODE, null, form({ kind: 'civil_works', title: 'Slab' }))).toEqual({ ok: true });
-    expect(await addLotAction(CODE, null, form({ kind: 'machines', title: 'Shredder and extruder (EPC2i)' }))).toEqual({ ok: true });
+    expect(await addLotAction(CODE, null, form({ kind: 'machines', title: 'Shredder and extruder (group engineering)' }))).toEqual({ ok: true });
     const coDig = await userId('t.girard@groupe.example');
     const saiPerson = await userId('f.sarr@sahel-agro.example');
     expect(await addMemberAction(CODE, null, form({ userId: saiPerson, capexRole: 'member' }))).toEqual({ ok: false, error: 'Choose a person of the subsidiary or of the group' });
@@ -118,7 +118,7 @@ describe('a CAPEX through the DIG-PRODI cycle', () => {
 
 describe('other rules', () => {
   it('another subsidiary never sees nor writes an APM CAPEX', async () => {
-    // The expert of SAI and the EPC2i PMO are scoped to the SAI CAPEX only.
+    // The expert of SAI and the Engineering PMO are scoped to the SAI CAPEX only.
     as('expert');
     expect(await saveRiskAction('CPX-APM-2026-01', null, null, form({ title: 'Some risk', category: 'cost', probability: '2', impact: '2' }))).toEqual({ ok: false, error: 'CAPEX not found' });
     as('epc2i_pmo');

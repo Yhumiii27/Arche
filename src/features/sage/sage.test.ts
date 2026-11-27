@@ -64,7 +64,7 @@ describe('Sage import (AR-047)', () => {
     expect(await importSageAction('SAI', null, form({ file: new File([csv], 'SAI_2026-10.csv', { type: 'text/csv' }) }))).toEqual({ ok: true });
     expect(await actual(4)).toMatchObject({ committedKeur: 900, spentKeur: 150 });
     expect(await setSageCodeAction('CPX-SAI-2026-01', (await lot(3)).id, null, form({ sageCode: 'SAI-UT-01' }))).toEqual({ ok: false, error: 'This code is already the one of CPX-SAI-2026-01 lot 4' });
-    expect(await setSageCodeAction('CPX-SAI-2026-01', (await lot(5)).id, null, form({ sageCode: 'SAI-X' }))).toEqual({ ok: false, error: 'EPC2i lots come from Keystone' });
+    expect(await setSageCodeAction('CPX-SAI-2026-01', (await lot(5)).id, null, form({ sageCode: 'SAI-X' }))).toEqual({ ok: false, error: 'Machine lots come from Keystone' });
     expect(await setSageCodeAction('CPX-SAI-2026-01', (await lot(3)).id, null, form({ sageCode: 'sai-bt-02' }))).toEqual({ ok: true });
     expect((await lot(3)).sageCode).toBe('SAI-BT-02');
   });

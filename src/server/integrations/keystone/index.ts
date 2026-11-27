@@ -44,12 +44,12 @@ export async function catalogue(q: Q): Promise<CatalogueItem[]> {
   return (await rowsOf(q, 'pub_catalogue_machines')).map(toCatalogueItem);
 }
 
-/** The answers of EPC2i to the needs of a CAPEX. */
+/** The answers of group engineering to the needs of a CAPEX. */
 export async function answersOf(q: Q, capexCode: string): Promise<Answer[]> {
   return (await rowsOf(q, 'pub_reponses_besoins', and(eq(keystoneMirror.capexCode, capexCode)))).map(toAnswer);
 }
 
-export interface Epc2iProject {
+export interface KeystoneProject {
   code: string;
   name: string;
   phase: string | null;
@@ -60,7 +60,7 @@ export interface Epc2iProject {
   amendments: { number: string; subject: string | null; amountKeur: number | null; delayDays: number | null; status: string; signedOn: string | null }[];
   reserves: { number: string; category: string; origin: string | null; status: string; owner: string | null; openedOn: string | null; clearedOn: string | null }[];
   deliverables: { number: string; title: string; status: string; type: string | null; acceptedOn: string | null }[];
-  /** EPC2i's part of the engineering pack, by family (pub_pack_ingenierie). */
+  /** Keystone's part of the engineering pack, by family (pub_pack_ingenierie). */
   pack: { family: string; expected: number; validated: number; weight: number }[];
   /** Machines of the installed base delivered by the project (pub_parc_machines, distinct numbers). */
   machines: { number: string; name: string; deliveredOn: string | null }[];
@@ -69,16 +69,16 @@ export interface Epc2iProject {
 const MILESTONE_ORDER = ['commande', 'fin_etudes', 'fat', 'expedition', 'arrivee_site', 'sat', 'pv_reception', 'fin_garantie'];
 
 /**
- * The EPC2i projects of a CAPEX: those Keystone links to it (pub_projets.capex_code, K-05) and those named by an answer
+ * The Keystone projects of a CAPEX: those Keystone links to it (pub_projets.capex_code, K-05) and those named by an answer
  * to one of its needs (pub_reponses_besoins.projet_code), with their follow-up.
  */
-export async function projectsOf(q: Q, capexCode: string): Promise<Epc2iProject[]> {
+export async function projectsOf(q: Q, capexCode: string): Promise<KeystoneProject[]> {
   return (await projectsOfMany(q, [capexCode])).get(capexCode) ?? [];
 }
 
 /** projectsOf for several CAPEX in three reads (portfolio views, AR-049). */
-export async function projectsOfMany(q: Q, capexCodes: readonly string[]): Promise<Map<string, Epc2iProject[]>> {
-  const out = new Map<string, Epc2iProject[]>(capexCodes.map((c) => [c, []]));
+export async function projectsOfMany(q: Q, capexCodes: readonly string[]): Promise<Map<string, KeystoneProject[]>> {
+  const out = new Map<string, KeystoneProject[]>(capexCodes.map((c) => [c, []]));
   if (!capexCodes.length) return out;
   const answers = (await rowsOf(q, 'pub_reponses_besoins', and(inArray(keystoneMirror.capexCode, [...capexCodes])))).map(toAnswer);
   const named = [...new Set(answers.map((a) => a.projectCode).filter((x): x is string => !!x))];
@@ -89,7 +89,7 @@ export async function projectsOfMany(q: Q, capexCodes: readonly string[]): Promi
   const sub = await q.select({ view: keystoneMirror.view, project: keystoneMirror.projectCode, data: keystoneMirror.data }).from(keystoneMirror)
     .where(and(inArray(keystoneMirror.view, ['pub_jalons_projets', 'pub_avancement_projets', 'pub_avenants', 'pub_reserves', 'pub_livrables', 'pub_pack_ingenierie', 'pub_parc_machines']), inArray(keystoneMirror.projectCode, all))).orderBy(asc(keystoneMirror.key));
   const of = (view: string, code: string) => sub.filter((r) => r.view === view && r.project === code).map((r) => r.data);
-  const build = (code: string, mine: Answer[]): Epc2iProject => {
+  const build = (code: string, mine: Answer[]): KeystoneProject => {
     const p = projects.find((x) => x.code === code);
     const prog = of('pub_avancement_projets', code)[0];
     return {

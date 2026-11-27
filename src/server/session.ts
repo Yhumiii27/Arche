@@ -6,7 +6,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
-import { THEME_COOKIE, themeOf, type Theme } from '@norma/charte/ds/theme';
+import { themeFromCookies, type Theme } from '@norma/charte/ds/theme';
 import { isRoleKey, type RoleKey } from '@/config/roles';
 import { AUTH_PATHS } from '@/domain/auth';
 import { DEFAULT_LANG, makeT, type Lang, type T } from '@/i18n/translate';
@@ -55,8 +55,14 @@ export const getLang = cache(async (): Promise<Lang> => {
   return v === 'en' || v === 'fr' ? v : DEFAULT_LANG;
 });
 
-/** Dark / light display (Norma 1.0): the suite's common cookie `epc2i-theme`, dark by default. */
-export const getTheme = cache(async (): Promise<Theme> => themeOf((await cookies()).get(THEME_COOKIE)?.value));
+/**
+ * Dark / light display (Norma 1.0, cookie renamed by Norma 3.0): the suite's common cookie `atrium-theme`, the former name
+ * still read as a fallback during the transition (`themeFromCookies`), dark by default.
+ */
+export const getTheme = cache(async (): Promise<Theme> => {
+  const jar = await cookies();
+  return themeFromCookies((name) => jar.get(name)?.value);
+});
 
 /** `{ lang, t }` for Server Components. */
 export const getI18n = cache(async (): Promise<{ lang: Lang; t: T }> => {

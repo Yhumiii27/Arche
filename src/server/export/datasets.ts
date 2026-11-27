@@ -101,10 +101,10 @@ export async function exportTable(d: Dataset, x: ExportCtx): Promise<ExportTable
       const rows = [...exec.rows].sort((a, b) => (lots.get(a.lotId)?.number ?? 0) - (lots.get(b.lotId)?.number ?? 0) || a.month.localeCompare(b.month));
       return {
         title: `${c.code} ${t('Committed and spent')}`,
-        head: [t('Lot'), t('Title'), 'EPC2i', t('Budget (k€)'), t('Month'), t('Committed (k€)'), t('Spent (k€)'), t('Physical progress (%)')],
+        head: [t('Lot'), t('Title'), 'Keystone', t('Budget (k€)'), t('Month'), t('Committed (k€)'), t('Spent (k€)'), t('Physical progress (%)')],
         rows: rows.map((r) => {
           const l = lots.get(r.lotId);
-          return [l?.number ?? null, text(l?.title), l?.epc2i ? t('Yes') : t('No'), round(l?.budgetKeur), r.month, round(r.committedKeur), round(r.spentKeur), round(r.physicalPct)];
+          return [l?.number ?? null, text(l?.title), l?.fromKeystone ? t('Yes') : t('No'), round(l?.budgetKeur), r.month, round(r.committedKeur), round(r.spentKeur), round(r.physicalPct)];
         }),
       };
     }

@@ -1,10 +1,10 @@
 // Simulation of Keystone (docs/spec/07 §2), for the demonstration data set while Keystone does not share a view yet. Pure and
 // deterministic. For the needs Keystone's own demo knows, it returns Keystone's demo rows (keystone-demo.ts: catalogue, answers,
-// project RCF-019). For the others, from the needs Arche publishes (pub_besoins_machines) and the instant, it gives what EPC2i
+// project RCF-019). For the others, from the needs Arche publishes (pub_besoins_machines) and the instant, it gives what group engineering
 // would answer — a
 // qualification two hours after the submission, an indicative answer (E50) the next day, a budgetary quote (E30) after 30
-// days and a firm offer (E10) after 60 — and, for a need ordered at the G2, the EPC2i project with its milestones, progress,
-// amendments, reservations, deliverables, EPC2i's part of the engineering pack and, once delivered on site, the machines of
+// days and a firm offer (E10) after 60 — and, for a need ordered at the G2, the Keystone project with its milestones, progress,
+// amendments, reservations, deliverables, Keystone's part of the engineering pack and, once delivered on site, the machines of
 // the installed base. Rows have the columns of the contract (French names, ISO dates).
 import { rangeOf, round1 } from '@/domain/budget';
 import { KEYSTONE_DEMO, KEYSTONE_DEMO_NEEDS } from './keystone-demo';
@@ -28,7 +28,7 @@ export interface PublishedNeed {
 }
 
 /**
- * EPC2i's catalogue: Keystone's demo catalogue (EMP-40T, MEMU-16, SPUR-2X retired; src/server/integrations/keystone/keystone-demo.ts),
+ * the machine catalogue: Keystone's demo catalogue (EMP-40T, MEMU-16, SPUR-2X retired; src/server/integrations/keystone/keystone-demo.ts),
  * so that a need entered in Arche's demo chooses the machines Keystone knows.
  */
 export const SIMULATED_CATALOGUE: readonly KeystoneRow[] = KEYSTONE_DEMO.pub_catalogue_machines ?? [];
@@ -50,7 +50,7 @@ const dayStart = (d: string) => Date.parse(`${d}T08:00:00.000Z`);
 /** "CPX-SAI-2026-01/B01" → "SAI-26011": a project code in Keystone's form (3 letters, digits). */
 export function simulatedProjectCode(ref: string): string {
   const m = /^CPX-([A-Z]{3})-\d{2}(\d{2})-(\d{2})\/B(\d{2})$/.exec(ref);
-  return m ? `${m[1]}-${m[2]}${m[3]}${Number(m[4])}` : `EPC-${ref.replace(/\W/g, '').slice(-6)}`;
+  return m ? `${m[1]}-${m[2]}${m[3]}${Number(m[4])}` : `PRJ-${ref.replace(/\W/g, '').slice(-6)}`;
 }
 
 /** A machine number in Keystone's form ("MCH-417"), deterministic from the project code and the machine's rank. */
@@ -68,8 +68,8 @@ function priceOf(n: PublishedNeed): { keur: number | null; weeks: number; label:
   return { keur: ((sheet.prix_indicatif_keur as number) + opts) * n.quantite, weeks: sheet.delai_type_semaines as number, label: sheet.libelle as string };
 }
 
-/** Families of EPC2i's pack and their expected items (pub_pack_ingenierie). */
-const PACK_FAMILIES_EPC2I: readonly (readonly [string, number])[] = [['pid', 6], ['bom', 4], ['layout', 3], ['electrique', 5], ['analyse_fonctionnelle', 2]];
+/** Families of Keystone's pack and their expected items (pub_pack_ingenierie). */
+const PACK_FAMILIES_KEYSTONE: readonly (readonly [string, number])[] = [['pid', 6], ['bom', 4], ['layout', 3], ['electrique', 5], ['analyse_fonctionnelle', 2]];
 
 const MILESTONES: [string, number][] = [['commande', 0], ['fin_etudes', 0.25], ['fat', 0.7], ['expedition', 0.75], ['arrivee_site', 0.85], ['sat', 1]];
 
@@ -120,7 +120,7 @@ export function simulateKeystone(needs: readonly PublishedNeed[], now: Date): Re
     answer(Math.max(offerAt, s0 + 3 * DAY), { nature: 'offre_ferme', ...priced('E10', keur * 1.02), valide_jusqu_au: day(offerAt + 120 * DAY), document_ref: docRef('OFF') });
     if (n.statut !== 'ordered' || !n.commande_le) continue;
 
-    // Ordered at the G2: the offer is accepted and EPC2i opens the project.
+    // Ordered at the G2: the offer is accepted and group engineering opens the project.
     const o = dayStart(n.commande_le);
     const contract = round1(keur * 1.02);
     const project = simulatedProjectCode(n.besoin_ref);
@@ -158,10 +158,10 @@ export function simulateKeystone(needs: readonly PublishedNeed[], now: Date): Re
       out.pub_livrables.push({ project_code: project, number: 'LIV-01', title: 'FAT report', status: 'accepted', type: 'report', accepte_le: day(fat.actual), maj_le: iso(fat.actual) });
     }
     if (sat.actual != null) out.pub_reserves.push({ projet_code: project, numero: 'RES-02', categorie: 'C', origine: 'site', statut: 'open', responsable: 'keystone', ouverte_le: day(sat.actual), levee_le: null, maj_le: iso(sat.actual) });
-    // EPC2i's part of the pack: five families of equal weight, validated as the studies progress (complete at the end of studies).
+    // Keystone's part of the pack: five families of equal weight, validated as the studies progress (complete at the end of studies).
     const studies = ms.find((m) => m.code === 'fin_etudes')!;
     const studied = Math.max(0, Math.min(1, (t - o) / Math.max(DAY, studies.planned - o)));
-    const pack = PACK_FAMILIES_EPC2I.map(([famille, attendues]) => ({ famille, attendues, validees: Math.floor(attendues * Math.min(1, 0.6 + 0.4 * studied)) }));
+    const pack = PACK_FAMILIES_KEYSTONE.map(([famille, attendues]) => ({ famille, attendues, validees: Math.floor(attendues * Math.min(1, 0.6 + 0.4 * studied)) }));
     const pondere = Math.round((pack.reduce((a, f) => a + (20 * f.validees) / f.attendues, 0) / (20 * pack.length)) * 1000) / 10;
     for (const f of pack) out.pub_pack_ingenierie.push({ projet_code: project, ...f, poids: 20, pct_pondere: pondere, maj_le: iso(t) });
     // Once on site, the machines join the installed base (pub_parc_machines, one row per machine: no fitted part here).

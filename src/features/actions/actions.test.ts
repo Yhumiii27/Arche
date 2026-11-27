@@ -53,10 +53,10 @@ describe('the action plan of a CAPEX', () => {
     expect(await t.db.$count(capexActions, eq(capexActions.capexId, id))).toBe(4);
     const lead = await userId('l.haddad@atlas-process.example');
     as('project_lead');
-    expect(await saveActionAction(APM, null, null, form({ title: 'Ask EPC2i for the die lead time', source: 'machines', ownerUserId: lead, dueOn: '2026-11-15' }))).toEqual({ ok: true });
+    expect(await saveActionAction(APM, null, null, form({ title: 'Ask group engineering for the die lead time', source: 'machines', ownerUserId: lead, dueOn: '2026-11-15' }))).toEqual({ ok: true });
     const [a] = await t.db.select().from(capexActions).where(and(eq(capexActions.capexId, id), eq(capexActions.number, 5)));
-    expect(a).toMatchObject({ title: 'Ask EPC2i for the die lead time', source: 'machines', status: 'open', ownerUserId: lead });
-    expect(await saveActionAction(APM, a.id, null, form({ title: 'Ask EPC2i for the die lead time', source: 'machines', dueOn: '2026-11-20' }))).toEqual({ ok: true });
+    expect(a).toMatchObject({ title: 'Ask group engineering for the die lead time', source: 'machines', status: 'open', ownerUserId: lead });
+    expect(await saveActionAction(APM, a.id, null, form({ title: 'Ask group engineering for the die lead time', source: 'machines', dueOn: '2026-11-20' }))).toEqual({ ok: true });
     const [audit] = await t.db.select().from(auditEntries).orderBy(desc(auditEntries.occurredAt)).limit(1);
     expect(audit).toMatchObject({ change: 'action A-05 updated', objectRef: APM });
     as('expert');

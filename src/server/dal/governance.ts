@@ -27,7 +27,7 @@ import type { DB, Tx } from '@/server/db/types';
 import type { Viewer } from '@/server/viewer';
 import { isMine, visibleCapex, type CapexRow } from './capex';
 import { modelValues, versionsOfMany } from './cycle';
-import { epc2iPackOf, executionFrom, lotPlansFrom } from './execution';
+import { keystonePackOf, executionFrom, lotPlansFrom } from './execution';
 import { portfolioOf } from './portfolio';
 import { daysOf, rampupFrom } from './rampup';
 import { envelopeData, phasedCapex } from './finance';
@@ -136,7 +136,7 @@ export async function capexDashboards(q: Q, cs: readonly CapexFull[], today: str
 
 function dashboardFrom(c: CapexFull, d: DashboardData, values: ModelValues, today: string) {
   const exec = executionFrom(d, today);
-  const pack = { summary: packSummary(d.items, epc2iPackOf(exec.projects)) };
+  const pack = { summary: packSummary(d.items, keystonePackOf(exec.projects)) };
   const startup = rampupFrom({ mesStartedOn: d.mesStartedOn }, d.lines, d.days, values, today);
   const revs = d.revs;
   const session = d.running[0] ?? null;
@@ -265,7 +265,7 @@ export async function takeSnapshots(q: Q, today: string): Promise<number> {
   for (const [i, c] of rows.entries()) {
     const d = dashes[i];
     const values = {
-      status: c.status, phase: c.phase, packPct: d.pack.pct, subsidiaryPackPct: d.pack.subsidiary.pct, epc2iPackPct: d.pack.epc2i.pct,
+      status: c.status, phase: c.phase, packPct: d.pack.pct, subsidiaryPackPct: d.pack.subsidiary.pct, keystonePackPct: d.pack.keystone.pct,
       bacKeur: d.indicators.bacKeur, pvKeur: d.indicators.pvKeur, evKeur: d.indicators.evKeur, acKeur: d.indicators.acKeur, eacKeur: d.indicators.eacKeur,
       spi: d.indicators.spi, cpi: d.indicators.cpi, alerts: d.alerts.filter((a) => a.level === 'alert').length, takenAt: new Date(),
     };

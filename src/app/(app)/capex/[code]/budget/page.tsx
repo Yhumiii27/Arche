@@ -74,7 +74,7 @@ export default async function BudgetPage({ params }: PageProps<'/capex/[code]/bu
                 <tr key={l.id}>
                   <Td>{l.number}</Td>
                   <Td>
-                    {dataText(l.title, lang)} {l.epc2i && <Tag size="xs">EPC2i</Tag>}
+                    {dataText(l.title, lang)} {l.fromKeystone && <Tag size="xs">Keystone</Tag>}
                   </Td>
                   <Td tone="secondary">{t(labelOf(LOT_KIND_LABEL, l.kind as LotKind))}</Td>
                   <Td tone="secondary" nowrap>

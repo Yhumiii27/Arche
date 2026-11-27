@@ -69,7 +69,7 @@ describe('a CAPEX taken over in phase 3', () => {
     expect(await takeoverCapexAction(CODE, null, form({ phase: 'execution' }))).toEqual({ ok: false, error: 'Add the lots of the CAPEX first' });
     as('project_lead');
     expect(await addLotAction(CODE, null, form({ kind: 'civil_works', title: 'Slab' }))).toEqual({ ok: true });
-    expect(await addLotAction(CODE, null, form({ kind: 'machines', title: 'Press (EPC2i)' }))).toEqual({ ok: true });
+    expect(await addLotAction(CODE, null, form({ kind: 'machines', title: 'Press (group engineering)' }))).toEqual({ ok: true });
     expect(await takeoverCapexAction(CODE, null, form({ phase: 'execution' }))).toEqual({ ok: false, error: 'You cannot do this on this CAPEX' });
   });
 

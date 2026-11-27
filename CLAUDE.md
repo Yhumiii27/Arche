@@ -2,12 +2,12 @@
 
 @norma/REGLES.md
 
-The line above imports the common rules of the EPC2I suite (Norma, versioned copy in `norma/`, checked by `npm run
+The line above imports the common rules of the Atrium suite (Norma, versioned copy in `norma/`, checked by `npm run
 norma:check`): they are changed in `Yhumiii27/Norma`, never in this copy. The rules below are Arche's own.
 
-Arche is the group's application for steering subsidiaries' CAPEX with the **DIG-PRODI v4.0** method (level N1). EPC2i's
-Keystone (`Yhumiii27/Keystone`, read-only for Arche) owns the machine catalogue, the answers to machine needs and the EPC2i
-projects. Other group apps: Codex (documents), Vigie (QHSE), Cursus (HR), Matrix (shared PostgreSQL server). Their repositories can be
+Arche is the group's application for steering subsidiaries' CAPEX with the **DIG-PRODI v4.0** method (level N1).
+Keystone (`Yhumiii27/Keystone`, read-only for Arche) owns the machine catalogue, the answers to machine needs and the
+engineering projects. Other group apps: Codex (documents), Vigie (QHSE), Cursus (HR), Matrix (shared PostgreSQL server). Their repositories can be
 added read-only to a session (never modified); requests to them go in `docs/DEMANDES-<APP>.md`.
 
 ## Where the project stands
@@ -64,7 +64,7 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   plan (`capex_actions`, `src/domain/actions.ts`, right `actions`; "New action" added to every CAPEX page header by
   `PageHeader`, page `/capex/[code]/actions`, "My actions" on Home). WBS and Gantt: `wbs_tasks`, `src/domain/schedule.ts`,
   `src/server/dal/schedule.ts`, right `schedule`, page `/capex/[code]/schedule`, `src/components/charts/capex-gantt.tsx`
-  (Keystone's Gantt look, origin `5b425d5`); an EPC2i project and, at subsidiary and group level, each CAPEX are one
+  (Keystone's Gantt look, origin `5b425d5`); a Keystone project and, at subsidiary and group level, each CAPEX are one
   summary bar. Page actions (owner, 25 Oct 2026): every page passes the actions its viewer may take to `PageHeader`
   (`primary`, `actions`: client elements only, so that they can be counted); beyond 3 they go in the "Actions" list
   (`HeaderActions` of `@norma/charte/ds`, main action rightmost; `Folded`, `ActionButton`, `ActionLink` read `useHeaderMenu`
@@ -111,14 +111,21 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `ARCHE_ACCESS_FROM_CLAVIS=on` the roles Clavis grants are read in `clavis.pub_acces` (shared server, granted by Matrix) at
   sign-in and on every request (`src/server/integrations/clavis/access.ts`, `grantedRolesFromClavisAccess`), never in the
   token; a group role applies at once, a scoped one through an Arche assignment (`effectiveAssignments`); a failed read refuses.
-- **Norma adopted (1.0.0 on 24 Nov 2026, copy now 2.3.0)**: `norma.config.json` (`arche`), copy `norma/` checked by `npm run norma:check` (CI),
+- **Norma adopted (1.0.0 on 24 Nov 2026, copy now 3.1.0)**: `norma.config.json` (`arche`), copy `norma/` checked by `npm run norma:check` (CI),
   Next.js 16.4.6; the Nocturne sheet is `norma/charte/nocturne.css` (alias `@norma/*`, dark and light themes), then
   `touch.css` and `coque.css`. Colours come from the variables only.
 - **Common shell (Norma 2.0, `norma/charte/COQUE.md`)**: `AppShell` + `ArcheTopBar` (menu button ≤ 1024 px) in `src/app/(app)/layout.tsx`,
   the sidebar rendered with the charter's `Sidebar` / `PageSearch` / `NavSection` (`src/components/app/shell/sidebar.tsx`),
   `PageHeader` wraps the charter's (crumbs without « Arche », `<h1>`, actions, then `ArchePrefs` = `PrefsStack`: FR | EN over
-  dark | light, cookie `epc2i-theme`, the last element of every page header and of the top bar, nowhere else). The base components
+  dark | light, cookie `atrium-theme` (Norma 3.0; the former name still read as a fallback by `themeFromCookies`), the last element of every page header and of the top bar, nowhere else). The base components
   and Inter come from the charter too (`@norma/charte/ds`, `@norma/charte/fonts/inter`): there is no local copy.
+- **The suite is Atrium (owner, 27 Nov 2026; Norma 3.0 / 3.1.0)**: no former suite or company name in Arche's files (the
+  engineering company is « l'ingénierie du groupe » / "group engineering", its projects are Keystone projects, the lot flag is
+  `capexLots.fromKeystone`); stored identifiers kept until a coordinated rename: the column `capex_lots.epc2i` and
+  `capex_snapshots.epc2i_pack_pct` (draft request M-16 in `docs/DEMANDES-MATRIX.md`), the role key `epc2i_pmo` (shared
+  with Clavis), the gate criterion code `g2_epc2i_offers` (stored results) and the API error / field `epc2i_lot` / `epc2i`
+  (contract of `/api/v1/`). The shared server keeps `epc2i` / `epc2i-postgres` until Matrix renames it: `deploy/compose*.yaml`
+  read `ATRIUM_PG_DATABASE` and `ATRIUM_PG_HOST` (defaults: today's names; `docs/EXPLOITATION.md` § 4.6).
 - **Logo, Norma 2.3.0** (owner, 25 Nov 2026; `norma/charte/COQUE.md` § 8 bis): the brand of the sidebar and of the top bar is the
   charter's `ToolLogo code="arche"` (`@norma/charte/ds/ToolLogo`, 26 px, 20 px in the top bar), also on the pages outside the shell
   (sign-in…); the favicon is `src/app/icon.svg`, a copy of `norma/charte/logos/arche.svg` (checked by `src/app/icon.test.ts`).

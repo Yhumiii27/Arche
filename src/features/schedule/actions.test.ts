@@ -1,5 +1,5 @@
 // WBS and Gantt (owner's pilot feedback, 24 Oct 2026) on a fresh PostgreSQL database with the demo data set: the rules of the
-// window, bars and roll-ups, the summary bar of an EPC2i project, the demo schedules, and the task Server Functions.
+// window, bars and roll-ups, the summary bar of an Keystone project, the demo schedules, and the task Server Functions.
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const jar = new Map<string, string>();
@@ -12,7 +12,7 @@ vi.mock('next/headers', () => ({
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
 import { and, eq } from 'drizzle-orm';
-import { barOf, checkTask, dayLeft, epc2iSpan, ganttWindow, lotSpan, rollup } from '@/domain/schedule';
+import { barOf, checkTask, dayLeft, keystoneSpan, ganttWindow, lotSpan, rollup } from '@/domain/schedule';
 import { capex, wbsTasks } from '@/server/db/schema';
 import { portfolioSchedule, scheduleOf } from '@/server/dal/schedule';
 import { testDatabase, type TestDatabase } from '@/test/db';
@@ -45,11 +45,11 @@ describe('the rules of the schedule', () => {
     expect(ganttWindow([], '2026-01-01').months).toBe(6);
   });
 
-  it('roll-ups: tasks into a lot (duration-weighted), a lot without task from its months, an EPC2i project as one bar', () => {
+  it('roll-ups: tasks into a lot (duration-weighted), a lot without task from its months, an Keystone project as one bar', () => {
     expect(rollup([{ start: '2026-01-01', end: '2026-01-10', progressPct: 100 }, { start: '2026-01-11', end: '2026-01-30', progressPct: 25 }])).toEqual({ start: '2026-01-01', end: '2026-01-30', progressPct: 50 });
     expect(lotSpan({ start: '2026-03', end: '2026-06', physicalPct: 40 }, [])).toEqual({ start: '2026-03-01', end: '2026-06-30', progressPct: 40 });
     expect(lotSpan({ start: null, end: null, physicalPct: null }, [])).toBeNull();
-    expect(epc2iSpan({ milestones: [{ code: 'commande', plannedOn: '2026-07-08', actualOn: '2026-07-10' }, { code: 'sat', plannedOn: '2027-04-01', actualOn: null }], progress: { physicalPct: 35, endOn: '2027-05-15' } }))
+    expect(keystoneSpan({ milestones: [{ code: 'commande', plannedOn: '2026-07-08', actualOn: '2026-07-10' }, { code: 'sat', plannedOn: '2027-04-01', actualOn: null }], progress: { physicalPct: 35, endOn: '2027-05-15' } }))
       .toEqual({ start: '2026-07-10', end: '2027-05-15', progressPct: 35 });
   });
 
@@ -64,7 +64,7 @@ describe('the rules of the schedule', () => {
 });
 
 describe('the schedule of the demo CAPEX', () => {
-  it('APM: tasks under lots and of the CAPEX; SAI: EPC2i projects as summary bars; one summary bar per CAPEX', async () => {
+  it('APM: tasks under lots and of the CAPEX; SAI: Keystone projects as summary bars; one summary bar per CAPEX', async () => {
     const apm = await row('CPX-APM-2026-01');
     const s = await scheduleOf(t.db, apm);
     expect(s.general.map((x) => x.name)).toEqual(['Preliminary design studies (APS)', 'Detailed design (APD)', 'G2 dossier ready']);
@@ -73,8 +73,8 @@ describe('the schedule of the demo CAPEX', () => {
     expect(s.summary?.start).toBe('2026-03-02');
     const sai = await row('CPX-SAI-2026-01');
     const ss = await scheduleOf(t.db, sai);
-    expect(ss.epc2i.length).toBeGreaterThan(0);
-    expect(ss.epc2i.every((p) => p.span)).toBe(true);
+    expect(ss.keystone.length).toBeGreaterThan(0);
+    expect(ss.keystone.every((p) => p.span)).toBe(true);
     const port = await portfolioSchedule(t.db, [apm, sai]);
     expect(port.map((x) => [x.code, !!x.summary])).toEqual([['CPX-APM-2026-01', true], ['CPX-SAI-2026-01', true]]);
   });

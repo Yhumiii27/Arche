@@ -60,9 +60,9 @@ async function main(): Promise<void> {
   check((await get('/capex/CPX-SAI-2026-01/changes', 'dir_ig')).status === 200, 'management of change page');
   check((await get('/admin/delegation', 'admin')).status === 200, 'delegation matrix page for the administrator');
   const machines = await get('/capex/CPX-APM-2026-01/machines', 'project_lead');
-  check(machines.status === 200 && machines.body.includes('CPX-APM-2026-01/B02') && machines.body.includes('Devis budgétaire') && machines.body.includes('DEV-CPX-APM-2026-01-001'), 'machine needs: the latest answer of EPC2i (simulation)');
-  const epc2i = await get('/capex/CPX-SAI-2026-01/machines', 'epc2i_pmo');
-  check(epc2i.status === 200 && epc2i.body.includes('RCF-019') && epc2i.body.includes('Fin des études'), 'machine needs: the EPC2i projects and their milestones');
+  check(machines.status === 200 && machines.body.includes('CPX-APM-2026-01/B02') && machines.body.includes('Devis budgétaire') && machines.body.includes('DEV-CPX-APM-2026-01-001'), 'machine needs: the latest answer of group engineering (simulation)');
+  const projects = await get('/capex/CPX-SAI-2026-01/machines', 'epc2i_pmo');
+  check(projects.status === 200 && projects.body.includes('RCF-019') && projects.body.includes('Fin des études'), 'machine needs: the Keystone projects and their milestones');
   check((await get('/admin/connectors', 'admin')).status === 200, 'connectors page for the administrator');
   check((await get('/admin/api', 'admin')).status === 200 && (await get('/admin/api', 'sponsor')).status === 404, 'API and webhooks page for the administrator only (AR-048)');
   check((await fetch(BASE + '/api/v1/capex')).status === 401, 'the business API needs a key (AR-048)');
@@ -123,7 +123,7 @@ async function main(): Promise<void> {
   check((await get('/capex/CPX-APM-2026-01/risks', 'project_lead')).body.includes('Nouvelle action'), '"New action" in the header of a CAPEX page');
   check((await get('/', 'project_lead')).body.includes('Mes actions'), 'my actions on the home page');
   const wbs = await get('/capex/CPX-SAI-2026-01/schedule', 'dir_ig');
-  check(wbs.status === 200 && wbs.body.includes('Gantt du CAPEX') && wbs.body.includes('Terrassements') && wbs.body.includes('Projet EPC2i'), 'WBS & Gantt of a CAPEX with an EPC2i summary bar');
+  check(wbs.status === 200 && wbs.body.includes('Gantt du CAPEX') && wbs.body.includes('Terrassements') && wbs.body.includes('Projet Keystone'), 'WBS & Gantt of a CAPEX with an group engineering summary bar');
   check((await get('/portfolio', 'dir_ig')).body.includes('Planning des CAPEX'), 'group portfolio: one summary bar per CAPEX');
   const kpi = await get('/kpi', 'dir_ig');
   check(kpi.status === 200 && kpi.body.includes('Objectifs DIG-PRODI') && kpi.body.includes('Délai de validation du G1') && kpi.body.includes('Saisir la référence'), 'DIG-PRODI objectives: indicators and the reference form of the group industrial director');

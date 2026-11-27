@@ -33,7 +33,7 @@ brouillon ──figer & soumettre──▶ figé ──circuit──▶ approuv�
 | 3. Barrières à l’entrée | technologiques, réglementaires, concurrence | oui |
 | 4. Contraintes foncières et réglementaires | ICPE, PLU, accès site, foncier (statut, surface) | oui |
 | 5. BP préliminaire | budget **E50** par lot (version validée), OPEX, CA attendu, VAN / TRI / retour simple (06 §4) | oui |
-| 6. Besoins machines | lignes de besoin (07) et réponses indicatives EPC2i reçues | si le CAPEX comprend des machines |
+| 6. Besoins machines | lignes de besoin (07) et réponses indicatives de l’ingénierie du groupe reçues | si le CAPEX comprend des machines |
 | 7. Risques initiaux | extrait du registre (risques ouverts) | oui |
 | 8. Sécurité | état HS 2 HazID (preuve) | oui |
 | 9. Équipe et typologie | sponsor, CPF, équipe, typologie calculée ou forcée | oui |
@@ -45,12 +45,12 @@ Circuit : avis d’experts → visa Sponsor → décision COPIL GPI (05 §2).
 | Section | Contenu | Obligatoire |
 |---|---|---|
 | 1. Baseline technique | variantes étudiées, variante retenue, date de gel | oui |
-| 2. Pack ingénierie | % pondéré (filiale + EPC2i), pièces par famille : P&ID (`PID`), BOM (`BOM`), layout (`GA`) et plan de masse (à créer), schémas électriques (`SCH`), analyses fonctionnelles (`FDS`) — références Codex | oui (> 80 %) |
+| 2. Pack ingénierie | % pondéré (filiale + Keystone), pièces par famille : P&ID (`PID`), BOM (`BOM`), layout (`GA`) et plan de masse (à créer), schémas électriques (`SCH`), analyses fonctionnelles (`FDS`) — références Codex | oui (> 80 %) |
 | 3. Dossier réglementaire | registre des autorisations : ICPE, permis de construire, PLU, zonage ATEX — pièces Codex de type `AUT` (sous-types à créer, CX-02) | oui |
 | 4. Sécurité | HS 3 HazOp / AMDEC (preuve), actions ouvertes | oui |
 | 5. AFE | montant demandé (budget E10), phasage des décaissements, lots, provision pour aléas | oui |
 | 6. BP consolidé DAF | flux, VAN, TRI, retour, sensibilités ; validé par la DAF groupe | oui |
-| 7. Offres EPC2i | offres fermes par besoin machine (`pub_reponses_besoins`) | si besoins machines |
+| 7. Offres de l’ingénierie du groupe | offres fermes par besoin machine (`pub_reponses_besoins`) | si besoins machines |
 | 8. Planning directeur | jalons prévus : commande, travaux, MES, ramp-up, G3 | oui |
 | 9. Risques | registre à jour | oui |
 | 10. Avis d’experts | Qualité, HSE, DAF, Exploitation | oui (rempli par le circuit) |
@@ -62,11 +62,11 @@ Circuit : avis d’experts → visas Dir.IG et DAF groupe → **signature PDG** 
 | Section | Contenu | Obligatoire |
 |---|---|---|
 | 1. Actifs transférés | liste unique : lots et machines (parc Keystone `pub_parc_machines`), valeur | oui |
-| 2. Réserves | conditions de jalons et MoC soldées ; réserves des projets EPC2i (`pub_reserves`) ; PV EPC2i (`pub_livrables`) | oui (toutes soldées) |
+| 2. Réserves | conditions de jalons et MoC soldées ; réserves des projets Keystone (`pub_reserves`) ; PV des projets Keystone (`pub_livrables`) | oui (toutes soldées) |
 | 3. Sécurité | quitus PSSR, HS 6 ASPD | oui |
 | 4. Montée en puissance | courbe, date des 30 jours continus, TRS et rebuts de réception | oui |
 | 5. Clôture comptable | coût final par lot, écart au budget G2, solde de l’AFE, attestation du CDG | oui |
-| 6. REX | leçons par phase et par catégorie, diffusion aux fonctions centrales (DAF, SSE, Dir.IG, PMO EPC2i) | oui |
+| 6. REX | leçons par phase et par catégorie, diffusion aux fonctions centrales (DAF, SSE, Dir.IG, PMO ingénierie) | oui |
 | 7. PV de transfert d’actif | généré depuis les sections 1–5 ; contresigné Client Interne + Dir.IG | oui (rempli par le circuit) |
 
 Circuit : attestation CDG et quitus PSSR → contresignature Client Interne et Dir.IG (en parallèle) → G3 (05 §2).

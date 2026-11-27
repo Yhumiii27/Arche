@@ -1,5 +1,5 @@
 // /api/v1/capex/<code>/actuals (AR-048, docs/API.md): GET the monthly committed / spent / physical progress of the lots; POST
-// one lot and month (signed request of a client with the write right; lots outside EPC2i only), audited "API · <client>".
+// one lot and month (signed request of a client with the write right; lots outside Keystone only), audited "API · <client>".
 import { json, readClient, writeClient } from '@/server/api/auth';
 import { actualsOf, writeActual } from '@/server/api/data';
 

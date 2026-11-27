@@ -95,7 +95,7 @@ export const vigieSync = arche.table('vigie_sync', {
   error: text('error'),
 }, (t) => [oneOf('vigie_sync_source_domain', t.source, SYNC_SOURCES), within('vigie_sync_rows_non_negative', t.rows, 0, null)]);
 
-/** Values of a lot at the end of a month, cumulative (committed, spent, physical %); `keystone` rows are the EPC2i lots'. */
+/** Values of a lot at the end of a month, cumulative (committed, spent, physical %); `keystone` rows are the machine lots'. */
 export const lotActuals = arche.table('lot_actuals', {
   lotId: uuid('lot_id').notNull().references(() => capexLots.id, { onDelete: 'cascade' }),
   /** "2026-10". */
@@ -161,7 +161,8 @@ export const capexSnapshots = arche.table('capex_snapshots', {
   phase: text('phase').notNull(),
   packPct: keur('pack_pct'),
   subsidiaryPackPct: keur('subsidiary_pack_pct'),
-  epc2iPackPct: keur('epc2i_pack_pct'),
+  /** Keystone's part of the pack (column name kept until renamed with Matrix, docs/DEMANDES-MATRIX.md M-16). */
+  keystonePackPct: keur('epc2i_pack_pct'),
   bacKeur: keur('bac_keur'),
   pvKeur: keur('pv_keur'),
   evKeur: keur('ev_keur'),

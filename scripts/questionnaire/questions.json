@@ -53,7 +53,7 @@
     "id": "N-24",
     "group": "prio",
     "title": "Rattachement d’un document de CAPEX dans Codex",
-    "context": "Codex ne connaît que trois rattachements : aucun, projet (EPC2i), recherche. Les documents d’un CAPEX (plan de masse, permis, AFE, PV de transfert…) n’appartiennent à aucun projet EPC2i.",
+    "context": "Codex ne connaît que trois rattachements : aucun, projet (ingénierie du groupe), recherche. Les documents d’un CAPEX (plan de masse, permis, AFE, PV de transfert…) n’appartiennent à aucun projet Keystone.",
     "proposal": "Demander à Codex un nouveau rattachement « capex » (contexte = code CAPEX, ex. PID-CPX-APM-2026-01-001).",
     "alts": [
       "Traiter un CAPEX comme un « projet » dans Codex",
@@ -98,7 +98,7 @@
   {
     "id": "A-2",
     "group": "archi",
-    "title": "Données communes sur le serveur PostgreSQL EPC2I",
+    "title": "Données communes sur le serveur PostgreSQL commun de la suite Atrium",
     "context": "Un schéma par outil (arche), partage en lecture par les vues pub_ uniquement.",
     "proposal": "Confirmer.",
     "alts": [],
@@ -108,7 +108,7 @@
     "id": "A-3",
     "group": "archi",
     "title": "Socle repris de Keystone une fois, puis paquet partagé",
-    "context": "Copie du socle au commit 63f43ad (docs/SOCLE.md) ; extraction en @epc2i/socle plus tard (R-194).",
+    "context": "Copie du socle au commit 63f43ad (docs/SOCLE.md) ; extraction en @atrium/socle plus tard (R-194).",
     "proposal": "Confirmer.",
     "alts": [],
     "blocks": "—"
@@ -117,7 +117,7 @@
     "id": "A-4",
     "group": "archi",
     "title": "Répartition des responsabilités entre outils",
-    "context": "Arche : CAPEX, phases, jalons, dossiers, lots hors EPC2i, BP, typologie, ramp-up, besoins (demande). Keystone : catalogue, réponses, projets EPC2i. Vigie : études et actions de sécurité. Codex : documents. Ajout proposé : le registre des autorisations (ICPE, PC, PLU, ATEX) appartient à Arche.",
+    "context": "Arche : CAPEX, phases, jalons, dossiers, lots hors Keystone, BP, typologie, ramp-up, besoins (demande). Keystone : catalogue, réponses, projets Keystone. Vigie : études et actions de sécurité. Codex : documents. Ajout proposé : le registre des autorisations (ICPE, PC, PLU, ATEX) appartient à Arche.",
     "proposal": "Confirmer, avec le registre des autorisations dans Arche.",
     "alts": [
       "Confirmer, mais le registre des autorisations va dans Vigie"
@@ -223,8 +223,8 @@
   {
     "id": "C-11",
     "group": "cdc",
-    "title": "Lien CAPEX ↔ EPC2i et catalogue machines",
-    "context": "Besoins machines depuis le catalogue EPC2i, réponse dans Keystone, passage à « commandé » au G2.",
+    "title": "Lien CAPEX ↔ projets Keystone et catalogue machines",
+    "context": "Besoins machines depuis le catalogue machines, réponse dans Keystone, passage à « commandé » au G2.",
     "proposal": "Comme la spec 07 ; catalogue = module de Keystone.",
     "alts": [],
     "blocks": "L4"
@@ -243,11 +243,11 @@
   {
     "id": "AC-2",
     "group": "keystone",
-    "title": "Données financières d’un projet EPC2i visibles par la filiale",
+    "title": "Données financières d’un projet Keystone visibles par la filiale",
     "context": "Question P-05 de Keystone.",
     "proposal": "Prix de vente, avenants, facturé, % physique, SPI : oui. Coûts internes, taux, marge : non.",
     "alts": [
-      "La filiale voit aussi les coûts EPC2i",
+      "La filiale voit aussi les coûts de l’ingénierie du groupe",
       "La filiale ne voit que le prix et les dates"
     ],
     "blocks": "L4"
@@ -268,9 +268,9 @@
     "group": "keystone",
     "title": "Un besoin de plusieurs machines",
     "context": "Exemple : une EMP et plusieurs MEMU dans un même CAPEX (R-185).",
-    "proposal": "Un projet EPC2i à plusieurs équipements.",
+    "proposal": "Un projet Keystone à plusieurs équipements.",
     "alts": [
-      "Un projet EPC2i par machine"
+      "Un projet Keystone par machine"
     ],
     "blocks": "L4"
   },
@@ -399,7 +399,7 @@
   {
     "id": "N-14",
     "group": "arche",
-    "title": "Engagé et réalisé des lots hors EPC2i",
+    "title": "Engagé et réalisé des lots hors Keystone",
     "context": "Suivi des coûts du génie civil, des bâtiments…",
     "proposal": "Saisie mensuelle ou import CSV par le CDG ; import Sage plus tard.",
     "alts": [
@@ -444,7 +444,7 @@
     "group": "arche",
     "title": "« Audits transversaux » des projets Stratégiques",
     "context": "Le CDC les cite sans les décrire.",
-    "proposal": "Un audit par phase, tenu par le Dir.IG ou le PMO EPC2i, enregistré comme une revue de type « audit ».",
+    "proposal": "Un audit par phase, tenu par le Dir.IG ou le PMO ingénierie, enregistré comme une revue de type « audit ».",
     "alts": [],
     "blocks": "L5"
   },
@@ -604,11 +604,11 @@
     "id": "N-36",
     "group": "arche",
     "title": "Qui saisit et soumet les besoins machines",
-    "context": "Spec 07 §1 : les besoins machines d’un CAPEX sont soumis à EPC2i en phases 1 et 2, puis commandés au Go du G2.",
+    "context": "Spec 07 §1 : les besoins machines d’un CAPEX sont soumis à l’ingénierie du groupe en phases 1 et 2, puis commandés au Go du G2.",
     "proposal": "Le chef de projet du CAPEX seul ; un besoin soumis ne se modifie plus (il se retire avec un motif et se ressaisit) ; un besoin commandé ne se retire pas (une modification après G2 passe par une MoC).",
     "alts": [
       "Le chef de projet et le Sponsor",
-      "Le chef de projet, et le PMO EPC2i en lecture et commentaire"
+      "Le chef de projet, et le PMO ingénierie en lecture et commentaire"
     ],
     "blocks": "L4"
   },
@@ -617,10 +617,10 @@
     "group": "arche",
     "title": "Simulation de Keystone tant que ses vues manquent",
     "context": "Keystone ne publie pas encore le catalogue, les réponses ni le suivi des projets (R-186 à R-191). Arche les simule (spec 07 §2).",
-    "proposal": "Simulation sur le jeu de démonstration seulement : qualification 10 min après la soumission, réponse indicative E50 le lendemain, devis E30 à 30 jours, offre ferme E10 à 60 jours ; projet EPC2i ouvert à la commande. En production, une vue non partagée reste vide et la page Connecteurs le signale.",
+    "proposal": "Simulation sur le jeu de démonstration seulement : qualification 10 min après la soumission, réponse indicative E50 le lendemain, devis E30 à 30 jours, offre ferme E10 à 60 jours ; projet Keystone ouvert à la commande. En production, une vue non partagée reste vide et la page Connecteurs le signale.",
     "alts": [
       "Pas de simulation du tout : attendre les vues de Keystone",
-      "Saisie manuelle des réponses d’EPC2i par le PMO EPC2i en attendant"
+      "Saisie manuelle des réponses de l’ingénierie du groupe par le PMO ingénierie en attendant"
     ],
     "blocks": "L4"
   },

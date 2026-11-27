@@ -11,4 +11,4 @@ affectations de rôles. Points à prévoir :
 |---|---|---|---|
 | CU-01 | Les salariés des filiales seront-ils dans Cursus (dimension société) ? Sinon Arche garde ses propres comptes pour eux (N-3). | — | à décider |
 | CU-02 | Formation initiale des équipes d’exploitation (CDC phase 4) : si Cursus la porte, une vue des formations d’un site ou d’un CAPEX pour le dossier de transfert | L6 | plus tard |
-| CU-03 | Matricule sur les comptes Arche des salariés EPC2i / groupe (colonne `qui_matricule` de `pub_journal`, rapprochement avec Codex et Keystone) : lecture de `pub_salaries` par `arche_app` | après L1 | basse |
+| CU-03 | Matricule sur les comptes Arche des salariés ingénierie / groupe (colonne `qui_matricule` de `pub_journal`, rapprochement avec Codex et Keystone) : lecture de `pub_salaries` par `arche_app` | après L1 | basse |

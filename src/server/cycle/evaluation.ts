@@ -1,10 +1,10 @@
 import 'server-only';
 // The criteria of the gate a CAPEX faces, evaluated now (docs/spec/03 §3): Arche's facts (budget, typology, staffing), the
 // circuit's (opinions given, sponsor visa), the dossier's (latest version of the gate's dossier: frozen and complete) and
-// Keystone's, read in the mirror (firm offers for the submitted needs, SATs planned, reservations of the EPC2i projects).
+// Keystone's, read in the mirror (firm offers for the submitted needs, SATs planned, reservations of the Keystone projects).
 import { circuitFacts, type StepActor, type StepKind } from '@/domain/circuits';
 import { DOSSIER_OF_GATE } from '@/domain/dossiers';
-import { epc2iReservationsFact, firmOffersFact, satPlannedFact } from '@/domain/needs';
+import { keystoneReservationsFact, firmOffersFact, satPlannedFact } from '@/domain/needs';
 import { withPssrDischarge } from '@/domain/safety';
 import { currentGate, evaluateGate, type CycleState, type GateEvaluation } from '@/domain/lifecycle';
 import type { DB, Tx } from '@/server/db/types';
@@ -33,7 +33,7 @@ export async function currentEvaluation(q: DB | Tx, c: CycleState & { id: string
   if (gate === 'K3' || gate === 'G3') {
     const projects = await projectsOf(q, c.code);
     if (gate === 'K3') facts.k3_sat_planned = satPlannedFact(projects.map((p) => p.code), projects.flatMap((p) => p.milestones.map((m) => ({ projectCode: p.code, ...m }))));
-    else facts.g3_reserves = epc2iReservationsFact(projects.flatMap((p) => p.reserves), projects.flatMap((p) => p.deliverables.filter((d) => d.type === 'client_acceptance')));
+    else facts.g3_reserves = keystoneReservationsFact(projects.flatMap((p) => p.reserves), projects.flatMap((p) => p.deliverables.filter((d) => d.type === 'client_acceptance')));
   }
   return evaluateGate(gate, withPssrDischarge(facts));
 }

@@ -172,9 +172,9 @@ describe('central sign-in of Clavis (ARCHE_ROLES_FROM_TOKEN=on)', () => {
   beforeEach(() => useEntra({ ARCHE_ROLES_FROM_TOKEN: 'on' }));
 
   it('takes the roles from the token: an unknown e-mail gets an account with its group role', async () => {
-    const r = await signIn({ oid: 'oid-copil', email: 'copil.member@epc-groupe.example', name: 'Copil Member', roles: ['copil_member'] });
+    const r = await signIn({ oid: 'oid-copil', email: 'copil.member@atrium.example', name: 'Copil Member', roles: ['copil_member'] });
     expect(r.res.headers.get('location')).toBe(`${ORIGIN}/capex`);
-    const u = await userByEmail('copil.member@epc-groupe.example');
+    const u = await userByEmail('copil.member@atrium.example');
     expect(u).toMatchObject({ displayName: 'Copil Member', entraObjectId: 'oid-copil', grantedRoles: ['copil_member'] });
     expect(await t.db.select().from(roleAssignments).where(eq(roleAssignments.userId, u.id))).toHaveLength(0);
     useSession(r);
@@ -195,9 +195,9 @@ describe('central sign-in of Clavis (ARCHE_ROLES_FROM_TOKEN=on)', () => {
   });
 
   it('refuses a token without an Arche role, and a scoped role nobody gave a scope to yet', async () => {
-    expect((await signIn({ oid: 'oid-none', email: 'none@epc-groupe.example', roles: [] })).res.headers.get('location')).toBe(`${ORIGIN}/sign-in?error=no_role`);
-    expect((await signIn({ oid: 'oid-lead', email: 'new.lead@epc-groupe.example', roles: ['project_lead'] })).res.headers.get('location')).toBe(`${ORIGIN}/sign-in?error=no_scope`);
-    expect(await userByEmail('new.lead@epc-groupe.example')).toBeUndefined();
+    expect((await signIn({ oid: 'oid-none', email: 'none@atrium.example', roles: [] })).res.headers.get('location')).toBe(`${ORIGIN}/sign-in?error=no_role`);
+    expect((await signIn({ oid: 'oid-lead', email: 'new.lead@atrium.example', roles: ['project_lead'] })).res.headers.get('location')).toBe(`${ORIGIN}/sign-in?error=no_scope`);
+    expect(await userByEmail('new.lead@atrium.example')).toBeUndefined();
   });
 });
 
@@ -227,9 +227,9 @@ describe('rights read in the database (ARCHE_ACCESS_FROM_CLAVIS=on)', () => {
   });
 
   it('takes the role set in Clavis, not the token, and applies a change or a withdrawal at the next page', async () => {
-    const r = await signIn({ oid: OID, email: 'db.reader@epc-groupe.example', name: 'Db Reader', roles: ['admin'] });
+    const r = await signIn({ oid: OID, email: 'db.reader@atrium.example', name: 'Db Reader', roles: ['admin'] });
     expect(r.res.headers.get('location')).toBe(`${ORIGIN}/capex`);
-    expect(await userByEmail('db.reader@epc-groupe.example')).toMatchObject({ grantedRoles: ['copil_member'] });
+    expect(await userByEmail('db.reader@atrium.example')).toMatchObject({ grantedRoles: ['copil_member'] });
     useSession(r);
     expect(await getViewer()).toMatchObject({ role: 'copil_member', roles: ['copil_member'] });
     await admin(`update clavis.pub_acces set role = 'admin' where application = 'arche'`);
@@ -237,11 +237,11 @@ describe('rights read in the database (ARCHE_ACCESS_FROM_CLAVIS=on)', () => {
     await admin(`update clavis.pub_acces set ouvert = false where application = 'arche'`);
     await expect(getViewer()).rejects.toThrow(/REDIRECT:\/sign-in/);
     jar.clear();
-    expect((await signIn({ oid: OID, email: 'db.reader@epc-groupe.example', roles: ['admin'] })).res.headers.get('location')).toBe(`${ORIGIN}/sign-in?error=no_role`);
+    expect((await signIn({ oid: OID, email: 'db.reader@atrium.example', roles: ['admin'] })).res.headers.get('location')).toBe(`${ORIGIN}/sign-in?error=no_role`);
   });
 
   it('refuses when the view cannot be read, never falling back to the token', async () => {
     await admin('drop schema clavis cascade');
-    expect((await signIn({ oid: OID, email: 'db.reader2@epc-groupe.example', roles: ['admin'] })).res.headers.get('location')).toBe(`${ORIGIN}/sign-in?error=failed`);
+    expect((await signIn({ oid: OID, email: 'db.reader2@atrium.example', roles: ['admin'] })).res.headers.get('location')).toBe(`${ORIGIN}/sign-in?error=failed`);
   });
 });

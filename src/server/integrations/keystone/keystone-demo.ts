@@ -1,7 +1,7 @@
 // Keystone's demonstration data that concerns Arche (owner's pilot feedback, 25 Oct 2026: "align every link" with Keystone's
 // fictitious projects): the rows its share views return on its demo database (Keystone origin/main 4af0f31, demo seed, clock
 // 25 Sep 2026) — the machine catalogue, its five answers to the needs of CPX-APM-2026-01 and CPX-SAI-2026-01, and RCF-019, the
-// EPC2i project that delivers CPX-SAI-2026-01/B01 (its SAT planned on 16 Nov 2026: criterion K3 of CPX-SAI-2026-01). Since K-14
+// Keystone project that delivers CPX-SAI-2026-01/B01 (its SAT planned on 16 Nov 2026: criterion K3 of CPX-SAI-2026-01). Since K-14
 // (Keystone's request of 4 Nov 2026, src/server/db/seed/capex-k14.ts of Keystone): the oven of CPX-APM-2025-01 — answer RB-006,
 // project APM-008 (in warranty, internal client Atlas Process Maroc) and machine MCH-045 of the installed base. Exported read-only from the views (contract column order); `maj_le` stamps of
 // rows computed at read time are set to the demo day and the client's database id is left out. The simulation returns these rows

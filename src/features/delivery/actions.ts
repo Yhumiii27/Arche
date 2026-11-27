@@ -1,7 +1,7 @@
 'use server';
 // Delivery of a CAPEX (delivery 5): the permits register and the subsidiary's part of the engineering pack (project lead,
 // sponsor: right `edit`), the lots' planned windows and their monthly committed / spent / physical % — entered or imported from
-// Arche's CSV template (controller, project lead: right `budget`, N-14). EPC2i lots are read in Keystone, never entered.
+// Arche's CSV template (controller, project lead: right `budget`, N-14). Machine lots are read in Keystone, never entered.
 import { and, eq } from 'drizzle-orm';
 import { nextNumber, refOf } from '@/domain/capex';
 import { checkActual, checkWindow, monthOf, parseActualsCsv } from '@/domain/execution';
@@ -74,7 +74,7 @@ export async function saveActualAction(code: string, lotId: string, _prev: Actio
   return onCapex(code, 'budget', async (tx, c, v, today) => {
     const lot = await lotOf(tx, c.id, lotId);
     if (!lot) return { ok: false, error: 'Unknown lot' };
-    if (lot.epc2i) return { ok: false, error: 'EPC2i lots come from Keystone' };
+    if (lot.fromKeystone) return { ok: false, error: 'Machine lots come from Keystone' };
     const f = fieldsOf(fd);
     const ch = checkActual(f, monthOf(today));
     if (!ch.ok) return ch;
@@ -98,7 +98,7 @@ export async function importActualsAction(code: string, _prev: ActionResult | nu
   return onCapex(code, 'budget', async (tx, c, v, today) => {
     const csv = String(fd.get('csv') ?? '');
     if (csv.length > 200_000) return { ok: false, error: 'The file is too large' };
-    const lots = await tx.select({ id: capexLots.id, number: capexLots.number, epc2i: capexLots.epc2i }).from(capexLots).where(eq(capexLots.capexId, c.id));
+    const lots = await tx.select({ id: capexLots.id, number: capexLots.number, fromKeystone: capexLots.fromKeystone }).from(capexLots).where(eq(capexLots.capexId, c.id));
     const r = parseActualsCsv(csv, lots, monthOf(today));
     if (!r.ok) return { ok: false, error: r.line ? `Line ${r.line} — ${r.error}` : r.error };
     // Every line in the currency chosen for the file, each at its month's reference rate (AR-039).

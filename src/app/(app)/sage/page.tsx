@@ -1,5 +1,5 @@
 // Sage import (AR-047, DECISIONS.md §5) for the subsidiary chosen in the sidebar: the Sage analytic code of each lot outside
-// EPC2i, the extraction files imported (uploaded, from the planned extraction or the demonstration one) and the lines rejected.
+// Keystone, the extraction files imported (uploaded, from the planned extraction or the demonstration one) and the lines rejected.
 // Orders are the commitments, invoices and credit notes the actuals; the controller's manual entry and CSV template stay.
 import { notFound } from 'next/navigation';
 import { EmptyState } from '@/components/app/EmptyState';
@@ -47,12 +47,12 @@ export default async function SagePage() {
         <Tag tone="outline" size="sm">{folder ? `${t('Planned extraction')}: ${folder}` : t('No planned extraction: files are uploaded here (Sage access by the DSI: N-14)')}</Tag>
       </div>
       <KpiGrid>
-        <KpiTile label={t('Lots with a Sage code')} value={`${lots.filter((l) => !l.epc2i && l.sageCode).length} / ${lots.filter((l) => !l.epc2i).length}`} sub={t('lots outside EPC2i')} />
+        <KpiTile label={t('Lots with a Sage code')} value={`${lots.filter((l) => !l.fromKeystone && l.sageCode).length} / ${lots.filter((l) => !l.fromKeystone).length}`} sub={t('lots outside Keystone')} />
         <KpiTile label={t('Last import')} value={last ? fmtInstant(last.importedAt, lang) : '—'} sub={last ? `${t(SOURCE[last.source])} · ${last.importedByName}` : undefined} />
         <KpiTile label={t('Lines kept')} value={last?.accepted ?? '—'} sub={last ? `${last.duplicates} ${t('already imported')}` : undefined} />
         <KpiTile label={t('Lines rejected')} value={last?.rejected ?? '—'} tone={last?.rejected ? 'alert' : 'default'} />
       </KpiGrid>
-      <SectionCard title={t('Lots and their Sage code')} hint={t('The extraction’s lines with a lot’s analytic code go to that lot; EPC2i lots come from Keystone')} scroll>
+      <SectionCard title={t('Lots and their Sage code')} hint={t('The extraction’s lines with a lot’s analytic code go to that lot; Machine lots come from Keystone')} scroll>
         {lots.length ? (
           <Table>
             <thead><tr><Th>CAPEX</Th><Th>{t('Lot')}</Th><Th>{t('Sage analytic code')}</Th>{writer && <Th />}</tr></thead>
@@ -63,8 +63,8 @@ export default async function SagePage() {
                   <tr key={l.id}>
                     <Td nowrap>{c.code}</Td>
                     <Td>{`${l.number} · ${dataText(l.title, lang)}`}</Td>
-                    <Td>{l.epc2i ? <Tag tone="outline" size="xs">EPC2i</Tag> : l.sageCode ?? '—'}</Td>
-                    {writer && <Td align="right">{!l.epc2i && <SageCodeForm code={c.code} lotId={l.id} value={l.sageCode} label={`${c.code} · ${l.number} · ${dataText(l.title, lang)}`} />}</Td>}
+                    <Td>{l.fromKeystone ? <Tag tone="outline" size="xs">Keystone</Tag> : l.sageCode ?? '—'}</Td>
+                    {writer && <Td align="right">{!l.fromKeystone && <SageCodeForm code={c.code} lotId={l.id} value={l.sageCode} label={`${c.code} · ${l.number} · ${dataText(l.title, lang)}`} />}</Td>}
                   </tr>
                 );
               })}

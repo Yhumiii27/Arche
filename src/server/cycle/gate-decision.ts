@@ -42,7 +42,7 @@ export async function applyGateDecision(
   }
   if (g.code === 'G2' && (decision === 'go' || decision === 'go_with_conditions')) {
     await tx.update(budgetVersions).set({ isG2Baseline: true, updatedAt: new Date() }).where(and(eq(budgetVersions.capexId, c.id), eq(budgetVersions.status, 'validated'), eq(budgetVersions.estimateClass, 'E10')));
-    // The submitted machine needs with a valid firm EPC2i offer are ordered (spec 07 §1); the others stay submitted.
+    // The submitted machine needs with a valid firm group engineering offer are ordered (spec 07 §1); the others stay submitted.
     const answers = await answersOf(tx, c.code);
     for (const n of await tx.select().from(machineNeeds).where(and(eq(machineNeeds.capexId, c.id), eq(machineNeeds.status, 'submitted')))) {
       const ref = needRef(c.code, n.number);

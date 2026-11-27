@@ -56,7 +56,7 @@ describe('currencies (AR-039)', () => {
 
   it('a month’s actuals in dirhams at the fiscal year’s rate; without a rate, refused until the group CFO enters it', async () => {
     const c = await capexOf('CPX-APM-2026-01');
-    const [lot] = (await t.db.select().from(capexLots).where(eq(capexLots.capexId, c.id))).filter((l) => !l.epc2i);
+    const [lot] = (await t.db.select().from(capexLots).where(eq(capexLots.capexId, c.id))).filter((l) => !l.fromKeystone);
     const save = (o: Record<string, string>) => saveActualAction('CPX-APM-2026-01', lot.id, null, form(o));
     // September 2026 has no monthly rate: the 2026 reference rate, 10.9 MAD for 1 EUR.
     expect(await save({ month: '2026-09', spentKeur: '1090', committedKeur: '2180' })).toEqual({ ok: true });

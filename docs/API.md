@@ -24,7 +24,7 @@ au journal d'audit (« API · <application> »).
 - Authentification : `Authorization: Bearer <clé>` sur chaque requête ; sans clé valable, **401** `{"error":"unauthorized"}`
   avec `WWW-Authenticate: Bearer realm="arche"`. L'API ne passe pas par la connexion Microsoft (proxy : chemin public).
 - Erreurs : `{ "error": "<code>", "message": "<texte anglais>" }` — `not_found` (404, aussi pour un CAPEX hors du périmètre
-  de l'application), `invalid` (422), `unknown_lot`, `epc2i_lot` (les lots EPC2i viennent de Keystone), `capex_not_active`
+  de l'application), `invalid` (422), `unknown_lot`, `epc2i_lot` (les lots machines viennent de Keystone), `capex_not_active`
   (409), `forbidden` / `read_only_client` (403), `invalid_json` (400), `too_large` (413).
 - Réponses : `Cache-Control: no-store` et `X-Request-Id` (celui de la requête quand il est un simple jeton, sinon tiré par
   Arche).
@@ -52,7 +52,7 @@ acceptée **qu'une fois** (`signature_replayed`) : un nouvel essai se signe à n
 
 | Point d'entrée | Corps | Effet |
 |---|---|---|
-| `POST /api/v1/capex/<code>/actuals` | `{"lot": 2, "month": "2026-09", "currency": "MAD", "committedKeur": 1200, "spentKeur": 800, "physicalPct": 35}` (au moins une mesure ; montants en milliers de `currency`, la devise de la filiale par défaut, ou `EUR`) | engagé / réalisé / avancement du lot (hors EPC2i) pour le mois, convertis en k€ au taux de référence du mois (AR-039), comme une ligne de l'import CSV du CDG (source « import ») ; la réponse donne les k€, la devise et le taux |
+| `POST /api/v1/capex/<code>/actuals` | `{"lot": 2, "month": "2026-09", "currency": "MAD", "committedKeur": 1200, "spentKeur": 800, "physicalPct": 35}` (au moins une mesure ; montants en milliers de `currency`, la devise de la filiale par défaut, ou `EUR`) | engagé / réalisé / avancement du lot (hors Keystone) pour le mois, convertis en k€ au taux de référence du mois (AR-039), comme une ligne de l'import CSV du CDG (source « import ») ; la réponse donne les k€, la devise et le taux |
 | `POST /api/v1/capex/<code>/actions` | `{"title": "…", "description": "…", "dueOn": "2026-11-15", "ownerEmail": "…", "source": "general", "sourceRef": "…"}` | une action du plan d'actions (201) ; le responsable, par son adresse, est dans l'équipe du CAPEX |
 
 ```bash

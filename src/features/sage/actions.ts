@@ -47,13 +47,13 @@ export async function loadDemoSageAction(subsidiaryCode: string): Promise<Action
   return done(await db.transaction((tx) => importSage(tx, { subsidiaryCode, csv: demoSageCsv(monthOf(today)), source: 'demo', fileName: null, byName: v.name, byUserId: v.userId, today })));
 }
 
-/** The Sage analytic code of a lot outside EPC2i (unique in the subsidiary; empty: none). */
+/** The Sage analytic code of a lot outside Keystone (unique in the subsidiary; empty: none). */
 export async function setSageCodeAction(code: string, lotId: string, _prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
   return onCapex(code, null, async (tx, c, v) => {
     if (!may(v, c.subsidiaryCode)) return REFUSED;
     const [lot] = await tx.select().from(capexLots).where(eq(capexLots.id, lotId));
     if (!lot || lot.capexId !== c.id) return { ok: false, error: 'Unknown lot' };
-    if (lot.epc2i) return { ok: false, error: 'EPC2i lots come from Keystone' };
+    if (lot.fromKeystone) return { ok: false, error: 'Machine lots come from Keystone' };
     const ch = checkSageCode(fd.get('sageCode'));
     if (!ch.ok) return ch;
     const r = await setSageCode(tx, lot.id, c.subsidiaryCode, ch.value);

@@ -1,9 +1,9 @@
 import 'server-only';
 // WBS and Gantt reads (owner's pilot feedback, 24 Oct 2026): the schedule of one CAPEX — its lots with their tasks, the tasks
-// of the CAPEX itself, one summary bar per EPC2i project (Keystone, no detail), the cycle milestones — and its summary bar,
+// of the CAPEX itself, one summary bar per Keystone project (Keystone, no detail), the cycle milestones — and its summary bar,
 // used by the subsidiary and group Gantts. Callers pass a CAPEX already read through the visibility filter.
 import { and, asc, eq, inArray } from 'drizzle-orm';
-import { epc2iSpan, lotSpan, rollup, type Span } from '@/domain/schedule';
+import { keystoneSpan, lotSpan, rollup, type Span } from '@/domain/schedule';
 import { capex, capexLots, gates, lotActuals, users, wbsTasks } from '@/server/db/schema';
 import type { DB, Tx } from '@/server/db/types';
 import { projectsOfMany } from '@/server/integrations/keystone';
@@ -21,10 +21,10 @@ export interface ScheduleTask extends Span {
 }
 
 export interface CapexSchedule {
-  lots: { id: string; number: number; title: string; epc2i: boolean; start: string | null; end: string | null; span: Span | null; tasks: ScheduleTask[] }[];
+  lots: { id: string; number: number; title: string; fromKeystone: boolean; start: string | null; end: string | null; span: Span | null; tasks: ScheduleTask[] }[];
   /** Tasks of the CAPEX itself (no lot). */
   general: ScheduleTask[];
-  epc2i: { code: string; name: string; span: Span | null }[];
+  keystone: { code: string; name: string; span: Span | null }[];
   /** Cycle milestones: gates decided, start of commissioning, need date. */
   milestones: { label: string; on: string; done: boolean }[];
   /** The CAPEX as one bar (subsidiary and group Gantts). */
@@ -57,21 +57,21 @@ export async function schedulesOf(q: Q, cs: readonly { id: string; code: string 
     }));
     const lotRows = lots.filter((l) => l.capexId === c.id).map((l) => {
       const mine = all.filter((x) => x.lotId === l.id);
-      return { id: l.id, number: l.number, title: l.title, epc2i: l.epc2i, start: l.plannedStart, end: l.plannedEnd, span: lotSpan({ start: l.plannedStart, end: l.plannedEnd, physicalPct: physical.get(l.id) ?? null }, mine), tasks: mine };
+      return { id: l.id, number: l.number, title: l.title, fromKeystone: l.fromKeystone, start: l.plannedStart, end: l.plannedEnd, span: lotSpan({ start: l.plannedStart, end: l.plannedEnd, physicalPct: physical.get(l.id) ?? null }, mine), tasks: mine };
     });
     const general = all.filter((x) => !x.lotId);
-    const epc2i = (projects.get(c.code) ?? []).map((p) => ({ code: p.code, name: p.name, span: epc2iSpan(p) }));
+    const keystone = (projects.get(c.code) ?? []).map((p) => ({ code: p.code, name: p.name, span: keystoneSpan(p) }));
     const milestones = [
       ...gs.filter((g) => g.capexId === c.id && g.decidedAt && g.decision !== 'deferred').map((g) => ({ label: g.code, on: day(g.decidedAt)!, done: true })),
       ...(row?.mes ? [{ label: 'MES', on: row.mes, done: true }] : []),
       ...(row?.needDate ? [{ label: 'Need date', on: row.needDate, done: false }] : []),
     ].sort((a, b) => a.on.localeCompare(b.on));
-    const spans = [...lotRows.map((l) => l.span), ...general, ...epc2i.map((p) => p.span)].filter((s): s is Span => !!s);
+    const spans = [...lotRows.map((l) => l.span), ...general, ...keystone.map((p) => p.span)].filter((s): s is Span => !!s);
     const r = rollup(spans);
     const opened = day(row?.openedAt ?? null);
     // Without any dated lot or task: from the opening to the need date, when both are known.
     const summary = r ? { ...r, start: opened && opened < r.start ? opened : r.start } : opened && row?.needDate && row.needDate > opened ? { start: opened, end: row.needDate, progressPct: 0 } : null;
-    return { lots: lotRows, general, epc2i, milestones, summary };
+    return { lots: lotRows, general, keystone, milestones, summary };
   });
 }
 

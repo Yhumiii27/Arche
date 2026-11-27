@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canSubmitNeeds, checkNeed, epc2iReservationsFact, firmOffersFact, isValidFirmOffer, latestAnswer, needRef, satPlannedFact, type Answer, type CatalogueItem } from './needs';
+import { canSubmitNeeds, checkNeed, keystoneReservationsFact, firmOffersFact, isValidFirmOffer, latestAnswer, needRef, satPlannedFact, type Answer, type CatalogueItem } from './needs';
 
 const sheet: CatalogueItem = {
   code: 'EXT-9MN', version: 3, typeCode: 'EXT', typeLabel: 'Extrusion press', variant: null, label: 'Press', description: null, options: [{ code: 'A', label: 'A', priceKeur: 10 }],
@@ -34,9 +34,9 @@ describe('machine needs', () => {
     expect(firmOffersFact([], [], '2026-03-01')).toEqual({ met: true, value: '0 / 0' });
   });
 
-  it('K3 SATs planned and G3 reservations of the EPC2i projects', () => {
+  it('K3 SATs planned and G3 reservations of the Keystone projects', () => {
     expect(satPlannedFact(['P1', 'P2'], [{ projectCode: 'P1', code: 'sat', plannedOn: '2027-01-01' }, { projectCode: 'P2', code: 'fat', plannedOn: '2026-12-01' }])).toEqual({ met: false, value: '1 / 2' });
-    expect(epc2iReservationsFact([{ category: 'C', status: 'open' }, { category: 'B', status: 'closed' }], [{ status: 'accepted' }])).toEqual({ met: true, value: '0 A/B · 0 PV' });
-    expect(epc2iReservationsFact([{ category: 'A', status: 'open' }], [{ status: 'planned' }])).toEqual({ met: false, value: '1 A/B · 1 PV' });
+    expect(keystoneReservationsFact([{ category: 'C', status: 'open' }, { category: 'B', status: 'closed' }], [{ status: 'accepted' }])).toEqual({ met: true, value: '0 A/B · 0 PV' });
+    expect(keystoneReservationsFact([{ category: 'A', status: 'open' }], [{ status: 'planned' }])).toEqual({ met: false, value: '1 A/B · 1 PV' });
   });
 });

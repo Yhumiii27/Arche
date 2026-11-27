@@ -1,5 +1,5 @@
 // Rows of the Gantts (owner's pilot feedback, 24 Oct 2026): the Gantt of one CAPEX (summary, lots and their tasks, tasks of
-// the CAPEX, one summary bar per EPC2i project, cycle milestones) and the Gantt of a portfolio (one summary bar per CAPEX,
+// the CAPEX, one summary bar per Keystone project, cycle milestones) and the Gantt of a portfolio (one summary bar per CAPEX,
 // no detail). Translated labels; typed names shown as typed.
 import type { CapexGanttProps, GanttRow } from '@/components/charts/capex-gantt';
 import { screenHref } from '@/config/screens';
@@ -27,7 +27,7 @@ export function capexGantt(sched: CapexSchedule, title: string, today: string, l
   const dates = [
     sched.summary?.start, sched.summary?.end,
     ...sched.lots.flatMap((l) => [l.span?.start, l.span?.end, ...l.tasks.flatMap((x) => [x.start, x.end])]),
-    ...sched.general.flatMap((x) => [x.start, x.end]), ...sched.epc2i.flatMap((p) => [p.span?.start, p.span?.end]), ...sched.milestones.map((m) => m.on),
+    ...sched.general.flatMap((x) => [x.start, x.end]), ...sched.keystone.flatMap((p) => [p.span?.start, p.span?.end]), ...sched.milestones.map((m) => m.on),
   ];
   const w = ganttWindow(dates, today);
   const task = (x: CapexSchedule['general'][number], level: 1 | 2): GanttRow => ({
@@ -41,7 +41,7 @@ export function capexGantt(sched: CapexSchedule, title: string, today: string, l
       { key: l.id, name: `${l.number}. ${dataText(l.title, lang)}`, sub: l.tasks.length ? `${l.tasks.length} ${t('task(s)')}` : l.span ? t('Planned months of the lot') : t('No dates yet'), level: 1, kind: 'lot', ...spanRow(w, l.span) },
       ...l.tasks.map((x) => task(x, 2)),
     ]),
-    ...sched.epc2i.map((p): GanttRow => ({ key: p.code, name: `${p.code} · ${dataText(p.name, lang)}`, sub: t('EPC2i project · summary from Keystone'), level: 1, kind: 'epc2i', ...spanRow(w, p.span) })),
+    ...sched.keystone.map((p): GanttRow => ({ key: p.code, name: `${p.code} · ${dataText(p.name, lang)}`, sub: t('Keystone project · summary from Keystone'), level: 1, kind: 'keystone', ...spanRow(w, p.span) })),
   ];
   return {
     window: w,

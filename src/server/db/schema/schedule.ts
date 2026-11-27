@@ -1,5 +1,5 @@
 // WBS of a CAPEX (owner's pilot feedback, 24 Oct 2026; DECISIONS.md §5): the tasks under each lot (or at the CAPEX level),
-// with their dates, progress and owner. The lots keep their planned months (capex_lots); the EPC2i projects stay in Keystone
+// with their dates, progress and owner. The lots keep their planned months (capex_lots); the Keystone projects stay in Keystone
 // and appear as one summary bar each. Rules: src/domain/schedule.ts.
 import { boolean, date, integer, text, unique, uuid } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';

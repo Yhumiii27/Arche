@@ -72,7 +72,7 @@ describe('envelopes and phased cash-flow (AR-040, AR-045)', () => {
     jar.set('arche-role', 'controller');
     const c = await capexOf('CPX-APM-2026-01');
     const lots = await t.db.select().from(capexLots).where(eq(capexLots.capexId, c.id));
-    const big = lots.filter((l) => !l.epc2i).sort((a, b) => b.number - a.number)[0];
+    const big = lots.filter((l) => !l.fromKeystone).sort((a, b) => b.number - a.number)[0];
     expect(await saveForecastAction(c.code, big.id, null, form({ currency: 'EUR', 'm:2026-09': '1' }))).toEqual({ ok: false, error: 'Forecast the months after the current one' });
     expect(await saveForecastAction(c.code, big.id, null, form({ currency: 'EUR', 'm:2028-03': '5000' }))).toEqual({ ok: true });
     expect(await t.db.select().from(lotForecasts).where(and(eq(lotForecasts.lotId, big.id)))).toHaveLength(1);

@@ -1,6 +1,6 @@
 'use server';
 // Action plan Server Functions (owner's pilot feedback, 24 Oct 2026): open or edit an action (right `actions`: the project
-// lead, the sponsor, the controller, the Co-DIG, the EPC2i PMO and the group industrial director), close it as done or
+// lead, the sponsor, the controller, the Co-DIG, the Engineering PMO and the group industrial director), close it as done or
 // cancelled (the same, or the owner of the action). Each one reads the CAPEX through the viewer's visibility inside its
 // transaction, validates its input with src/domain/actions.ts and audits the change.
 import { and, eq } from 'drizzle-orm';

@@ -69,7 +69,7 @@ export async function recomputeStaleLines(q: Q, values: ModelValues, today: stri
 /** The accounting closure statement of a CAPEX with its lots and the G2 budget. */
 export async function closureOf(q: Q, capexId: string, g2Keur: number | null) {
   const [statement] = await q.select().from(closureStatements).where(eq(closureStatements.capexId, capexId));
-  const lots = await q.select({ id: capexLots.id, number: capexLots.number, title: capexLots.title, epc2i: capexLots.epc2i }).from(capexLots).where(eq(capexLots.capexId, capexId)).orderBy(asc(capexLots.number));
+  const lots = await q.select({ id: capexLots.id, number: capexLots.number, title: capexLots.title, fromKeystone: capexLots.fromKeystone }).from(capexLots).where(eq(capexLots.capexId, capexId)).orderBy(asc(capexLots.number));
   const costs = lots.length ? await q.select().from(lotFinalCosts).where(inArray(lotFinalCosts.lotId, lots.map((l) => l.id))) : [];
   const byLot = new Map(costs.map((x) => [x.lotId, x.finalKeur]));
   return {

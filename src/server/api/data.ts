@@ -1,7 +1,7 @@
 import 'server-only';
 // What the business API reads and writes (AR-048, docs/API.md), within the client's scope (its subsidiaries; never a draft):
 // the CAPEX list, one CAPEX in detail (lots, budget versions, gate sessions, machine needs, indicators and alerts), the monthly
-// actuals of its lots; writes: the actuals of a lot outside EPC2i and an action of the plan, audited as "API · <client>".
+// actuals of its lots; writes: the actuals of a lot outside Keystone and an action of the plan, audited as "API · <client>".
 import { and, asc, eq, inArray, ne, type SQL } from 'drizzle-orm';
 import { aliasedTable } from 'drizzle-orm';
 import { checkAction } from '@/domain/actions';
@@ -75,7 +75,7 @@ export async function capexDetail(client: ApiClient, code: string) {
   const validated = latestValidated(versions);
   return {
     ...summary(r, validated),
-    lots: lots.map((l) => ({ number: l.number, kind: l.kind, title: l.title, epc2i: l.epc2i, plannedStart: l.plannedStart, plannedEnd: l.plannedEnd, validatedBudgetKeur: validated?.lines[l.id] ?? null })),
+    lots: lots.map((l) => ({ number: l.number, kind: l.kind, title: l.title, epc2i: l.fromKeystone, plannedStart: l.plannedStart, plannedEnd: l.plannedEnd, validatedBudgetKeur: validated?.lines[l.id] ?? null })),
     budgetVersions: versions.map((v) => ({ number: v.number, estimateClass: v.estimateClass, status: v.status, centralKeur: v.centralKeur, validatedOn: day(v.validatedAt), g2Baseline: v.isG2Baseline })),
     gates: gs.map((g) => ({ gate: g.code, session: g.session, status: g.status, decision: g.decision, decidedOn: day(g.decidedAt), takenOver: g.takenOver })),
     machineNeeds: needs.map((n) => ({ ref: needRef(r.code, n.number), catalogueCode: n.catalogueCode, catalogueVersion: n.catalogueVersion, label: n.freeLabel, quantity: n.quantity, status: n.status, orderedOn: n.orderedOn })),
@@ -111,7 +111,7 @@ export async function writeActual(client: ApiClient, code: string, input: Record
     if (c.status !== 'active') return { ok: false, status: 409, error: 'capex_not_active' };
     const [lot] = await tx.select().from(capexLots).where(and(eq(capexLots.capexId, c.id), eq(capexLots.number, Number(input.lot))));
     if (!lot) return { ok: false, status: 422, error: 'unknown_lot' };
-    if (lot.epc2i) return { ok: false, status: 422, error: 'epc2i_lot', message: 'EPC2i lots come from Keystone' };
+    if (lot.fromKeystone) return { ok: false, status: 422, error: 'epc2i_lot', message: 'Machine lots come from Keystone' };
     // JSON numbers are read like the typed values of the form.
     const ch = checkActual(Object.fromEntries(Object.entries(input).map(([k, v]) => [k, typeof v === 'number' ? String(v) : v])), monthOf(today));
     if (!ch.ok) return { ok: false, status: 422, error: 'invalid', message: ch.error };

@@ -1,4 +1,4 @@
-# Guide des experts, Co-DIG et PMO EPC2i
+# Guide des experts, Co-DIG et PMO ingénierie
 
 ## Experts (Qualité, HSE, Finance, Exploitation)
 
@@ -10,8 +10,8 @@
 
 - Membre de l'équipe du CAPEX : lecture de toutes les pages du CAPEX, saisie de retours d'expérience.
 
-## PMO EPC2i
+## PMO ingénierie
 
-- CAPEX où EPC2i livre des machines : lecture des pages du CAPEX (besoins, offres, avancement des projets EPC2i lus depuis
+- CAPEX où l’ingénierie du groupe livre des machines : lecture des pages du CAPEX (besoins, offres, avancement des projets Keystone lus depuis
   Keystone), enregistrement d'**audits** de phase, retours d'expérience.
-- Les projets EPC2i, les offres et l'avancement restent gérés dans **Keystone**.
+- Les projets Keystone, les offres et l'avancement restent gérés dans **Keystone**.

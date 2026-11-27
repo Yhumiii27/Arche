@@ -95,7 +95,7 @@ describe('delivery 3: a CAPEX through its four gates by the circuits', () => {
     expect(await openCapexAction(CODE)).toEqual({ ok: true });
     as('project_lead');
     expect(await addLotAction(CODE, null, form({ kind: 'civil_works', title: 'Slab' }))).toEqual({ ok: true });
-    expect(await addLotAction(CODE, null, form({ kind: 'machines', title: 'Shredder and extruder (EPC2i)' }))).toEqual({ ok: true });
+    expect(await addLotAction(CODE, null, form({ kind: 'machines', title: 'Shredder and extruder (group engineering)' }))).toEqual({ ok: true });
     expect(await addMemberAction(CODE, null, form({ userId: await userId('t.girard@groupe.example'), capexRole: 'co_dig' }))).toEqual({ ok: true });
     expect(await addMemberAction(CODE, null, form({ userId: await userId('l.haddad@atlas-process.example'), capexRole: 'internal_client' }))).toEqual({ ok: true });
     expect(await saveRiskAction(CODE, null, null, form({ title: 'Recycled resin quality', category: 'technical', probability: '2', impact: '3' }))).toEqual({ ok: true });

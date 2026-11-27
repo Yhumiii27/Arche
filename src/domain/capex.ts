@@ -71,13 +71,13 @@ export const LOT_KIND_LABEL: Record<LotKind, string> = {
   other: 'Other',
 };
 
-/** A lot: a kind of the list and a title; machine lots are fed by the EPC2i projects (spec 02 §3). */
-export function checkLot(raw: Record<string, unknown>): Check<{ kind: LotKind; title: string; epc2i: boolean }> {
+/** A lot: a kind of the list and a title; machine lots are fed by the Keystone projects (spec 02 §3). */
+export function checkLot(raw: Record<string, unknown>): Check<{ kind: LotKind; title: string; fromKeystone: boolean }> {
   const kind = text(raw.kind);
   if (!(LOT_KINDS as readonly string[]).includes(kind)) return { ok: false, error: 'Choose the kind of lot' };
   const title = text(raw.title);
   if (title.length < 2 || title.length > 120) return { ok: false, error: 'Enter the lot title' };
-  return { ok: true, value: { kind: kind as LotKind, title, epc2i: kind === 'machines' } };
+  return { ok: true, value: { kind: kind as LotKind, title, fromKeystone: kind === 'machines' } };
 }
 
 // ── Budget lines ──────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -160,7 +160,7 @@ export function checkDecision(raw: Record<string, unknown>, today: string): Chec
 
 export const TEAM_ROLES: readonly TeamRole[] = ['lead', 'controller', 'co_dig', 'epc2i_pmo', 'internal_client', 'member'];
 export const TEAM_ROLE_LABEL: Record<TeamRole, string> = {
-  lead: 'Project lead', controller: 'Controller', co_dig: 'Co-DIG', epc2i_pmo: 'EPC2i PMO', internal_client: 'Internal client', member: 'Team member',
+  lead: 'Project lead', controller: 'Controller', co_dig: 'Co-DIG', epc2i_pmo: 'Engineering PMO', internal_client: 'Internal client', member: 'Team member',
 };
 
 /** The CAPEX-scoped role a team role gives (spec 01 §2: the named team sees the CAPEX); null = none (subsidiary roles). */
@@ -172,7 +172,7 @@ export type CapexAction =
   | 'edit' // identity sheet, lots, risks, decisions, team
   | 'open'
   | 'budget' // budget versions: create, edit, submit
-  | 'needs' // machine needs to EPC2i: enter, submit, withdraw (spec 07 §1)
+  | 'needs' // machine needs to group engineering: enter, submit, withdraw (spec 07 §1)
   | 'force_typology'
   | 'confirm_typology'
   | 'decide_gate'

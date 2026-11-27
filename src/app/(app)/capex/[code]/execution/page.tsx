@@ -1,6 +1,6 @@
 // Execution of a CAPEX (docs/spec/06 §3, N-14): the lots with their budget (G2 baseline, else the latest validated version) and
 // planned window, the committed, spent and physical % of each month — entered or imported by the controller for the lots outside
-// EPC2i, read in Keystone for the machine lots (contract and signed amendments, invoiced, physical %) — the consolidated
+// Keystone, read there for the machine lots (contract and signed amendments, invoiced, physical %) — the consolidated
 // S-curve with SPI, CPI and EAC, the forecast by rules (AR-037), the uncertainty gap (CDC §4) and, in phase 4, the controller's accounting closure (N-15).
 import { EmptyState } from '@/components/app/EmptyState';
 import { KpiGrid, KpiTile } from '@/components/app/Kpi';
@@ -41,7 +41,7 @@ export default async function ExecutionPage({ params }: PageProps<'/capex/[code]
   const x = await executionOf(db, c, today);
   const closure = await closureOf(db, c.id, x.g2Keur);
   const currencies = entryCurrencies(await subsidiaryCurrency(db, c.subsidiaryCode));
-  // Phased cash-flow (AR-045): the G2 baseline, the actuals (EPC2i lots from Keystone) and the forecast of the months to come.
+  // Phased cash-flow (AR-045): the G2 baseline, the actuals (machine lots from Keystone) and the forecast of the months to come.
   const forecastRows = await forecastRowsOf(db, x.lots.map((l) => l.id));
   const transfers = await transfersOf(db, c.id);
   const cf = cashflow(x.lots, x.rows, forecastRows.map((r) => ({ lotId: r.lotId, month: r.month, amountKeur: r.amountKeur })), x.month);
@@ -170,7 +170,7 @@ export default async function ExecutionPage({ params }: PageProps<'/capex/[code]
         )}
       </SectionCard>
 
-      <SectionCard title={t('Lots')} hint={t('Values cumulative to the end of the month; EPC2i lots come from Keystone')} scroll>
+      <SectionCard title={t('Lots')} hint={t('Values cumulative to the end of the month; Machine lots come from Keystone')} scroll>
         {x.lots.length ? (
           <Table>
             <thead>
@@ -191,7 +191,7 @@ export default async function ExecutionPage({ params }: PageProps<'/capex/[code]
                 <tr key={l.id}>
                   <Td>{l.number}</Td>
                   <Td>
-                    {dataText(l.title, lang)} {l.epc2i && <Tag size="xs">EPC2i</Tag>}
+                    {dataText(l.title, lang)} {l.fromKeystone && <Tag size="xs">Keystone</Tag>}
                     <div className="text-muted">{t(labelOf(LOT_KIND_LABEL, l.kind as LotKind))}</div>
                   </Td>
                   <Td align="right" numeric>{k(l.budgetKeur)}</Td>
@@ -206,7 +206,7 @@ export default async function ExecutionPage({ params }: PageProps<'/capex/[code]
                   {edit && (
                     <Td align="right" nowrap>
                       <LotWindowForm code={c.code} lotId={l.id} start={l.start} end={l.end} label={dataText(l.title, lang)} />{' '}
-                      {!l.epc2i && <ActualForm code={c.code} lotId={l.id} month={x.month} label={dataText(l.title, lang)} currencies={currencies} />}{' '}
+                      {!l.fromKeystone && <ActualForm code={c.code} lotId={l.id} month={x.month} label={dataText(l.title, lang)} currencies={currencies} />}{' '}
                       <ForecastForm code={c.code} lotId={l.id} label={dataText(l.title, lang)} months={forecastMonths(l)} values={typedOf(l.id).values} currencies={currencies} typedIn={typedOf(l.id).currency} />
                     </Td>
                   )}
@@ -274,7 +274,7 @@ export default async function ExecutionPage({ params }: PageProps<'/capex/[code]
       )}
 
       {x.projects.length > 0 && (
-        <SectionCard title={t('EPC2i projects')} hint={t('Selling side only: contract, signed amendments, invoiced, physical progress and SPI (AC-2)')} scroll>
+        <SectionCard title={t('Keystone projects')} hint={t('Selling side only: contract, signed amendments, invoiced, physical progress and SPI (AC-2)')} scroll>
           <Table>
             <thead>
               <tr>

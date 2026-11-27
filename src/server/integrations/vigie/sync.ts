@@ -1,6 +1,6 @@
 import 'server-only';
 // Vigie connector (AR-033, docs/CONTRATS.md §2.5): the only writer of the mirror of vigie.pub_etudes_securite and of the
-// safety milestones Vigie holds. Modes as Keystone's (spec 07 §2): `views` reads the view when the EPC2I server shares it (not
+// safety milestones Vigie holds. Modes as Keystone's (spec 07 §2): `views` reads the view when the shared server shares it (not
 // shared yet: simulated on the demonstration data set, left empty elsewhere), `simulation` simulates on the demonstration data
 // set only, `off` reads nothing. Each synchronisation replaces the mirror, then each CAPEX's milestones with studies take their
 // status from Vigie (`source = vigie`, audited when it changes); a milestone Vigie no longer holds goes back to the group HSE.

@@ -1,4 +1,4 @@
-// Arche's place on a PostgreSQL server — the shared EPC2I server (decision M-01 in Matrix: one database `epc2i`, one schema
+// Arche's place on a PostgreSQL server — the shared server of the Atrium suite (decision M-01 in Matrix: one database — `epc2i`, `atrium` once Matrix renames it —, one schema
 // per tool; Arche connects as `arche_app`, owner of the schema `arche` and of nothing else, N-1). Arche runs on PostgreSQL
 // only (owner, 22 Oct 2026): a developer machine and the CI use the same layout (`npm run db:local` creates it there).
 // - tables are declared in the schema (`arche.table(…)`, ./schema/_schema.ts), so migrations name `"arche".` themselves;

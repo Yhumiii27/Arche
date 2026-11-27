@@ -1,8 +1,8 @@
 // Delivery 4 on a fresh PostgreSQL database with the demo data set ("View as"), aligned with Keystone's demo (owner, 25 Oct
 // 2026): the project lead enters and submits machine needs, a submitted need is published in pub_besoins_machines (drafts
-// never), Keystone's own demo answers and project RCF-019 are mirrored, the simulated answer of EPC2i comes back with
+// never), Keystone's own demo answers and project RCF-019 are mirrored, the simulated answer of group engineering comes back with
 // the synchronisation of the mirror, the G2 criterion counts the firm offers, the G2 Go orders the covered needs, K3 and G3
-// read the EPC2i projects; a view Keystone shares is read instead of its simulation (mixed mode).
+// read the Keystone projects; a view Keystone shares is read instead of its simulation (mixed mode).
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const jar = new Map<string, string>();
@@ -92,7 +92,7 @@ describe('delivery 4: machine needs and the Keystone connector', () => {
     expect(await saveNeedAction(SAI, null, null, form({ catalogue: 'MEMU-16@1' }))).toEqual({ ok: false, error: 'CAPEX not found' });
   });
 
-  it('a submitted need is published, and the answer of EPC2i comes back with the synchronisation', async () => {
+  it('a submitted need is published, and the answer of group engineering comes back with the synchronisation', async () => {
     as('project_lead');
     const n = await needOf(APM, 3);
     expect(await submitNeedAction(APM, n.id)).toEqual({ ok: true });
@@ -143,7 +143,7 @@ describe('delivery 4: machine needs and the Keystone connector', () => {
     expect((await projectsOf(t.db, APM)).map((p) => p.code)).toEqual([simulatedProjectCode(`${APM}/B03`)]);
   });
 
-  it('K3 and G3 read the EPC2i projects: SATs planned, reservations', async () => {
+  it('K3 and G3 read the Keystone projects: SATs planned, reservations', async () => {
     const ev = await currentEvaluation(t.db, await capexOf(SAI));
     expect(ev?.gate).toBe('K3');
     // Keystone's demo (K-14): RCF-019's SAT is planned on 16 Nov 2026; the project for B03 is still to be created.

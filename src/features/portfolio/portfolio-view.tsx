@@ -1,7 +1,7 @@
 // Portfolio dashboard (docs/spec/06 §5), shared by the Group portfolio (the viewer's CAPEX — the whole group for the central
 // functions, the zone of a zone director, the subsidiary of a sponsor or a controller (visibility filter) — on the zone chosen)
 // and the Subsidiary portfolio (the subsidiary chosen in the sidebar): CAPEX by subsidiary and phase, gates ahead and late,
-// budget and EAC, SPI / CPI, maturity of the studies (weighted pack, subsidiary and EPC2i parts, weekly trend), changes
+// budget and EAC, SPI / CPI, maturity of the studies (weighted pack, subsidiary and Keystone parts, weekly trend), changes
 // waiting, reviews late and the rule-based alerts. Server Component.
 import Link from 'next/link';
 import { EmptyState } from '@/components/app/EmptyState';
@@ -149,7 +149,7 @@ export async function PortfolioView({ level }: { level: 'group' | 'subsidiary' }
                 <Th>{t('CAPEX')}</Th>
                 <Th align="right">{t('Weighted pack')}</Th>
                 <Th align="right">{t('Subsidiary part')}</Th>
-                <Th align="right">{t('EPC2i part')}</Th>
+                <Th align="right">{t('Keystone part')}</Th>
                 <Th>{t('Trend')}</Th>
                 <Th>{t('Uncertainty gap')}</Th>
               </tr>
@@ -165,7 +165,7 @@ export async function PortfolioView({ level }: { level: 'group' | 'subsidiary' }
                       {pct(r.dash.pack.pct, lang)} {r.dash.pack.pct != null && r.dash.pack.pct <= r.dash.packThresholdPct && r.phase === 'avant_projet' && <Tag tone="outline" size="xs">{`< ${r.dash.packThresholdPct} %`}</Tag>}
                     </Td>
                     <Td align="right" numeric>{pct(r.dash.pack.subsidiary.pct, lang)}</Td>
-                    <Td align="right" numeric>{pct(r.dash.pack.epc2i.pct, lang)}</Td>
+                    <Td align="right" numeric>{pct(r.dash.pack.keystone.pct, lang)}</Td>
                     <Td>{series.length > 1 ? <Sparkline values={series} label={`${t('Trend')} ${r.code}`} /> : <span className="text-muted">{t('Not enough weeks yet')}</span>}</Td>
                     <Td nowrap>{g?.kind === 'range' ? `${g.gapPts} pts (${g.widthPct} % → ${g.targetClass} ${g.targetWidthPct} %)` : '—'}</Td>
                   </tr>

@@ -1,5 +1,5 @@
 'use server';
-// Machine needs (docs/spec/07 §1): the project lead enters them as drafts in phases 1 and 2, submits them to EPC2i (they are
+// Machine needs (docs/spec/07 §1): the project lead enters them as drafts in phases 1 and 2, submits them to group engineering (they are
 // then published in pub_besoins_machines) and may withdraw a submitted need until it is ordered at the G2 Go.
 import { and, eq } from 'drizzle-orm';
 import { nextNumber } from '@/domain/capex';
@@ -43,7 +43,7 @@ export async function saveNeedAction(code: string, needId: string | null, _prev:
   });
 }
 
-/** Deletes a draft (never seen by EPC2i). */
+/** Deletes a draft (never seen by group engineering). */
 export async function deleteNeedAction(code: string, needId: string): Promise<ActionResult> {
   return onCapex(code, 'needs', async (tx, c, v) => {
     const n = await needOf(tx, c, needId);
@@ -55,7 +55,7 @@ export async function deleteNeedAction(code: string, needId: string): Promise<Ac
   });
 }
 
-/** Submits a draft to EPC2i. */
+/** Submits a draft to group engineering. */
 export async function submitNeedAction(code: string, needId: string): Promise<ActionResult> {
   return onCapex(code, 'needs', async (tx, c, v) => {
     if (!canSubmitNeeds(c)) return { ok: false, error: 'Machine needs are submitted in phases 1 and 2' };
@@ -64,8 +64,8 @@ export async function submitNeedAction(code: string, needId: string): Promise<Ac
     if (n.status !== 'draft') return { ok: false, error: 'This need is already submitted' };
     await tx.update(machineNeeds).set({ status: 'submitted', submittedAt: new Date(), updatedAt: new Date() }).where(eq(machineNeeds.id, n.id));
     const ref = needRef(c.code, n.number);
-    await writeAudit(tx, auditOf(v, c, `machine need ${ref} submitted to EPC2i`, { entityType: 'machine_need', entityId: n.id }));
-    await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'need.submitted', text: `${ref} submitted to EPC2i`, capexId: c.id });
+    await writeAudit(tx, auditOf(v, c, `machine need ${ref} submitted to group engineering`, { entityType: 'machine_need', entityId: n.id }));
+    await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'need.submitted', text: `${ref} submitted to group engineering`, capexId: c.id });
     return { ok: true };
   });
 }

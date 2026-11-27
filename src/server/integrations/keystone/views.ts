@@ -1,6 +1,6 @@
 // The Keystone share views Arche reads (docs/CONTRATS.md §2.1–2.2), each copied into the mirror (arche.keystone_mirror) with
 // its key and the codes Arche looks rows up by. A row is kept as Keystone publishes it (French column names, dates as ISO
-// strings). EPC2i's part of the engineering pack (pub_pack_ingenierie) came with delivery 5, the installed base
+// strings). Keystone's part of the engineering pack (pub_pack_ingenierie) came with delivery 5, the installed base
 // (pub_parc_machines: the machines of the ramp-up lines) with delivery 6.
 export type KeystoneRow = Record<string, unknown>;
 

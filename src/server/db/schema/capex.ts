@@ -90,14 +90,15 @@ export const lifecycleModels = arche.table('lifecycle_models', {
   filled('lifecycle_models_updated_by_filled', t.updatedByName),
 ]);
 
-/** Lots of a CAPEX (N-12); `epc2i` lots (machines) are fed by the EPC2i projects. */
+/** Lots of a CAPEX (N-12); machine lots (`fromKeystone`, column `epc2i` kept: a stored name
+ * Matrix's catalogue reads, renamed with Matrix, docs/DEMANDES-MATRIX.md M-16) are fed by the Keystone projects. */
 export const capexLots = arche.table('capex_lots', {
   id: id(),
   capexId: uuid('capex_id').notNull().references(() => capex.id, { onDelete: 'cascade' }),
   number: integer('number').notNull(),
   kind: text('kind').notNull(),
   title: text('title').notNull(),
-  epc2i: boolean('epc2i').notNull().default(false),
+  fromKeystone: boolean('epc2i').notNull().default(false),
   /** Planned window of the lot ("2026-10"), over which its budget is spread evenly (S-curve, delivery 5). */
   plannedStart: text('planned_start'),
   plannedEnd: text('planned_end'),
