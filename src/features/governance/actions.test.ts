@@ -69,7 +69,7 @@ describe('delivery 5: dashboards and governance', () => {
     expect((await dash(APM)).hs).toMatchObject({ passed: 2 });
 
     const machines = await lot(SAI, 5);
-    as('epc2i_pmo');
+    as('engineering_pmo');
     expect(await saveActualAction(SAI, (await lot(SAI, 2)).id, null, form({ month: '2026-10', physicalPct: '45' }))).toEqual({ ok: false, error: 'You cannot do this on this CAPEX' });
     as('dir_ig');
     expect(await saveActualAction(SAI, machines.id, null, form({ month: '2026-10', physicalPct: '45' }))).toEqual({ ok: false, error: 'You cannot do this on this CAPEX' });

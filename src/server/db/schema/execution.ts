@@ -161,8 +161,8 @@ export const capexSnapshots = arche.table('capex_snapshots', {
   phase: text('phase').notNull(),
   packPct: keur('pack_pct'),
   subsidiaryPackPct: keur('subsidiary_pack_pct'),
-  /** Keystone's part of the pack (column name kept until renamed with Matrix, docs/DEMANDES-MATRIX.md M-16). */
-  keystonePackPct: keur('epc2i_pack_pct'),
+  /** Keystone's part of the pack. */
+  keystonePackPct: keur('keystone_pack_pct'),
   bacKeur: keur('bac_keur'),
   pvKeur: keur('pv_keur'),
   evKeur: keur('ev_keur'),

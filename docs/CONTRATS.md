@@ -279,8 +279,8 @@ figurent.
 
 ## 4. API métier et webhooks (AR-048)
 
-Pour les outils qui ne lisent pas le serveur commun (Power BI, un connecteur Sage, un script) : API `/api/v1/` par clé
-d'application cliente et webhooks signés (`capex.opened`, `gate.decided`, `alert.raised`). Contrat détaillé :
+Pour les outils qui ne lisent pas le serveur commun (Power BI, un connecteur Sage, un script) : API `/api/v2/` (`/api/v1/`
+dépréciée, `API.md` § 8) par clé d'application cliente et webhooks signés (`capex.opened`, `gate.decided`, `alert.raised`). Contrat détaillé :
 [`API.md`](API.md). Les vues `pub_` restent le contrat des outils du groupe.
 
 ## 5. Fonctions `pub_` d'Arche (écritures reçues, M-17)

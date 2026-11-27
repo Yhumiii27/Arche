@@ -76,7 +76,7 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   `projectsOfMany`, `schedulesOf`; load test `src/server/dal/portfolio-load.test.ts`); exports (AR-042: `src/lib/export/` CSV,
   XLSX and a PDF writer without dependency, tables `src/server/export/datasets.ts` served by `/export/[dataset]`, header links
   `exportLinks`, printable documents `src/features/print/documents.ts` shown as HTML or PDF); business API and webhooks (AR-048,
-  `docs/API.md`: `/api/v1/` by API client key, signed writes, outbox `webhook_deliveries` sent by the job `webhooks`, page
+  `docs/API.md`: `/api/v2/` (and `/api/v1/`, deprecated) by API client key, signed writes, outbox `webhook_deliveries` sent by the job `webhooks`, page
   `/admin/api`). Lot 7b: currencies (AR-039: `exchange_rates`, `src/domain/currency.ts`, `converterFor`; amounts typed in the
   subsidiary's currency, consolidated in k€), envelopes (AR-040: `envelopes`, `envelope_movements`, `src/domain/envelopes.ts`,
   page `/envelopes`, G2 criterion `g2_envelope`, alert `envelope_over`), phased cash-flow (AR-045: `lot_forecasts`,
@@ -121,10 +121,12 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
   and Inter come from the charter too (`@norma/charte/ds`, `@norma/charte/fonts/inter`): there is no local copy.
 - **The suite is Atrium (owner, 27 Nov 2026; Norma 3.0 / 3.1.0)**: no former suite or company name in Arche's files (the
   engineering company is « l'ingénierie du groupe » / "group engineering", its projects are Keystone projects, the lot flag is
-  `capexLots.fromKeystone`); stored identifiers kept until a coordinated rename: the column `capex_lots.epc2i` and
-  `capex_snapshots.epc2i_pack_pct` (draft request M-16 in `docs/DEMANDES-MATRIX.md`), the role key `epc2i_pmo` (shared
-  with Clavis), the gate criterion code `g2_epc2i_offers` (stored results) and the API error / field `epc2i_lot` / `epc2i`
-  (contract of `/api/v1/`). The shared server keeps `epc2i` / `epc2i-postgres` until Matrix renames it: `deploy/compose*.yaml`
+  `capexLots.fromKeystone`). The stored identifiers were renamed too (migration `0037_atrium_stored_names`): columns
+  `capex_lots.from_keystone` and `capex_snapshots.keystone_pack_pct`, role key `engineering_pmo` (shared with Clavis; the
+  former key `epc2i_pmo` is still read from Clavis and tokens through `LEGACY_ROLE_KEYS` of `src/config/roles.ts` during the
+  transition, never written), gate criterion `g2_keystone_offers`; the API keeps its published names in `/api/v1/` (field
+  `epc2i`, error `epc2i_lot`, deprecated) and `/api/v2/` names them `fromKeystone` / `keystone_lot` (`docs/API.md` § 8).
+  The shared server keeps `epc2i` / `epc2i-postgres` until Matrix renames it: `deploy/compose*.yaml`
   read `ATRIUM_PG_DATABASE` and `ATRIUM_PG_HOST` (defaults: today's names; `docs/EXPLOITATION.md` § 4.6).
 - **Logo, Norma 2.3.0** (owner, 25 Nov 2026; `norma/charte/COQUE.md` § 8 bis): the brand of the sidebar and of the top bar is the
   charter's `ToolLogo code="arche"` (`@norma/charte/ds/ToolLogo`, 26 px, 20 px in the top bar), also on the pages outside the shell
@@ -158,7 +160,7 @@ added read-only to a session (never modified); requests to them go in `docs/DEMA
     new publication or a new column is asked of Matrix (entry in its `REQUESTS.md`); the migrations already applied stay;
   - before changing or dropping a column a `pub_` view reads, tell Matrix first (the migration would fail); an
     incompatible change is a `…_v2` view;
-  - a write another tool must make in Arche goes through Arche's API (`/api/v1/`, `docs/API.md`) or a function
+  - a write another tool must make in Arche goes through Arche's API (`/api/v2/`, `docs/API.md`) or a function
     `arche.pub_<verb>_<object>` created by migration (`SECURITY DEFINER`, `SET search_path = arche, pg_temp`, caller
     `session_user`, Arche's rules and audit, `REVOKE EXECUTE … FROM PUBLIC`); one exists: `arche.pub_editer` (M-19, migration
     `0034_pub_editer`, `docs/PROPOSITION-M19.md`), the IT administrator's corrections from Matrix's viewer — the tables and

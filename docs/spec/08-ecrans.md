@@ -37,7 +37,7 @@
 
 ## 2. Accès par profil
 
-| Écran | sponsor | project_lead | controller | co_dig | dir_ig | ceo | group_cfo | group_hse | epc2i_pmo | expert | copil_member | zone_director | admin |
+| Écran | sponsor | project_lead | controller | co_dig | dir_ig | ceo | group_cfo | group_hse | engineering_pmo | expert | copil_member | zone_director | admin |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Accueil, Mes validations | É | É | É | É | É | É | É | É | É | É | É | L | L |
 | Registre, Portefeuille | É | É | L | L | L | L | L | L | L | — | L | L | — |

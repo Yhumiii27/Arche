@@ -78,7 +78,7 @@ export const CRITERIA: readonly CriterionDef[] = [
   { code: 'g2_pack', gate: 'G2', label: 'Engineering pack above the threshold', blocking: true, forcible: true, source: 'arche', from: 'L5' },
   { code: 'g2_hs3', gate: 'G2', label: 'HS 3 HazOp / FMEA passed', blocking: true, forcible: true, source: 'safety', from: 'L5' },
   { code: 'g2_permits', gate: 'G2', label: 'ICPE and building permit filed', blocking: true, forcible: true, source: 'arche', from: 'L5' },
-  { code: 'g2_epc2i_offers', gate: 'G2', label: 'Firm group engineering offers for every submitted machine need', blocking: true, forcible: true, source: 'keystone', from: 'L4' },
+  { code: 'g2_keystone_offers', gate: 'G2', label: 'Firm group engineering offers for every submitted machine need', blocking: true, forcible: true, source: 'keystone', from: 'L4' },
   { code: 'g2_experts', gate: 'G2', label: 'Quality, HSE, finance and operations opinions given', blocking: true, forcible: true, source: 'circuit', from: 'L3' },
   // Not evaluated while no envelope covers the CAPEX (AR-040, DECISIONS.md §5).
   { code: 'g2_envelope', gate: 'G2', label: 'Within the CAPEX envelope (tolerance of the model)', blocking: true, forcible: true, source: 'arche', from: 'L7' },

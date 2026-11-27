@@ -29,7 +29,7 @@ export async function currentEvaluation(q: DB | Tx, c: CycleState & { id: string
     const done = !!v && v.state !== 'draft' && v.state !== 'superseded' && v.state !== 'rejected';
     facts[`${gate.toLowerCase()}_dossier`] = { met: done && v.completenessPct === 100, value: v ? `v${v.number} · ${v.completenessPct} %` : '—' };
   }
-  if (gate === 'G2') facts.g2_epc2i_offers = firmOffersFact(await needsOf(q, c), await answersOf(q, c.code), await businessToday(q));
+  if (gate === 'G2') facts.g2_keystone_offers = firmOffersFact(await needsOf(q, c), await answersOf(q, c.code), await businessToday(q));
   if (gate === 'K3' || gate === 'G3') {
     const projects = await projectsOf(q, c.code);
     if (gate === 'K3') facts.k3_sat_planned = satPlannedFact(projects.map((p) => p.code), projects.flatMap((p) => p.milestones.map((m) => ({ projectCode: p.code, ...m }))));

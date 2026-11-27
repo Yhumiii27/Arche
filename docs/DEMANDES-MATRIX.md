@@ -134,25 +134,26 @@ la décision M-18 de Matrix (Matrix définit les vues `pub_` et applique les lie
 (VG-01 à VG-05), et autoriser le lien `arche_app` → `vigie.pub_etudes_securite` (lecture). Sans elle, Arche reste en
 déclaratif (N-13) pour les jalons HS.
 
-## M-16 · Renommer les colonnes d’Arche qui portent l’ancien nom de la suite (Atrium, 27 nov. 2026) — **brouillon**
+## M-16 · Renommer les colonnes d’Arche qui portent l’ancien nom de la suite (Atrium, 27 nov. 2026) — **sans objet : fait par Arche**
 
-**Brouillon, non déposé** : à présenter au propriétaire (note détaillée) et à porter dans le `REQUESTS.md` de Matrix après son
-« validé ». La suite s’appelle Atrium (propriétaire, 27 nov. 2026) ; Arche a retiré l’ancien nom de ses textes, de son code et
-de ses identifiants internes, mais garde trois noms **stockés** :
+La suite s’appelle Atrium (propriétaire, 27 nov. 2026). Le lot « noms stockés » (propriétaire, 27 nov. 2026 : « oui lance le
+lot Arche ») renomme dans la migration générée `0037_atrium_stored_names` :
 
-- colonnes `arche.capex_lots.epc2i` (booléen : lot alimenté par un projet Keystone ; nom d’usage dans le code :
-  `fromKeystone`) et `arche.capex_snapshots.epc2i_pack_pct` (part Keystone du pack, instantané hebdomadaire ; dans le code
-  `keystonePackPct`). Le catalogue de Matrix les décrit (`data/catalogue.json`) ; aucune vue `pub_` ne les lit aujourd’hui
-  (vérifié dans `data/publications-depot.json` et les migrations d’Arche ; `arche.pub_editer` ne les ouvre pas) : seule la
-  déclaration du schéma (contrat `matrix.schema/1`) les fait connaître à Matrix.
-- Demande : accord de Matrix pour une migration d’Arche `ALTER TABLE arche.capex_lots RENAME COLUMN epc2i TO from_keystone` et
-  `ALTER TABLE arche.capex_snapshots RENAME COLUMN epc2i_pack_pct TO keystone_pack_pct`, puis mise à jour du catalogue par la
-  déclaration suivante d’Arche. Si une publication devait les lire d’ici là, Matrix la fait d’abord évoluer (une colonne
-  publiée ne se renomme pas : `…_v2`).
-- Hors de cette demande, à traiter avec Clavis : la clé de rôle `epc2i_pmo` (« PMO ingénierie ») est lue dans
-  `clavis.pub_acces` (`role`, correspondance de `src/domain/app-roles.ts` de Clavis) et stockée dans `role_assignments`,
-  `capex_members` et `circuit_steps` ; la renommer demande la même opération des deux côtés (nouvelle clé publiée par Clavis,
-  migration d’Arche des valeurs et des contraintes, lecture des deux clés pendant la transition). Le code de critère
-  `g2_epc2i_offers` (résultats de jalons stockés) et le champ / code d’erreur `epc2i` / `epc2i_lot` de l’API `/api/v1/`
-  (contrat publié, `docs/API.md`) restent aussi jusqu’à une version de l’API.
-- Sans cette demande : les noms stockés restent, sans effet pour les personnes (aucun n’est affiché).
+- les colonnes `arche.capex_lots.epc2i` → `from_keystone` et `arche.capex_snapshots.epc2i_pack_pct` → `keystone_pack_pct`
+  (`RENAME COLUMN`, valeurs gardées). **Aucune vue `pub_` ne les lit** (vérifié le 27 nov. 2026 dans
+  `data/publications-depot.json` de Matrix et dans les migrations d’Arche ; `arche.pub_editer` ne les ouvre pas) : la
+  migration ne touche aucune publication et Matrix n’a rien à faire évoluer avant. Le catalogue de Matrix
+  (`data/catalogue.json`) les décrit encore sous l’ancien nom : il suit à la déclaration suivante d’Arche (contrat
+  `matrix.schema/1`) ou au prochain `npm run collecter` de Matrix ;
+- la clé de rôle `epc2i_pmo` → `engineering_pmo` (valeurs de `role_assignments`, `users.granted_roles`, `capex_members`,
+  `circuit_steps`, des circuits du concepteur et des matrices de délégation ; contraintes de domaine recréées). Clavis
+  publie la nouvelle clé dans `clavis.pub_acces` (migration de Clavis) ; Arche lit encore l’ancienne pendant la transition
+  (`LEGACY_ROLE_KEYS`), donc l’ordre de déploiement d’Arche et de Clavis est libre ;
+- le code de critère `g2_epc2i_offers` → `g2_keystone_offers` (résultats de jalons, demandes de signature en cours) ;
+- l’API garde `/api/v1/` telle qu’elle est publiée (champ `epc2i`, erreur `epc2i_lot`, dépréciée) et ajoute `/api/v2/`
+  (`fromKeystone`, `keystone_lot` ; `docs/API.md` § 8).
+
+Restent sous l’ancien nom, par règle : les migrations déjà appliquées (`0004_cycle`, `0012_governance`, `0035`, `0036`,
+le commentaire de `pub_besoins_machines` dans `0009_share_needs`, désormais propriété de Matrix depuis M-18) et les lignes
+déjà écrites des journaux en ajout seul (`audit_entries`, `signatures`), des versions de dossier figées et de la file des
+webhooks envoyés.

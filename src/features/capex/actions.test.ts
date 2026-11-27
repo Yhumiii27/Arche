@@ -121,7 +121,7 @@ describe('other rules', () => {
     // The expert of SAI and the Engineering PMO are scoped to the SAI CAPEX only.
     as('expert');
     expect(await saveRiskAction('CPX-APM-2026-01', null, null, form({ title: 'Some risk', category: 'cost', probability: '2', impact: '2' }))).toEqual({ ok: false, error: 'CAPEX not found' });
-    as('epc2i_pmo');
+    as('engineering_pmo');
     expect(await addDecisionAction('CPX-APM-2026-01', null, form({ takenOn: '2026-10-01', body: 'copil_projet', text: 'Something' }))).toEqual({ ok: false, error: 'CAPEX not found' });
   });
 

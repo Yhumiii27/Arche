@@ -14,7 +14,7 @@ export const CRITERION_ACTION: Record<string, { screen: ScreenId; label: string 
   g1_sponsor_visa: { screen: 'capex-gates', label: 'Open the gate circuit' },
   g1_experts: { screen: 'capex-gates', label: 'Open the gate circuit' },
   g2_experts: { screen: 'capex-gates', label: 'Open the gate circuit' },
-  g2_epc2i_offers: { screen: 'capex-machines', label: 'See the machine needs' },
+  g2_keystone_offers: { screen: 'capex-machines', label: 'See the machine needs' },
   k3_sat_planned: { screen: 'capex-machines', label: 'See the Keystone projects' },
   g3_reserves: { screen: 'capex-machines', label: 'See the Keystone projects' },
   g1_hs2: { screen: 'capex-safety', label: 'See the safety milestones' },

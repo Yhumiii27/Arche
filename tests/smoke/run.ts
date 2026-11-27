@@ -31,7 +31,7 @@ async function main(): Promise<void> {
     dir_ig: ['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-SAI-2026-01', 'CPX-SAI-2026-02', 'CPX-SAI-2026-03'],
     sponsor: ['CPX-APM-2025-01', 'CPX-APM-2026-01', 'CPX-APM-2026-02'],
     zone_director: ['CPX-APM-2025-01', 'CPX-APM-2026-01'],
-    epc2i_pmo: ['CPX-SAI-2026-01'],
+    engineering_pmo: ['CPX-SAI-2026-01'],
   };
   for (const [role, want] of Object.entries(expected)) {
     const r = await get('/portfolio', role);
@@ -47,7 +47,7 @@ async function main(): Promise<void> {
   check(overview.body.includes('Cycle DIG-PRODI') && overview.body.includes('Budget E10 validé par la DAF groupe'), 'the overview shows the gate the CAPEX faces and its criteria');
   const budget = await get('/capex/CPX-APM-2026-01/budget', 'project_lead');
   check(budget.status === 200 && budget.body.includes('Versions de budget') && budget.body.includes('E30'), 'budget page: lots and versions');
-  for (const page of ['risks', 'governance', 'journal']) check((await get(`/capex/CPX-SAI-2026-01/${page}`, 'epc2i_pmo')).status === 200, `CAPEX page ${page} opens for a team member`);
+  for (const page of ['risks', 'governance', 'journal']) check((await get(`/capex/CPX-SAI-2026-01/${page}`, 'engineering_pmo')).status === 200, `CAPEX page ${page} opens for a team member`);
   check((await get('/admin/model', 'admin')).status === 200, 'DIG-PRODI model page for the administrator');
   const gatesPage = await get('/capex/CPX-APM-2026-01/gates', 'project_lead');
   check(gatesPage.status === 200 && gatesPage.body.includes('Sessions précédentes') && gatesPage.body.includes('Avis HSE'), 'gates page: criteria and the G1 circuit of the demo');
@@ -61,7 +61,7 @@ async function main(): Promise<void> {
   check((await get('/admin/delegation', 'admin')).status === 200, 'delegation matrix page for the administrator');
   const machines = await get('/capex/CPX-APM-2026-01/machines', 'project_lead');
   check(machines.status === 200 && machines.body.includes('CPX-APM-2026-01/B02') && machines.body.includes('Devis budgétaire') && machines.body.includes('DEV-CPX-APM-2026-01-001'), 'machine needs: the latest answer of group engineering (simulation)');
-  const projects = await get('/capex/CPX-SAI-2026-01/machines', 'epc2i_pmo');
+  const projects = await get('/capex/CPX-SAI-2026-01/machines', 'engineering_pmo');
   check(projects.status === 200 && projects.body.includes('RCF-019') && projects.body.includes('Fin des études'), 'machine needs: the Keystone projects and their milestones');
   check((await get('/admin/connectors', 'admin')).status === 200, 'connectors page for the administrator');
   check((await get('/admin/api', 'admin')).status === 200 && (await get('/admin/api', 'sponsor')).status === 404, 'API and webhooks page for the administrator only (AR-048)');
@@ -114,7 +114,7 @@ async function main(): Promise<void> {
   check(rampup.status === 200 && rampup.body.includes('Four de vieillissement') && rampup.body.includes('Saisir un jour'), 'ramp-up: the line of the demo CAPEX in start-up and the daily entry');
   const rex = await get('/rex', 'sponsor');
   check(rex.status === 200 && rex.body.includes('Associer le directeur d’usine dès le cadrage'), 'lessons learned library');
-  check((await get('/rex', 'epc2i_pmo')).body.includes('Associer le directeur d’usine') === false, 'the library follows the subsidiary isolation');
+  check((await get('/rex', 'engineering_pmo')).body.includes('Associer le directeur d’usine') === false, 'the library follows the subsidiary isolation');
   const copilAgendaPage = await get('/copil', 'dir_ig');
   check(copilAgendaPage.status === 200 && copilAgendaPage.body.includes('CPX-SAI-2026-02') && copilAgendaPage.body.includes('CPX-SAI-2026-03'), 'COPIL GPI: a G1 in review and a recent G1 decision');
   check((await get('/rex', 'dir_ig')).body.includes('Séparer les accès chantier'), 'lessons learned of several CAPEX in the library');
