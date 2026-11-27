@@ -96,11 +96,11 @@ export function referenceRevenueOf(rows: readonly { fiscalYear: number; revenueK
 
 // ── Staffing template (CDC §3, spec 06 §2) ────────────────────────────────────────────────────────────────────────────
 
-export type TeamRole = 'lead' | 'controller' | 'co_dig' | 'epc2i_pmo' | 'internal_client' | 'member';
+export type TeamRole = 'lead' | 'controller' | 'co_dig' | 'engineering_pmo' | 'internal_client' | 'member';
 
 export const STAFFING: Record<Typology, readonly TeamRole[]> = {
   light: ['lead', 'co_dig'],
-  strategic: ['lead', 'controller', 'epc2i_pmo'],
+  strategic: ['lead', 'controller', 'engineering_pmo'],
 };
 
 /** The template roles nobody holds yet (empty = the team is complete); a CAPEX without typology uses the Light template. */

@@ -60,7 +60,11 @@ export async function capexOf(client: ApiClient, code: string) {
   return (await rowsOf(client, eq(capex.code, code)))[0] ?? null;
 }
 
-export async function capexDetail(client: ApiClient, code: string) {
+/** Version of the API contract: v1 (frozen, deprecated) keeps the field `epc2i` and the error `epc2i_lot`; v2 names them
+ * `fromKeystone` and `keystone_lot` (Atrium rename, docs/API.md §8). Everything else is the same in both. */
+export type ApiVersion = 1 | 2;
+
+export async function capexDetail(client: ApiClient, code: string, version: ApiVersion = 1) {
   const r = await capexOf(client, code);
   if (!r) return null;
   const db = await getDb();
@@ -75,7 +79,7 @@ export async function capexDetail(client: ApiClient, code: string) {
   const validated = latestValidated(versions);
   return {
     ...summary(r, validated),
-    lots: lots.map((l) => ({ number: l.number, kind: l.kind, title: l.title, epc2i: l.fromKeystone, plannedStart: l.plannedStart, plannedEnd: l.plannedEnd, validatedBudgetKeur: validated?.lines[l.id] ?? null })),
+    lots: lots.map((l) => ({ number: l.number, kind: l.kind, title: l.title, ...(version === 1 ? { epc2i: l.fromKeystone } : { fromKeystone: l.fromKeystone }), plannedStart: l.plannedStart, plannedEnd: l.plannedEnd, validatedBudgetKeur: validated?.lines[l.id] ?? null })),
     budgetVersions: versions.map((v) => ({ number: v.number, estimateClass: v.estimateClass, status: v.status, centralKeur: v.centralKeur, validatedOn: day(v.validatedAt), g2Baseline: v.isG2Baseline })),
     gates: gs.map((g) => ({ gate: g.code, session: g.session, status: g.status, decision: g.decision, decidedOn: day(g.decidedAt), takenOver: g.takenOver })),
     machineNeeds: needs.map((n) => ({ ref: needRef(r.code, n.number), catalogueCode: n.catalogueCode, catalogueVersion: n.catalogueVersion, label: n.freeLabel, quantity: n.quantity, status: n.status, orderedOn: n.orderedOn })),
@@ -100,7 +104,7 @@ type WriteResult = { ok: true; value: Record<string, unknown> } | { ok: false; s
 const actorOf = (client: ApiClient) => ({ actorName: `API · ${client.name}`, actorUserId: null, actorRole: 'api' });
 
 /** Writes the actuals of one lot and month (fields of src/domain/execution.ts checkActual; `lot` is the lot's number). */
-export async function writeActual(client: ApiClient, code: string, input: Record<string, unknown>): Promise<WriteResult> {
+export async function writeActual(client: ApiClient, code: string, input: Record<string, unknown>, version: ApiVersion = 1): Promise<WriteResult> {
   const r = await capexOf(client, code);
   if (!r) return { ok: false, status: 404, error: 'not_found' };
   const db = await getDb();
@@ -111,7 +115,7 @@ export async function writeActual(client: ApiClient, code: string, input: Record
     if (c.status !== 'active') return { ok: false, status: 409, error: 'capex_not_active' };
     const [lot] = await tx.select().from(capexLots).where(and(eq(capexLots.capexId, c.id), eq(capexLots.number, Number(input.lot))));
     if (!lot) return { ok: false, status: 422, error: 'unknown_lot' };
-    if (lot.fromKeystone) return { ok: false, status: 422, error: 'epc2i_lot', message: 'Machine lots come from Keystone' };
+    if (lot.fromKeystone) return { ok: false, status: 422, error: version === 1 ? 'epc2i_lot' : 'keystone_lot', message: 'Machine lots come from Keystone' };
     // JSON numbers are read like the typed values of the form.
     const ch = checkActual(Object.fromEntries(Object.entries(input).map(([k, v]) => [k, typeof v === 'number' ? String(v) : v])), monthOf(today));
     if (!ch.ok) return { ok: false, status: 422, error: 'invalid', message: ch.error };

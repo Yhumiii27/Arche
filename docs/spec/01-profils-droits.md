@@ -16,7 +16,7 @@ Douze profils métier (prompt §2), plus l’administrateur (hors CDC, N-4). Les
 | `ceo` | PDG | groupe, **voit tout** | signe le G2 (Single Gate) ; décide au-delà des seuils délégués |
 | `group_cfo` | DAF groupe | groupe (vue croisée) | consolide le BP (classe E10) ; saisit le CA de référence des filiales ; expert DAF par défaut |
 | `group_hse` | SSE groupe | groupe (vue croisée) | jalons HS ; quitus PSSR ; expert HSE par défaut |
-| `epc2i_pmo` | PMO ingénierie | CAPEX nommés (Stratégiques) | appui opérationnel ; lecture des besoins machines et des projets Keystone liés |
+| `engineering_pmo` | PMO ingénierie | CAPEX nommés (Stratégiques) | appui opérationnel ; lecture des besoins machines et des projets Keystone liés |
 | `expert` | Expert (Qualité / HSE / DAF / Exploitation) | CAPEX où il est consulté | rend un avis motivé ; spécialité portée par l’affectation |
 | `copil_member` | Membre COPIL GPI | groupe (lecture) | examine les dossiers soumis au G1 ; donne un avis en séance ou en ligne |
 | `zone_director` | Directeur de Zone | filiales de ses zones (lecture) | lecteur ; portefeuille de sa zone |

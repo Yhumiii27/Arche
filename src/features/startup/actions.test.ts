@@ -104,7 +104,7 @@ describe('delivery 6: start-up, ramp-up and transfer', () => {
     // The library shows the CAPEX the viewer sees only: a SAI sponsor does not see the lessons of APM.
     as('sponsor');
     expect((await rexLibrary(await getViewer())).length).toBe(3);
-    as('epc2i_pmo');
+    as('engineering_pmo');
     expect(new Set((await rexLibrary(await getViewer())).map((r) => r.capex.code))).toEqual(new Set(['CPX-SAI-2026-01']));
   });
 });

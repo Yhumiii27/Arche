@@ -158,13 +158,13 @@ export function checkDecision(raw: Record<string, unknown>, today: string): Chec
 
 // ── Team ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-export const TEAM_ROLES: readonly TeamRole[] = ['lead', 'controller', 'co_dig', 'epc2i_pmo', 'internal_client', 'member'];
+export const TEAM_ROLES: readonly TeamRole[] = ['lead', 'controller', 'co_dig', 'engineering_pmo', 'internal_client', 'member'];
 export const TEAM_ROLE_LABEL: Record<TeamRole, string> = {
-  lead: 'Project lead', controller: 'Controller', co_dig: 'Co-DIG', epc2i_pmo: 'Engineering PMO', internal_client: 'Internal client', member: 'Team member',
+  lead: 'Project lead', controller: 'Controller', co_dig: 'Co-DIG', engineering_pmo: 'Engineering PMO', internal_client: 'Internal client', member: 'Team member',
 };
 
 /** The CAPEX-scoped role a team role gives (spec 01 §2: the named team sees the CAPEX); null = none (subsidiary roles). */
-export const ROLE_OF_TEAM_ROLE: Partial<Record<TeamRole, RoleKey>> = { lead: 'project_lead', co_dig: 'co_dig', epc2i_pmo: 'epc2i_pmo' };
+export const ROLE_OF_TEAM_ROLE: Partial<Record<TeamRole, RoleKey>> = { lead: 'project_lead', co_dig: 'co_dig', engineering_pmo: 'engineering_pmo' };
 
 // ── Write rights (spec 01 §3) ─────────────────────────────────────────────────────────────────────────────────────────
 
@@ -225,7 +225,7 @@ export function canDo(action: CapexAction, role: RoleKey, assignments: readonly 
     case 'safety':
       return open && on('group_hse');
     case 'audit':
-      return c.status === 'active' && (on('dir_ig') || on('epc2i_pmo'));
+      return c.status === 'active' && (on('dir_ig') || on('engineering_pmo'));
     case 'rampup':
       return c.status === 'active' && (on('project_lead') || (role === 'expert' && assignments.some((a) => a.role === 'expert' && a.speciality === 'operations' && a.scopeKind === 'capex' && a.scopeRef === c.code)));
     case 'closure':
@@ -236,11 +236,11 @@ export function canDo(action: CapexAction, role: RoleKey, assignments: readonly 
     case 'post_audit':
       return (c.status === 'active' || c.status === 'closed') && on('dir_ig');
     case 'rex':
-      return open && (on('project_lead') || on('sponsor') || on('controller') || on('co_dig') || on('epc2i_pmo'));
+      return open && (on('project_lead') || on('sponsor') || on('controller') || on('co_dig') || on('engineering_pmo'));
     case 'schedule':
       return open && (on('project_lead') || on('sponsor') || on('co_dig'));
     case 'actions':
-      return open && (on('project_lead') || on('sponsor') || on('controller') || on('co_dig') || on('epc2i_pmo') || on('dir_ig'));
+      return open && (on('project_lead') || on('sponsor') || on('controller') || on('co_dig') || on('engineering_pmo') || on('dir_ig'));
   }
 }
 

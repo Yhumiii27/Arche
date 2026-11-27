@@ -28,8 +28,8 @@ export interface ScreenDef {
 }
 
 // The administrator reads every business screen (owner, 24 Oct 2026, revising N-4); its writes stay refused by canDo.
-const BUSINESS: readonly RoleKey[] = ['admin', 'ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'epc2i_pmo', 'expert'];
-const STEERING: readonly RoleKey[] = ['admin', 'ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'epc2i_pmo'];
+const BUSINESS: readonly RoleKey[] = ['admin', 'ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'engineering_pmo', 'expert'];
+const STEERING: readonly RoleKey[] = ['admin', 'ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'engineering_pmo'];
 
 export const SCREENS: readonly ScreenDef[] = [
   { id: 'home', path: '/', title: 'Home', section: 'fixed', roles: 'all', delivery: 'L1' },

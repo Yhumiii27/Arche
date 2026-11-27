@@ -82,7 +82,7 @@ export const DEMO_PEOPLE: DemoPerson[] = [
   { key: 'project_lead', name: 'Leïla Haddad', email: `l.haddad@${APM}`, title: 'Project lead', subsidiary: 'APM', roles: [{ role: 'project_lead', scope: 'capex', ref: 'CPX-APM-2026-01' }, { role: 'project_lead', scope: 'capex', ref: 'CPX-APM-2026-02' }, { role: 'project_lead', scope: 'capex', ref: 'CPX-APM-2025-01' }] },
   { key: 'controller', name: 'Nadia Tazi', email: `n.tazi@${APM}`, title: 'Management controller', subsidiary: 'APM', roles: [{ role: 'controller', scope: 'subsidiary', ref: 'APM' }] },
   { key: 'co_dig', name: 'Thomas Girard', email: `t.girard@${G}`, title: 'Co-DIG', subsidiary: null, roles: [{ role: 'co_dig', scope: 'capex', ref: 'CPX-APM-2026-01' }] },
-  { key: 'epc2i_pmo', name: 'Julien Roche', email: `j.roche@${G}`, title: 'Engineering PMO', subsidiary: null, roles: [{ role: 'epc2i_pmo', scope: 'capex', ref: 'CPX-SAI-2026-01' }] },
+  { key: 'engineering_pmo', name: 'Julien Roche', email: `j.roche@${G}`, title: 'Engineering PMO', subsidiary: null, roles: [{ role: 'engineering_pmo', scope: 'capex', ref: 'CPX-SAI-2026-01' }] },
   { key: 'expert', name: 'Aminata Diop', email: `a.diop@${SAI}`, title: 'HSE manager', subsidiary: 'SAI', roles: [{ role: 'expert', scope: 'capex', ref: 'CPX-SAI-2026-01', speciality: 'hse' }] },
   { key: 'admin', name: 'Arche administrator', email: `admin.arche@${G}`, title: 'Arche administrator', subsidiary: null, roles: [{ role: 'admin', scope: 'group', ref: null }] },
   { key: 'sai_sponsor', name: 'Moussa Ndiaye', email: `m.ndiaye@${SAI}`, title: 'Managing director', subsidiary: 'SAI', roles: [{ role: 'sponsor', scope: 'subsidiary', ref: 'SAI' }] },
@@ -138,7 +138,7 @@ export const DEMO_CAPEX: DemoCapex[] = [
   },
   {
     code: 'CPX-SAI-2026-01', subsidiary: 'SAI', site: 'Thiès site', title: 'New tomato processing plant', investmentType: 'new_plant', status: 'active', phase: 'execution', typology: 'strategic',
-    sponsor: 'sai_sponsor', lead: 'sai_lead', team: [['sai_lead', 'lead'], ['sai_controller', 'controller'], ['epc2i_pmo', 'epc2i_pmo'], ['expert', 'member']], openedOn: '2025-11-03', needDate: '2027-06-01',
+    sponsor: 'sai_sponsor', lead: 'sai_lead', team: [['sai_lead', 'lead'], ['sai_controller', 'controller'], ['engineering_pmo', 'engineering_pmo'], ['expert', 'member']], openedOn: '2025-11-03', needDate: '2027-06-01',
     passed: [['G1', '2026-01-20'], ['G2', '2026-07-08']],
     lots: [['land', 'Plot acquisition'], ['civil_works', 'Earthworks and civil works'], ['buildings', 'Process hall and offices'], ['utilities', 'Steam, water and power'], ['machines', 'Processing lines (group engineering)'], ['recruitment', 'Recruitment and training']],
     versions: [

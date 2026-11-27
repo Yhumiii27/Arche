@@ -114,7 +114,7 @@ export const users = arche.table('users', {
 }, (t) => [
   rule('users_email_shape', sql`${t.email} = lower(${t.email}) and ${t.email} ~ '^[^@[:space:]]+@[^@[:space:]]+$'`),
   filled('users_display_name_filled', t.displayName),
-  check('users_granted_roles_known', sql`${t.grantedRoles} is null or ${t.grantedRoles} <@ array['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'epc2i_pmo', 'expert', 'admin']::text[]`),
+  check('users_granted_roles_known', sql`${t.grantedRoles} is null or ${t.grantedRoles} <@ array['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'engineering_pmo', 'expert', 'admin']::text[]`),
 ]);
 
 export const roleAssignments = arche.table('role_assignments', {

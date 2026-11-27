@@ -116,7 +116,7 @@ describe('delivery 4: machine needs and the Keystone connector', () => {
     await syncKeystone(t.db, { now: new Date((await needOf(APM, 3)).submittedAt!.getTime() + 70 * 86_400_000), mode: 'simulation' });
     const ev = await currentEvaluation(t.db, await capexOf(APM));
     expect(ev?.gate).toBe('G2');
-    expect(ev?.results.find((r) => r.code === 'g2_epc2i_offers')).toMatchObject({ state: 'unmet', value: '1 / 3' });
+    expect(ev?.results.find((r) => r.code === 'g2_keystone_offers')).toMatchObject({ state: 'unmet', value: '1 / 3' });
   });
 
   it('a need is withdrawn with a reason; a draft is deleted', async () => {

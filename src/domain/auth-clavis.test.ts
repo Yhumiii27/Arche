@@ -38,4 +38,10 @@ describe('roles read in clavis.pub_acces (ARCHE_ACCESS_FROM_CLAVIS)', () => {
     expect(grantedRolesFromClavisAccess({ role: 'director', ouvert: true })).toEqual([]);
     expect(grantedRolesFromClavisAccess(null)).toEqual([]);
   });
+
+  it('reads the former key epc2i_pmo as engineering_pmo while Clavis may still publish it (Atrium rename)', () => {
+    expect(grantedRolesFromClavisAccess({ role: 'epc2i_pmo', ouvert: true })).toEqual(['engineering_pmo']);
+    expect(grantedRolesFromClavisAccess({ role: 'engineering_pmo', ouvert: true })).toEqual(['engineering_pmo']);
+    expect(grantedRolesFromClaims({ roles: ['Arche.epc2i_pmo', 'engineering_pmo', 'expert'] })).toEqual(['engineering_pmo', 'expert']);
+  });
 });

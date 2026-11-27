@@ -10,7 +10,7 @@ import { check, type PgColumn } from 'drizzle-orm/pg-core';
 export type OneOf<T extends readonly unknown[]> = T[number];
 
 // ── Value lists (same order as the domain constants) ──────────────────────────────────────────────────────────────────
-export const ROLE_KEYS = ['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'epc2i_pmo', 'expert', 'admin'] as const;
+export const ROLE_KEYS = ['ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director', 'sponsor', 'project_lead', 'controller', 'co_dig', 'engineering_pmo', 'expert', 'admin'] as const;
 export const SCOPE_KINDS = ['group', 'zone', 'subsidiary', 'capex'] as const;
 export const EXPERT_SPECIALITIES = ['quality', 'hse', 'finance', 'operations'] as const;
 export const CAPEX_STATUSES = ['draft', 'active', 'on_hold', 'closed', 'abandoned'] as const;
@@ -18,7 +18,7 @@ export const PHASES = ['cadrage', 'avant_projet', 'execution', 'demarrage'] as c
 export const TYPOLOGIES = ['light', 'strategic'] as const;
 export const TYPOLOGY_SOURCES = ['computed', 'forced'] as const;
 export const INVESTMENT_TYPES = ['new_plant', 'new_line', 'extension', 'other'] as const;
-export const TEAM_ROLES = ['lead', 'controller', 'co_dig', 'epc2i_pmo', 'internal_client', 'member'] as const;
+export const TEAM_ROLES = ['lead', 'controller', 'co_dig', 'engineering_pmo', 'internal_client', 'member'] as const;
 export const GATES = ['G1', 'G2', 'K3', 'G3'] as const;
 export const GATE_DECISIONS = ['go', 'go_with_conditions', 'deferred', 'no_go'] as const;
 export const GATE_STATUSES = ['open', 'submitted', 'in_review', 'decided', 'returned'] as const;

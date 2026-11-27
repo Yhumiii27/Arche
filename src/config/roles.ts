@@ -4,7 +4,7 @@
 /** Role keys, from the broadest workspace to the narrowest (a user holding several starts in the first one held). */
 export const ROLE_KEYS = [
   'ceo', 'dir_ig', 'group_cfo', 'group_hse', 'copil_member', 'zone_director',
-  'sponsor', 'project_lead', 'controller', 'co_dig', 'epc2i_pmo', 'expert', 'admin',
+  'sponsor', 'project_lead', 'controller', 'co_dig', 'engineering_pmo', 'expert', 'admin',
 ] as const;
 export type RoleKey = (typeof ROLE_KEYS)[number];
 
@@ -22,7 +22,7 @@ export const ROLE_LABEL: Record<RoleKey, string> = {
   project_lead: 'Subsidiary project lead',
   controller: 'Subsidiary controller',
   co_dig: 'Co-DIG',
-  epc2i_pmo: 'Engineering PMO',
+  engineering_pmo: 'Engineering PMO',
   expert: 'Expert',
   admin: 'Administrator',
 };
@@ -44,7 +44,7 @@ export const ROLE_SCOPE: Record<RoleKey, ScopeKind> = {
   controller: 'subsidiary',
   project_lead: 'capex',
   co_dig: 'capex',
-  epc2i_pmo: 'capex',
+  engineering_pmo: 'capex',
   expert: 'capex',
 };
 
@@ -58,16 +58,32 @@ export const SPECIALITY_LABEL: Record<ExpertSpeciality, string> = { quality: 'Qu
 /** Central functions with a cross view of every subsidiary (CDC §4), beyond drafts (N-5). The CEO sees everything. */
 export const CROSS_VIEW_ROLES: readonly RoleKey[] = ['dir_ig', 'group_cfo', 'group_hse', 'copil_member'];
 
-/** Distinct known roles in priority order (unknown values dropped). */
+/**
+ * Former role keys still accepted when read from outside Arche (Clavis's `pub_acces`, a sign-in token) during the transition
+ * of the Atrium rename: Clavis and Arche may be deployed in either order. Arche itself only writes the new key.
+ */
+export const LEGACY_ROLE_KEYS: Readonly<Record<string, RoleKey>> = { epc2i_pmo: 'engineering_pmo' };
+
+/** The role key of `v`: a known key as it is, a former key (LEGACY_ROLE_KEYS) as its new key, else null. */
+export function canonicalRoleKey(v: unknown): RoleKey | null {
+  if (isRoleKey(v)) return v;
+  return typeof v === 'string' && Object.prototype.hasOwnProperty.call(LEGACY_ROLE_KEYS, v) ? LEGACY_ROLE_KEYS[v] : null;
+}
+
+/** Distinct known roles in priority order (a former key read as its new key, unknown values dropped). */
 export function sortRoles(roles: Iterable<unknown>): RoleKey[] {
   const held = new Set<string>();
-  for (const r of roles) if (isRoleKey(r)) held.add(r);
+  for (const r of roles) {
+    const k = canonicalRoleKey(r);
+    if (k) held.add(k);
+  }
   return ROLE_KEYS.filter((r) => held.has(r));
 }
 
 /** Active role: `preferred` when the user holds it, else the highest role held; null when the user holds none. */
 export function activeRoleOf(roles: readonly string[], preferred?: string | null): RoleKey | null {
   const held = sortRoles(roles);
-  if (preferred && isRoleKey(preferred) && held.includes(preferred)) return preferred;
+  const p = canonicalRoleKey(preferred);
+  if (p && held.includes(p)) return p;
   return held[0] ?? null;
 }

@@ -20,6 +20,8 @@ import { GET as listGet } from '@/app/api/v1/capex/route';
 import { GET as detailGet } from '@/app/api/v1/capex/[code]/route';
 import { POST as actualsPost } from '@/app/api/v1/capex/[code]/actuals/route';
 import { POST as actionsPost } from '@/app/api/v1/capex/[code]/actions/route';
+import { GET as detailGetV2 } from '@/app/api/v2/capex/[code]/route';
+import { POST as actualsPostV2 } from '@/app/api/v2/capex/[code]/actuals/route';
 import { deliverWebhooks, raiseAlerts } from './deliver';
 
 let t: TestDatabase;
@@ -92,6 +94,21 @@ describe('business API (AR-048)', () => {
     expect((await actualsPost(signed(apmKey, '/api/v1/capex/CPX-SAI-2026-01/actuals', body, Math.floor(Date.now() / 1000) - 7), params({ code: 'CPX-SAI-2026-01' }))).status).toBe(404);
     const a = await actionsPost(signed(apmKey, '/api/v1/capex/CPX-APM-2026-01/actions', { title: 'Reconcile the September invoices' }), params({ code: 'CPX-APM-2026-01' }));
     expect(a.status).toBe(201);
+  });
+
+  it('v1 keeps the names it was published with (epc2i, epc2i_lot); v2 names them fromKeystone and keystone_lot', async () => {
+    type Lots = { data: { lots: Record<string, unknown>[] } };
+    const v1 = (await (await detailGet(req(apmKey, '/x'), params({ code: 'CPX-APM-2026-01' }))).json()) as Lots;
+    const v2 = (await (await detailGetV2(req(apmKey, '/x'), params({ code: 'CPX-APM-2026-01' }))).json()) as Lots;
+    expect(Object.keys(v1.data.lots[0])).toEqual(['number', 'kind', 'title', 'epc2i', 'plannedStart', 'plannedEnd', 'validatedBudgetKeur']);
+    expect(Object.keys(v2.data.lots[0])).toEqual(['number', 'kind', 'title', 'fromKeystone', 'plannedStart', 'plannedEnd', 'validatedBudgetKeur']);
+    expect(v2.data.lots.map((l) => l.fromKeystone)).toEqual(v1.data.lots.map((l) => l.epc2i));
+    const [c] = await t.db.select().from(capex).where(eq(capex.code, 'CPX-APM-2026-01'));
+    const machine = (await t.db.select().from(capexLots).where(eq(capexLots.capexId, c.id))).find((l) => l.fromKeystone);
+    if (!machine) throw new Error('the demo CAPEX has a machine lot');
+    const body = { lot: machine.number, month: '2026-09', spentKeur: 1 };
+    expect(await (await actualsPost(signed(apmKey, '/api/v1/capex/CPX-APM-2026-01/actuals', body), params({ code: 'CPX-APM-2026-01' }))).json()).toMatchObject({ error: 'epc2i_lot' });
+    expect(await (await actualsPostV2(signed(apmKey, '/api/v2/capex/CPX-APM-2026-01/actuals', body, Math.floor(Date.now() / 1000) - 5), params({ code: 'CPX-APM-2026-01' }))).json()).toMatchObject({ error: 'keystone_lot' });
   });
 
   it('the events of a subscription are signed and sent from the outbox; a failure is tried again later', async () => {
