@@ -72,3 +72,40 @@ Côté Arche, rien à changer : les champs envoyés depuis le 1er nov. sont ceux
 poser `CODEX_CAPEX=on` une fois que Codex lit `arche.pub_capex` sur le serveur commun (lien de lecture de `codex_app` à déclarer
 à Matrix par Codex, M-18) ; avant cela, un dépôt rattaché à un CAPEX serait refusé (`capex_unknown`). CX-06 (accès des
 filiales) attend toujours O-04 et O-02. La PR Yhumiii27/Codex#20, qui portait l’entrée, est devenue sans objet.
+
+## 27 nov. 2026 — AR-025 : le connecteur suit le contrat réel de Codex (`main`, `docs/api.md`)
+
+Relecture du contrat de `POST /api/documents` et du lien profond sur `main` de Codex (commit `61000e7`). Rien n'est simulé côté
+dépôt : Arche appelle l'API réelle dès que l'URL et une preuve sont posées. Écarts corrigés dans Arche :
+- **Lien profond** : Arche ouvrait `/?document=<id>&revision=<lettre>` (forme de Keystone), que la page d'accueil de Codex
+  ignore. Le contrat est `/documents/{id}` (CX-08 ; un ancien identifiant redirige vers l'actuel) : `codexDocumentUrl` l'emploie.
+  Codex n'a pas de paramètre de révision ; Arche affiche la lettre à côté du lien.
+- **Nouvel essai** : un échec passager (Codex injoignable, 429, 502–504) est rejoué deux fois au plus, après le délai que
+  Codex demande (`Retry-After`, 5 s au plus ; au-delà, comme `scan_unavailable` et ses 60 s, l'échec est rendu). Chaque essai
+  est **signé à nouveau** avec un nouvel horodatage (Codex refuse une requête signée déjà reçue, `signature_replayed`) ; le
+  rejeu est sûr, le dépôt étant idempotent par `sourceRef`.
+- **Identifiant de requête** : chaque essai porte `X-Request-Id: arche-<uuid>.<n>`, cité dans le message d'échec (avec le
+  `requestId` d'une erreur 500) pour retrouver l'appel dans le journal technique de Codex.
+- **Refus lisibles** : 413 (`too_large` avec la taille admise, `scan_too_large`), 415 (`file_format`, motif et extension),
+  422 `file_infected`, 400 `capex_unknown` (CAPEX pas encore lu par Codex dans `arche.pub_capex`) ont leur message, en français.
+- **409 d'une version figée** : un PDF de la même version est déjà dans Codex (réponse perdue, ou vue imprimable réimprimée,
+  dont les dates changent le fichier). Le premier PDF, sous gel juridique, est la preuve : Arche enregistre son identifiant sur
+  la version (journal « PDF already in Codex as … (an earlier deposit of this version), recorded ») au lieu de bloquer.
+- **Longueur des preuves** : Codex refuse au démarrage un jeton ou un secret de moins de 32 caractères ; la configuration
+  d'Arche exige la même longueur pour `CODEX_DOCUMENTS_TOKEN` et `CODEX_DOCUMENTS_SECRET`.
+
+La vérification des références (`codex.pub_documents`, colonnes `id`, `aliases`, `title`, `type_code`, `rev_in_force`,
+`status`) suit la vue publiée ; le catalogue simulé ne sert qu'au jeu de démonstration quand la vue n'est pas lisible.
+
+**Reste la mise en service (configuration, pas de code)** — `docs/EXPLOITATION.md` §2 et §5 :
+
+| Où | Quoi |
+|---|---|
+| Codex | `CODEX_DOCUMENTS_SECRET` (et / ou `CODEX_DOCUMENTS_TOKEN`) : `openssl rand -base64 32`, au moins 32 caractères et 10 différents ; serveurs à l'heure (NTP), la signature vaut 300 s (`CODEX_SIGNATURE_WINDOW_S`) |
+| Codex | `CODEX_MAX_FILE_MB` ≥ 20 (Arche relaie 20 Mo au plus) ; `CODEX_FILE_EXTENSIONS` qui admet `pdf` ; derrière un proxy, `CODEX_TRUST_PROXY=1` |
+| Codex / Matrix | lien de lecture de `arche.pub_capex` par `codex_app` (déclaré par Codex à Matrix, M-18) : sans lui, `capex_unknown` |
+| Matrix | lecture de `codex.pub_documents` par `arche_app` sur le serveur commun (CX-05, déjà accordée) |
+| Arche | `CODEX_DOCUMENTS_SECRET` = la valeur de Codex (ou `CODEX_DOCUMENTS_TOKEN` sans identifiants dans l'URL) ; `CODEX_API_URL` (adresse de Codex vue du serveur ; `https://<identifiant>:<mot de passe>@…` derrière l'authentification HTTP) ; `NEXT_PUBLIC_CODEX_URL` (adresse publique, liens profonds, au build) |
+| Arche | `CODEX_CAPEX=on` une fois le lien `arche.pub_capex` accordé à Codex : rattachement `capex` (CX-01) et gel juridique d'une version figée (CX-07) |
+
+Restent hors d'AR-025 : CX-06 (accès des filiales, O-04 et O-02).

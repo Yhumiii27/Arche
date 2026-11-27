@@ -48,9 +48,9 @@ function form(o: Record<string, string>, file?: File) {
 const pdf = (name = 'pid-hall-2.pdf') => new File([new TextEncoder().encode(`%PDF-1.7 ${name}`)], name, { type: 'application/pdf' });
 const META = { typeCode: 'PID', department: 'DIR', owner: 'EMP-0042', conf: 'interne' };
 
-async function versions(kind: 'business_case' | 'investment') {
+async function versions(kind: 'business_case' | 'investment', code = CODE) {
   return t.db.select({ v: dossierVersions }).from(dossierVersions).innerJoin(dossiers, eq(dossiers.id, dossierVersions.dossierId)).innerJoin(capex, eq(capex.id, dossiers.capexId))
-    .where(and(eq(capex.code, CODE), eq(dossiers.kind, kind))).orderBy(desc(dossierVersions.number)).then((r) => r.map((x) => x.v));
+    .where(and(eq(capex.code, code), eq(dossiers.kind, kind))).orderBy(desc(dossierVersions.number)).then((r) => r.map((x) => x.v));
 }
 async function sentMeta() {
   const [, init] = fetchMock.mock.calls.at(-1)!;
@@ -112,5 +112,20 @@ describe('Deposit in Codex from a dossier', () => {
     fetchMock.mockClear();
     expect(await depositFrozenVersionAction(CODE, 'business_case', null, form({ ...META, typeCode: 'NOT' }, pdf('business-case.pdf')))).toEqual({ ok: false, error: 'This version is already deposited in Codex' });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('a frozen version Codex already holds under its reference (another PDF: 409) gets that earlier deposit recorded', async () => {
+    as('project_lead');
+    const other = 'CPX-APM-2025-01';
+    const target = (await versions('investment', other)).find((x) => x.state === 'frozen' || x.state === 'approved')!;
+    expect(target.codexDocumentId).toBeNull();
+    fetchMock.mockResolvedValue(Response.json({ error: 'source_ref_reused', id: 'DEF-DIR-0003' }, { status: 409 }));
+    expect(await depositFrozenVersionAction(other, 'investment', null, form({ ...META, typeCode: 'DEF' }, pdf('investment-reprinted.pdf')))).toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect((await sentMeta()).sourceRef).toBe(`arche:dossier/${other}/investment/v${target.number}`);
+    const [after] = (await versions('investment', other)).filter((x) => x.id === target.id);
+    expect(after).toMatchObject({ codexDocumentId: 'DEF-DIR-0003', state: target.state, contentHash: target.contentHash });
+    const audit = await t.db.select().from(auditEntries).where(eq(auditEntries.entityId, target.id));
+    expect(audit.map((a) => a.change)).toContain(`Investment dossier v${target.number}: PDF already in Codex as DEF-DIR-0003 (an earlier deposit of this version), recorded`);
   });
 });

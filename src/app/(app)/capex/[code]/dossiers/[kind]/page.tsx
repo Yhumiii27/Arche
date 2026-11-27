@@ -114,7 +114,7 @@ export default async function DossierPage({ params, searchParams }: PageProps<'/
                 </thead>
                 <tbody>
                   {sec.refs.map((r) => {
-                    const href = codexDocumentUrl(r.id, r.revision);
+                    const href = codexDocumentUrl(r.id);
                     return (
                       <tr key={r.id}>
                         <Td nowrap>{href ? <a href={href} target="_blank" rel="noreferrer">{r.id}</a> : r.id}</Td>

@@ -136,8 +136,9 @@ const VARS = {
   // Deposit of documents in Codex (CX-03, src/server/integrations/codex/deposit.ts): server URL (credentials = HTTP
   // authentication of the host), bearer token and/or HMAC secret of POST /api/documents; neither proof = deposit off.
   CODEX_API_URL: httpUrl.optional(),
-  CODEX_DOCUMENTS_TOKEN: z.string().optional(),
-  CODEX_DOCUMENTS_SECRET: z.string().min(16, 'must be at least 16 characters').optional(),
+  // Codex refuses at start-up a token or a secret shorter than 32 characters (docs/api.md of Codex): the same values here.
+  CODEX_DOCUMENTS_TOKEN: z.string().min(32, 'must be at least 32 characters, as in Codex').optional(),
+  CODEX_DOCUMENTS_SECRET: z.string().min(32, 'must be at least 32 characters, as in Codex').optional(),
   // Codex accepts the CAPEX attachment and the legal hold of a deposit (CX-01, CX-07; owner's choices of 1 Nov 2026): set it
   // to "on" once Codex delivers them; until then a deposit goes to the owner's department context, as a draft.
   CODEX_CAPEX: z.enum(['on', 'off'], { message: 'must be "on" or "off"' }).optional(),

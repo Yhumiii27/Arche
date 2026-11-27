@@ -31,4 +31,8 @@ export const FR_RULES: [RegExp, string][] = [
   [/^Codex is unavailable \((.+)\)$/, 'Codex est indisponible ($1)'],
   [/^Codex refused the deposit: (.+)$/, 'Codex a refusé le dépôt : $1'],
   [/^Codex could not be reached \((.+)\)$/, 'Codex est injoignable ($1)'],
+  [/^The file is too large for Codex \((\d+) MB at most\)$/, 'Le fichier est trop volumineux pour Codex ($1 Mo au plus)'],
+  [/^Codex does not accept this file \((.+)\)$/, 'Codex n’accepte pas ce fichier ($1)'],
+  [/^Codex's antivirus found a threat in the file \((.+)\)$/, 'L’antivirus de Codex a détecté une menace dans le fichier ($1)'],
+  [/^Codex does not know the CAPEX (\S+) yet \(it reads arche\.pub_capex\)$/, 'Codex ne connaît pas encore le CAPEX $1 (il le lit dans arche.pub_capex)'],
 ];

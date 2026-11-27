@@ -3,7 +3,8 @@ import 'server-only';
 // identifier TYPE-CONTEXT-SEQ, the revision and the deep link — and checks them against `codex.pub_documents` when Codex
 // shares its schema with Arche on the EPC2I server (CX-05). Without it (development, tests, before the grant), the
 // demonstration data set uses a simulated catalogue and other references stay "not verified". Arche writes to Codex only by
-// its deposit API (./deposit.ts, CX-03): a file from a section, the PDF of a frozen version; CX-07 (frozen in Codex) is open.
+// its deposit API (./deposit.ts, CX-03): a file from a section, the PDF of a frozen version (legal hold in Codex, CX-07, and
+// the CAPEX attachment, CX-01, with CODEX_CAPEX=on).
 import { sql } from 'drizzle-orm';
 import { databaseSeedMode } from '@/server/db/seed/mode';
 import type { DB, Tx } from '@/server/db/types';
@@ -49,10 +50,13 @@ export async function lookupCodexDocument(q: DB | Tx, id: string): Promise<Codex
   return { found: false, source: 'unavailable' };
 }
 
-/** Deep link to a document in Codex (same form as Keystone's: `/?document=…&revision=…`); null without NEXT_PUBLIC_CODEX_URL. */
-export function codexDocumentUrl(id: string, revision?: string | null): string | null {
-  const base = process.env.NEXT_PUBLIC_CODEX_URL;
+/**
+ * Deep link to a document in Codex: `/documents/{id}`, Codex's contract for the other tools (CX-08, Codex docs/api.md « Lien
+ * profond »; a former identifier redirects to the current one). Codex's page has no revision parameter: the revision is
+ * shown by Arche next to the link. Null without NEXT_PUBLIC_CODEX_URL.
+ */
+export function codexDocumentUrl(id: string): string | null {
+  const base = process.env.NEXT_PUBLIC_CODEX_URL?.trim();
   if (!base) return null;
-  const qs = new URLSearchParams({ document: id, ...(revision ? { revision } : {}) });
-  return `${base.replace(/\/+$/, '')}/?${qs}`;
+  return `${base.replace(/\/+$/, '')}/documents/${encodeURIComponent(id.trim())}`;
 }

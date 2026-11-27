@@ -201,14 +201,21 @@ export async function depositFrozenVersionAction(code: string, kind: string, _pr
     meta: { ...meta.value, subtype: meta.value.subtype ?? DOSSIER_CODEX[kind].subtype, title, sourceRef: depositSourceRef(c.code, kind, `v${target.number}`), comment: `${DOSSIER_LABEL[kind]} v${target.number}, SHA-256 of the content ${target.contentHash ?? '—'}`, capexCode: c.code, legalHold: true },
     file: file.value,
   });
-  if (!r.ok) return { ok: false, error: r.message };
+  // 409: Codex already holds a PDF of this version under its reference — an earlier deposit whose answer was lost, or done
+  // before Arche recorded it (a print view printed again differs by its dates). That first PDF is the proof under legal hold:
+  // Arche records it on the version rather than leaving the version without its deposit.
+  const earlier = !r.ok && r.reason === 'conflict' && r.id ? r.id : null;
+  if (!r.ok && !earlier) return { ok: false, error: r.message };
+  const id = r.ok ? r.id : earlier!;
   return onCapex(code, 'edit', async (tx, c, v) => {
     const [d] = await tx.select().from(dossierVersions).where(eq(dossierVersions.id, target.id));
     if (!d) return { ok: false, error: 'There is no frozen version to deposit' };
-    if (d.codexDocumentId === r.id) return { ok: true };
-    await tx.update(dossierVersions).set({ codexDocumentId: r.id, codexDepositedAt: new Date(), codexDepositedByName: v.name, updatedAt: new Date() }).where(eq(dossierVersions.id, d.id));
-    await writeAudit(tx, auditOf(v, c, `${DOSSIER_LABEL[kind]} v${d.number}: PDF deposited in Codex as ${r.id}`, { entityType: 'dossier_version', entityId: d.id, after: { codexDocumentId: r.id } }));
-    await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'dossier.deposited', text: `${c.code}: ${DOSSIER_LABEL[kind]} v${d.number} deposited in Codex (${r.id})`, capexId: c.id });
+    if (d.codexDocumentId === id) return { ok: true };
+    await tx.update(dossierVersions).set({ codexDocumentId: id, codexDepositedAt: new Date(), codexDepositedByName: v.name, updatedAt: new Date() }).where(eq(dossierVersions.id, d.id));
+    await writeAudit(tx, auditOf(v, c, earlier
+      ? `${DOSSIER_LABEL[kind]} v${d.number}: PDF already in Codex as ${id} (an earlier deposit of this version), recorded`
+      : `${DOSSIER_LABEL[kind]} v${d.number}: PDF deposited in Codex as ${id}`, { entityType: 'dossier_version', entityId: d.id, after: { codexDocumentId: id } }));
+    await recordActivity(tx, { actorName: v.name, actorUserId: v.userId, kind: 'dossier.deposited', text: `${c.code}: ${DOSSIER_LABEL[kind]} v${d.number} deposited in Codex (${id})`, capexId: c.id });
     return { ok: true };
   });
 }
